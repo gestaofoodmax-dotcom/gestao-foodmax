@@ -359,15 +359,15 @@ export default function ClientesModule() {
         title: "Clientes excluídos",
         description: `${selectedIds.length} cliente(s) excluído(s) com sucesso`,
       });
+      setShowBulkDeleteAlert(false);
       setSelectedIds([]);
       loadClientes();
-      setShowBulkDeleteAlert(false);
     } catch (error: any) {
       const list = readLocal().filter((x) => !selectedIds.includes(x.id));
       writeLocal(list);
       setClientes(list);
-      setSelectedIds([]);
       setShowBulkDeleteAlert(false);
+      setSelectedIds([]);
       toast({ title: "Clientes excluídos" });
     } finally {
       setDeleteLoading(false);
