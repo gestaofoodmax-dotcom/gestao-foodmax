@@ -332,14 +332,16 @@ export default function ClientesModule() {
         title: "Cliente excluído",
         description: "Cliente excluído com sucesso",
       });
+      setShowDeleteAlert(false);
+      setCurrentCliente(null);
       setSelectedIds([]);
       loadClientes();
-      setShowDeleteAlert(false);
     } catch (error: any) {
       const list = readLocal().filter((x) => x.id !== currentCliente.id);
       writeLocal(list);
       setClientes(list);
       setShowDeleteAlert(false);
+      setCurrentCliente(null);
       toast({ title: "Cliente excluído" });
     } finally {
       setDeleteLoading(false);
