@@ -787,7 +787,7 @@ export default function ClientesModule() {
         hasPayment={hasPaymentPlan}
         mapHeader={(header) => {
           const map: Record<string, string> = {
-            // Establishment mappings
+            // Establishment mappings (including exact header from CSV)
             "Estabelecimento Nome": "id_estabelecimento",
             "Nome Estabelecimento": "id_estabelecimento",
             Estabelecimento: "id_estabelecimento",
@@ -814,10 +814,10 @@ export default function ClientesModule() {
             Uf: "uf",
             País: "pais",
             Pais: "pais",
-            // Boolean fields
+            // Boolean fields (exact match from CSV)
+            "Aceita Promocao Email": "aceita_promocao_email",
             "Aceita Promoção por Email": "aceita_promocao_email",
             "Aceita Promocao por Email": "aceita_promocao_email",
-            "Aceita Promocao Email": "aceita_promocao_email",
             "Aceita Promoção Email": "aceita_promocao_email",
             "Aceita Promoção": "aceita_promocao_email",
             "Aceita Promocao": "aceita_promocao_email",
@@ -827,7 +827,10 @@ export default function ClientesModule() {
             "Data de Cadastro": "data_cadastro",
             "Data Cadastro": "data_cadastro",
           };
-          return map[header] || header.toLowerCase().replace(/\s+/g, "_");
+
+          const mapped = map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          console.log(`Header mapping: "${header}" -> "${mapped}"`);
+          return mapped;
         }}
         validateRecord={(record, index) => {
           const errors: string[] = [];
