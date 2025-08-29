@@ -914,12 +914,17 @@ export default function ClientesModule() {
         }}
         onGetRelatedId={async (fieldName, value) => {
           if (fieldName === "id_estabelecimento") {
+            if (!value || String(value).trim() === "") return null;
+
+            const searchValue = String(value).trim().toLowerCase();
+
+            // First try to find in current list
             const byName = estabelecimentos.find(
-              (e) =>
-                e.nome?.trim().toLowerCase() ===
-                String(value).trim().toLowerCase(),
+              (e) => e.nome?.trim().toLowerCase() === searchValue,
             );
             if (byName) return byName.id;
+
+            // If not found, try searching via API
             try {
               const params = new URLSearchParams({
                 page: "1",
@@ -928,13 +933,20 @@ export default function ClientesModule() {
               });
               const res = await makeRequest(`/api/estabelecimentos?${params}`);
               const found = (res?.data || []).find(
-                (e: any) =>
-                  e.nome?.trim().toLowerCase() ===
-                  String(value).trim().toLowerCase(),
+                (e: any) => e.nome?.trim().toLowerCase() === searchValue,
               );
-              return found?.id || null;
-            } catch {
-              return null;
+              if (found) return found.id;
+
+              // If still not found, create a warning but don't fail
+              console.warn(`Estabelecimento "${value}" não encontrado. Usando primeiro estabelecimento disponível.`);
+
+              // Fall back to first active establishment
+              const firstActive = estabelecimentos.find(e => e.ativo);
+              return firstActive?.id || estabelecimentos[0]?.id || null;
+            } catch (error) {
+              console.error("Error searching establishments:", error);
+              // Fall back to first establishment
+              return estabelecimentos[0]?.id || null;
             }
           }
           return null;
