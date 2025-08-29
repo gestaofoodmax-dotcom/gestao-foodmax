@@ -728,7 +728,11 @@ export default function ClientesModule() {
 
       <ClienteForm
         isOpen={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={() => {
+          setShowForm(false);
+          setCurrentCliente(null);
+          setIsEditing(false);
+        }}
         onSave={handleSave}
         cliente={currentCliente}
         isLoading={formLoading}
@@ -736,7 +740,10 @@ export default function ClientesModule() {
 
       <ClienteView
         isOpen={showView}
-        onClose={() => setShowView(false)}
+        onClose={() => {
+          setShowView(false);
+          setCurrentCliente(null);
+        }}
         onEdit={handleEdit}
         cliente={currentCliente}
         estabelecimentoNome={
