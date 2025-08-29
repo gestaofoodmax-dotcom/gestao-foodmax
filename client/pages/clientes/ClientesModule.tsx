@@ -829,6 +829,7 @@ export default function ClientesModule() {
 
           // Normalize scientific notation from Excel (e.g., 1.1E+12)
           const normalizeSci = (v: any): string => {
+            if (v == null || v === "") return "";
             const s = String(v).trim().replace(",", ".");
             const m = s.match(/^(\d+)(?:[\.](\d*))?[eE]\+(\d+)$/);
             if (!m) return s;
@@ -840,14 +841,30 @@ export default function ClientesModule() {
             return digits + "0".repeat(zeros);
           };
 
+          // Normalize boolean values
+          const normalizeBool = (v: any): boolean | undefined => {
+            if (v == null || v === "") return undefined;
+            const s = String(v).trim().toLowerCase();
+            if (["1", "true", "ativo", "sim", "yes"].includes(s)) return true;
+            if (["0", "false", "inativo", "nao", "não", "no"].includes(s)) return false;
+            return undefined;
+          };
+
+          // Check required fields
           required.forEach((k) => {
-            if (!record[k])
+            if (!record[k] || String(record[k]).trim() === "")
               errors.push(`Campo obrigatório '${k}' não preenchido`);
           });
 
-          if (record.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.email))
-            errors.push("Email inválido");
+          // Validate and normalize email
+          if (record.email) {
+            const email = String(record.email).trim();
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+              errors.push("Email inválido");
+            record.email = email || undefined;
+          }
 
+          // Validate and normalize telefone
           if (record.telefone) {
             const cleaned = normalizeSci(record.telefone);
             const digits = cleaned.replace(/\D/g, "");
@@ -856,41 +873,36 @@ export default function ClientesModule() {
             else record.telefone = digits;
           }
 
+          // Normalize DDI
           if (record.ddi) {
             const cleaned = normalizeSci(record.ddi);
-            record.ddi = cleaned.replace(/\D/g, "").trim();
+            record.ddi = cleaned.replace(/\D/g, "").replace(/^0+/, "") || "+55";
+            if (!record.ddi.startsWith("+")) record.ddi = "+" + record.ddi;
           }
 
+          // Validate and normalize CEP
           if (record.cep) {
             const cleaned = normalizeSci(record.cep);
             const digits = cleaned.replace(/\D/g, "");
-            if (digits.length !== 8) errors.push("CEP deve ter 8 dígitos");
-            else record.cep = digits;
+            if (digits && digits.length !== 8) errors.push("CEP deve ter 8 dígitos");
+            record.cep = digits || undefined;
           }
 
-          // Normalize boolean-ish fields possibly coming as strings
-          if (record.ativo != null) {
-            const s = String(record.ativo).toLowerCase();
-            record.ativo = ["1", "true", "ativo", "sim", "yes"].includes(s)
-              ? true
-              : ["0", "false", "inativo", "nao", "não", "no"].includes(s)
-                ? false
-                : record.ativo;
+          // Normalize text fields
+          ["nome", "genero", "profissao", "endereco", "cidade", "uf", "pais"].forEach(field => {
+            if (record[field]) {
+              record[field] = String(record[field]).trim() || undefined;
+            }
+          });
+
+          // Normalize UF to uppercase
+          if (record.uf) {
+            record.uf = String(record.uf).trim().toUpperCase().slice(0, 2);
           }
-          if (record.aceita_promocao_email != null) {
-            const s = String(record.aceita_promocao_email).toLowerCase();
-            record.aceita_promocao_email = [
-              "1",
-              "true",
-              "sim",
-              "yes",
-              "aceita",
-            ].includes(s)
-              ? true
-              : ["0", "false", "nao", "não", "no"].includes(s)
-                ? false
-                : record.aceita_promocao_email;
-          }
+
+          // Normalize boolean fields
+          record.ativo = normalizeBool(record.ativo) ?? true;
+          record.aceita_promocao_email = normalizeBool(record.aceita_promocao_email) ?? false;
 
           return errors;
         }}
