@@ -385,46 +385,33 @@ export default function ClientesModule() {
   };
 
   const handleImport = async (records: any[]) => {
-    const normalized = records.map((r) => ({
-      id_estabelecimento: r.id_estabelecimento,
-      estabelecimento_id: Number(r.id_estabelecimento) || undefined,
-      nome: (r.nome || "").trim(),
-      genero: r.genero || undefined,
-      profissao: r.profissao || undefined,
-      email: r.email || undefined,
-      ddi: (r.ddi || "").trim(),
-      telefone: (r.telefone || "").trim(),
-      ativo: toBool(r.ativo),
-      aceita_promocao_email: toBool(r.aceita_promocao_email),
-      cep: r.cep || undefined,
-      endereco: r.endereco || undefined,
-      cidade: r.cidade || undefined,
-      uf: r.uf || undefined,
-      pais: r.pais || undefined,
-    }));
+    // Records are already validated and processed by ImportModal
+    console.log("Processing import records:", records);
 
     try {
       const response = await makeRequest(`/api/clientes/import`, {
         method: "POST",
-        body: JSON.stringify({
-          records: normalized.map(({ id_estabelecimento, ...rest }) => rest),
-        }),
+        body: JSON.stringify({ records }),
       });
       loadClientes();
       return response;
     } catch (error: any) {
+      console.log("API failed, using local storage fallback", error);
+
+      // Fallback to local storage
       const list = readLocal();
       const now = new Date().toISOString();
-      const mapped = normalized.map((r: any, i: number) => ({
+
+      const mapped = records.map((r: any, i: number) => ({
         id: Date.now() + i,
         id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
-        estabelecimento_id: r.estabelecimento_id || 0,
-        nome: r.nome,
+        estabelecimento_id: Number(r.estabelecimento_id) || Number(r.id_estabelecimento) || 1,
+        nome: r.nome || "",
         genero: r.genero,
         profissao: r.profissao,
         email: r.email,
-        ddi: r.ddi,
-        telefone: r.telefone,
+        ddi: r.ddi || "+55",
+        telefone: r.telefone || "",
         ativo: r.ativo ?? true,
         aceita_promocao_email: r.aceita_promocao_email ?? false,
         data_cadastro: now,
@@ -444,15 +431,19 @@ export default function ClientesModule() {
               }
             : undefined,
       })) as Cliente[];
+
+      console.log("Mapped records for local storage:", mapped);
+
       const merged = [...mapped, ...list];
       writeLocal(merged);
       setClientes(merged);
+
       return {
         success: true,
         message: "Importação concluída",
         imported: mapped.length,
         errors: [],
-      } as any;
+      };
     }
   };
 
