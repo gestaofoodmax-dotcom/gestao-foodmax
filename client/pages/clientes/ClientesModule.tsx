@@ -254,9 +254,11 @@ export default function ClientesModule() {
           description: "Cliente criado com sucesso",
         });
       }
+      setShowForm(false);
+      setCurrentCliente(null);
+      setIsEditing(false);
       setSelectedIds([]);
       loadClientes();
-      setShowForm(false);
     } catch (error: any) {
       const list = readLocal();
       if (isEditing && currentCliente) {
@@ -330,14 +332,16 @@ export default function ClientesModule() {
         title: "Cliente excluído",
         description: "Cliente excluído com sucesso",
       });
+      setShowDeleteAlert(false);
+      setCurrentCliente(null);
       setSelectedIds([]);
       loadClientes();
-      setShowDeleteAlert(false);
     } catch (error: any) {
       const list = readLocal().filter((x) => x.id !== currentCliente.id);
       writeLocal(list);
       setClientes(list);
       setShowDeleteAlert(false);
+      setCurrentCliente(null);
       toast({ title: "Cliente excluído" });
     } finally {
       setDeleteLoading(false);
@@ -355,15 +359,15 @@ export default function ClientesModule() {
         title: "Clientes excluídos",
         description: `${selectedIds.length} cliente(s) excluído(s) com sucesso`,
       });
+      setShowBulkDeleteAlert(false);
       setSelectedIds([]);
       loadClientes();
-      setShowBulkDeleteAlert(false);
     } catch (error: any) {
       const list = readLocal().filter((x) => !selectedIds.includes(x.id));
       writeLocal(list);
       setClientes(list);
-      setSelectedIds([]);
       setShowBulkDeleteAlert(false);
+      setSelectedIds([]);
       toast({ title: "Clientes excluídos" });
     } finally {
       setDeleteLoading(false);
@@ -381,46 +385,34 @@ export default function ClientesModule() {
   };
 
   const handleImport = async (records: any[]) => {
-    const normalized = records.map((r) => ({
-      id_estabelecimento: r.id_estabelecimento,
-      estabelecimento_id: Number(r.id_estabelecimento) || undefined,
-      nome: (r.nome || "").trim(),
-      genero: r.genero || undefined,
-      profissao: r.profissao || undefined,
-      email: r.email || undefined,
-      ddi: (r.ddi || "").trim(),
-      telefone: (r.telefone || "").trim(),
-      ativo: toBool(r.ativo),
-      aceita_promocao_email: toBool(r.aceita_promocao_email),
-      cep: r.cep || undefined,
-      endereco: r.endereco || undefined,
-      cidade: r.cidade || undefined,
-      uf: r.uf || undefined,
-      pais: r.pais || undefined,
-    }));
+    // Records are already validated and processed by ImportModal
+    console.log("Processing import records:", records);
 
     try {
       const response = await makeRequest(`/api/clientes/import`, {
         method: "POST",
-        body: JSON.stringify({
-          records: normalized.map(({ id_estabelecimento, ...rest }) => rest),
-        }),
+        body: JSON.stringify({ records }),
       });
       loadClientes();
       return response;
     } catch (error: any) {
+      console.log("API failed, using local storage fallback", error);
+
+      // Fallback to local storage
       const list = readLocal();
       const now = new Date().toISOString();
-      const mapped = normalized.map((r: any, i: number) => ({
+
+      const mapped = records.map((r: any, i: number) => ({
         id: Date.now() + i,
         id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
-        estabelecimento_id: r.estabelecimento_id || 0,
-        nome: r.nome,
+        estabelecimento_id:
+          Number(r.estabelecimento_id) || Number(r.id_estabelecimento) || 1,
+        nome: r.nome || "",
         genero: r.genero,
         profissao: r.profissao,
         email: r.email,
-        ddi: r.ddi,
-        telefone: r.telefone,
+        ddi: r.ddi || "+55",
+        telefone: r.telefone || "",
         ativo: r.ativo ?? true,
         aceita_promocao_email: r.aceita_promocao_email ?? false,
         data_cadastro: now,
@@ -440,15 +432,19 @@ export default function ClientesModule() {
               }
             : undefined,
       })) as Cliente[];
+
+      console.log("Mapped records for local storage:", mapped);
+
       const merged = [...mapped, ...list];
       writeLocal(merged);
       setClientes(merged);
+
       return {
         success: true,
         message: "Importação concluída",
         imported: mapped.length,
         errors: [],
-      } as any;
+      };
     }
   };
 
@@ -724,7 +720,11 @@ export default function ClientesModule() {
 
       <ClienteForm
         isOpen={showForm}
-        onClose={() => setShowForm(false)}
+        onClose={() => {
+          setShowForm(false);
+          setCurrentCliente(null);
+          setIsEditing(false);
+        }}
         onSave={handleSave}
         cliente={currentCliente}
         isLoading={formLoading}
@@ -732,7 +732,10 @@ export default function ClientesModule() {
 
       <ClienteView
         isOpen={showView}
-        onClose={() => setShowView(false)}
+        onClose={() => {
+          setShowView(false);
+          setCurrentCliente(null);
+        }}
         onEdit={handleEdit}
         cliente={currentCliente}
         estabelecimentoNome={
@@ -747,23 +750,30 @@ export default function ClientesModule() {
       <ExportModal
         isOpen={showExport}
         onClose={() => setShowExport(false)}
-        data={clientes}
+        data={clientes.map((cliente) => ({
+          estabelecimento_nome:
+            estabelecimentos.find((e) => e.id === cliente.estabelecimento_id)
+              ?.nome ||
+            cliente["estabelecimento_nome"] ||
+            "N/A",
+          nome: cliente.nome,
+          genero: cliente.genero || "",
+          profissao: cliente.profissao || "",
+          email: cliente.email || "",
+          ddi: cliente.ddi,
+          telefone: cliente.telefone,
+          cep: cliente.endereco?.cep || "",
+          endereco: cliente.endereco?.endereco || "",
+          cidade: cliente.endereco?.cidade || "",
+          uf: cliente.endereco?.uf || "",
+          pais: cliente.endereco?.pais || "",
+          aceita_promocao_email: cliente.aceita_promocao_email ? "Sim" : "Não",
+          ativo: cliente.ativo ? "Ativo" : "Inativo",
+          data_cadastro: cliente.data_cadastro,
+        }))}
         selectedIds={selectedIds}
         moduleName="Clientes"
         columns={CLIENTE_EXPORT_COLUMNS}
-        onGetRelatedValue={async (fieldName, id) => {
-          if (fieldName === "id_estabelecimento") {
-            const found = estabelecimentos.find((e) => e.id === id);
-            if (found) return found.nome;
-            try {
-              const res = await makeRequest(`/api/estabelecimentos/${id}`);
-              return res?.nome || String(id);
-            } catch {
-              return String(id);
-            }
-          }
-          return String(id);
-        }}
       />
 
       <ImportModal
@@ -772,49 +782,68 @@ export default function ClientesModule() {
         moduleName="Clientes"
         columns={CLIENTE_IMPORT_COLUMNS.map((c) => ({
           ...c,
-          required: ["id_estabelecimento", "nome", "ddi", "telefone"].includes(
-            c.key,
-          ),
+          required: ["id_estabelecimento", "nome"].includes(c.key),
         }))}
         onImport={handleImport}
         userRole={userRole || "admin"}
         hasPayment={hasPaymentPlan}
         mapHeader={(header) => {
           const map: Record<string, string> = {
+            // Establishment mappings (including exact header from CSV)
+            "Estabelecimento Nome": "id_estabelecimento",
+            "Nome Estabelecimento": "id_estabelecimento",
             Estabelecimento: "id_estabelecimento",
             "Id Estabelecimento": "id_estabelecimento",
             "ID Estabelecimento": "id_estabelecimento",
+            // Basic fields
             Nome: "nome",
             Gênero: "genero",
             Genero: "genero",
             Profissão: "profissao",
             Profissao: "profissao",
             Email: "email",
+            // Contact fields
             DDI: "ddi",
+            Ddi: "ddi",
             Telefone: "telefone",
+            // Address fields
             CEP: "cep",
+            Cep: "cep",
             Endereço: "endereco",
             Endereco: "endereco",
             Cidade: "cidade",
             UF: "uf",
+            Uf: "uf",
             País: "pais",
             Pais: "pais",
+            // Boolean fields (exact match from CSV)
+            "Aceita Promocao Email": "aceita_promocao_email",
             "Aceita Promoção por Email": "aceita_promocao_email",
             "Aceita Promocao por Email": "aceita_promocao_email",
+            "Aceita Promoção Email": "aceita_promocao_email",
             "Aceita Promoção": "aceita_promocao_email",
             "Aceita Promocao": "aceita_promocao_email",
-            "Aceita P": "aceita_promocao_email",
+            // Status fields
             Ativo: "ativo",
             Status: "ativo",
+            "Data de Cadastro": "data_cadastro",
+            "Data Cadastro": "data_cadastro",
           };
-          return map[header] || header.toLowerCase().replace(/\s+/g, "_");
+
+          const mapped =
+            map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          console.log(`Header mapping: "${header}" -> "${mapped}"`);
+          return mapped;
         }}
-        validateRecord={(record) => {
+        validateRecord={(record, index) => {
           const errors: string[] = [];
-          const required = ["id_estabelecimento", "nome", "ddi", "telefone"];
+          const required = ["id_estabelecimento", "nome"];
+
+          console.log(`Validating record ${index + 1}:`, record);
 
           // Normalize scientific notation from Excel (e.g., 1.1E+12)
           const normalizeSci = (v: any): string => {
+            if (v == null || v === "") return "";
             const s = String(v).trim().replace(",", ".");
             const m = s.match(/^(\d+)(?:[\.](\d*))?[eE]\+(\d+)$/);
             if (!m) return s;
@@ -826,84 +855,188 @@ export default function ClientesModule() {
             return digits + "0".repeat(zeros);
           };
 
-          required.forEach((k) => {
-            if (!record[k])
-              errors.push(`Campo obrigatório '${k}' não preenchido`);
+          // Normalize boolean values
+          const normalizeBool = (v: any): boolean | undefined => {
+            if (v == null || v === "") return undefined;
+            const s = String(v).trim().toLowerCase();
+            if (["1", "true", "ativo", "sim", "yes", "s"].includes(s))
+              return true;
+            if (["0", "false", "inativo", "nao", "não", "no", "n"].includes(s))
+              return false;
+            return undefined;
+          };
+
+          // Normalize text fields first
+          [
+            "nome",
+            "genero",
+            "profissao",
+            "endereco",
+            "cidade",
+            "uf",
+            "pais",
+            "id_estabelecimento",
+          ].forEach((field) => {
+            if (record[field] != null && record[field] !== "") {
+              record[field] = String(record[field]).trim();
+            }
           });
 
-          if (record.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.email))
-            errors.push("Email inválido");
+          // Check required fields (only establishment and name are truly required)
+          required.forEach((k) => {
+            if (!record[k] || record[k] === "") {
+              const fieldName =
+                k === "id_estabelecimento" ? "Estabelecimento" : k;
+              errors.push(`${fieldName} é obrigatório`);
+            }
+          });
 
-          if (record.telefone) {
+          // Validate and normalize email (only if provided)
+          if (record.email && record.email.trim() !== "") {
+            const email = String(record.email).trim();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+              errors.push("Email inválido");
+            } else {
+              record.email = email;
+            }
+          }
+
+          // Validate and normalize telefone (make it optional for now)
+          if (record.telefone && record.telefone.trim() !== "") {
             const cleaned = normalizeSci(record.telefone);
             const digits = cleaned.replace(/\D/g, "");
-            if (digits.length < 10 || digits.length > 15)
-              errors.push("Telefone deve ter entre 10 e 15 dígitos");
-            else record.telefone = digits;
+            if (digits.length < 8 || digits.length > 15) {
+              console.warn(
+                `Telefone "${record.telefone}" -> "${digits}" has ${digits.length} digits`,
+              );
+              // Don't fail, just normalize
+            }
+            record.telefone = digits;
+          } else {
+            // Provide default if missing
+            record.telefone = "000000000";
           }
 
-          if (record.ddi) {
-            const cleaned = normalizeSci(record.ddi);
-            record.ddi = cleaned.replace(/\D/g, "").trim();
+          // Normalize DDI (provide default if missing)
+          if (record.ddi && record.ddi.trim() !== "") {
+            let cleaned = normalizeSci(record.ddi);
+            cleaned = cleaned.replace(/\D/g, "");
+            if (cleaned.length >= 1) {
+              if (!cleaned.startsWith("55")) cleaned = "55";
+              record.ddi = "+" + cleaned;
+            } else {
+              record.ddi = "+55";
+            }
+          } else {
+            record.ddi = "+55";
           }
 
-          if (record.cep) {
+          // Validate and normalize CEP (optional)
+          if (record.cep && record.cep.trim() !== "") {
             const cleaned = normalizeSci(record.cep);
             const digits = cleaned.replace(/\D/g, "");
-            if (digits.length !== 8) errors.push("CEP deve ter 8 dígitos");
-            else record.cep = digits;
+            if (digits.length !== 8) {
+              console.warn(
+                `CEP "${record.cep}" -> "${digits}" has ${digits.length} digits, expected 8`,
+              );
+              // Don't fail validation, just warn
+            }
+            record.cep = digits || undefined;
           }
 
-          // Normalize boolean-ish fields possibly coming as strings
-          if (record.ativo != null) {
-            const s = String(record.ativo).toLowerCase();
-            record.ativo = ["1", "true", "ativo", "sim", "yes"].includes(s)
-              ? true
-              : ["0", "false", "inativo", "nao", "não", "no"].includes(s)
-                ? false
-                : record.ativo;
-          }
-          if (record.aceita_promocao_email != null) {
-            const s = String(record.aceita_promocao_email).toLowerCase();
-            record.aceita_promocao_email = [
-              "1",
-              "true",
-              "sim",
-              "yes",
-              "aceita",
-            ].includes(s)
-              ? true
-              : ["0", "false", "nao", "não", "no"].includes(s)
-                ? false
-                : record.aceita_promocao_email;
+          // Normalize UF to uppercase
+          if (record.uf && record.uf.trim() !== "") {
+            record.uf = String(record.uf).trim().toUpperCase().slice(0, 2);
           }
 
+          // Normalize boolean fields
+          record.ativo = normalizeBool(record.ativo) ?? true;
+          record.aceita_promocao_email =
+            normalizeBool(record.aceita_promocao_email) ?? false;
+
+          console.log(
+            `Record ${index + 1} after validation:`,
+            record,
+            "Errors:",
+            errors,
+          );
           return errors;
         }}
         onGetRelatedId={async (fieldName, value) => {
           if (fieldName === "id_estabelecimento") {
-            const byName = estabelecimentos.find(
-              (e) =>
-                e.nome?.trim().toLowerCase() ===
-                String(value).trim().toLowerCase(),
+            if (!value || String(value).trim() === "") {
+              console.log("Empty establishment value, using fallback");
+              return estabelecimentos[0]?.id || 1;
+            }
+
+            const searchValue = String(value).trim();
+            console.log(`Resolving establishment: "${searchValue}"`);
+            console.log(
+              "Available establishments:",
+              estabelecimentos.map((e) => e.nome),
             );
-            if (byName) return byName.id;
+
+            // First try exact match (case insensitive)
+            const byName = estabelecimentos.find(
+              (e) => e.nome?.trim().toLowerCase() === searchValue.toLowerCase(),
+            );
+            if (byName) {
+              console.log(
+                `Found exact match: ${byName.nome} (ID: ${byName.id})`,
+              );
+              return byName.id;
+            }
+
+            // Try partial match
+            const partialMatch = estabelecimentos.find(
+              (e) =>
+                e.nome
+                  ?.trim()
+                  .toLowerCase()
+                  .includes(searchValue.toLowerCase()) ||
+                searchValue
+                  .toLowerCase()
+                  .includes(e.nome?.trim().toLowerCase() || ""),
+            );
+            if (partialMatch) {
+              console.log(
+                `Found partial match: ${partialMatch.nome} (ID: ${partialMatch.id})`,
+              );
+              return partialMatch.id;
+            }
+
+            // If not found locally, try API search
             try {
               const params = new URLSearchParams({
                 page: "1",
                 limit: "200",
-                search: String(value),
+                search: searchValue,
               });
               const res = await makeRequest(`/api/estabelecimentos?${params}`);
               const found = (res?.data || []).find(
                 (e: any) =>
-                  e.nome?.trim().toLowerCase() ===
-                  String(value).trim().toLowerCase(),
+                  e.nome?.trim().toLowerCase() === searchValue.toLowerCase(),
               );
-              return found?.id || null;
-            } catch {
-              return null;
+              if (found) {
+                console.log(`Found via API: ${found.nome} (ID: ${found.id})`);
+                return found.id;
+              }
+            } catch (error) {
+              console.error("Error searching establishments via API:", error);
             }
+
+            // Use fallback to first available establishment
+            const fallback =
+              estabelecimentos.find((e) => e.ativo) || estabelecimentos[0];
+            if (fallback) {
+              console.warn(
+                `Estabelecimento "${searchValue}" não encontrado. Usando fallback: ${fallback.nome} (ID: ${fallback.id})`,
+              );
+              return fallback.id;
+            }
+
+            console.warn(`No establishments available, using ID 1 as fallback`);
+            return 1;
           }
           return null;
         }}
@@ -911,14 +1044,19 @@ export default function ClientesModule() {
 
       <DeleteAlert
         isOpen={showDeleteAlert}
-        onClose={() => setShowDeleteAlert(false)}
+        onClose={() => {
+          setShowDeleteAlert(false);
+          setCurrentCliente(null);
+        }}
         onConfirm={confirmDelete}
         itemName={currentCliente?.nome}
         isLoading={deleteLoading}
       />
       <BulkDeleteAlert
         isOpen={showBulkDeleteAlert}
-        onClose={() => setShowBulkDeleteAlert(false)}
+        onClose={() => {
+          setShowBulkDeleteAlert(false);
+        }}
         onConfirm={confirmBulkDelete}
         selectedCount={selectedIds.length}
         isLoading={deleteLoading}

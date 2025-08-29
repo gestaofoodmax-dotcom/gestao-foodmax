@@ -93,9 +93,6 @@ export function ClienteView({
                 <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
                   {cliente.nome}
                 </h2>
-                {estabelecimentoNome && (
-                  <p className="text-xs text-gray-500">{estabelecimentoNome}</p>
-                )}
               </div>
             </div>
             <div className="text-right">
