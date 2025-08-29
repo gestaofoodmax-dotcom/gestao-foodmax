@@ -787,39 +787,45 @@ export default function ClientesModule() {
         hasPayment={hasPaymentPlan}
         mapHeader={(header) => {
           const map: Record<string, string> = {
-            Estabelecimento: "id_estabelecimento",
+            // Establishment mappings
+            "Estabelecimento Nome": "id_estabelecimento",
             "Nome Estabelecimento": "id_estabelecimento",
+            Estabelecimento: "id_estabelecimento",
             "Id Estabelecimento": "id_estabelecimento",
             "ID Estabelecimento": "id_estabelecimento",
+            // Basic fields
             Nome: "nome",
             Gênero: "genero",
             Genero: "genero",
-            "Gêne ro": "genero",
             Profissão: "profissao",
             Profissao: "profissao",
-            "Profiss ão": "profissao",
             Email: "email",
+            // Contact fields
             DDI: "ddi",
+            Ddi: "ddi",
             Telefone: "telefone",
+            // Address fields
             CEP: "cep",
+            Cep: "cep",
             Endereço: "endereco",
             Endereco: "endereco",
-            "Endere ço": "endereco",
             Cidade: "cidade",
             UF: "uf",
+            Uf: "uf",
             País: "pais",
             Pais: "pais",
-            "Pa ís": "pais",
+            // Boolean fields
             "Aceita Promoção por Email": "aceita_promocao_email",
             "Aceita Promocao por Email": "aceita_promocao_email",
-            "Aceita Promoção Email": "aceita_promocao_email",
             "Aceita Promocao Email": "aceita_promocao_email",
+            "Aceita Promoção Email": "aceita_promocao_email",
             "Aceita Promoção": "aceita_promocao_email",
             "Aceita Promocao": "aceita_promocao_email",
-            "Aceita P": "aceita_promocao_email",
+            // Status fields
             Ativo: "ativo",
             Status: "ativo",
             "Data de Cadastro": "data_cadastro",
+            "Data Cadastro": "data_cadastro",
           };
           return map[header] || header.toLowerCase().replace(/\s+/g, "_");
         }}
