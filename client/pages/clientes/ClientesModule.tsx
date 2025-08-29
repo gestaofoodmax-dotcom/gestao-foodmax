@@ -923,40 +923,62 @@ export default function ClientesModule() {
         }}
         onGetRelatedId={async (fieldName, value) => {
           if (fieldName === "id_estabelecimento") {
-            if (!value || String(value).trim() === "") return null;
+            if (!value || String(value).trim() === "") {
+              console.log("Empty establishment value, using fallback");
+              return estabelecimentos[0]?.id || 1;
+            }
 
-            const searchValue = String(value).trim().toLowerCase();
+            const searchValue = String(value).trim();
+            console.log(`Resolving establishment: "${searchValue}"`);
+            console.log("Available establishments:", estabelecimentos.map(e => e.nome));
 
-            // First try to find in current list
+            // First try exact match (case insensitive)
             const byName = estabelecimentos.find(
-              (e) => e.nome?.trim().toLowerCase() === searchValue,
+              (e) => e.nome?.trim().toLowerCase() === searchValue.toLowerCase(),
             );
-            if (byName) return byName.id;
+            if (byName) {
+              console.log(`Found exact match: ${byName.nome} (ID: ${byName.id})`);
+              return byName.id;
+            }
 
-            // If not found, try searching via API
+            // Try partial match
+            const partialMatch = estabelecimentos.find(
+              (e) => e.nome?.trim().toLowerCase().includes(searchValue.toLowerCase()) ||
+                     searchValue.toLowerCase().includes(e.nome?.trim().toLowerCase() || "")
+            );
+            if (partialMatch) {
+              console.log(`Found partial match: ${partialMatch.nome} (ID: ${partialMatch.id})`);
+              return partialMatch.id;
+            }
+
+            // If not found locally, try API search
             try {
               const params = new URLSearchParams({
                 page: "1",
                 limit: "200",
-                search: String(value),
+                search: searchValue,
               });
               const res = await makeRequest(`/api/estabelecimentos?${params}`);
               const found = (res?.data || []).find(
-                (e: any) => e.nome?.trim().toLowerCase() === searchValue,
+                (e: any) => e.nome?.trim().toLowerCase() === searchValue.toLowerCase(),
               );
-              if (found) return found.id;
-
-              // If still not found, create a warning but don't fail
-              console.warn(`Estabelecimento "${value}" não encontrado. Usando primeiro estabelecimento disponível.`);
-
-              // Fall back to first active establishment
-              const firstActive = estabelecimentos.find(e => e.ativo);
-              return firstActive?.id || estabelecimentos[0]?.id || null;
+              if (found) {
+                console.log(`Found via API: ${found.nome} (ID: ${found.id})`);
+                return found.id;
+              }
             } catch (error) {
-              console.error("Error searching establishments:", error);
-              // Fall back to first establishment
-              return estabelecimentos[0]?.id || null;
+              console.error("Error searching establishments via API:", error);
             }
+
+            // Use fallback to first available establishment
+            const fallback = estabelecimentos.find(e => e.ativo) || estabelecimentos[0];
+            if (fallback) {
+              console.warn(`Estabelecimento "${searchValue}" não encontrado. Usando fallback: ${fallback.nome} (ID: ${fallback.id})`);
+              return fallback.id;
+            }
+
+            console.warn(`No establishments available, using ID 1 as fallback`);
+            return 1;
           }
           return null;
         }}
