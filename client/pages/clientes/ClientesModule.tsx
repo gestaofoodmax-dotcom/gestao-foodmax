@@ -973,14 +973,19 @@ export default function ClientesModule() {
 
       <DeleteAlert
         isOpen={showDeleteAlert}
-        onClose={() => setShowDeleteAlert(false)}
+        onClose={() => {
+          setShowDeleteAlert(false);
+          setCurrentCliente(null);
+        }}
         onConfirm={confirmDelete}
         itemName={currentCliente?.nome}
         isLoading={deleteLoading}
       />
       <BulkDeleteAlert
         isOpen={showBulkDeleteAlert}
-        onClose={() => setShowBulkDeleteAlert(false)}
+        onClose={() => {
+          setShowBulkDeleteAlert(false);
+        }}
         onConfirm={confirmBulkDelete}
         selectedCount={selectedIds.length}
         isLoading={deleteLoading}
