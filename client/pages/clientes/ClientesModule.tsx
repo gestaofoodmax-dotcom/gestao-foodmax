@@ -780,9 +780,7 @@ export default function ClientesModule() {
         moduleName="Clientes"
         columns={CLIENTE_IMPORT_COLUMNS.map((c) => ({
           ...c,
-          required: ["id_estabelecimento", "nome", "ddi", "telefone"].includes(
-            c.key,
-          ),
+          required: ["id_estabelecimento", "nome"].includes(c.key),
         }))}
         onImport={handleImport}
         userRole={userRole || "admin"}
