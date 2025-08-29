@@ -829,7 +829,7 @@ export default function ClientesModule() {
           };
           return map[header] || header.toLowerCase().replace(/\s+/g, "_");
         }}
-        validateRecord={(record) => {
+        validateRecord={(record, index) => {
           const errors: string[] = [];
           const required = ["id_estabelecimento", "nome", "ddi", "telefone"];
 
@@ -851,15 +851,22 @@ export default function ClientesModule() {
           const normalizeBool = (v: any): boolean | undefined => {
             if (v == null || v === "") return undefined;
             const s = String(v).trim().toLowerCase();
-            if (["1", "true", "ativo", "sim", "yes"].includes(s)) return true;
-            if (["0", "false", "inativo", "nao", "não", "no"].includes(s)) return false;
+            if (["1", "true", "ativo", "sim", "yes", "s"].includes(s)) return true;
+            if (["0", "false", "inativo", "nao", "não", "no", "n"].includes(s)) return false;
             return undefined;
           };
 
+          // Normalize text fields first
+          ["nome", "genero", "profissao", "endereco", "cidade", "uf", "pais", "id_estabelecimento"].forEach(field => {
+            if (record[field] != null) {
+              record[field] = String(record[field]).trim() || undefined;
+            }
+          });
+
           // Check required fields
           required.forEach((k) => {
-            if (!record[k] || String(record[k]).trim() === "")
-              errors.push(`Campo obrigatório '${k}' não preenchido`);
+            if (!record[k] || record[k] === "")
+              errors.push(`${k === 'id_estabelecimento' ? 'Estabelecimento' : k} é obrigatório`);
           });
 
           // Validate and normalize email
@@ -881,9 +888,16 @@ export default function ClientesModule() {
 
           // Normalize DDI
           if (record.ddi) {
-            const cleaned = normalizeSci(record.ddi);
-            record.ddi = cleaned.replace(/\D/g, "").replace(/^0+/, "") || "+55";
-            if (!record.ddi.startsWith("+")) record.ddi = "+" + record.ddi;
+            let cleaned = normalizeSci(record.ddi);
+            cleaned = cleaned.replace(/\D/g, "");
+            if (cleaned) {
+              if (!cleaned.startsWith("55")) cleaned = "55";
+              record.ddi = "+" + cleaned;
+            } else {
+              record.ddi = "+55";
+            }
+          } else {
+            record.ddi = "+55";
           }
 
           // Validate and normalize CEP
@@ -893,13 +907,6 @@ export default function ClientesModule() {
             if (digits && digits.length !== 8) errors.push("CEP deve ter 8 dígitos");
             record.cep = digits || undefined;
           }
-
-          // Normalize text fields
-          ["nome", "genero", "profissao", "endereco", "cidade", "uf", "pais"].forEach(field => {
-            if (record[field]) {
-              record[field] = String(record[field]).trim() || undefined;
-            }
-          });
 
           // Normalize UF to uppercase
           if (record.uf) {
