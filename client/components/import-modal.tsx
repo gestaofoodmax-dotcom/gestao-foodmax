@@ -391,7 +391,7 @@ export function ImportModal({
             </Alert>
           )}
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 w-full sm:w-[560px]">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 w-full">
             <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
               <FileText className="w-4 h-4" />
               Formato do arquivo CSV
