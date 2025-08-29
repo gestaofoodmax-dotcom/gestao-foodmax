@@ -254,9 +254,11 @@ export default function ClientesModule() {
           description: "Cliente criado com sucesso",
         });
       }
+      setShowForm(false);
+      setCurrentCliente(null);
+      setIsEditing(false);
       setSelectedIds([]);
       loadClientes();
-      setShowForm(false);
     } catch (error: any) {
       const list = readLocal();
       if (isEditing && currentCliente) {
