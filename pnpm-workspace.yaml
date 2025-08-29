@@ -1,0 +1,4 @@
+ignoredBuiltDependencies:
+  - '@swc/core'
+  - bcrypt
+  - esbuild
