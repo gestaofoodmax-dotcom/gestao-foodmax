@@ -405,7 +405,8 @@ export default function ClientesModule() {
       const mapped = records.map((r: any, i: number) => ({
         id: Date.now() + i,
         id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
-        estabelecimento_id: Number(r.estabelecimento_id) || Number(r.id_estabelecimento) || 1,
+        estabelecimento_id:
+          Number(r.estabelecimento_id) || Number(r.id_estabelecimento) || 1,
         nome: r.nome || "",
         genero: r.genero,
         profissao: r.profissao,
@@ -751,7 +752,8 @@ export default function ClientesModule() {
         onClose={() => setShowExport(false)}
         data={clientes.map((cliente) => ({
           estabelecimento_nome:
-            estabelecimentos.find((e) => e.id === cliente.estabelecimento_id)?.nome ||
+            estabelecimentos.find((e) => e.id === cliente.estabelecimento_id)
+              ?.nome ||
             cliente["estabelecimento_nome"] ||
             "N/A",
           nome: cliente.nome,
@@ -828,7 +830,8 @@ export default function ClientesModule() {
             "Data Cadastro": "data_cadastro",
           };
 
-          const mapped = map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          const mapped =
+            map[header] || header.toLowerCase().replace(/\s+/g, "_");
           console.log(`Header mapping: "${header}" -> "${mapped}"`);
           return mapped;
         }}
@@ -856,13 +859,24 @@ export default function ClientesModule() {
           const normalizeBool = (v: any): boolean | undefined => {
             if (v == null || v === "") return undefined;
             const s = String(v).trim().toLowerCase();
-            if (["1", "true", "ativo", "sim", "yes", "s"].includes(s)) return true;
-            if (["0", "false", "inativo", "nao", "não", "no", "n"].includes(s)) return false;
+            if (["1", "true", "ativo", "sim", "yes", "s"].includes(s))
+              return true;
+            if (["0", "false", "inativo", "nao", "não", "no", "n"].includes(s))
+              return false;
             return undefined;
           };
 
           // Normalize text fields first
-          ["nome", "genero", "profissao", "endereco", "cidade", "uf", "pais", "id_estabelecimento"].forEach(field => {
+          [
+            "nome",
+            "genero",
+            "profissao",
+            "endereco",
+            "cidade",
+            "uf",
+            "pais",
+            "id_estabelecimento",
+          ].forEach((field) => {
             if (record[field] != null && record[field] !== "") {
               record[field] = String(record[field]).trim();
             }
@@ -871,7 +885,8 @@ export default function ClientesModule() {
           // Check required fields (only establishment and name are truly required)
           required.forEach((k) => {
             if (!record[k] || record[k] === "") {
-              const fieldName = k === 'id_estabelecimento' ? 'Estabelecimento' : k;
+              const fieldName =
+                k === "id_estabelecimento" ? "Estabelecimento" : k;
               errors.push(`${fieldName} é obrigatório`);
             }
           });
@@ -891,7 +906,9 @@ export default function ClientesModule() {
             const cleaned = normalizeSci(record.telefone);
             const digits = cleaned.replace(/\D/g, "");
             if (digits.length < 8 || digits.length > 15) {
-              console.warn(`Telefone "${record.telefone}" -> "${digits}" has ${digits.length} digits`);
+              console.warn(
+                `Telefone "${record.telefone}" -> "${digits}" has ${digits.length} digits`,
+              );
               // Don't fail, just normalize
             }
             record.telefone = digits;
@@ -919,7 +936,9 @@ export default function ClientesModule() {
             const cleaned = normalizeSci(record.cep);
             const digits = cleaned.replace(/\D/g, "");
             if (digits.length !== 8) {
-              console.warn(`CEP "${record.cep}" -> "${digits}" has ${digits.length} digits, expected 8`);
+              console.warn(
+                `CEP "${record.cep}" -> "${digits}" has ${digits.length} digits, expected 8`,
+              );
               // Don't fail validation, just warn
             }
             record.cep = digits || undefined;
@@ -932,9 +951,15 @@ export default function ClientesModule() {
 
           // Normalize boolean fields
           record.ativo = normalizeBool(record.ativo) ?? true;
-          record.aceita_promocao_email = normalizeBool(record.aceita_promocao_email) ?? false;
+          record.aceita_promocao_email =
+            normalizeBool(record.aceita_promocao_email) ?? false;
 
-          console.log(`Record ${index + 1} after validation:`, record, "Errors:", errors);
+          console.log(
+            `Record ${index + 1} after validation:`,
+            record,
+            "Errors:",
+            errors,
+          );
           return errors;
         }}
         onGetRelatedId={async (fieldName, value) => {
@@ -946,24 +971,37 @@ export default function ClientesModule() {
 
             const searchValue = String(value).trim();
             console.log(`Resolving establishment: "${searchValue}"`);
-            console.log("Available establishments:", estabelecimentos.map(e => e.nome));
+            console.log(
+              "Available establishments:",
+              estabelecimentos.map((e) => e.nome),
+            );
 
             // First try exact match (case insensitive)
             const byName = estabelecimentos.find(
               (e) => e.nome?.trim().toLowerCase() === searchValue.toLowerCase(),
             );
             if (byName) {
-              console.log(`Found exact match: ${byName.nome} (ID: ${byName.id})`);
+              console.log(
+                `Found exact match: ${byName.nome} (ID: ${byName.id})`,
+              );
               return byName.id;
             }
 
             // Try partial match
             const partialMatch = estabelecimentos.find(
-              (e) => e.nome?.trim().toLowerCase().includes(searchValue.toLowerCase()) ||
-                     searchValue.toLowerCase().includes(e.nome?.trim().toLowerCase() || "")
+              (e) =>
+                e.nome
+                  ?.trim()
+                  .toLowerCase()
+                  .includes(searchValue.toLowerCase()) ||
+                searchValue
+                  .toLowerCase()
+                  .includes(e.nome?.trim().toLowerCase() || ""),
             );
             if (partialMatch) {
-              console.log(`Found partial match: ${partialMatch.nome} (ID: ${partialMatch.id})`);
+              console.log(
+                `Found partial match: ${partialMatch.nome} (ID: ${partialMatch.id})`,
+              );
               return partialMatch.id;
             }
 
@@ -976,7 +1014,8 @@ export default function ClientesModule() {
               });
               const res = await makeRequest(`/api/estabelecimentos?${params}`);
               const found = (res?.data || []).find(
-                (e: any) => e.nome?.trim().toLowerCase() === searchValue.toLowerCase(),
+                (e: any) =>
+                  e.nome?.trim().toLowerCase() === searchValue.toLowerCase(),
               );
               if (found) {
                 console.log(`Found via API: ${found.nome} (ID: ${found.id})`);
@@ -987,9 +1026,12 @@ export default function ClientesModule() {
             }
 
             // Use fallback to first available establishment
-            const fallback = estabelecimentos.find(e => e.ativo) || estabelecimentos[0];
+            const fallback =
+              estabelecimentos.find((e) => e.ativo) || estabelecimentos[0];
             if (fallback) {
-              console.warn(`Estabelecimento "${searchValue}" não encontrado. Usando fallback: ${fallback.nome} (ID: ${fallback.id})`);
+              console.warn(
+                `Estabelecimento "${searchValue}" não encontrado. Usando fallback: ${fallback.nome} (ID: ${fallback.id})`,
+              );
               return fallback.id;
             }
 
