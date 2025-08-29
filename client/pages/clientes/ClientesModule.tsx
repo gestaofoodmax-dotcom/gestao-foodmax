@@ -747,23 +747,29 @@ export default function ClientesModule() {
       <ExportModal
         isOpen={showExport}
         onClose={() => setShowExport(false)}
-        data={clientes}
+        data={clientes.map((cliente) => ({
+          estabelecimento_nome:
+            estabelecimentos.find((e) => e.id === cliente.estabelecimento_id)?.nome ||
+            cliente["estabelecimento_nome"] ||
+            "N/A",
+          nome: cliente.nome,
+          genero: cliente.genero || "",
+          profissao: cliente.profissao || "",
+          email: cliente.email || "",
+          ddi: cliente.ddi,
+          telefone: cliente.telefone,
+          cep: cliente.endereco?.cep || "",
+          endereco: cliente.endereco?.endereco || "",
+          cidade: cliente.endereco?.cidade || "",
+          uf: cliente.endereco?.uf || "",
+          pais: cliente.endereco?.pais || "",
+          aceita_promocao_email: cliente.aceita_promocao_email ? "Sim" : "Não",
+          ativo: cliente.ativo ? "Ativo" : "Inativo",
+          data_cadastro: cliente.data_cadastro,
+        }))}
         selectedIds={selectedIds}
         moduleName="Clientes"
         columns={CLIENTE_EXPORT_COLUMNS}
-        onGetRelatedValue={async (fieldName, id) => {
-          if (fieldName === "id_estabelecimento") {
-            const found = estabelecimentos.find((e) => e.id === id);
-            if (found) return found.nome;
-            try {
-              const res = await makeRequest(`/api/estabelecimentos/${id}`);
-              return res?.nome || String(id);
-            } catch {
-              return String(id);
-            }
-          }
-          return String(id);
-        }}
       />
 
       <ImportModal
