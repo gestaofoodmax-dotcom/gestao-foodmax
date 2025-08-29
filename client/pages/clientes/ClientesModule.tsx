@@ -833,7 +833,9 @@ export default function ClientesModule() {
         }}
         validateRecord={(record, index) => {
           const errors: string[] = [];
-          const required = ["id_estabelecimento", "nome", "ddi", "telefone"];
+          const required = ["id_estabelecimento", "nome"];
+
+          console.log(`Validating record ${index + 1}:`, record);
 
           // Normalize scientific notation from Excel (e.g., 1.1E+12)
           const normalizeSci = (v: any): string => {
@@ -860,39 +862,48 @@ export default function ClientesModule() {
 
           // Normalize text fields first
           ["nome", "genero", "profissao", "endereco", "cidade", "uf", "pais", "id_estabelecimento"].forEach(field => {
-            if (record[field] != null) {
-              record[field] = String(record[field]).trim() || undefined;
+            if (record[field] != null && record[field] !== "") {
+              record[field] = String(record[field]).trim();
             }
           });
 
-          // Check required fields
+          // Check required fields (only establishment and name are truly required)
           required.forEach((k) => {
-            if (!record[k] || record[k] === "")
-              errors.push(`${k === 'id_estabelecimento' ? 'Estabelecimento' : k} é obrigatório`);
+            if (!record[k] || record[k] === "") {
+              const fieldName = k === 'id_estabelecimento' ? 'Estabelecimento' : k;
+              errors.push(`${fieldName} é obrigatório`);
+            }
           });
 
-          // Validate and normalize email
-          if (record.email) {
+          // Validate and normalize email (only if provided)
+          if (record.email && record.email.trim() !== "") {
             const email = String(record.email).trim();
-            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
               errors.push("Email inválido");
-            record.email = email || undefined;
+            } else {
+              record.email = email;
+            }
           }
 
-          // Validate and normalize telefone
-          if (record.telefone) {
+          // Validate and normalize telefone (make it optional for now)
+          if (record.telefone && record.telefone.trim() !== "") {
             const cleaned = normalizeSci(record.telefone);
             const digits = cleaned.replace(/\D/g, "");
-            if (digits.length < 10 || digits.length > 15)
-              errors.push("Telefone deve ter entre 10 e 15 dígitos");
-            else record.telefone = digits;
+            if (digits.length < 8 || digits.length > 15) {
+              console.warn(`Telefone "${record.telefone}" -> "${digits}" has ${digits.length} digits`);
+              // Don't fail, just normalize
+            }
+            record.telefone = digits;
+          } else {
+            // Provide default if missing
+            record.telefone = "000000000";
           }
 
-          // Normalize DDI
-          if (record.ddi) {
+          // Normalize DDI (provide default if missing)
+          if (record.ddi && record.ddi.trim() !== "") {
             let cleaned = normalizeSci(record.ddi);
             cleaned = cleaned.replace(/\D/g, "");
-            if (cleaned) {
+            if (cleaned.length >= 1) {
               if (!cleaned.startsWith("55")) cleaned = "55";
               record.ddi = "+" + cleaned;
             } else {
@@ -902,16 +913,19 @@ export default function ClientesModule() {
             record.ddi = "+55";
           }
 
-          // Validate and normalize CEP
-          if (record.cep) {
+          // Validate and normalize CEP (optional)
+          if (record.cep && record.cep.trim() !== "") {
             const cleaned = normalizeSci(record.cep);
             const digits = cleaned.replace(/\D/g, "");
-            if (digits && digits.length !== 8) errors.push("CEP deve ter 8 dígitos");
+            if (digits.length !== 8) {
+              console.warn(`CEP "${record.cep}" -> "${digits}" has ${digits.length} digits, expected 8`);
+              // Don't fail validation, just warn
+            }
             record.cep = digits || undefined;
           }
 
           // Normalize UF to uppercase
-          if (record.uf) {
+          if (record.uf && record.uf.trim() !== "") {
             record.uf = String(record.uf).trim().toUpperCase().slice(0, 2);
           }
 
@@ -919,6 +933,7 @@ export default function ClientesModule() {
           record.ativo = normalizeBool(record.ativo) ?? true;
           record.aceita_promocao_email = normalizeBool(record.aceita_promocao_email) ?? false;
 
+          console.log(`Record ${index + 1} after validation:`, record, "Errors:", errors);
           return errors;
         }}
         onGetRelatedId={async (fieldName, value) => {
