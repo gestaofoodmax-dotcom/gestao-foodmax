@@ -79,7 +79,7 @@ export type ClienteFormData = CreateClienteRequest;
 export const GENEROS = ["Masculino", "Feminino", "Outro"] as const;
 
 export const CLIENTE_EXPORT_COLUMNS: { key: string; label: string }[] = [
-  { key: "id_estabelecimento", label: "Estabelecimento" },
+  { key: "estabelecimento_nome", label: "Nome Estabelecimento" },
   { key: "nome", label: "Nome" },
   { key: "genero", label: "Gênero" },
   { key: "profissao", label: "Profissão" },
@@ -91,8 +91,8 @@ export const CLIENTE_EXPORT_COLUMNS: { key: string; label: string }[] = [
   { key: "cidade", label: "Cidade" },
   { key: "uf", label: "UF" },
   { key: "pais", label: "País" },
-  { key: "aceita_promocao_email", label: "Aceita Promoção por Email" },
-  { key: "ativo", label: "Status" },
+  { key: "aceita_promocao_email", label: "Aceita Promoção Email" },
+  { key: "ativo", label: "Ativo" },
   { key: "data_cadastro", label: "Data de Cadastro" },
 ];
 
