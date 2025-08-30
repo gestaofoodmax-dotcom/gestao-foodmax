@@ -640,8 +640,20 @@ export default function ItensModule() {
             <div>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
-                  <TabsTrigger value="itens">Itens</TabsTrigger>
-                  <TabsTrigger value="categorias">Categorias</TabsTrigger>
+                  <TabsTrigger value="itens" className={activeTab === "itens" ? "text-foodmax-orange" : ""}>
+                    <div className="flex items-center gap-2">
+                      <List className="w-4 h-4" />
+                      <span>Itens</span>
+                      <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">{totalRecords}</span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger value="categorias" className={activeTab === "categorias" ? "text-foodmax-orange" : ""}>
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4" />
+                      <span>Categorias</span>
+                      <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">{categorias.length}</span>
+                    </div>
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
