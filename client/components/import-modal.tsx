@@ -281,6 +281,15 @@ export function ImportModal({
           const record = parsed[i];
           const recordErrors = validateRecord ? validateRecord(record, i) : [];
 
+          // Show validation progress
+          const validationProgress = 20 + (i / parsed.length) * 20; // 20% to 40%
+          setProgress(validationProgress);
+
+          // Add small delay for better UX on small datasets
+          if (parsed.length < 50 && i % 5 === 0) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+          }
+
           if (recordErrors.length > 0) {
             errors.push(`Linha ${i + 2}: ${recordErrors.join(", ")}`);
           } else {
