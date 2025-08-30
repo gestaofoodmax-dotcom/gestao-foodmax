@@ -43,16 +43,21 @@ const checkUserPermissions = async (userId: number, fornecedorId?: number) => {
       .eq("id", fornecedorId)
       .single();
     if (fornError || !fornecedor) throw new Error("Fornecedor não encontrado");
-    if ((fornecedor as any).id_usuario !== userId) throw new Error("Acesso negado");
+    if ((fornecedor as any).id_usuario !== userId)
+      throw new Error("Acesso negado");
   }
 
-  return { role: (user.role as "admin" | "user") || "user", hasPayment: !!user.data_pagamento };
+  return {
+    role: (user.role as "admin" | "user") || "user",
+    hasPayment: !!user.data_pagamento,
+  };
 };
 
 export const listFornecedores: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
 
     const supabase = getSupabaseServiceClient();
     const page = parseInt(req.query.page as string) || 1;
@@ -66,7 +71,9 @@ export const listFornecedores: RequestHandler = async (req, res) => {
       .eq("id_usuario", userId);
 
     if (search) {
-      query = query.or(`nome.ilike.%${search}%,email.ilike.%${search}%,cnpj.ilike.%${search}%`);
+      query = query.or(
+        `nome.ilike.%${search}%,email.ilike.%${search}%,cnpj.ilike.%${search}%`,
+      );
     }
 
     const { count } = await supabase
@@ -102,7 +109,8 @@ export const listFornecedores: RequestHandler = async (req, res) => {
 export const getFornecedor: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
 
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
@@ -117,11 +125,15 @@ export const getFornecedor: RequestHandler = async (req, res) => {
       .single();
     if (error) throw error;
 
-    const formatted = { ...data, endereco: (data as any).fornecedores_enderecos?.[0] || null };
+    const formatted = {
+      ...data,
+      endereco: (data as any).fornecedores_enderecos?.[0] || null,
+    };
     res.json(formatted);
   } catch (error: any) {
     console.error("Get fornecedor error:", error);
-    if (error.message === "Acesso negado") return res.status(403).json({ error: error.message });
+    if (error.message === "Acesso negado")
+      return res.status(403).json({ error: error.message });
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
@@ -129,7 +141,8 @@ export const getFornecedor: RequestHandler = async (req, res) => {
 export const createFornecedor: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
 
     await checkUserPermissions(userId);
 
@@ -146,7 +159,9 @@ export const createFornecedor: RequestHandler = async (req, res) => {
       .eq("nome", fornecedorData.nome)
       .maybeSingle();
     if (existing) {
-      return res.status(409).json({ error: "Já existe um fornecedor com este nome" });
+      return res
+        .status(409)
+        .json({ error: "Já existe um fornecedor com este nome" });
     }
 
     const { data: novo, error: insError } = await supabase
@@ -159,14 +174,26 @@ export const createFornecedor: RequestHandler = async (req, res) => {
     if (cep || endereco || cidade) {
       const { error: endError } = await supabase
         .from("fornecedores_enderecos")
-        .insert({ fornecedor_id: (novo as any).id, cep, endereco, cidade, uf, pais });
-      if (endError) console.error("Error creating fornecedor endereco:", endError);
+        .insert({
+          fornecedor_id: (novo as any).id,
+          cep,
+          endereco,
+          cidade,
+          uf,
+          pais,
+        });
+      if (endError)
+        console.error("Error creating fornecedor endereco:", endError);
     }
 
-    res.status(201).json({ message: "Fornecedor criado com sucesso", data: novo });
+    res
+      .status(201)
+      .json({ message: "Fornecedor criado com sucesso", data: novo });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
     console.error("Create fornecedor error:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -176,7 +203,8 @@ export const createFornecedor: RequestHandler = async (req, res) => {
 export const updateFornecedor: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
 
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
@@ -203,9 +231,19 @@ export const updateFornecedor: RequestHandler = async (req, res) => {
         .eq("fornecedor_id", id)
         .maybeSingle();
 
-      const endData = { fornecedor_id: id, cep, endereco, cidade, uf, pais: pais || "Brasil" };
+      const endData = {
+        fornecedor_id: id,
+        cep,
+        endereco,
+        cidade,
+        uf,
+        pais: pais || "Brasil",
+      };
       if (existingEnd) {
-        await supabase.from("fornecedores_enderecos").update(endData).eq("id", (existingEnd as any).id);
+        await supabase
+          .from("fornecedores_enderecos")
+          .update(endData)
+          .eq("id", (existingEnd as any).id);
       } else {
         await supabase.from("fornecedores_enderecos").insert(endData);
       }
@@ -214,9 +252,12 @@ export const updateFornecedor: RequestHandler = async (req, res) => {
     res.json({ message: "Fornecedor atualizado com sucesso", data: updated });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
-    if (error.message === "Acesso negado") return res.status(403).json({ error: error.message });
+    if (error.message === "Acesso negado")
+      return res.status(403).json({ error: error.message });
     console.error("Update fornecedor error:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
   }
@@ -225,7 +266,8 @@ export const updateFornecedor: RequestHandler = async (req, res) => {
 export const deleteFornecedor: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
 
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
@@ -234,19 +276,28 @@ export const deleteFornecedor: RequestHandler = async (req, res) => {
 
     const supabase = getSupabaseServiceClient();
 
-    await supabase.from("fornecedores_enderecos").delete().eq("fornecedor_id", id);
+    await supabase
+      .from("fornecedores_enderecos")
+      .delete()
+      .eq("fornecedor_id", id);
 
     const { error } = await supabase.from("fornecedores").delete().eq("id", id);
     if (error) {
       if ((error as any).code === "23503") {
-        return res.status(409).json({ error: "Não é possível excluir o Fornecedor pois existem dependências." });
+        return res
+          .status(409)
+          .json({
+            error:
+              "Não é possível excluir o Fornecedor pois existem dependências.",
+          });
       }
       throw error;
     }
 
     res.json({ message: "Fornecedor excluído com sucesso" });
   } catch (error: any) {
-    if (error.message === "Acesso negado") return res.status(403).json({ error: error.message });
+    if (error.message === "Acesso negado")
+      return res.status(403).json({ error: error.message });
     console.error("Delete fornecedor error:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
   }
@@ -255,10 +306,12 @@ export const deleteFornecedor: RequestHandler = async (req, res) => {
 export const bulkDeleteFornecedores: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
 
     const { ids } = z.object({ ids: z.array(z.number()) }).parse(req.body);
-    if (!ids.length) return res.status(400).json({ error: "Nenhum ID fornecido" });
+    if (!ids.length)
+      return res.status(400).json({ error: "Nenhum ID fornecido" });
 
     const supabase = getSupabaseServiceClient();
 
@@ -268,25 +321,45 @@ export const bulkDeleteFornecedores: RequestHandler = async (req, res) => {
       .in("id", ids);
     if (checkError) throw checkError;
 
-    const unauthorized = (fornecedores || []).filter((f) => f.id_usuario !== userId);
+    const unauthorized = (fornecedores || []).filter(
+      (f) => f.id_usuario !== userId,
+    );
     if (unauthorized.length > 0) {
-      return res.status(403).json({ error: "Acesso negado para alguns registros" });
+      return res
+        .status(403)
+        .json({ error: "Acesso negado para alguns registros" });
     }
 
-    await supabase.from("fornecedores_enderecos").delete().in("fornecedor_id", ids);
+    await supabase
+      .from("fornecedores_enderecos")
+      .delete()
+      .in("fornecedor_id", ids);
 
-    const { error: delError } = await supabase.from("fornecedores").delete().in("id", ids);
+    const { error: delError } = await supabase
+      .from("fornecedores")
+      .delete()
+      .in("id", ids);
     if (delError) {
       if ((delError as any).code === "23503") {
-        return res.status(409).json({ error: "Não é possível excluir alguns Fornecedores pois existem dependências." });
+        return res
+          .status(409)
+          .json({
+            error:
+              "Não é possível excluir alguns Fornecedores pois existem dependências.",
+          });
       }
       throw delError;
     }
 
-    res.json({ message: `${ids.length} fornecedor(es) excluído(s) com sucesso`, deletedCount: ids.length });
+    res.json({
+      message: `${ids.length} fornecedor(es) excluído(s) com sucesso`,
+      deletedCount: ids.length,
+    });
   } catch (error: any) {
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
     console.error("Bulk delete fornecedores error:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -296,7 +369,8 @@ export const bulkDeleteFornecedores: RequestHandler = async (req, res) => {
 export const toggleFornecedorStatus: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
 
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
@@ -319,9 +393,13 @@ export const toggleFornecedorStatus: RequestHandler = async (req, res) => {
       .single();
     if (updateError) throw updateError;
 
-    res.json({ message: `Fornecedor ${(updated as any).ativo ? "ativado" : "desativado"} com sucesso`, data: updated });
+    res.json({
+      message: `Fornecedor ${(updated as any).ativo ? "ativado" : "desativado"} com sucesso`,
+      data: updated,
+    });
   } catch (error: any) {
-    if (error.message === "Acesso negado") return res.status(403).json({ error: error.message });
+    if (error.message === "Acesso negado")
+      return res.status(403).json({ error: error.message });
     console.error("Toggle fornecedor status error:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
   }

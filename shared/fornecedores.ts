@@ -45,7 +45,8 @@ export interface CreateFornecedorRequest {
   pais?: string;
 }
 
-export interface UpdateFornecedorRequest extends Partial<CreateFornecedorRequest> {}
+export interface UpdateFornecedorRequest
+  extends Partial<CreateFornecedorRequest> {}
 
 export interface FornecedoresListResponse {
   data: Fornecedor[];
@@ -80,7 +81,9 @@ export const formatTelefone = (ddi: string, telefone: string): string => {
   return `${ddi} ${telefone}`;
 };
 
-export const formatEnderecoCidadeUF = (endereco?: FornecedorEndereco): string => {
+export const formatEnderecoCidadeUF = (
+  endereco?: FornecedorEndereco,
+): string => {
   if (!endereco) return "-";
   const parts: string[] = [];
   if (endereco.cidade) parts.push(endereco.cidade);
@@ -91,7 +94,10 @@ export const formatEnderecoCidadeUF = (endereco?: FornecedorEndereco): string =>
 export const formatCNPJ = (cnpj: string): string => {
   const numbers = (cnpj || "").replace(/\D/g, "");
   if (numbers.length === 14) {
-    return numbers.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+    return numbers.replace(
+      /(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/,
+      "$1.$2.$3/$4-$5",
+    );
   }
   return cnpj;
 };
@@ -100,8 +106,16 @@ export const validateCNPJ = (cnpj: string): boolean => {
   const numbers = (cnpj || "").replace(/\D/g, "");
   if (numbers.length !== 14) return false;
   const invalid = [
-    "00000000000000","11111111111111","22222222222222","33333333333333","44444444444444",
-    "55555555555555","66666666666666","77777777777777","88888888888888","99999999999999"
+    "00000000000000",
+    "11111111111111",
+    "22222222222222",
+    "33333333333333",
+    "44444444444444",
+    "55555555555555",
+    "66666666666666",
+    "77777777777777",
+    "88888888888888",
+    "99999999999999",
   ];
   return !invalid.includes(numbers);
 };
