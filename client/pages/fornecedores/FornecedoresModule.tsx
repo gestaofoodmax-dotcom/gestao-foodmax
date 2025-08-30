@@ -174,7 +174,6 @@ function FornecedoresModule() {
                     target="_blank"
                     rel="noreferrer"
                     className="h-8 w-8 p-0 rounded-full border bg-gray-50 hover:bg-gray-100 border-gray-300 flex items-center justify-center"
-                    title="WhatsApp"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
