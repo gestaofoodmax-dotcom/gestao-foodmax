@@ -411,6 +411,32 @@ function EstabelecimentosModule() {
   const confirmDelete = async () => {
     if (!currentEstabelecimento) return;
 
+    // Offline/local mode: handle without API preserving dependency message
+    if (!isAuthenticated) {
+      const clientesRaw = localStorage.getItem("fm_clientes");
+      const clientes: any[] = clientesRaw ? JSON.parse(clientesRaw) : [];
+      const hasDeps = clientes.some(
+        (c) => Number(c.estabelecimento_id) === currentEstabelecimento.id,
+      );
+      if (hasDeps) {
+        toast({
+          title: "Não foi possível excluir",
+          description:
+            "Não é possível excluir o Estabelecimento pois existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir o estabelecimento.",
+          variant: "destructive",
+        });
+        setShowDeleteAlert(false);
+        return;
+      }
+      const list = readLocal().filter((e) => e.id !== currentEstabelecimento.id);
+      writeLocal(list);
+      setEstabelecimentos(list);
+      setSelectedIds([]);
+      toast({ title: "Estabelecimento excluído" });
+      setShowDeleteAlert(false);
+      return;
+    }
+
     setDeleteLoading(true);
     try {
       await makeRequest(`/api/estabelecimentos/${currentEstabelecimento.id}`, {
