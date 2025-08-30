@@ -57,10 +57,11 @@ export function ImportModal({
 
   // Normalize role to handle case variations (e.g., ADMIN)
   const normalizedRole = userRole ? String(userRole).toLowerCase() : null;
-  // Check if user can import (exact rules)
+  // Check if user can import (exact rules); if role is not yet loaded, don't block here
   const canImport =
     normalizedRole === "admin" ||
-    (normalizedRole === "user" && !!hasPayment);
+    (normalizedRole === "user" && !!hasPayment) ||
+    normalizedRole === null;
 
   const parseCSV = (csvText: string): any[] => {
     const text = (csvText || "").replace(/\r\n?/g, "\n");
