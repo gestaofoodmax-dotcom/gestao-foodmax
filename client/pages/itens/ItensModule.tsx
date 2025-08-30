@@ -12,6 +12,7 @@ import { Item, ItemCategoria, ItensListResponse, ItensCategoriasListResponse, fo
 import ItemForm from "./ItemForm";
 import ItemView from "./ItemView";
 import CategoriaForm from "./CategoriaForm";
+import { DeleteAlert } from "@/components/alert-dialog-component";
 
 export default function ItensModule() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
