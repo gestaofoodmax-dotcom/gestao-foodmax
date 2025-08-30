@@ -138,7 +138,7 @@ export function FornecedorForm({ isOpen, onClose, onSave, fornecedor, isLoading 
   const onSubmit = async (data: FornecedorFormSchema) => {
     try {
       setIsSaving(true);
-      await onSave(data);
+      await onSave(data as unknown as CreateFornecedorRequest);
       onClose();
     } catch (error: any) {
       toast({ title: "Erro ao salvar", description: error.message || "Ocorreu um erro ao salvar o fornecedor", variant: "destructive" });
