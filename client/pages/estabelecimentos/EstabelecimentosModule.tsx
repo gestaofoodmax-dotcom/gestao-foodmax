@@ -73,6 +73,14 @@ function EstabelecimentosModule() {
       return [];
     }
   };
+
+  // Always clear caches when entering this page
+  useEffect(() => {
+    try {
+      localStorage.removeItem("fm_estabelecimentos");
+      localStorage.removeItem("fm_clientes");
+    } catch {}
+  }, []);
   const writeLocal = (list: Estabelecimento[]) => {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
   };
@@ -220,9 +228,8 @@ function EstabelecimentosModule() {
         setEstabelecimentos(response.data);
         setTotalRecords(response.pagination.total);
       } else {
-        const local = readLocal();
-        setEstabelecimentos(local);
-        setTotalRecords(local.length);
+        setEstabelecimentos([]);
+        setTotalRecords(0);
       }
     } catch (error: any) {
       toast({
