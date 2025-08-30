@@ -115,17 +115,6 @@ export function FornecedorView({
               {fornecedor.cnpj && (
                 <DataField label="CNPJ" value={fornecedor.cnpj} />
               )}
-              <DataField
-                label="Email"
-                value={
-                  <a
-                    href={`mailto:${fornecedor.email}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {fornecedor.email}
-                  </a>
-                }
-              />
               {fornecedor.nome_responsavel && (
                 <DataField
                   label="Responsável"
@@ -176,17 +165,13 @@ export function FornecedorView({
                 {fornecedor.endereco.cep && (
                   <DataField label="CEP" value={fornecedor.endereco.cep} />
                 )}
+                {fornecedor.endereco.endereco && (
+                  <DataField label="Endereço" value={fornecedor.endereco.endereco} />
+                )}
                 {(fornecedor.endereco.cidade || fornecedor.endereco.uf) && (
                   <DataField
                     label="Cidade/UF"
                     value={formatEnderecoCidadeUF(fornecedor.endereco)}
-                  />
-                )}
-                {fornecedor.endereco.endereco && (
-                  <DataField
-                    label="Endereço"
-                    value={fornecedor.endereco.endereco}
-                    fullWidth
                   />
                 )}
                 <DataField label="País" value={fornecedor.endereco.pais} />
@@ -211,12 +196,8 @@ export function FornecedorView({
                 value={formatDate(fornecedor.data_atualizacao)}
               />
               <DataField
-                label="Status"
-                value={
-                  <span className="text-black">
-                    {fornecedor.ativo ? "Ativo" : "Inativo"}
-                  </span>
-                }
+                label="Ativo"
+                value={<span className="text-black">{fornecedor.ativo ? "Sim" : "Não"}</span>}
               />
             </div>
           </div>
