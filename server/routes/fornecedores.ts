@@ -284,12 +284,10 @@ export const deleteFornecedor: RequestHandler = async (req, res) => {
     const { error } = await supabase.from("fornecedores").delete().eq("id", id);
     if (error) {
       if ((error as any).code === "23503") {
-        return res
-          .status(409)
-          .json({
-            error:
-              "Não é possível excluir o Fornecedor pois existem dependências.",
-          });
+        return res.status(409).json({
+          error:
+            "Não é possível excluir o Fornecedor pois existem dependências.",
+        });
       }
       throw error;
     }
@@ -341,12 +339,10 @@ export const bulkDeleteFornecedores: RequestHandler = async (req, res) => {
       .in("id", ids);
     if (delError) {
       if ((delError as any).code === "23503") {
-        return res
-          .status(409)
-          .json({
-            error:
-              "Não é possível excluir alguns Fornecedores pois existem dependências.",
-          });
+        return res.status(409).json({
+          error:
+            "Não é possível excluir alguns Fornecedores pois existem dependências.",
+        });
       }
       throw delError;
     }
@@ -547,10 +543,7 @@ export const importFornecedores: RequestHandler = async (req, res) => {
         imported.push(novoFornecedor);
         console.log(`[DEBUG] Successfully imported record ${i + 1}: ${nome}`);
       } catch (recordError: any) {
-        console.error(
-          `[DEBUG] Failed to import record ${i + 1}:`,
-          recordError,
-        );
+        console.error(`[DEBUG] Failed to import record ${i + 1}:`, recordError);
         errors.push(`Linha ${i + 1}: ${recordError.message}`);
       }
     }

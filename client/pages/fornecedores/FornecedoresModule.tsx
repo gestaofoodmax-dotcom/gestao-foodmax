@@ -791,7 +791,8 @@ function FornecedoresModule() {
             "Data de Cadastro": "data_cadastro",
             "Data Cadastro": "data_cadastro",
           };
-          const mapped = map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          const mapped =
+            map[header] || header.toLowerCase().replace(/\s+/g, "_");
           console.log(`Header mapping: "${header}" -> "${mapped}"`);
           return mapped;
         }}
@@ -807,7 +808,10 @@ function FornecedoresModule() {
             }
           });
 
-          if (record.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.email)) {
+          if (
+            record.email &&
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.email)
+          ) {
             errors.push("Email inválido");
           }
 
@@ -841,7 +845,12 @@ function FornecedoresModule() {
           // Normalize boolean
           record.ativo = toBool(record.ativo) ?? true;
 
-          console.log(`Record ${index + 1} after validation:`, record, "Errors:", errors);
+          console.log(
+            `Record ${index + 1} after validation:`,
+            record,
+            "Errors:",
+            errors,
+          );
           return errors;
         }}
       />
