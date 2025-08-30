@@ -98,21 +98,38 @@ export function createServer() {
   app.post("/api/fornecedores/import", importFornecedores);
 
   // Itens routes
-  const itens = require("./routes/itens");
-  app.get("/api/itens", itens.listItens);
-  app.get("/api/itens/:id", itens.getItem);
-  app.post("/api/itens", itens.createItem);
-  app.put("/api/itens/:id", itens.updateItem);
-  app.delete("/api/itens/:id", itens.deleteItem);
-  app.post("/api/itens/bulk-delete", itens.bulkDeleteItens);
-  app.patch("/api/itens/:id/toggle-status", itens.toggleItemStatus);
+  {
+    const {
+      listItens,
+      getItem,
+      createItem,
+      updateItem,
+      deleteItem,
+      bulkDeleteItens,
+      toggleItemStatus,
+      listCategorias,
+      createCategoria,
+      updateCategoria,
+      deleteCategoria,
+      bulkDeleteCategorias,
+      toggleCategoriaStatus,
+    } = await import("./routes/itens");
 
-  app.get("/api/itens-categorias", itens.listCategorias);
-  app.post("/api/itens-categorias", itens.createCategoria);
-  app.put("/api/itens-categorias/:id", itens.updateCategoria);
-  app.delete("/api/itens-categorias/:id", itens.deleteCategoria);
-  app.post("/api/itens-categorias/bulk-delete", itens.bulkDeleteCategorias);
-  app.patch("/api/itens-categorias/:id/toggle-status", itens.toggleCategoriaStatus);
+    app.get("/api/itens", listItens);
+    app.get("/api/itens/:id", getItem);
+    app.post("/api/itens", createItem);
+    app.put("/api/itens/:id", updateItem);
+    app.delete("/api/itens/:id", deleteItem);
+    app.post("/api/itens/bulk-delete", bulkDeleteItens);
+    app.patch("/api/itens/:id/toggle-status", toggleItemStatus);
+
+    app.get("/api/itens-categorias", listCategorias);
+    app.post("/api/itens-categorias", createCategoria);
+    app.put("/api/itens-categorias/:id", updateCategoria);
+    app.delete("/api/itens-categorias/:id", deleteCategoria);
+    app.post("/api/itens-categorias/bulk-delete", bulkDeleteCategorias);
+    app.patch("/api/itens-categorias/:id/toggle-status", toggleCategoriaStatus);
+  }
 
   return app;
 }
