@@ -229,7 +229,6 @@ export function ImportModal({
 
     if (!canImport) {
       toast({
-        title: "Acesso negado",
         description: "Essa ação só funciona no plano pago",
         variant: "destructive",
       });
@@ -423,7 +422,7 @@ export function ImportModal({
 
             <div className="mt-3 text-xs text-blue-600">
               <p>• Limite: 1000 registros por arquivo</p>
-              <p>• Registros duplicados serão ignorados</p>
+              <p>��� Registros duplicados serão ignorados</p>
               <p>• Formato de data: dd/mm/yyyy</p>
             </div>
           </div>
