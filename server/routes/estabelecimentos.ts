@@ -518,14 +518,7 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
       return res.status(401).json({ error: "Usuário não autenticado" });
     }
 
-    const permissions = await checkUserPermissions(userId);
-
-    // Check if user can import
-    if (permissions.role === "user" && !permissions.hasPayment) {
-      return res.status(403).json({
-        error: "Essa ação só funciona no plano pago",
-      });
-    }
+    await checkUserPermissions(userId);
 
     const { records } = z
       .object({
