@@ -423,16 +423,18 @@ function EstabelecimentosModule() {
       });
 
       setSelectedIds([]);
-      loadEstabelecimentos();
+      await loadEstabelecimentos();
       setShowDeleteAlert(false);
     } catch (error: any) {
-      const list = readLocal().filter(
-        (e) => e.id !== currentEstabelecimento.id,
-      );
-      writeLocal(list);
-      setEstabelecimentos(list);
+      toast({
+        title: "Não foi possível excluir",
+        description:
+          error?.message ||
+          "Existem dependências com outros módulos. Remova-as antes de excluir.",
+        variant: "destructive",
+      });
+      await loadEstabelecimentos();
       setShowDeleteAlert(false);
-      toast({ title: "Estabelecimento excluído" });
     } finally {
       setDeleteLoading(false);
     }
@@ -452,15 +454,18 @@ function EstabelecimentosModule() {
       });
 
       setSelectedIds([]);
-      loadEstabelecimentos();
+      await loadEstabelecimentos();
       setShowBulkDeleteAlert(false);
     } catch (error: any) {
-      const list = readLocal().filter((e) => !selectedIds.includes(e.id));
-      writeLocal(list);
-      setEstabelecimentos(list);
-      setSelectedIds([]);
+      toast({
+        title: "Não foi possível excluir algum(ns) registro(s)",
+        description:
+          error?.message ||
+          "Existem dependências com outros módulos. Remova-as antes de excluir.",
+        variant: "destructive",
+      });
+      await loadEstabelecimentos();
       setShowBulkDeleteAlert(false);
-      toast({ title: "Estabelecimentos excluídos" });
     } finally {
       setDeleteLoading(false);
     }
