@@ -36,12 +36,6 @@ import {
   formatTelefone,
   formatEnderecoCidadeUF,
 } from "@shared/fornecedores";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 function FornecedoresModule() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -166,28 +160,22 @@ function FornecedoresModule() {
         const whatsapp = `http://wa.me/${record.ddi.replace(/\D/g, "")}${record.telefone.replace(/\D/g, "")}`;
         return (
           <div className="flex items-center justify-center gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <a
-                    href={whatsapp}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="h-8 w-8 p-0 rounded-full border bg-gray-50 hover:bg-gray-100 border-gray-300 flex items-center justify-center"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 448 512"
-                      className="w-4 h-4 text-gray-700 fill-current"
-                      aria-hidden="true"
-                    >
-                      <path d="M380.9 97.1C339 55.2 283.2 32 224.5 32 106 32 9.4 128.6 9.4 247.1c0 38.1 9.9 75.3 28.6 108.2L0 480l127.5-33.5c31.3 17.1 66.6 26.1 102.5 26.1h.1c118.5 0 215.1-96.6 215.1-215.1 0-58.7-23.2-114.5-64.2-156.4zM224.1 438.6h-.1c-32.1 0-63.5-8.6-90.8-24.8l-6.5-3.9-75.6 19.9 20.2-73.6-4.1-6.7c-17.5-28.6-26.8-61.6-26.8-95.4 0-99.2 80.8-180 180-180 48.1 0 93.3 18.7 127.3 52.7 34 34 52.7 79.2 52.7 127.3-.1 99.1-80.9 179.9-180 179.9zm99.5-138.7c-5.5-2.8-32.7-16.1-37.7-17.9-5-1.9-8.6-2.8-12.2 2.8-3.6 5.5-14 17.9-17.2 21.5-3.2 3.6-6.4 4.1-11.9 1.4-32.7-16.1-54-28.8-75.5-65.1-5.7-9.8 5.7-9.1 16.1-30.3 1.8-3.6.9-6.6-.5-9.4-1.4-2.8-12.2-29.5-16.8-40.4-4.4-10.6-8.9-9.1-12.2-9.3-3.1-.2-6.6-.2-10.1-.2-3.6 0-9.3 1.3-14.1 6.6-4.8 5.3-18.5 18.1-18.5 44.2s18.9 51.3 21.5 54.9c2.6 3.6 37.2 56.8 90.2 79.7 12.6 5.4 22.4 8.6 30 11 12.6 4 24.1 3.4 33.1 2.1 10.1-1.5 32.7-13.3 37.3-26.2 4.6-12.9 4.6-24 3.2-26.3-1.3-2.3-5-3.6-10.5-6.4z" />
-                    </svg>
-                  </a>
-                </TooltipTrigger>
-                <TooltipContent side="top" className="bg-black text-white border-black">WhatsApp</TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <a
+              href={whatsapp}
+              target="_blank"
+              rel="noreferrer"
+              title="WhatsApp"
+              className="h-8 w-8 inline-flex items-center justify-center rounded-full border bg-gray-50 hover:bg-gray-100"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 448 512"
+                className="w-4 h-4 text-gray-700 fill-current"
+                aria-hidden="true"
+              >
+                <path d="M380.9 97.1C339 55.2 283.2 32 224.5 32 106 32 9.4 128.6 9.4 247.1c0 38.1 9.9 75.3 28.6 108.2L0 480l127.5-33.5c31.3 17.1 66.6 26.1 102.5 26.1h.1c118.5 0 215.1-96.6 215.1-215.1 0-58.7-23.2-114.5-64.2-156.4zM224.1 438.6h-.1c-32.1 0-63.5-8.6-90.8-24.8l-6.5-3.9-75.6 19.9 20.2-73.6-4.1-6.7c-17.5-28.6-26.8-61.6-26.8-95.4 0-99.2 80.8-180 180-180 48.1 0 93.3 18.7 127.3 52.7 34 34 52.7 79.2 52.7 127.3-.1 99.1-80.9 179.9-180 179.9zm99.5-138.7c-5.5-2.8-32.7-16.1-37.7-17.9-5-1.9-8.6-2.8-12.2 2.8-3.6 5.5-14 17.9-17.2 21.5-3.2 3.6-6.4 4.1-11.9 1.4-32.7-16.1-54-28.8-75.5-65.1-5.7-9.8 5.7-9.1 16.1-30.3 1.8-3.6.9-6.6-.5-9.4-1.4-2.8-12.2-29.5-16.8-40.4-4.4-10.6-8.9-9.1-12.2-9.3-3.1-.2-6.6-.2-10.1-.2-3.6 0-9.3 1.3-14.1 6.6-4.8 5.3-18.5 18.1-18.5 44.2s18.9 51.3 21.5 54.9c2.6 3.6 37.2 56.8 90.2 79.7 12.6 5.4 22.4 8.6 30 11 12.6 4 24.1 3.4 33.1 2.1 10.1-1.5 32.7-13.3 37.3-26.2 4.6-12.9 4.6-24 3.2-26.3-1.3-2.3-5-3.6-10.5-6.4z" />
+              </svg>
+            </a>
             <Button
               variant="ghost"
               size="sm"
