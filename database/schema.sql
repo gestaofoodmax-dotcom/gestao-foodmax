@@ -223,7 +223,7 @@ begin
       (p_user_id, 'Frutas', 'Frutas frescas e secas.', true),
       (p_user_id, 'Massas', 'Massas secas e frescas.', true),
       (p_user_id, 'Grãos e Cereais', 'Arroz, feijão, aveia e outros grãos.', true),
-      (p_user_id, 'Padaria', 'Pães, bolos e produtos de panificação.', true),
+      (p_user_id, 'Pães', 'Pães, bolos e produtos de panificação.', true),
       (p_user_id, 'Sobremesas', 'Doces, tortas e sobremesas em geral.', true),
       (p_user_id, 'Temperos e Condimentos', 'Ervas, especiarias e molhos prontos.', true);
   end if;
