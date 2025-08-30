@@ -137,6 +137,14 @@ export function EstabelecimentoView({
             <div className="grid grid-cols-2 gap-4">
               <DataField label="Nome" value={estabelecimento.nome} />
 
+              {estabelecimento.razao_social && (
+                <DataField label="Razão Social" value={estabelecimento.razao_social} />
+              )}
+
+              {estabelecimento.cnpj && (
+                <DataField label="CNPJ" value={estabelecimento.cnpj} />
+              )}
+
               <DataField
                 label="Tipo de Estabelecimento"
                 value={
@@ -145,18 +153,6 @@ export function EstabelecimentoView({
                   </span>
                 }
               />
-
-              {estabelecimento.razao_social && (
-                <DataField
-                  label="Razão Social"
-                  value={estabelecimento.razao_social}
-                  fullWidth
-                />
-              )}
-
-              {estabelecimento.cnpj && (
-                <DataField label="CNPJ" value={estabelecimento.cnpj} />
-              )}
             </div>
           </div>
 
