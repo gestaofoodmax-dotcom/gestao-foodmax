@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Info, X, Save, AlertTriangle } from "lucide-react";
 import { Item, ItemCategoria, UNIDADES_MEDIDA } from "@shared/itens";
+import { toast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const schema = z.object({
   categoria_id: z.number({ invalid_type_error: "Categoria é obrigatória" }),
@@ -102,8 +104,6 @@ export default function ItemForm({ isOpen, onClose, onSave, item, isLoading = fa
     }
   };
 
-  const { toast } = require("@/hooks/use-toast");
-
   const filteredCategorias = useMemo(() => {
     return categorias
       .slice()
@@ -162,11 +162,14 @@ export default function ItemForm({ isOpen, onClose, onSave, item, isLoading = fa
 
               <div>
                 <Label className="text-sm font-medium">Unidade de Medida</Label>
-                <div className="border rounded-lg max-h-40 overflow-auto">
-                  {UNIDADES_MEDIDA.map((u) => (
-                    <button key={u} type="button" className={`w-full text-left px-3 py-2 hover:bg-gray-50 ${watch("unidade_medida") === u ? "bg-gray-100" : ""}`} onClick={() => setValue("unidade_medida", u)}>{u}</button>
-                  ))}
-                </div>
+                <Select value={watch("unidade_medida") as any} onValueChange={(v) => setValue("unidade_medida", v)}>
+                  <SelectTrigger className="foodmax-input"><SelectValue placeholder="Selecione a unidade" /></SelectTrigger>
+                  <SelectContent>
+                    {UNIDADES_MEDIDA.map((u) => (
+                      <SelectItem key={u} value={u}>{u}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
