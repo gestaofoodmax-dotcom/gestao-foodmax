@@ -79,6 +79,7 @@ function EstabelecimentosModule() {
     try {
       localStorage.removeItem("fm_estabelecimentos");
       localStorage.removeItem("fm_clientes");
+      console.log("[DEBUG] Cleared localStorage caches");
     } catch {}
   }, []);
   const writeLocal = (list: Estabelecimento[]) => {
@@ -618,8 +619,12 @@ function EstabelecimentosModule() {
 
   // Import handler
   const handleImport = async (records: any[]) => {
+    console.log("[DEBUG] Starting import with", records.length, "records");
+    console.log("[DEBUG] First record:", records[0]);
+
     // Normalize and remove duplicates (within file and against current list)
     const normalized = records.map(normalizeRecord);
+    console.log("[DEBUG] Normalized first record:", normalized[0]);
 
     const existingKeys = new Set(
       estabelecimentos.map((e) =>
@@ -638,6 +643,8 @@ function EstabelecimentosModule() {
       unique.push(r);
     }
 
+    console.log("[DEBUG] Unique records to import:", unique.length);
+
     if (unique.length === 0) {
       return {
         success: true,
@@ -648,66 +655,22 @@ function EstabelecimentosModule() {
     }
 
     try {
+      console.log("[DEBUG] Calling API with:", unique);
       const response = await makeRequest("/api/estabelecimentos/import", {
         method: "POST",
         body: JSON.stringify({ records: unique }),
       });
 
+      console.log("[DEBUG] API response:", response);
       loadEstabelecimentos();
       return response;
     } catch (error: any) {
-      // Local fallback with deduplication
-      const list = readLocal();
-      const now = new Date().toISOString();
+      console.error("[DEBUG] Import API failed:", error);
 
-      const localExistingKeys = new Set(
-        list.map((e) =>
-          e.cnpj
-            ? `cnpj:${onlyDigits(e.cnpj)}`
-            : `nome:${(e.nome || "").trim().toLowerCase()}`,
-        ),
+      // Show error to user instead of silent fallback
+      throw new Error(
+        `Erro na importação: ${error.message || "Falha na comunicação com o servidor"}`
       );
-
-      const toInsert = unique.filter((r) => !localExistingKeys.has(makeKey(r)));
-
-      const mapped = toInsert.map((r: any, i: number) => ({
-        id: Date.now() + i,
-        id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
-        nome: r.nome,
-        razao_social: r.razao_social,
-        cnpj: r.cnpj,
-        tipo_estabelecimento: r.tipo_estabelecimento,
-        email: r.email,
-        ddi: r.ddi,
-        telefone: r.telefone,
-        ativo: r.ativo ?? true,
-        data_cadastro: now,
-        data_atualizacao: now,
-        endereco:
-          r.cep || r.endereco || r.cidade
-            ? {
-                id: Date.now() + i,
-                estabelecimento_id: 0,
-                cep: r.cep,
-                endereco: r.endereco,
-                cidade: r.cidade,
-                uf: r.uf,
-                pais: r.pais || "Brasil",
-                data_cadastro: now,
-                data_atualizacao: now,
-              }
-            : undefined,
-      })) as Estabelecimento[];
-
-      const merged = [...mapped, ...list];
-      writeLocal(merged);
-      setEstabelecimentos(merged);
-      return {
-        success: true,
-        message: "Importação concluída",
-        imported: mapped.length,
-        errors: [],
-      } as any;
     }
   };
 
