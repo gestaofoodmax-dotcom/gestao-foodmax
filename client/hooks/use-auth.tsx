@@ -88,7 +88,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   const getUserRole = (): "admin" | "user" | null => {
-    return user?.role as "admin" | "user" | null;
+    const r = user?.role;
+    if (!r) return null;
+    const s = String(r).toLowerCase();
+    return s === "admin" ? "admin" : s === "user" ? "user" : "user";
   };
 
   const hasPayment = (): boolean => {

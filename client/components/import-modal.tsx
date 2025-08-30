@@ -55,9 +55,12 @@ export function ImportModal({
     }
   }, [isOpen]);
 
+  // Normalize role to handle case variations (e.g., ADMIN)
+  const normalizedRole = userRole ? String(userRole).toLowerCase() : null;
   // Check if user can import (exact rules)
   const canImport =
-    userRole === "admin" || (userRole === "user" && !!hasPayment);
+    normalizedRole === "admin" ||
+    (normalizedRole === "user" && !!hasPayment);
 
   const parseCSV = (csvText: string): any[] => {
     const text = (csvText || "").replace(/\r\n?/g, "\n");
@@ -427,7 +430,7 @@ export function ImportModal({
         </DialogHeader>
 
         <div className="space-y-4">
-          {userRole === "user" && !hasPayment && (
+          {normalizedRole === "user" && !hasPayment && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
