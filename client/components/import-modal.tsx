@@ -233,7 +233,14 @@ export function ImportModal({
   };
 
   const handleImport = async () => {
-    console.log("[DEBUG] Import started - userRole:", userRole, "hasPayment:", hasPayment, "canImport:", canImport);
+    console.log(
+      "[DEBUG] Import started - userRole:",
+      userRole,
+      "hasPayment:",
+      hasPayment,
+      "canImport:",
+      canImport,
+    );
 
     if (!selectedFile) {
       toast({
@@ -346,7 +353,9 @@ export function ImportModal({
 
         // Import the data
         setProgress(80);
-        console.log(`[DEBUG] Progress set to 80% - starting database import of ${processedRecords.length} records`);
+        console.log(
+          `[DEBUG] Progress set to 80% - starting database import of ${processedRecords.length} records`,
+        );
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         const result: any = await onImport(processedRecords);
@@ -533,20 +542,28 @@ export function ImportModal({
           )}
 
           {selectedFile && (
-            <div className={`space-y-3 rounded-lg p-4 border-2 transition-all duration-300 ${
-              isImporting
-                ? "bg-blue-50 border-blue-400 shadow-lg"
-                : "bg-yellow-50 border-yellow-300"
-            }`}>
+            <div
+              className={`space-y-3 rounded-lg p-4 border-2 transition-all duration-300 ${
+                isImporting
+                  ? "bg-blue-50 border-blue-400 shadow-lg"
+                  : "bg-yellow-50 border-yellow-300"
+              }`}
+            >
               <div className="flex items-center justify-between text-sm font-medium">
-                <span className={isImporting ? "text-blue-900" : "text-yellow-800"}>
-                  {isImporting ? "🔄 PROCESSANDO IMPORTAÇÃO..." : "📋 PRONTO PARA IMPORTAR"}
+                <span
+                  className={isImporting ? "text-blue-900" : "text-yellow-800"}
+                >
+                  {isImporting
+                    ? "🔄 PROCESSANDO IMPORTAÇÃO..."
+                    : "📋 PRONTO PARA IMPORTAR"}
                 </span>
-                <span className={`px-3 py-2 rounded text-lg font-bold border-2 ${
-                  isImporting
-                    ? "bg-blue-100 text-blue-900 border-blue-300"
-                    : "bg-yellow-100 text-yellow-800 border-yellow-300"
-                }`}>
+                <span
+                  className={`px-3 py-2 rounded text-lg font-bold border-2 ${
+                    isImporting
+                      ? "bg-blue-100 text-blue-900 border-blue-300"
+                      : "bg-yellow-100 text-yellow-800 border-yellow-300"
+                  }`}
+                >
                   {Math.round(progress)}%
                 </span>
               </div>
@@ -559,13 +576,27 @@ export function ImportModal({
                   {Math.round(progress)}% CONCLUÍDO
                 </div>
               </div>
-              <div className={`text-sm font-medium ${isImporting ? "text-blue-800" : "text-yellow-700"}`}>
-                {!isImporting && "🚀 Clique em 'Enviar' para iniciar a importação"}
+              <div
+                className={`text-sm font-medium ${isImporting ? "text-blue-800" : "text-yellow-700"}`}
+              >
+                {!isImporting &&
+                  "🚀 Clique em 'Enviar' para iniciar a importação"}
                 {isImporting && progress < 20 && "📄 ANALISANDO ARQUIVO CSV..."}
-                {isImporting && progress >= 20 && progress < 40 && "✅ VALIDANDO REGISTROS..."}
-                {isImporting && progress >= 40 && progress < 60 && "🔗 PROCESSANDO RELACIONAMENTOS..."}
-                {isImporting && progress >= 60 && progress < 90 && "💾 SALVANDO NO BANCO DE DADOS..."}
-                {isImporting && progress >= 90 && "🎉 FINALIZANDO IMPORTAÇÃO..."}
+                {isImporting &&
+                  progress >= 20 &&
+                  progress < 40 &&
+                  "✅ VALIDANDO REGISTROS..."}
+                {isImporting &&
+                  progress >= 40 &&
+                  progress < 60 &&
+                  "🔗 PROCESSANDO RELACIONAMENTOS..."}
+                {isImporting &&
+                  progress >= 60 &&
+                  progress < 90 &&
+                  "💾 SALVANDO NO BANCO DE DADOS..."}
+                {isImporting &&
+                  progress >= 90 &&
+                  "🎉 FINALIZANDO IMPORTAÇÃO..."}
               </div>
             </div>
           )}

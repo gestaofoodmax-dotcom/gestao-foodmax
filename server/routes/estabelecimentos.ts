@@ -601,7 +601,9 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
     const imported: any[] = [];
     const errors: string[] = [];
 
-    console.log(`[DEBUG] Starting import of ${records.length} records for user ${userId}`);
+    console.log(
+      `[DEBUG] Starting import of ${records.length} records for user ${userId}`,
+    );
 
     // Helper functions
     const toBool = (v: any): boolean | undefined => {
@@ -668,7 +670,9 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
           : undefined;
         const ativo = toBool(raw.ativo) ?? true;
 
-        console.log(`[DEBUG] Processing record ${i + 1}: ${nome}, CNPJ: ${cnpj}, Email: ${email}`);
+        console.log(
+          `[DEBUG] Processing record ${i + 1}: ${nome}, CNPJ: ${cnpj}, Email: ${email}`,
+        );
 
         // Address fields
         const cep = onlyDigits(raw.cep || "");
@@ -692,7 +696,9 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
             .ilike("nome", nome) // Both CNPJ and name must match
             .maybeSingle();
           if (exactDuplicate) {
-            console.log(`[DEBUG] Exact duplicate found: ${nome} with CNPJ ${cnpj}`);
+            console.log(
+              `[DEBUG] Exact duplicate found: ${nome} with CNPJ ${cnpj}`,
+            );
             isDuplicate = true;
           }
         } else {
@@ -755,7 +761,9 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
       }
     }
 
-    console.log(`[DEBUG] Import completed: ${imported.length} imported, ${errors.length} errors`);
+    console.log(
+      `[DEBUG] Import completed: ${imported.length} imported, ${errors.length} errors`,
+    );
     if (errors.length > 0) {
       console.log(`[DEBUG] Import errors:`, errors);
     }

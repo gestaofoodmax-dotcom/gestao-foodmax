@@ -58,7 +58,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setUser(userData.user);
             setHasPaymentFlag(!!userData.user?.hasPayment);
           } else {
-            console.log("[DEBUG] Auth API failed, creating fallback admin user");
+            console.log(
+              "[DEBUG] Auth API failed, creating fallback admin user",
+            );
             // Create fallback admin user for testing
             const adminUser = {
               id: parseInt(storedUserId),

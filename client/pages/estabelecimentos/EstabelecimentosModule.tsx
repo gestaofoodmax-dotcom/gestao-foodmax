@@ -676,7 +676,7 @@ function EstabelecimentosModule() {
         success: false,
         message: `Erro na importação: ${error.message || "Falha na comunicação com o servidor"}`,
         imported: 0,
-        errors: [error.message || "Erro desconhecido"]
+        errors: [error.message || "Erro desconhecido"],
       };
     }
   };
@@ -921,7 +921,8 @@ function EstabelecimentosModule() {
             "Data de Cadastro": "data_cadastro",
             "Data Cadastro": "data_cadastro",
           };
-          const mapped = map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          const mapped =
+            map[header] || header.toLowerCase().replace(/\s+/g, "_");
           console.log(`[DEBUG] Header mapping: "${header}" -> "${mapped}"`);
           return mapped;
         }}
@@ -960,7 +961,10 @@ function EstabelecimentosModule() {
             record.cnpj = undefined; // CNPJ is optional
           }
           if (errors.length > 0) {
-            console.log(`[DEBUG] Validation errors for record ${index + 1}:`, errors);
+            console.log(
+              `[DEBUG] Validation errors for record ${index + 1}:`,
+              errors,
+            );
           }
           return errors;
         }}
