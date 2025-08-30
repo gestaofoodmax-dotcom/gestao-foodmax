@@ -11,6 +11,7 @@ import Onboarding from "./pages/Onboarding";
 import Dashboard from "./pages/Dashboard";
 import EstabelecimentosModule from "./pages/estabelecimentos/EstabelecimentosModule";
 import ClientesModule from "./pages/clientes/ClientesModule";
+import FornecedoresModule from "./pages/fornecedores/FornecedoresModule";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
               element={<EstabelecimentosModule />}
             />
             <Route path="/clientes" element={<ClientesModule />} />
+            <Route path="/fornecedores" element={<FornecedoresModule />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

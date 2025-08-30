@@ -5,6 +5,7 @@ import {
   Home,
   Store,
   Users,
+  Truck,
   LogOut,
   Search,
   Plus,
@@ -89,6 +90,7 @@ export default function ClientesModule() {
     { icon: Home, label: "Dashboard", route: "/dashboard" },
     { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
     { icon: Users, label: "Clientes", route: "/clientes" },
+    { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
   ];
   const renderMenuItem = (item: any, index: number) => {
     const isActive = location.pathname === item.route;
