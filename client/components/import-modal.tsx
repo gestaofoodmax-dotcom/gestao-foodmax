@@ -335,7 +335,10 @@ export function ImportModal({
         await new Promise((resolve) => setTimeout(resolve, 200));
 
         // Import the data
+        setProgress(80);
+        console.log(`[DEBUG] Starting database import of ${processedRecords.length} records`);
         const result: any = await onImport(processedRecords);
+        console.log(`[DEBUG] Database import completed:`, result);
 
         setProgress(95);
         await new Promise((resolve) => setTimeout(resolve, 300));
@@ -518,12 +521,19 @@ export function ImportModal({
           )}
 
           {isImporting && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span>Importando dados...</span>
-                <span>{Math.round(progress)}%</span>
+            <div className="space-y-2 bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center justify-between text-sm font-medium text-blue-900">
+                <span>🔄 Processando importação...</span>
+                <span className="bg-blue-100 px-2 py-1 rounded text-blue-800">{Math.round(progress)}%</span>
               </div>
-              <Progress value={progress} className="w-full" />
+              <Progress value={progress} className="w-full h-3" />
+              <div className="text-xs text-blue-700">
+                {progress < 20 && "Analisando arquivo CSV..."}
+                {progress >= 20 && progress < 40 && "Validando registros..."}
+                {progress >= 40 && progress < 60 && "Processando relacionamentos..."}
+                {progress >= 60 && progress < 90 && "Salvando no banco de dados..."}
+                {progress >= 90 && "Finalizando importação..."}
+              </div>
             </div>
           )}
         </div>

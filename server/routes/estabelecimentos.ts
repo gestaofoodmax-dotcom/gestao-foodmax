@@ -601,6 +601,8 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
     const imported: any[] = [];
     const errors: string[] = [];
 
+    console.log(`[DEBUG] Starting import of ${records.length} records for user ${userId}`);
+
     // Helper functions
     const toBool = (v: any): boolean | undefined => {
       if (typeof v === "boolean") return v;
@@ -677,14 +679,17 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
 
         // Check for duplicates (by CNPJ if provided, else by Nome)
         let isDuplicate = false;
-        if (cnpj) {
+        if (cnpj && cnpj.length === 14) {
           const { data: existByCnpj } = await supabase
             .from("estabelecimentos")
             .select("id")
             .eq("id_usuario", userId)
             .eq("cnpj", cnpj)
             .maybeSingle();
-          if (existByCnpj) isDuplicate = true;
+          if (existByCnpj) {
+            console.log(`[DEBUG] Duplicate CNPJ found: ${cnpj}`);
+            isDuplicate = true;
+          }
         }
         if (!isDuplicate) {
           const { data: existByName } = await supabase
@@ -693,7 +698,10 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
             .eq("id_usuario", userId)
             .eq("nome", nome)
             .maybeSingle();
-          if (existByName) isDuplicate = true;
+          if (existByName) {
+            console.log(`[DEBUG] Duplicate name found: ${nome}`);
+            isDuplicate = true;
+          }
         }
         if (isDuplicate) {
           errors.push(
