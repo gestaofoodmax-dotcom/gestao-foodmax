@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, X, Edit, FileText, Info } from "lucide-react";
+import { MapPin, Phone, X, Edit, FileText, Info, Truck } from "lucide-react";
 import {
   Fornecedor,
   formatTelefone,
@@ -77,15 +77,11 @@ export function FornecedorView({
 
         <div className="space-y-6">
           <div className="flex items-start justify-between">
-            <div>
+            <div className="flex items-center gap-3">
+              <Truck className="w-6 h-6 text-foodmax-orange" />
               <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
                 {fornecedor.nome}
               </h2>
-              {fornecedor.nome_responsavel && (
-                <p className="text-sm text-gray-600">
-                  Responsável: {fornecedor.nome_responsavel}
-                </p>
-              )}
             </div>
             <div className="text-right">
               <Badge
@@ -115,17 +111,6 @@ export function FornecedorView({
               {fornecedor.cnpj && (
                 <DataField label="CNPJ" value={fornecedor.cnpj} />
               )}
-              <DataField
-                label="Email"
-                value={
-                  <a
-                    href={`mailto:${fornecedor.email}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {fornecedor.email}
-                  </a>
-                }
-              />
               {fornecedor.nome_responsavel && (
                 <DataField
                   label="Responsável"
@@ -176,17 +161,16 @@ export function FornecedorView({
                 {fornecedor.endereco.cep && (
                   <DataField label="CEP" value={fornecedor.endereco.cep} />
                 )}
-                {(fornecedor.endereco.cidade || fornecedor.endereco.uf) && (
-                  <DataField
-                    label="Cidade/UF"
-                    value={formatEnderecoCidadeUF(fornecedor.endereco)}
-                  />
-                )}
                 {fornecedor.endereco.endereco && (
                   <DataField
                     label="Endereço"
                     value={fornecedor.endereco.endereco}
-                    fullWidth
+                  />
+                )}
+                {(fornecedor.endereco.cidade || fornecedor.endereco.uf) && (
+                  <DataField
+                    label="Cidade/UF"
+                    value={formatEnderecoCidadeUF(fornecedor.endereco)}
                   />
                 )}
                 <DataField label="País" value={fornecedor.endereco.pais} />
@@ -211,10 +195,10 @@ export function FornecedorView({
                 value={formatDate(fornecedor.data_atualizacao)}
               />
               <DataField
-                label="Status"
+                label="Ativo"
                 value={
                   <span className="text-black">
-                    {fornecedor.ativo ? "Ativo" : "Inativo"}
+                    {fornecedor.ativo ? "Sim" : "Não"}
                   </span>
                 }
               />

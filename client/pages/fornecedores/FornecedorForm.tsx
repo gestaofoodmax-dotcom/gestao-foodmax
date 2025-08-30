@@ -461,20 +461,22 @@ export function FornecedorForm({
 
           {/* Status - div com borda e sem título */}
           <div className="bg-white p-4 rounded-lg border">
-            <div className="flex items-center justify-between">
-              <div>
-                <Label htmlFor="ativo" className="text-sm font-medium">
-                  Ativo
-                </Label>
-                <p className="text-sm text-gray-600">
-                  {watchedAtivo ? "Ativado" : "Desativado"}
-                </p>
+            <div className="flex items-center justify-start">
+              <div className="flex items-center gap-3">
+                <Switch
+                  id="ativo"
+                  checked={watchedAtivo}
+                  onCheckedChange={(checked) => setValue("ativo", checked)}
+                />
+                <div>
+                  <Label htmlFor="ativo" className="text-sm font-medium">
+                    Ativo
+                  </Label>
+                  <p className="text-sm text-gray-600">
+                    {watchedAtivo ? "Sim" : "Não"}
+                  </p>
+                </div>
               </div>
-              <Switch
-                id="ativo"
-                checked={watchedAtivo}
-                onCheckedChange={(checked) => setValue("ativo", checked)}
-              />
             </div>
           </div>
 
