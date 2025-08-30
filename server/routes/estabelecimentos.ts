@@ -583,7 +583,7 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
 
     const { records } = z
       .object({
-        records: z.array(EstabelecimentoSchema),
+        records: z.array(z.record(z.any())),
       })
       .parse(req.body);
 
@@ -598,24 +598,76 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
     }
 
     const supabase = getSupabaseServiceClient();
-    const imported = [];
-    const errors = [];
+    const imported: any[] = [];
+    const errors: string[] = [];
+
+    // Helper functions
+    const toBool = (v: any): boolean | undefined => {
+      if (typeof v === "boolean") return v;
+      if (v == null || v === "") return undefined;
+      const s = String(v).trim().toLowerCase();
+      if (["1", "true", "ativo", "sim", "yes"].includes(s)) return true;
+      if (["0", "false", "inativo", "nao", "não", "no"].includes(s)) return false;
+      return undefined;
+    };
+
+    const onlyDigits = (v: any): string => String(v || "").replace(/\D/g, "");
 
     for (let i = 0; i < records.length; i++) {
       try {
-        const record = records[i];
-        const { cep, endereco, cidade, uf, pais, ...estabelecimentoData } =
-          record;
+        const raw = records[i] as any;
+
+        // Normalize and validate data
+        const nome = String(raw.nome || "").trim();
+        if (!nome) {
+          errors.push(`Linha ${i + 1}: Nome é obrigatório`);
+          continue;
+        }
+
+        const email = raw.email ? String(raw.email).trim() : undefined;
+        if (!email) {
+          errors.push(`Linha ${i + 1}: Email é obrigatório`);
+          continue;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          errors.push(`Linha ${i + 1}: Email inválido`);
+          continue;
+        }
+
+        const tipoEstabelecimento = String(raw.tipo_estabelecimento || raw.tipo || "").trim();
+        const validTipos = ["Restaurante", "Bar", "Lancheria", "Churrascaria", "Petiscaria", "Pizzaria", "Outro"];
+        if (!validTipos.includes(tipoEstabelecimento)) {
+          errors.push(`Linha ${i + 1}: Tipo de estabelecimento inválido`);
+          continue;
+        }
+
+        const ddiRaw = String(raw.ddi || "+55").replace(/\D/g, "");
+        const ddi = `+${ddiRaw || "55"}`;
+        const telefone = onlyDigits(raw.telefone || "");
+        if (!telefone) {
+          errors.push(`Linha ${i + 1}: Telefone é obrigatório`);
+          continue;
+        }
+
+        const cnpj = onlyDigits(raw.cnpj || "");
+        const razaoSocial = raw.razao_social ? String(raw.razao_social).trim() : undefined;
+        const ativo = toBool(raw.ativo) ?? true;
+
+        // Address fields
+        const cep = onlyDigits(raw.cep || "");
+        const endereco = raw.endereco ? String(raw.endereco).trim() : undefined;
+        const cidade = raw.cidade ? String(raw.cidade).trim() : undefined;
+        const uf = raw.uf ? String(raw.uf).trim().toUpperCase().slice(0, 2) : undefined;
+        const pais = raw.pais ? String(raw.pais).trim() : "Brasil";
 
         // Check for duplicates (by CNPJ if provided, else by Nome)
         let isDuplicate = false;
-        const cnpjDigits = (record.cnpj || "").replace(/\D/g, "");
-        if (cnpjDigits) {
+        if (cnpj) {
           const { data: existByCnpj } = await supabase
             .from("estabelecimentos")
             .select("id")
             .eq("id_usuario", userId)
-            .eq("cnpj", cnpjDigits)
+            .eq("cnpj", cnpj)
             .maybeSingle();
           if (existByCnpj) isDuplicate = true;
         }
@@ -624,7 +676,7 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
             .from("estabelecimentos")
             .select("id")
             .eq("id_usuario", userId)
-            .eq("nome", estabelecimentoData.nome)
+            .eq("nome", nome)
             .maybeSingle();
           if (existByName) isDuplicate = true;
         }
@@ -639,7 +691,14 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
         const { data: novoEstabelecimento, error: estError } = await supabase
           .from("estabelecimentos")
           .insert({
-            ...estabelecimentoData,
+            nome,
+            razao_social: razaoSocial,
+            cnpj: cnpj || null,
+            tipo_estabelecimento: tipoEstabelecimento,
+            email,
+            ddi,
+            telefone,
+            ativo,
             id_usuario: userId,
           })
           .select()
