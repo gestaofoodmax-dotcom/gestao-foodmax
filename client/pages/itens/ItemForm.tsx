@@ -36,7 +36,6 @@ export default function ItemForm({ isOpen, onClose, onSave, item, isLoading = fa
 }) {
   const isEditing = !!item;
   const [filter, setFilter] = useState("");
-  const [catOpen, setCatOpen] = useState(false);
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<FormSchema>({
     resolver: zodResolver(schema),
