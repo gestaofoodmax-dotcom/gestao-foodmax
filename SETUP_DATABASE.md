@@ -18,6 +18,11 @@ Once connected to Neon, execute the schema from `database/schema.sql` to create 
 - `login_attempts` - Track failed login attempts by IP
 - `registration_attempts` - Track registrations by IP per day
 
+Then execute `database/fornecedores.sql` to create the Suppliers module tables:
+
+- `fornecedores` - Suppliers main table
+- `fornecedores_enderecos` - Suppliers addresses
+
 ### Step 3: Update Backend with Database Connection
 
 After connecting to Neon, you'll need to update the authentication routes in `server/routes/auth.ts` to:
