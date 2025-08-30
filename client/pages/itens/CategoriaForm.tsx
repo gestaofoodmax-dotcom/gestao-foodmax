@@ -124,7 +124,7 @@ export default function CategoriaForm({
                     Ativo
                   </Label>
                   <p className="text-sm text-gray-600">
-                    {watchedAtivo ? "Ativar" : "Desativar"}
+                    {watchedAtivo ? "Sim" : "Não"}
                   </p>
                 </div>
               </div>
