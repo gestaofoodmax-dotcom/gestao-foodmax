@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, X, Edit, FileText, Info } from "lucide-react";
+import { MapPin, Phone, X, Edit, FileText, Info, Truck } from "lucide-react";
 import {
   Fornecedor,
   formatTelefone,
@@ -77,15 +77,11 @@ export function FornecedorView({
 
         <div className="space-y-6">
           <div className="flex items-start justify-between">
-            <div>
+            <div className="flex items-center gap-3">
+              <Truck className="w-6 h-6 text-foodmax-orange" />
               <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
                 {fornecedor.nome}
               </h2>
-              {fornecedor.nome_responsavel && (
-                <p className="text-sm text-gray-600">
-                  Responsável: {fornecedor.nome_responsavel}
-                </p>
-              )}
             </div>
             <div className="text-right">
               <Badge
