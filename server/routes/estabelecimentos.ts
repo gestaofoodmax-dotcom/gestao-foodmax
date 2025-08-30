@@ -679,40 +679,39 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
           : undefined;
         const pais = raw.pais ? String(raw.pais).trim() : "Brasil";
 
-        // Check for duplicates (by CNPJ if provided, else by Nome)
+        // Check for duplicates by both CNPJ AND name (must match both to be duplicate)
         let isDuplicate = false;
 
-        // Only check CNPJ duplicates if CNPJ is provided and valid
+        // Check for exact duplicate: same name AND same CNPJ (if both provided)
         if (cnpj && cnpj.length === 14) {
-          const { data: existByCnpj } = await supabase
+          const { data: exactDuplicate } = await supabase
             .from("estabelecimentos")
-            .select("id, nome")
+            .select("id, nome, cnpj")
             .eq("id_usuario", userId)
             .eq("cnpj", cnpj)
+            .ilike("nome", nome) // Both CNPJ and name must match
             .maybeSingle();
-          if (existByCnpj) {
-            console.log(`[DEBUG] Duplicate CNPJ found: ${cnpj} (existing: ${existByCnpj.nome})`);
+          if (exactDuplicate) {
+            console.log(`[DEBUG] Exact duplicate found: ${nome} with CNPJ ${cnpj}`);
             isDuplicate = true;
           }
-        }
-
-        // Always check for name duplicates (since nome is required)
-        if (!isDuplicate) {
+        } else {
+          // If no CNPJ, check only by name
           const { data: existByName } = await supabase
             .from("estabelecimentos")
-            .select("id, cnpj")
+            .select("id")
             .eq("id_usuario", userId)
-            .ilike("nome", nome) // Case-insensitive comparison
+            .ilike("nome", nome)
             .maybeSingle();
           if (existByName) {
-            console.log(`[DEBUG] Duplicate name found: ${nome} (existing CNPJ: ${existByName.cnpj})`);
+            console.log(`[DEBUG] Name duplicate found (no CNPJ): ${nome}`);
             isDuplicate = true;
           }
         }
 
         if (isDuplicate) {
           errors.push(
-            `Linha ${i + 1}: Estabelecimento duplicado (nome ou CNPJ já existe)`,
+            `Linha ${i + 1}: Estabelecimento duplicado (nome e CNPJ já existem)`,
           );
           continue;
         }

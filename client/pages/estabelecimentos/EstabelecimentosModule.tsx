@@ -593,9 +593,11 @@ function EstabelecimentosModule() {
   };
   const makeKey = (r: any) => {
     const cnpj = onlyDigits(r.cnpj);
-    return cnpj
-      ? `cnpj:${cnpj}`
-      : `nome:${(r.nome || "").trim().toLowerCase()}`;
+    const nome = (r.nome || "").trim().toLowerCase();
+    // Use both CNPJ and name for uniqueness - allows same CNPJ with different names
+    return cnpj && cnpj.length === 14
+      ? `cnpj_nome:${cnpj}_${nome}`
+      : `nome:${nome}`;
   };
   const normalizeRecord = (r: any) => {
     const ativo = toBool(r.ativo);
@@ -627,11 +629,13 @@ function EstabelecimentosModule() {
     console.log("[DEBUG] Normalized first record:", normalized[0]);
 
     const existingKeys = new Set(
-      estabelecimentos.map((e) =>
-        e.cnpj
-          ? `cnpj:${onlyDigits(e.cnpj)}`
-          : `nome:${e.nome.trim().toLowerCase()}`,
-      ),
+      estabelecimentos.map((e) => {
+        const cnpj = onlyDigits(e.cnpj || "");
+        const nome = e.nome.trim().toLowerCase();
+        return cnpj && cnpj.length === 14
+          ? `cnpj_nome:${cnpj}_${nome}`
+          : `nome:${nome}`;
+      }),
     );
 
     const seenInFile = new Set<string>();
