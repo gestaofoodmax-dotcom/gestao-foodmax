@@ -55,8 +55,9 @@ export function ImportModal({
     }
   }, [isOpen]);
 
-  // Check if user can import
-  const canImport = userRole === "admin" || hasPayment;
+  // Check if user can import (exact rules)
+  const canImport =
+    userRole === "admin" || (userRole === "user" && !!hasPayment);
 
   const parseCSV = (csvText: string): any[] => {
     const text = (csvText || "").replace(/\r\n?/g, "\n");
