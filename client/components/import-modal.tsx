@@ -332,7 +332,8 @@ export function ImportModal({
 
         // Show validation completion
         setProgress(60);
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        console.log("[DEBUG] Progress set to 60% - validation complete");
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Process related fields
         const processedRecords = onGetRelatedId
@@ -340,11 +341,13 @@ export function ImportModal({
           : validRecords;
 
         setProgress(75);
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        console.log("[DEBUG] Progress set to 75% - processing complete");
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Import the data
         setProgress(80);
-        console.log(`[DEBUG] Starting database import of ${processedRecords.length} records`);
+        console.log(`[DEBUG] Progress set to 80% - starting database import of ${processedRecords.length} records`);
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         const result: any = await onImport(processedRecords);
         console.log(`[DEBUG] Database import completed:`, result);
@@ -465,7 +468,7 @@ export function ImportModal({
 
             <div className="text-sm">
               <h5 className="font-medium text-blue-900 mb-1">
-                Campos obrigatórios:
+                Campos obrigat��rios:
               </h5>
               <ul className="grid grid-cols-2 gap-2 mb-3">
                 {requiredColumns.map((col) => (
@@ -530,34 +533,39 @@ export function ImportModal({
           )}
 
           {selectedFile && (
-            <div className={`space-y-3 rounded-lg p-4 border-2 ${
+            <div className={`space-y-3 rounded-lg p-4 border-2 transition-all duration-300 ${
               isImporting
-                ? "bg-blue-50 border-blue-300"
-                : "bg-gray-50 border-gray-300"
+                ? "bg-blue-50 border-blue-400 shadow-lg"
+                : "bg-yellow-50 border-yellow-300"
             }`}>
               <div className="flex items-center justify-between text-sm font-medium">
-                <span className={isImporting ? "text-blue-900" : "text-gray-700"}>
-                  {isImporting ? "🔄 Processando importação..." : "📋 Pronto para importar"}
+                <span className={isImporting ? "text-blue-900" : "text-yellow-800"}>
+                  {isImporting ? "🔄 PROCESSANDO IMPORTAÇÃO..." : "📋 PRONTO PARA IMPORTAR"}
                 </span>
-                <span className={`px-3 py-1 rounded text-sm font-bold ${
+                <span className={`px-3 py-2 rounded text-lg font-bold border-2 ${
                   isImporting
-                    ? "bg-blue-100 text-blue-800"
-                    : "bg-gray-100 text-gray-600"
+                    ? "bg-blue-100 text-blue-900 border-blue-300"
+                    : "bg-yellow-100 text-yellow-800 border-yellow-300"
                 }`}>
-                  {isImporting ? `${Math.round(progress)}%` : "0%"}
+                  {Math.round(progress)}%
                 </span>
               </div>
-              <Progress
-                value={isImporting ? progress : 0}
-                className="w-full h-4 bg-gray-200"
-              />
-              <div className={`text-xs ${isImporting ? "text-blue-700" : "text-gray-600"}`}>
-                {!isImporting && "Clique em 'Enviar' para iniciar a importação"}
-                {isImporting && progress < 20 && "📄 Analisando arquivo CSV..."}
-                {isImporting && progress >= 20 && progress < 40 && "✅ Validando registros..."}
-                {isImporting && progress >= 40 && progress < 60 && "🔗 Processando relacionamentos..."}
-                {isImporting && progress >= 60 && progress < 90 && "💾 Salvando no banco de dados..."}
-                {isImporting && progress >= 90 && "🎉 Finalizando importação..."}
+              <div className="relative">
+                <Progress
+                  value={progress}
+                  className="w-full h-6 bg-gray-300 border-2 border-gray-400"
+                />
+                <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-800">
+                  {Math.round(progress)}% CONCLUÍDO
+                </div>
+              </div>
+              <div className={`text-sm font-medium ${isImporting ? "text-blue-800" : "text-yellow-700"}`}>
+                {!isImporting && "🚀 Clique em 'Enviar' para iniciar a importação"}
+                {isImporting && progress < 20 && "📄 ANALISANDO ARQUIVO CSV..."}
+                {isImporting && progress >= 20 && progress < 40 && "✅ VALIDANDO REGISTROS..."}
+                {isImporting && progress >= 40 && progress < 60 && "🔗 PROCESSANDO RELACIONAMENTOS..."}
+                {isImporting && progress >= 60 && progress < 90 && "💾 SALVANDO NO BANCO DE DADOS..."}
+                {isImporting && progress >= 90 && "🎉 FINALIZANDO IMPORTAÇÃO..."}
               </div>
             </div>
           )}
