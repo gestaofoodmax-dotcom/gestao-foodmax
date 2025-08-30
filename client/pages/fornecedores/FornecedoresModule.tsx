@@ -761,15 +761,89 @@ function FornecedoresModule() {
           { key: "pais", label: "País" },
           { key: "ativo", label: "Status" },
         ]}
-        onImport={async () => ({
-          success: true,
-          message: "Importação disponível em breve",
-          imported: 0,
-        })}
+        onImport={handleImport}
         userRole={"admin"}
         hasPayment={true}
-        mapHeader={(h) => h}
-        validateRecord={() => []}
+        mapHeader={(header) => {
+          const map: Record<string, string> = {
+            Nome: "nome",
+            "Razão Social": "razao_social",
+            "Razao Social": "razao_social",
+            Cnpj: "cnpj",
+            CNPJ: "cnpj",
+            Email: "email",
+            DDI: "ddi",
+            Ddi: "ddi",
+            Telefone: "telefone",
+            "Nome Responsavel": "nome_responsavel",
+            "Nome Responsável": "nome_responsavel",
+            CEP: "cep",
+            Cep: "cep",
+            Endereço: "endereco",
+            Endereco: "endereco",
+            Cidade: "cidade",
+            UF: "uf",
+            Uf: "uf",
+            País: "pais",
+            Pais: "pais",
+            Ativo: "ativo",
+            Status: "ativo",
+            "Data de Cadastro": "data_cadastro",
+            "Data Cadastro": "data_cadastro",
+          };
+          const mapped = map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          console.log(`Header mapping: "${header}" -> "${mapped}"`);
+          return mapped;
+        }}
+        validateRecord={(record, index) => {
+          const errors: string[] = [];
+          const required = ["nome", "email", "ddi", "telefone"];
+
+          console.log(`Validating record ${index + 1}:`, record);
+
+          required.forEach((k) => {
+            if (!record[k] || String(record[k]).trim() === "") {
+              errors.push(`Campo obrigatório '${k}' não preenchido`);
+            }
+          });
+
+          if (record.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.email)) {
+            errors.push("Email inválido");
+          }
+
+          if (record.cnpj && String(record.cnpj).trim() !== "") {
+            const digits = String(record.cnpj).replace(/\D/g, "");
+            if (digits.length > 0 && digits.length !== 14) {
+              errors.push("CNPJ deve ter 14 dígitos quando preenchido");
+            } else if (digits.length === 14) {
+              record.cnpj = digits;
+            } else {
+              record.cnpj = undefined;
+            }
+          } else {
+            record.cnpj = undefined;
+          }
+
+          // Normalize DDI
+          if (record.ddi && record.ddi.trim() !== "") {
+            let cleaned = String(record.ddi).replace(/\D/g, "");
+            if (!cleaned.startsWith("55")) cleaned = "55";
+            record.ddi = "+" + cleaned;
+          } else {
+            record.ddi = "+55";
+          }
+
+          // Normalize telefone
+          if (record.telefone) {
+            record.telefone = String(record.telefone).replace(/\D/g, "");
+          }
+
+          // Normalize boolean
+          record.ativo = toBool(record.ativo) ?? true;
+
+          console.log(`Record ${index + 1} after validation:`, record, "Errors:", errors);
+          return errors;
+        }}
       />
       <DeleteAlert
         isOpen={showDeleteAlert}
