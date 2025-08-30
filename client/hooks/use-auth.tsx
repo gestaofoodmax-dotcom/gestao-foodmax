@@ -91,11 +91,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const r = user?.role;
     if (!r) return null;
     const s = String(r).toLowerCase();
-    return s === "admin" ? "admin" : s === "user" ? "user" : "user";
+    return s === "admin" ? "admin" : s === "user" ? "user" : null;
   };
 
   const hasPayment = (): boolean => {
-    if (user?.role === "admin") return true;
+    const role = user?.role ? String(user.role).toLowerCase() : null;
+    if (role === "admin") return true;
     const fromUser = (user as any)?.hasPayment;
     return Boolean(fromUser ?? hasPaymentFlag);
   };
