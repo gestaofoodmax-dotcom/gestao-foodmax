@@ -339,8 +339,18 @@ export function ImportModal({
         // Import the data
         setProgress(80);
         console.log(`[DEBUG] Starting database import of ${processedRecords.length} records`);
-        const result: any = await onImport(processedRecords);
-        console.log(`[DEBUG] Database import completed:`, result);
+
+        try {
+          const result: any = await onImport(processedRecords);
+          console.log(`[DEBUG] Database import completed:`, result);
+
+          if (!result.success) {
+            throw new Error(result.message || "Erro na importação");
+          }
+        } catch (importError: any) {
+          console.error(`[DEBUG] Import failed:`, importError);
+          throw importError;
+        }
 
         setProgress(95);
         await new Promise((resolve) => setTimeout(resolve, 300));
@@ -522,19 +532,35 @@ export function ImportModal({
             </div>
           )}
 
-          {isImporting && (
-            <div className="space-y-2 bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex items-center justify-between text-sm font-medium text-blue-900">
-                <span>🔄 Processando importação...</span>
-                <span className="bg-blue-100 px-2 py-1 rounded text-blue-800">{Math.round(progress)}%</span>
+          {selectedFile && (
+            <div className={`space-y-3 rounded-lg p-4 border-2 ${
+              isImporting
+                ? "bg-blue-50 border-blue-300"
+                : "bg-gray-50 border-gray-300"
+            }`}>
+              <div className="flex items-center justify-between text-sm font-medium">
+                <span className={isImporting ? "text-blue-900" : "text-gray-700"}>
+                  {isImporting ? "🔄 Processando importação..." : "📋 Pronto para importar"}
+                </span>
+                <span className={`px-3 py-1 rounded text-sm font-bold ${
+                  isImporting
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-gray-100 text-gray-600"
+                }`}>
+                  {isImporting ? `${Math.round(progress)}%` : "0%"}
+                </span>
               </div>
-              <Progress value={progress} className="w-full h-3" />
-              <div className="text-xs text-blue-700">
-                {progress < 20 && "Analisando arquivo CSV..."}
-                {progress >= 20 && progress < 40 && "Validando registros..."}
-                {progress >= 40 && progress < 60 && "Processando relacionamentos..."}
-                {progress >= 60 && progress < 90 && "Salvando no banco de dados..."}
-                {progress >= 90 && "Finalizando importação..."}
+              <Progress
+                value={isImporting ? progress : 0}
+                className="w-full h-4 bg-gray-200"
+              />
+              <div className={`text-xs ${isImporting ? "text-blue-700" : "text-gray-600"}`}>
+                {!isImporting && "Clique em 'Enviar' para iniciar a importação"}
+                {isImporting && progress < 20 && "📄 Analisando arquivo CSV..."}
+                {isImporting && progress >= 20 && progress < 40 && "✅ Validando registros..."}
+                {isImporting && progress >= 40 && progress < 60 && "🔗 Processando relacionamentos..."}
+                {isImporting && progress >= 60 && progress < 90 && "💾 Salvando no banco de dados..."}
+                {isImporting && progress >= 90 && "🎉 Finalizando importação..."}
               </div>
             </div>
           )}
