@@ -40,6 +40,21 @@ import {
   toggleClienteStatus,
   importClientes,
 } from "./routes/clientes";
+import {
+  listItens,
+  getItem,
+  createItem,
+  updateItem,
+  deleteItem,
+  bulkDeleteItens,
+  toggleItemStatus,
+  listCategorias,
+  createCategoria,
+  updateCategoria,
+  deleteCategoria,
+  bulkDeleteCategorias,
+  toggleCategoriaStatus,
+} from "./routes/itens";
 
 export function createServer() {
   const app = express();
@@ -98,38 +113,20 @@ export function createServer() {
   app.post("/api/fornecedores/import", importFornecedores);
 
   // Itens routes
-  {
-    const {
-      listItens,
-      getItem,
-      createItem,
-      updateItem,
-      deleteItem,
-      bulkDeleteItens,
-      toggleItemStatus,
-      listCategorias,
-      createCategoria,
-      updateCategoria,
-      deleteCategoria,
-      bulkDeleteCategorias,
-      toggleCategoriaStatus,
-    } = await import("./routes/itens");
+  app.get("/api/itens", listItens);
+  app.get("/api/itens/:id", getItem);
+  app.post("/api/itens", createItem);
+  app.put("/api/itens/:id", updateItem);
+  app.delete("/api/itens/:id", deleteItem);
+  app.post("/api/itens/bulk-delete", bulkDeleteItens);
+  app.patch("/api/itens/:id/toggle-status", toggleItemStatus);
 
-    app.get("/api/itens", listItens);
-    app.get("/api/itens/:id", getItem);
-    app.post("/api/itens", createItem);
-    app.put("/api/itens/:id", updateItem);
-    app.delete("/api/itens/:id", deleteItem);
-    app.post("/api/itens/bulk-delete", bulkDeleteItens);
-    app.patch("/api/itens/:id/toggle-status", toggleItemStatus);
-
-    app.get("/api/itens-categorias", listCategorias);
-    app.post("/api/itens-categorias", createCategoria);
-    app.put("/api/itens-categorias/:id", updateCategoria);
-    app.delete("/api/itens-categorias/:id", deleteCategoria);
-    app.post("/api/itens-categorias/bulk-delete", bulkDeleteCategorias);
-    app.patch("/api/itens-categorias/:id/toggle-status", toggleCategoriaStatus);
-  }
+  app.get("/api/itens-categorias", listCategorias);
+  app.post("/api/itens-categorias", createCategoria);
+  app.put("/api/itens-categorias/:id", updateCategoria);
+  app.delete("/api/itens-categorias/:id", deleteCategoria);
+  app.post("/api/itens-categorias/bulk-delete", bulkDeleteCategorias);
+  app.patch("/api/itens-categorias/:id/toggle-status", toggleCategoriaStatus);
 
   return app;
 }
