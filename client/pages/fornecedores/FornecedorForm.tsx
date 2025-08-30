@@ -226,6 +226,7 @@ export function FornecedorForm({
   };
 
   const fieldLabels: Record<string, string> = {
+    estabelecimento_id: "Estabelecimento",
     nome: "Nome",
     email: "Email",
     ddi: "DDI",
