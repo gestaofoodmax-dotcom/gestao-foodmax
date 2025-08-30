@@ -370,6 +370,8 @@ export default function ItensModule() {
       <ItemView isOpen={showView} onClose={() => { setShowView(false); setCurrentItem(null); }} item={currentItem} categoriaNome={currentItem ? categorias.find(c => c.id === currentItem.categoria_id)?.nome || null : null} />
 
       <CategoriaForm isOpen={showCategoriaForm} onClose={() => { setShowCategoriaForm(false); setCurrentCategoria(null); setIsEditingCategoria(false); }} categoria={currentCategoria} onSave={handleSaveCategoria} />
+
+      <DeleteAlert isOpen={showDeleteAlert} onClose={() => setShowDeleteAlert(false)} onConfirm={handleDeleteConfirmed} itemName={currentItem?.nome} isLoading={false} />
     </div>
   );
 }
