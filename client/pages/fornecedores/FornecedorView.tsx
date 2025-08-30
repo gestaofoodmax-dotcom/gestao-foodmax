@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Phone, Mail, X, Edit, FileText, Info } from "lucide-react";
+import { MapPin, Phone, X, Edit, FileText, Info } from "lucide-react";
 import {
   Fornecedor,
   formatTelefone,
@@ -125,7 +125,6 @@ export function FornecedorView({
                     {fornecedor.email}
                   </a>
                 }
-                icon={<Mail className="w-4 h-4 text-gray-500" />}
               />
               {fornecedor.nome_responsavel && (
                 <DataField
@@ -142,6 +141,17 @@ export function FornecedorView({
               <h3 className="font-semibold text-green-600">Contato</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
+              <DataField
+                label="Email"
+                value={
+                  <a
+                    href={`mailto:${fornecedor.email}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {fornecedor.email}
+                  </a>
+                }
+              />
               <DataField
                 label="Telefone"
                 value={
