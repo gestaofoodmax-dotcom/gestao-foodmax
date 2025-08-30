@@ -185,7 +185,7 @@ function FornecedoresModule() {
                     </svg>
                   </a>
                 </TooltipTrigger>
-                <TooltipContent side="top">WhatsApp</TooltipContent>
+                <TooltipContent side="top" className="bg-black text-white border-black">WhatsApp</TooltipContent>
               </Tooltip>
             </TooltipProvider>
             <Button
