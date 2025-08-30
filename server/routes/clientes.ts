@@ -284,8 +284,20 @@ export const deleteCliente: RequestHandler = async (req, res) => {
     await checkUserPermissions(userId, id);
 
     const supabase = getSupabaseServiceClient();
+
+    // Delete child address first to avoid FK issues if cascade is not set
+    await supabase.from("clientes_enderecos").delete().eq("cliente_id", id);
+
     const { error } = await supabase.from("clientes").delete().eq("id", id);
-    if (error) throw error;
+    if (error) {
+      if ((error as any).code === "23503") {
+        return res.status(409).json({
+          error:
+            "Não é possível excluir o Cliente pois existem dependências com outros módulos.",
+        });
+      }
+      throw error;
+    }
 
     res.json({ message: "Cliente excluído com sucesso" });
   } catch (error: any) {
@@ -324,11 +336,22 @@ export const bulkDeleteClientes: RequestHandler = async (req, res) => {
         .json({ error: "Acesso negado para alguns registros" });
     }
 
+    // Delete child addresses first to avoid FK issues
+    await supabase.from("clientes_enderecos").delete().in("cliente_id", ids);
+
     const { error: delError } = await supabase
       .from("clientes")
       .delete()
       .in("id", ids);
-    if (delError) throw delError;
+    if (delError) {
+      if ((delError as any).code === "23503") {
+        return res.status(409).json({
+          error:
+            "Não é possível excluir alguns Clientes pois existem dependências com outros módulos.",
+        });
+      }
+      throw delError;
+    }
 
     res.json({
       message: `${ids.length} cliente(s) excluído(s) com sucesso`,

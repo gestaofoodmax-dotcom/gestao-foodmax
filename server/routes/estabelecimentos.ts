@@ -386,13 +386,41 @@ export const deleteEstabelecimento: RequestHandler = async (req, res) => {
 
     const supabase = getSupabaseServiceClient();
 
-    // Delete estabelecimento (cascade will delete endereco)
+    // Check dependencies (clientes vinculados)
+    const { count: depCount, error: depError } = await supabase
+      .from("clientes")
+      .select("id", { count: "exact", head: true })
+      .eq("id_usuario", userId)
+      .eq("estabelecimento_id", estabelecimentoId);
+    if (depError) throw depError;
+    if ((depCount || 0) > 0) {
+      return res.status(409).json({
+        error:
+          "Não é possível excluir o Estabelecimento pois existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir o estabelecimento.",
+      });
+    }
+
+    // Try deleting child addresses first (in case FK doesn't cascade)
+    await supabase
+      .from("estabelecimentos_enderecos")
+      .delete()
+      .eq("estabelecimento_id", estabelecimentoId);
+
+    // Delete estabelecimento
     const { error } = await supabase
       .from("estabelecimentos")
       .delete()
       .eq("id", estabelecimentoId);
 
-    if (error) throw error;
+    if (error) {
+      if ((error as any).code === "23503") {
+        return res.status(409).json({
+          error:
+            "Não é possível excluir o Estabelecimento pois existem dependências com outros módulos.",
+        });
+      }
+      throw error;
+    }
 
     res.json({ message: "Estabelecimento excluído com sucesso" });
   } catch (error: any) {
@@ -437,13 +465,46 @@ export const bulkDeleteEstabelecimentos: RequestHandler = async (req, res) => {
         .json({ error: "Acesso negado para alguns registros" });
     }
 
+    // Check dependencies: clients linked to any of the establishments
+    const { data: deps, error: depError } = await supabase
+      .from("clientes")
+      .select("estabelecimento_id")
+      .in("estabelecimento_id", ids)
+      .eq("id_usuario", userId);
+    if (depError) throw depError;
+
+    const blockedIds = Array.from(
+      new Set((deps || []).map((d: any) => d.estabelecimento_id)),
+    );
+    if (blockedIds.length > 0) {
+      return res.status(409).json({
+        error:
+          "Não é possível excluir alguns Estabelecimentos pois existem Clientes vinculados.",
+        blockedIds,
+      });
+    }
+
+    // Try deleting child addresses first
+    await supabase
+      .from("estabelecimentos_enderecos")
+      .delete()
+      .in("estabelecimento_id", ids);
+
     // Delete estabelecimentos
     const { error: deleteError } = await supabase
       .from("estabelecimentos")
       .delete()
       .in("id", ids);
 
-    if (deleteError) throw deleteError;
+    if (deleteError) {
+      if ((deleteError as any).code === "23503") {
+        return res.status(409).json({
+          error:
+            "Não é possível excluir alguns Estabelecimentos pois existem dependências com outros módulos.",
+        });
+      }
+      throw deleteError;
+    }
 
     res.json({
       message: `${ids.length} estabelecimento(s) excluído(s) com sucesso`,

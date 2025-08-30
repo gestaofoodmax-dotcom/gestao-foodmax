@@ -335,14 +335,18 @@ export default function ClientesModule() {
       setShowDeleteAlert(false);
       setCurrentCliente(null);
       setSelectedIds([]);
-      loadClientes();
+      await loadClientes();
     } catch (error: any) {
-      const list = readLocal().filter((x) => x.id !== currentCliente.id);
-      writeLocal(list);
-      setClientes(list);
+      toast({
+        title: "Não foi possível excluir",
+        description:
+          error?.message ||
+          "Existem dependências com outros módulos. Remova-as antes de excluir.",
+        variant: "destructive",
+      });
+      await loadClientes();
       setShowDeleteAlert(false);
       setCurrentCliente(null);
-      toast({ title: "Cliente excluído" });
     } finally {
       setDeleteLoading(false);
     }
@@ -361,14 +365,17 @@ export default function ClientesModule() {
       });
       setShowBulkDeleteAlert(false);
       setSelectedIds([]);
-      loadClientes();
+      await loadClientes();
     } catch (error: any) {
-      const list = readLocal().filter((x) => !selectedIds.includes(x.id));
-      writeLocal(list);
-      setClientes(list);
+      toast({
+        title: "Não foi possível excluir algum(ns) registro(s)",
+        description:
+          error?.message ||
+          "Existem dependências com outros módulos. Remova-as antes de excluir.",
+        variant: "destructive",
+      });
+      await loadClientes();
       setShowBulkDeleteAlert(false);
-      setSelectedIds([]);
-      toast({ title: "Clientes excluídos" });
     } finally {
       setDeleteLoading(false);
     }
