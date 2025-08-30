@@ -681,33 +681,38 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
 
         // Check for duplicates (by CNPJ if provided, else by Nome)
         let isDuplicate = false;
+
+        // Only check CNPJ duplicates if CNPJ is provided and valid
         if (cnpj && cnpj.length === 14) {
           const { data: existByCnpj } = await supabase
             .from("estabelecimentos")
-            .select("id")
+            .select("id, nome")
             .eq("id_usuario", userId)
             .eq("cnpj", cnpj)
             .maybeSingle();
           if (existByCnpj) {
-            console.log(`[DEBUG] Duplicate CNPJ found: ${cnpj}`);
+            console.log(`[DEBUG] Duplicate CNPJ found: ${cnpj} (existing: ${existByCnpj.nome})`);
             isDuplicate = true;
           }
         }
+
+        // Always check for name duplicates (since nome is required)
         if (!isDuplicate) {
           const { data: existByName } = await supabase
             .from("estabelecimentos")
-            .select("id")
+            .select("id, cnpj")
             .eq("id_usuario", userId)
-            .eq("nome", nome)
+            .ilike("nome", nome) // Case-insensitive comparison
             .maybeSingle();
           if (existByName) {
-            console.log(`[DEBUG] Duplicate name found: ${nome}`);
+            console.log(`[DEBUG] Duplicate name found: ${nome} (existing CNPJ: ${existByName.cnpj})`);
             isDuplicate = true;
           }
         }
+
         if (isDuplicate) {
           errors.push(
-            `Linha ${i + 1}: Estabelecimento duplicado (nome ou CNPJ)`,
+            `Linha ${i + 1}: Estabelecimento duplicado (nome ou CNPJ já existe)`,
           );
           continue;
         }
