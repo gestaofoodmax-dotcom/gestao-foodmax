@@ -16,14 +16,6 @@ import { Switch } from "@/components/ui/switch";
 import { X, Save, Phone, MapPin, Info } from "lucide-react";
 import { DDISelect } from "@/components/ddi-select";
 import { toast } from "@/hooks/use-toast";
-import { useAuthenticatedRequest } from "@/hooks/use-auth";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Fornecedor,
   CreateFornecedorRequest,
@@ -32,12 +24,8 @@ import {
   validateEmail,
   validateCEP,
 } from "@shared/fornecedores";
-import { Estabelecimento } from "@shared/estabelecimentos";
 
 const fornecedorSchema = z.object({
-  estabelecimento_id: z.number({
-    invalid_type_error: "Estabelecimento é obrigatório",
-  }),
   nome: z.string().min(1, "Nome é obrigatório"),
   razao_social: z.string().optional(),
   cnpj: z
@@ -100,7 +88,6 @@ export function FornecedorForm({
   } = useForm<FornecedorFormSchema>({
     resolver: zodResolver(fornecedorSchema),
     defaultValues: {
-      estabelecimento_id: undefined as unknown as number,
       nome: "",
       razao_social: "",
       cnpj: "",
@@ -119,16 +106,11 @@ export function FornecedorForm({
 
   const watchedDDI = watch("ddi");
   const watchedAtivo = watch("ativo");
-  const watchedEstabelecimentoId = watch("estabelecimento_id");
-
-  const { makeRequest } = useAuthenticatedRequest();
-  const [estabelecimentos, setEstabelecimentos] = useState<Estabelecimento[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       if (fornecedor) {
         const formData = {
-          estabelecimento_id: watchedEstabelecimentoId as any,
           nome: fornecedor.nome,
           razao_social: fornecedor.razao_social || "",
           cnpj: fornecedor.cnpj || "",
@@ -142,12 +124,11 @@ export function FornecedorForm({
           cidade: fornecedor.endereco?.cidade || "",
           uf: fornecedor.endereco?.uf || "",
           pais: fornecedor.endereco?.pais || "Brasil",
-        } as any;
+        };
         reset(formData);
         setCNPJDisplay(formData.cnpj);
       } else {
         reset({
-          estabelecimento_id: watchedEstabelecimentoId as any,
           nome: "",
           razao_social: "",
           cnpj: "",
@@ -161,37 +142,12 @@ export function FornecedorForm({
           cidade: "",
           uf: "",
           pais: "Brasil",
-        } as any);
+        });
         setCNPJDisplay("");
       }
     }
-  }, [isOpen, fornecedor, reset, watchedEstabelecimentoId]);
+  }, [isOpen, fornecedor, reset]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const loadEstabelecimentos = async () => {
-      try {
-        let data: Estabelecimento[] = [];
-        try {
-          const params = new URLSearchParams({ page: "1", limit: "200" });
-          const res = await makeRequest(`/api/estabelecimentos?${params}`);
-          data = (res.data || []) as Estabelecimento[];
-        } catch {
-          const raw = localStorage.getItem("fm_estabelecimentos");
-          data = raw ? (JSON.parse(raw) as Estabelecimento[]) : [];
-        }
-        data.sort((a, b) => (a.data_cadastro < b.data_cadastro ? 1 : -1));
-        setEstabelecimentos(data);
-        if (!isEditing) {
-          const lastActive = data.find((e) => e.ativo);
-          if (lastActive) setValue("estabelecimento_id", lastActive.id as any);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    loadEstabelecimentos();
-  }, [isOpen, isEditing, makeRequest, setValue]);
 
   const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numbers = e.target.value.replace(/\D/g, "").slice(0, 14);
