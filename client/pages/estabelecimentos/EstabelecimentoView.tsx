@@ -16,7 +16,6 @@ import {
   Info,
   Edit,
   X,
-  Mail,
   FileText,
   Calendar,
   ToggleLeft,
@@ -138,20 +137,10 @@ export function EstabelecimentoView({
             <div className="grid grid-cols-2 gap-4">
               <DataField label="Nome" value={estabelecimento.nome} />
 
-              <DataField
-                label="Tipo de Estabelecimento"
-                value={
-                  <span className="text-black">
-                    {estabelecimento.tipo_estabelecimento}
-                  </span>
-                }
-              />
-
               {estabelecimento.razao_social && (
                 <DataField
                   label="Razão Social"
                   value={estabelecimento.razao_social}
-                  fullWidth
                 />
               )}
 
@@ -160,14 +149,11 @@ export function EstabelecimentoView({
               )}
 
               <DataField
-                label="Email"
+                label="Tipo de Estabelecimento"
                 value={
-                  <a
-                    href={`mailto:${estabelecimento.email}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {estabelecimento.email}
-                  </a>
+                  <span className="text-black">
+                    {estabelecimento.tipo_estabelecimento}
+                  </span>
                 }
               />
             </div>
@@ -181,6 +167,17 @@ export function EstabelecimentoView({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
+              <DataField
+                label="Email"
+                value={
+                  <a
+                    href={`mailto:${estabelecimento.email}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {estabelecimento.email}
+                  </a>
+                }
+              />
               <DataField
                 label="Telefone"
                 value={
@@ -211,6 +208,13 @@ export function EstabelecimentoView({
                   <DataField label="CEP" value={estabelecimento.endereco.cep} />
                 )}
 
+                {estabelecimento.endereco.endereco && (
+                  <DataField
+                    label="Endereço"
+                    value={estabelecimento.endereco.endereco}
+                  />
+                )}
+
                 {estabelecimento.endereco.cidade &&
                   estabelecimento.endereco.uf && (
                     <DataField
@@ -218,14 +222,6 @@ export function EstabelecimentoView({
                       value={formatEndereco(estabelecimento.endereco)}
                     />
                   )}
-
-                {estabelecimento.endereco.endereco && (
-                  <DataField
-                    label="Endereço"
-                    value={estabelecimento.endereco.endereco}
-                    fullWidth
-                  />
-                )}
 
                 <DataField label="País" value={estabelecimento.endereco.pais} />
               </div>
@@ -253,10 +249,10 @@ export function EstabelecimentoView({
               />
 
               <DataField
-                label="Status"
+                label="Ativo"
                 value={
                   <span className="text-black">
-                    {estabelecimento.ativo ? "Ativo" : "Inativo"}
+                    {estabelecimento.ativo ? "Sim" : "Não"}
                   </span>
                 }
               />

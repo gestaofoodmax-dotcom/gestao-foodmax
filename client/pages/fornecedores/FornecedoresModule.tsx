@@ -5,7 +5,7 @@ import {
   Home,
   Users,
   Store,
-  Phone,
+  Truck,
   Plus,
   Download,
   Upload,
@@ -93,7 +93,7 @@ function FornecedoresModule() {
     { icon: Home, label: "Dashboard", route: "/dashboard" },
     { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
     { icon: Users, label: "Clientes", route: "/clientes" },
-    { icon: Phone, label: "Fornecedores", route: "/fornecedores" },
+    { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {
@@ -176,7 +176,14 @@ function FornecedoresModule() {
                     className="h-8 w-8 p-0 rounded-full border bg-gray-50 hover:bg-gray-100 border-gray-300 flex items-center justify-center"
                     title="WhatsApp"
                   >
-                    <Phone className="w-4 h-4 text-gray-700" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 448 512"
+                      className="w-4 h-4 text-gray-700 fill-current"
+                      aria-hidden="true"
+                    >
+                      <path d="M380.9 97.1C339 55.2 283.2 32 224.5 32 106 32 9.4 128.6 9.4 247.1c0 38.1 9.9 75.3 28.6 108.2L0 480l127.5-33.5c31.3 17.1 66.6 26.1 102.5 26.1h.1c118.5 0 215.1-96.6 215.1-215.1 0-58.7-23.2-114.5-64.2-156.4zM224.1 438.6h-.1c-32.1 0-63.5-8.6-90.8-24.8l-6.5-3.9-75.6 19.9 20.2-73.6-4.1-6.7c-17.5-28.6-26.8-61.6-26.8-95.4 0-99.2 80.8-180 180-180 48.1 0 93.3 18.7 127.3 52.7 34 34 52.7 79.2 52.7 127.3-.1 99.1-80.9 179.9-180 179.9zm99.5-138.7c-5.5-2.8-32.7-16.1-37.7-17.9-5-1.9-8.6-2.8-12.2 2.8-3.6 5.5-14 17.9-17.2 21.5-3.2 3.6-6.4 4.1-11.9 1.4-32.7-16.1-54-28.8-75.5-65.1-5.7-9.8 5.7-9.1 16.1-30.3 1.8-3.6.9-6.6-.5-9.4-1.4-2.8-12.2-29.5-16.8-40.4-4.4-10.6-8.9-9.1-12.2-9.3-3.1-.2-6.6-.2-10.1-.2-3.6 0-9.3 1.3-14.1 6.6-4.8 5.3-18.5 18.1-18.5 44.2s18.9 51.3 21.5 54.9c2.6 3.6 37.2 56.8 90.2 79.7 12.6 5.4 22.4 8.6 30 11 12.6 4 24.1 3.4 33.1 2.1 10.1-1.5 32.7-13.3 37.3-26.2 4.6-12.9 4.6-24 3.2-26.3-1.3-2.3-5-3.6-10.5-6.4z" />
+                    </svg>
                   </a>
                 </TooltipTrigger>
                 <TooltipContent side="top">WhatsApp</TooltipContent>
@@ -471,6 +478,77 @@ function FornecedoresModule() {
     }
   };
 
+  const onlyDigits = (v: any) => String(v || "").replace(/\D/g, "");
+  const toBool = (v: any): boolean | undefined => {
+    if (typeof v === "boolean") return v;
+    if (v == null || v === "") return undefined;
+    const s = String(v).trim().toLowerCase();
+    if (["1", "true", "ativo", "yes", "sim"].includes(s)) return true;
+    if (["0", "false", "inativo", "no", "nao", "não"].includes(s)) return false;
+    return undefined;
+  };
+
+  const handleImport = async (records: any[]) => {
+    console.log("Processing import records:", records);
+
+    try {
+      const response = await makeRequest(`/api/fornecedores/import`, {
+        method: "POST",
+        body: JSON.stringify({ records }),
+      });
+      loadFornecedores();
+      return response;
+    } catch (error: any) {
+      console.log("API failed, using local storage fallback", error);
+
+      // Fallback to local storage
+      const list = readLocal();
+      const now = new Date().toISOString();
+
+      const mapped = records.map((r: any, i: number) => ({
+        id: Date.now() + i,
+        id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
+        nome: r.nome || "",
+        razao_social: r.razao_social,
+        cnpj: r.cnpj,
+        email: r.email || "",
+        ddi: r.ddi || "+55",
+        telefone: r.telefone || "",
+        nome_responsavel: r.nome_responsavel,
+        ativo: r.ativo ?? true,
+        data_cadastro: now,
+        data_atualizacao: now,
+        endereco:
+          r.cep || r.endereco || r.cidade
+            ? {
+                id: Date.now() + i,
+                fornecedor_id: 0,
+                cep: r.cep,
+                endereco: r.endereco,
+                cidade: r.cidade,
+                uf: r.uf,
+                pais: r.pais || "Brasil",
+                data_cadastro: now,
+                data_atualizacao: now,
+              }
+            : undefined,
+      })) as Fornecedor[];
+
+      console.log("Mapped records for local storage:", mapped);
+
+      const merged = [...mapped, ...list];
+      writeLocal(merged);
+      setFornecedores(merged);
+
+      return {
+        success: true,
+        message: "Importação concluída",
+        imported: mapped.length,
+        errors: [],
+      };
+    }
+  };
+
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
       <div
@@ -635,7 +713,22 @@ function FornecedoresModule() {
       <ExportModal
         isOpen={showExport}
         onClose={() => setShowExport(false)}
-        data={fornecedores}
+        data={fornecedores.map((fornecedor) => ({
+          nome: fornecedor.nome,
+          razao_social: fornecedor.razao_social || "",
+          cnpj: fornecedor.cnpj || "",
+          email: fornecedor.email,
+          ddi: fornecedor.ddi,
+          telefone: fornecedor.telefone,
+          nome_responsavel: fornecedor.nome_responsavel || "",
+          cep: fornecedor.endereco?.cep || "",
+          endereco: fornecedor.endereco?.endereco || "",
+          cidade: fornecedor.endereco?.cidade || "",
+          uf: fornecedor.endereco?.uf || "",
+          pais: fornecedor.endereco?.pais || "Brasil",
+          ativo: fornecedor.ativo ? "Ativo" : "Inativo",
+          data_cadastro: fornecedor.data_cadastro,
+        }))}
         selectedIds={selectedIds}
         moduleName="Fornecedores"
         columns={[
@@ -674,15 +767,98 @@ function FornecedoresModule() {
           { key: "pais", label: "País" },
           { key: "ativo", label: "Status" },
         ]}
-        onImport={async () => ({
-          success: true,
-          message: "Importação disponível em breve",
-          imported: 0,
-        })}
+        onImport={handleImport}
         userRole={"admin"}
         hasPayment={true}
-        mapHeader={(h) => h}
-        validateRecord={() => []}
+        mapHeader={(header) => {
+          const map: Record<string, string> = {
+            Nome: "nome",
+            "Razão Social": "razao_social",
+            "Razao Social": "razao_social",
+            Cnpj: "cnpj",
+            CNPJ: "cnpj",
+            Email: "email",
+            DDI: "ddi",
+            Ddi: "ddi",
+            Telefone: "telefone",
+            "Nome Responsavel": "nome_responsavel",
+            "Nome Responsável": "nome_responsavel",
+            CEP: "cep",
+            Cep: "cep",
+            Endereço: "endereco",
+            Endereco: "endereco",
+            Cidade: "cidade",
+            UF: "uf",
+            Uf: "uf",
+            País: "pais",
+            Pais: "pais",
+            Ativo: "ativo",
+            Status: "ativo",
+            "Data de Cadastro": "data_cadastro",
+            "Data Cadastro": "data_cadastro",
+          };
+          const mapped =
+            map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          console.log(`Header mapping: "${header}" -> "${mapped}"`);
+          return mapped;
+        }}
+        validateRecord={(record, index) => {
+          const errors: string[] = [];
+          const required = ["nome", "email", "ddi", "telefone"];
+
+          console.log(`Validating record ${index + 1}:`, record);
+
+          required.forEach((k) => {
+            if (!record[k] || String(record[k]).trim() === "") {
+              errors.push(`Campo obrigatório '${k}' não preenchido`);
+            }
+          });
+
+          if (
+            record.email &&
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(record.email)
+          ) {
+            errors.push("Email inválido");
+          }
+
+          if (record.cnpj && String(record.cnpj).trim() !== "") {
+            const digits = String(record.cnpj).replace(/\D/g, "");
+            if (digits.length > 0 && digits.length !== 14) {
+              errors.push("CNPJ deve ter 14 dígitos quando preenchido");
+            } else if (digits.length === 14) {
+              record.cnpj = digits;
+            } else {
+              record.cnpj = undefined;
+            }
+          } else {
+            record.cnpj = undefined;
+          }
+
+          // Normalize DDI
+          if (record.ddi && record.ddi.trim() !== "") {
+            let cleaned = String(record.ddi).replace(/\D/g, "");
+            if (!cleaned.startsWith("55")) cleaned = "55";
+            record.ddi = "+" + cleaned;
+          } else {
+            record.ddi = "+55";
+          }
+
+          // Normalize telefone
+          if (record.telefone) {
+            record.telefone = String(record.telefone).replace(/\D/g, "");
+          }
+
+          // Normalize boolean
+          record.ativo = toBool(record.ativo) ?? true;
+
+          console.log(
+            `Record ${index + 1} after validation:`,
+            record,
+            "Errors:",
+            errors,
+          );
+          return errors;
+        }}
       />
       <DeleteAlert
         isOpen={showDeleteAlert}

@@ -119,9 +119,25 @@ export function DataGrid({
 
   // Pagination
   const paginatedData = useMemo(() => {
+    const isServerSide =
+      typeof totalRecords === "number" &&
+      totalRecords > filteredAndSortedData.length &&
+      typeof onPageChange === "function";
+
+    if (isServerSide) {
+      // Data already corresponds to the current page from the server
+      return filteredAndSortedData;
+    }
+
     const startIndex = (currentPage - 1) * pageSize;
     return filteredAndSortedData.slice(startIndex, startIndex + pageSize);
-  }, [filteredAndSortedData, currentPage, pageSize]);
+  }, [
+    filteredAndSortedData,
+    currentPage,
+    pageSize,
+    totalRecords,
+    onPageChange,
+  ]);
 
   const totalPages = Math.ceil(
     (totalRecords || filteredAndSortedData.length) / pageSize,

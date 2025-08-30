@@ -9,17 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Cliente } from "@shared/clientes";
 import { formatEndereco, formatTelefone } from "@shared/clientes";
-import {
-  Phone,
-  MapPin,
-  Info,
-  Edit,
-  X,
-  Mail,
-  User,
-  Calendar,
-  MessageCircle,
-} from "lucide-react";
+import { Phone, MapPin, Info, Edit, X, User, Calendar } from "lucide-react";
 
 interface ClienteViewProps {
   isOpen: boolean;
@@ -120,19 +110,6 @@ export function ClienteView({
               {cliente.profissao && (
                 <DataField label="Profissão" value={cliente.profissao} />
               )}
-              {cliente.email && (
-                <DataField
-                  label="Email"
-                  value={
-                    <a
-                      href={`mailto:${cliente.email}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {cliente.email}
-                    </a>
-                  }
-                />
-              )}
             </div>
           </div>
 
@@ -143,6 +120,19 @@ export function ClienteView({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <DataField
+                label="Email"
+                value={
+                  cliente.email ? (
+                    <a
+                      href={`mailto:${cliente.email}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {cliente.email}
+                    </a>
+                  ) : null
+                }
+              />
+              <DataField
                 label="Telefone"
                 value={
                   <a
@@ -150,19 +140,6 @@ export function ClienteView({
                     className="text-blue-600 hover:underline"
                   >
                     {formatTelefone(cliente.ddi, cliente.telefone)}
-                  </a>
-                }
-              />
-              <DataField
-                label="WhatsApp"
-                value={
-                  <a
-                    href={`http://wa.me/${cliente.ddi}${cliente.telefone}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-blue-600 hover:underline"
-                  >
-                    <MessageCircle className="w-4 h-4" /> Abrir conversa
                   </a>
                 }
               />
@@ -179,17 +156,16 @@ export function ClienteView({
                 {cliente.endereco.cep && (
                   <DataField label="CEP" value={cliente.endereco.cep} />
                 )}
-                {(cliente.endereco.cidade || cliente.endereco.uf) && (
-                  <DataField
-                    label="Cidade/UF"
-                    value={formatEndereco(cliente.endereco)}
-                  />
-                )}
                 {cliente.endereco.endereco && (
                   <DataField
                     label="Endereço"
                     value={cliente.endereco.endereco}
-                    fullWidth
+                  />
+                )}
+                {(cliente.endereco.cidade || cliente.endereco.uf) && (
+                  <DataField
+                    label="Cidade/UF"
+                    value={formatEndereco(cliente.endereco)}
                   />
                 )}
                 <DataField label="País" value={cliente.endereco.pais} />
@@ -212,6 +188,14 @@ export function ClienteView({
               <DataField
                 label="Data de Atualização"
                 value={formatDate(cliente.data_atualizacao)}
+              />
+              <DataField
+                label="Ativo"
+                value={
+                  <span className="text-black">
+                    {cliente.ativo ? "Sim" : "Não"}
+                  </span>
+                }
               />
               <DataField
                 label="Aceita Promoções"
