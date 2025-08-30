@@ -233,6 +233,8 @@ export function ImportModal({
   };
 
   const handleImport = async () => {
+    console.log("[DEBUG] Import started - userRole:", userRole, "hasPayment:", hasPayment, "canImport:", canImport);
+
     if (!selectedFile) {
       toast({
         title: "Nenhum arquivo selecionado",
