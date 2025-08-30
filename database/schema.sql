@@ -206,3 +206,26 @@ create index if not exists itens_nome_idx on public.itens(nome);
 create trigger itens_set_updated_at
 before update on public.itens
 for each row execute function public.set_updated_at();
+
+-- Seed function for default categorias (12 principais)
+create or replace function public.seed_itens_categorias_defaults(p_user_id bigint)
+returns void as $$
+begin
+  if not exists (select 1 from public.itens_categorias where id_usuario = p_user_id) then
+    insert into public.itens_categorias (id_usuario, nome, descricao, ativo)
+    values
+      (p_user_id, 'Carnes', 'Cortes bovinos, suínos e outras carnes vermelhas.', true),
+      (p_user_id, 'Aves', 'Frango, peru e outras aves.', true),
+      (p_user_id, 'Peixes', 'Peixes e frutos do mar frescos ou congelados.', true),
+      (p_user_id, 'Laticínios', 'Leite, queijos, iogurtes e derivados.', true),
+      (p_user_id, 'Bebidas', 'Bebidas alcoólicas e não alcoólicas.', true),
+      (p_user_id, 'Vegetais', 'Hortaliças e legumes frescos.', true),
+      (p_user_id, 'Frutas', 'Frutas frescas e secas.', true),
+      (p_user_id, 'Massas', 'Massas secas e frescas.', true),
+      (p_user_id, 'Grãos e Cereais', 'Arroz, feijão, aveia e outros grãos.', true),
+      (p_user_id, 'Padaria', 'Pães, bolos e produtos de panificação.', true),
+      (p_user_id, 'Sobremesas', 'Doces, tortas e sobremesas em geral.', true),
+      (p_user_id, 'Temperos e Condimentos', 'Ervas, especiarias e molhos prontos.', true);
+  end if;
+end;
+$$ language plpgsql;
