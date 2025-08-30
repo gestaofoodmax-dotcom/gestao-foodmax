@@ -503,7 +503,7 @@ export function ClienteForm({
                       Ativo
                     </Label>
                     <p className="text-sm text-gray-600">
-                      {watchedAtivo ? "Ativo" : "Inativo"}
+                      {watchedAtivo ? "Sim" : "Não"}
                     </p>
                   </div>
                 </div>
