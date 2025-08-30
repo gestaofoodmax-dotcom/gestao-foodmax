@@ -151,7 +151,7 @@ export function ImportModal({
 
       // Add artificial delay for better UX on small datasets
       if (records.length < 50) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise((resolve) => setTimeout(resolve, 50));
       }
 
       // Process fields that start with id_ (relationships)
@@ -197,7 +197,7 @@ export function ImportModal({
 
     // Ensure we reach 40% before moving to next phase
     setProgress(40);
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     return processedRecords;
   };
@@ -255,13 +255,13 @@ export function ImportModal({
 
         // Show initial parsing progress
         setProgress(10);
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
         const parsed = parseCSV(text);
 
         // Show parsing completion
         setProgress(20);
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
         if (parsed.length === 0) {
           toast({
@@ -296,7 +296,7 @@ export function ImportModal({
 
           // Add small delay for better UX on small datasets
           if (parsed.length < 50 && i % 5 === 0) {
-            await new Promise(resolve => setTimeout(resolve, 50));
+            await new Promise((resolve) => setTimeout(resolve, 50));
           }
 
           if (recordErrors.length > 0) {
@@ -319,7 +319,7 @@ export function ImportModal({
 
         // Show validation completion
         setProgress(60);
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
 
         // Process related fields
         const processedRecords = onGetRelatedId
@@ -327,13 +327,13 @@ export function ImportModal({
           : validRecords;
 
         setProgress(75);
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
 
         // Import the data
         const result: any = await onImport(processedRecords);
 
         setProgress(95);
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         const importedCount =
           typeof result?.imported === "number"
@@ -344,7 +344,7 @@ export function ImportModal({
 
         // Final progress
         setProgress(100);
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         if (result.success && importedCount > 0) {
           toast({

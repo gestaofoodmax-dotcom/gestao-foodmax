@@ -99,7 +99,7 @@ export function ExportModal({
 
       // Add artificial delay for better UX on small datasets
       if (records.length < 50) {
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await new Promise((resolve) => setTimeout(resolve, 50));
       }
 
       // Process fields that start with id_ (relationships)
@@ -125,7 +125,7 @@ export function ExportModal({
 
     // Ensure we reach 90% before final steps
     setProgress(90);
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     return processedRecords;
   };
@@ -217,7 +217,7 @@ export function ExportModal({
 
       // Show processing completion
       setProgress(95);
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Convert to CSV
       const csvContent = convertToCSV(processedData);
@@ -237,7 +237,7 @@ export function ExportModal({
 
       // Final progress
       setProgress(100);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       toast({
         title: "Exportação concluída",

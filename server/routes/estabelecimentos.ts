@@ -607,7 +607,8 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
       if (v == null || v === "") return undefined;
       const s = String(v).trim().toLowerCase();
       if (["1", "true", "ativo", "sim", "yes"].includes(s)) return true;
-      if (["0", "false", "inativo", "nao", "não", "no"].includes(s)) return false;
+      if (["0", "false", "inativo", "nao", "não", "no"].includes(s))
+        return false;
       return undefined;
     };
 
@@ -634,8 +635,18 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
           continue;
         }
 
-        const tipoEstabelecimento = String(raw.tipo_estabelecimento || raw.tipo || "").trim();
-        const validTipos = ["Restaurante", "Bar", "Lancheria", "Churrascaria", "Petiscaria", "Pizzaria", "Outro"];
+        const tipoEstabelecimento = String(
+          raw.tipo_estabelecimento || raw.tipo || "",
+        ).trim();
+        const validTipos = [
+          "Restaurante",
+          "Bar",
+          "Lancheria",
+          "Churrascaria",
+          "Petiscaria",
+          "Pizzaria",
+          "Outro",
+        ];
         if (!validTipos.includes(tipoEstabelecimento)) {
           errors.push(`Linha ${i + 1}: Tipo de estabelecimento inválido`);
           continue;
@@ -650,14 +661,18 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
         }
 
         const cnpj = onlyDigits(raw.cnpj || "");
-        const razaoSocial = raw.razao_social ? String(raw.razao_social).trim() : undefined;
+        const razaoSocial = raw.razao_social
+          ? String(raw.razao_social).trim()
+          : undefined;
         const ativo = toBool(raw.ativo) ?? true;
 
         // Address fields
         const cep = onlyDigits(raw.cep || "");
         const endereco = raw.endereco ? String(raw.endereco).trim() : undefined;
         const cidade = raw.cidade ? String(raw.cidade).trim() : undefined;
-        const uf = raw.uf ? String(raw.uf).trim().toUpperCase().slice(0, 2) : undefined;
+        const uf = raw.uf
+          ? String(raw.uf).trim().toUpperCase().slice(0, 2)
+          : undefined;
         const pais = raw.pais ? String(raw.pais).trim() : "Brasil";
 
         // Check for duplicates (by CNPJ if provided, else by Nome)
