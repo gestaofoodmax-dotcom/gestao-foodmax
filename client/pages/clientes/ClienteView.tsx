@@ -118,19 +118,6 @@ export function ClienteView({
               {cliente.profissao && (
                 <DataField label="Profissão" value={cliente.profissao} />
               )}
-              {cliente.email && (
-                <DataField
-                  label="Email"
-                  value={
-                    <a
-                      href={`mailto:${cliente.email}`}
-                      className="text-blue-600 hover:underline"
-                    >
-                      {cliente.email}
-                    </a>
-                  }
-                />
-              )}
             </div>
           </div>
 
@@ -206,6 +193,10 @@ export function ClienteView({
               <DataField
                 label="Data de Atualização"
                 value={formatDate(cliente.data_atualizacao)}
+              />
+              <DataField
+                label=""
+                value={<span className="text-black">{cliente.ativo ? "Ativo" : "Inativo"}</span>}
               />
               <DataField
                 label="Aceita Promoções"
