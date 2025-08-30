@@ -404,3 +404,181 @@ export const toggleFornecedorStatus: RequestHandler = async (req, res) => {
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
+
+export const importFornecedores: RequestHandler = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+
+    await checkUserPermissions(userId);
+
+    const { records } = z
+      .object({
+        records: z.array(z.record(z.any())),
+      })
+      .parse(req.body);
+
+    if (records.length === 0) {
+      return res.status(400).json({ error: "Nenhum registro fornecido" });
+    }
+
+    if (records.length > 1000) {
+      return res.status(400).json({
+        error: "Só é possível importar até 1000 registros por arquivo",
+      });
+    }
+
+    const supabase = getSupabaseServiceClient();
+    const imported: any[] = [];
+    const errors: string[] = [];
+
+    console.log(
+      `[DEBUG] Starting import of ${records.length} records for user ${userId}`,
+    );
+
+    // Helper functions
+    const toBool = (v: any): boolean | undefined => {
+      if (typeof v === "boolean") return v;
+      if (v == null || v === "") return undefined;
+      const s = String(v).trim().toLowerCase();
+      if (["1", "true", "ativo", "sim", "yes"].includes(s)) return true;
+      if (["0", "false", "inativo", "nao", "não", "no"].includes(s))
+        return false;
+      return undefined;
+    };
+
+    const onlyDigits = (v: any): string => String(v || "").replace(/\D/g, "");
+
+    for (let i = 0; i < records.length; i++) {
+      try {
+        const raw = records[i] as any;
+
+        // Normalize and validate data
+        const nome = String(raw.nome || "").trim();
+        if (!nome) {
+          errors.push(`Linha ${i + 1}: Nome é obrigatório`);
+          continue;
+        }
+
+        const email = raw.email ? String(raw.email).trim() : undefined;
+        if (!email) {
+          errors.push(`Linha ${i + 1}: Email é obrigatório`);
+          continue;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          errors.push(`Linha ${i + 1}: Email inválido`);
+          continue;
+        }
+
+        const ddiRaw = String(raw.ddi || "+55").replace(/\D/g, "");
+        const ddi = `+${ddiRaw || "55"}`;
+        const telefone = onlyDigits(raw.telefone || "");
+        if (!telefone) {
+          errors.push(`Linha ${i + 1}: Telefone é obrigatório`);
+          continue;
+        }
+
+        const cnpj = onlyDigits(raw.cnpj || "");
+        const razaoSocial = raw.razao_social
+          ? String(raw.razao_social).trim()
+          : undefined;
+        const nomeResponsavel = raw.nome_responsavel
+          ? String(raw.nome_responsavel).trim()
+          : undefined;
+        const ativo = toBool(raw.ativo) ?? true;
+
+        console.log(
+          `[DEBUG] Processing record ${i + 1}: ${nome}, CNPJ: ${cnpj}, Email: ${email}`,
+        );
+
+        // Address fields
+        const cep = onlyDigits(raw.cep || "");
+        const endereco = raw.endereco ? String(raw.endereco).trim() : undefined;
+        const cidade = raw.cidade ? String(raw.cidade).trim() : undefined;
+        const uf = raw.uf
+          ? String(raw.uf).trim().toUpperCase().slice(0, 2)
+          : undefined;
+        const pais = raw.pais ? String(raw.pais).trim() : "Brasil";
+
+        // Check for duplicates by name for same user
+        const { data: existByName } = await supabase
+          .from("fornecedores")
+          .select("id")
+          .eq("id_usuario", userId)
+          .ilike("nome", nome)
+          .maybeSingle();
+        if (existByName) {
+          errors.push(`Linha ${i + 1}: Fornecedor com este nome já existe`);
+          continue;
+        }
+
+        // Create fornecedor
+        const { data: novoFornecedor, error: fornError } = await supabase
+          .from("fornecedores")
+          .insert({
+            nome,
+            razao_social: razaoSocial,
+            cnpj: cnpj || null,
+            email,
+            ddi,
+            telefone,
+            nome_responsavel: nomeResponsavel,
+            ativo,
+            id_usuario: userId,
+          })
+          .select()
+          .single();
+
+        if (fornError) throw fornError;
+
+        // Create endereco if provided
+        if (cep || endereco || cidade || uf || pais) {
+          await supabase.from("fornecedores_enderecos").insert({
+            fornecedor_id: novoFornecedor.id,
+            cep: cep || null,
+            endereco: endereco || null,
+            cidade: cidade || null,
+            uf: uf || null,
+            pais: pais || "Brasil",
+          });
+        }
+
+        imported.push(novoFornecedor);
+        console.log(`[DEBUG] Successfully imported record ${i + 1}: ${nome}`);
+      } catch (recordError: any) {
+        console.error(
+          `[DEBUG] Failed to import record ${i + 1}:`,
+          recordError,
+        );
+        errors.push(`Linha ${i + 1}: ${recordError.message}`);
+      }
+    }
+
+    console.log(
+      `[DEBUG] Import completed: ${imported.length} imported, ${errors.length} errors`,
+    );
+    if (errors.length > 0) {
+      console.log(`[DEBUG] Import errors:`, errors);
+    }
+
+    res.json({
+      success: true,
+      message: `${imported.length} fornecedor(es) importado(s) com sucesso`,
+      imported: imported.length,
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: "Dados inválidos",
+        details: error.errors,
+      });
+    }
+    console.error("Import fornecedores error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erro interno do servidor",
+    });
+  }
+};
