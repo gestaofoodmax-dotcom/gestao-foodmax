@@ -226,7 +226,6 @@ export function FornecedorForm({
   };
 
   const fieldLabels: Record<string, string> = {
-    estabelecimento_id: "Estabelecimento",
     nome: "Nome",
     email: "Email",
     ddi: "DDI",
@@ -278,31 +277,6 @@ export function FornecedorForm({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm font-medium">Estabelecimento *</Label>
-                <Select
-                  value={watchedEstabelecimentoId ? String(watchedEstabelecimentoId) : undefined}
-                  onValueChange={(v) => setValue("estabelecimento_id", Number(v) as any)}
-                >
-                  <SelectTrigger className={getInputClassName("estabelecimento_id")}>
-                    <SelectValue placeholder="Selecione o estabelecimento" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {estabelecimentos
-                      .sort((a, b) => (a.data_cadastro < b.data_cadastro ? 1 : -1))
-                      .map((e) => (
-                        <SelectItem key={e.id} value={String(e.id)}>
-                          {e.nome}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                {getFieldError("estabelecimento_id") && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {getFieldError("estabelecimento_id")}
-                  </p>
-                )}
-              </div>
               <div>
                 <Label htmlFor="nome" className="text-sm font-medium">
                   Nome *
