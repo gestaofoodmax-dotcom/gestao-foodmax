@@ -18,6 +18,7 @@ import {
   deleteFornecedor,
   bulkDeleteFornecedores,
   toggleFornecedorStatus,
+  importFornecedores,
 } from "./routes/fornecedores";
 import {
   listEstabelecimentos,
