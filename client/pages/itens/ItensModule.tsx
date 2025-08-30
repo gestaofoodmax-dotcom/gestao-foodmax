@@ -12,6 +12,10 @@ import {
   Eye,
   Edit,
   Power,
+  Upload,
+  Download,
+  List,
+  Tag,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -27,11 +31,11 @@ import {
   ItensListResponse,
   ItensCategoriasListResponse,
   formatCurrencyBRL,
-  principaisCategorias,
 } from "@shared/itens";
 import ItemForm from "./ItemForm";
 import ItemView from "./ItemView";
 import CategoriaForm from "./CategoriaForm";
+import CategoriaView from "./CategoriaView";
 import { DeleteAlert } from "@/components/alert-dialog-component";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
@@ -52,6 +56,7 @@ export default function ItensModule() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showCategoriaView, setShowCategoriaView] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -255,7 +260,10 @@ export default function ItensModule() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setCurrentCategoria(r)}
+              onClick={() => {
+                setCurrentCategoria(r);
+                setShowCategoriaView(true);
+              }}
               className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
               title="Visualizar"
             >
@@ -340,71 +348,9 @@ export default function ItensModule() {
     loadItens();
   }, [loadItens, loadCategorias, isLoading]);
 
-  // First access default categories injection when opening tab or combobox (handled here on tab focus)
   useEffect(() => {
-    if (activeTab === "categorias") {
-      if (
-        categorias.length === 0 &&
-        !localStorage.getItem("fm_itens_categorias_seeded")
-      ) {
-        const now = new Date().toISOString();
-        const defaults = [
-          {
-            nome: "Carnes",
-            descricao: "Cortes bovinos, suínos e outras carnes vermelhas.",
-          },
-          { nome: "Aves", descricao: "Frango, peru e outras aves." },
-          {
-            nome: "Peixes",
-            descricao: "Peixes e frutos do mar frescos ou congelados.",
-          },
-          {
-            nome: "Laticínios",
-            descricao: "Leite, queijos, iogurtes e derivados.",
-          },
-          {
-            nome: "Bebidas",
-            descricao: "Bebidas alcoólicas e não alcoólicas.",
-          },
-          { nome: "Vegetais", descricao: "Hortaliças e legumes frescos." },
-          { nome: "Frutas", descricao: "Frutas frescas e secas." },
-          { nome: "Massas", descricao: "Massas secas e frescas." },
-          {
-            nome: "Grãos e Cereais",
-            descricao: "Arroz, feijão, aveia e outros grãos.",
-          },
-          {
-            nome: "Padaria",
-            descricao: "Pães, bolos e produtos de panificação.",
-          },
-          {
-            nome: "Sobremesas",
-            descricao: "Doces, tortas e sobremesas em geral.",
-          },
-          {
-            nome: "Temperos e Condimentos",
-            descricao: "Ervas, especiarias e molhos prontos.",
-          },
-        ];
-        const seeded = defaults.map((c, i) => ({
-          id: Date.now() + i,
-          id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
-          nome: c.nome,
-          descricao: c.descricao,
-          ativo: true,
-          data_cadastro: now,
-          data_atualizacao: now,
-        }));
-        writeLocalCats(seeded);
-        setCategorias(seeded);
-        localStorage.setItem("fm_itens_categorias_seeded", "1");
-        toast({
-          title: "Categorias carregadas",
-          description: "Categorias padrão adicionadas",
-        });
-      }
-    }
-  }, [activeTab, categorias.length]);
+    setSelectedIds([]);
+  }, [activeTab]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -693,15 +639,43 @@ export default function ItensModule() {
         </header>
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-6">
-            <div className="bg-white rounded-xl border p-4">
+            <div>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
-                  <TabsTrigger value="itens">Itens</TabsTrigger>
-                  <TabsTrigger value="categorias">Categorias</TabsTrigger>
+                  <TabsTrigger
+                    value="itens"
+                    className={
+                      activeTab === "itens" ? "text-foodmax-orange" : ""
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <List className="w-4 h-4" />
+                      <span>Itens</span>
+                      <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">
+                        {totalRecords}
+                      </span>
+                    </div>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="categorias"
+                    className={
+                      activeTab === "categorias" ? "text-foodmax-orange" : ""
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <Tag className="w-4 h-4" />
+                      <span>Categorias</span>
+                      <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">
+                        {categorias.length}
+                      </span>
+                    </div>
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
+            </div>
 
-              <div className="mt-4 flex items-center justify-between gap-4">
+            <div className="bg-white rounded-xl border p-4">
+              <div className="flex items-center justify-between gap-4">
                 <div className="relative flex-1 max-w-md">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
@@ -725,16 +699,18 @@ export default function ItensModule() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowExport(true)}
+                    onClick={() => setShowImport(true)}
                   >
-                    Exportar
+                    <Upload className="w-4 h-4 mr-2" />
+                    Importar
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowImport(true)}
+                    onClick={() => setShowExport(true)}
                   >
-                    Importar
+                    <Download className="w-4 h-4 mr-2" />
+                    Exportar
                   </Button>
                   {activeTab === "categorias" ? (
                     <Button
@@ -839,6 +815,15 @@ export default function ItensModule() {
         }}
         categoria={currentCategoria}
         onSave={handleSaveCategoria}
+      />
+
+      <CategoriaView
+        isOpen={showCategoriaView}
+        onClose={() => {
+          setShowCategoriaView(false);
+          setCurrentCategoria(null);
+        }}
+        categoria={currentCategoria}
       />
 
       <ExportModal

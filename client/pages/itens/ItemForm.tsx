@@ -340,7 +340,7 @@ export default function ItemForm({
                     Ativo
                   </Label>
                   <p className="text-sm text-gray-600">
-                    {watchedAtivo ? "Ativar" : "Desativar"}
+                    {watchedAtivo ? "Sim" : "Não"}
                   </p>
                 </div>
               </div>
