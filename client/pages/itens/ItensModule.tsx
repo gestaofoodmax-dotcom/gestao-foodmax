@@ -345,6 +345,10 @@ export default function ItensModule() {
     loadItens();
   }, [loadItens, loadCategorias, isLoading]);
 
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [activeTab]);
+
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
