@@ -22,8 +22,8 @@ interface ImportModalProps {
   ) => Promise<{ success: boolean; message: string; errors?: string[] }>;
   onGetRelatedId?: (fieldName: string, value: string) => Promise<number | null>;
   onCreateRelated?: (fieldName: string, value: string) => Promise<number>;
-  userRole: "admin" | "user";
-  hasPayment: boolean;
+  userRole: "admin" | "user" | null;
+  hasPayment?: boolean;
   mapHeader?: (header: string) => string;
   validateRecord?: (record: any, index: number) => string[];
 }
