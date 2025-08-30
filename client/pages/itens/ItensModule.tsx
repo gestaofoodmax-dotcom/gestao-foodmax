@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, Home, Store, Users, Truck, Search, Plus, Trash2, Eye, Edit, Power } from "lucide-react";
+import { Menu, Home, Store, Users, Truck, Package, Search, Plus, Trash2, Eye, Edit, Power } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +55,7 @@ export default function ItensModule() {
     { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
     { icon: Users, label: "Clientes", route: "/clientes" },
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
+    { icon: Package, label: "Itens", route: "/itens" },
   ];
   const renderMenuItem = (item: any, index: number) => {
     const isActive = location.pathname === item.route;
