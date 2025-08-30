@@ -93,8 +93,14 @@ export function ExportModal({
     for (let i = 0; i < records.length; i++) {
       const record = { ...records[i] };
 
-      // Update progress
-      setProgress((i / records.length) * 100);
+      // Update progress with minimum delay for visibility
+      const progressValue = (i / records.length) * 90; // Leave 10% for final steps
+      setProgress(progressValue);
+
+      // Add artificial delay for better UX on small datasets
+      if (records.length < 50) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
 
       // Process fields that start with id_ (relationships)
       for (const [key, value] of Object.entries(record)) {
@@ -116,6 +122,10 @@ export function ExportModal({
 
       processedRecords.push(record);
     }
+
+    // Ensure we reach 90% before final steps
+    setProgress(90);
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     return processedRecords;
   };
@@ -205,7 +215,9 @@ export function ExportModal({
         ? await processRelatedFields(withAliases)
         : withAliases;
 
-      setProgress(100);
+      // Show processing completion
+      setProgress(95);
+      await new Promise((resolve) => setTimeout(resolve, 200));
 
       // Convert to CSV
       const csvContent = convertToCSV(processedData);
@@ -223,12 +235,19 @@ export function ExportModal({
       // Download file
       downloadCSV(csvContent, filename);
 
+      // Final progress
+      setProgress(100);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       toast({
         title: "Exportação concluída",
         description: `${processedData.length} registros exportados com sucesso`,
       });
 
-      onClose();
+      // Wait a bit before closing so user sees completion
+      setTimeout(() => {
+        onClose();
+      }, 1000);
     } catch (error) {
       console.error("Export error:", error);
       toast({

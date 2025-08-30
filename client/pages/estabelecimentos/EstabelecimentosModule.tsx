@@ -922,7 +922,7 @@ function EstabelecimentosModule() {
           ].includes(col.key),
         }))}
         onImport={handleImport}
-        userRole={userRole || "admin"}
+        userRole={userRole ?? "user"}
         hasPayment={hasPaymentPlan}
         mapHeader={(header) => {
           const map: Record<string, string> = {

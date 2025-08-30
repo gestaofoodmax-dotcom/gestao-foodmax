@@ -798,7 +798,7 @@ export default function ClientesModule() {
           required: ["id_estabelecimento", "nome"].includes(c.key),
         }))}
         onImport={handleImport}
-        userRole={userRole || "admin"}
+        userRole={userRole ?? "user"}
         hasPayment={hasPaymentPlan}
         mapHeader={(header) => {
           const map: Record<string, string> = {

@@ -145,8 +145,14 @@ export function ImportModal({
     for (let i = 0; i < records.length; i++) {
       const record = { ...records[i] };
 
-      // Update progress
-      setProgress((i / records.length) * 50); // First 50% for processing
+      // Update progress with better visibility
+      const progressValue = (i / records.length) * 40; // First 40% for processing
+      setProgress(progressValue);
+
+      // Add artificial delay for better UX on small datasets
+      if (records.length < 50) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
 
       // Process fields that start with id_ (relationships)
       for (const [key, value] of Object.entries(record)) {
@@ -188,6 +194,10 @@ export function ImportModal({
 
       processedRecords.push(record);
     }
+
+    // Ensure we reach 40% before moving to next phase
+    setProgress(40);
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     return processedRecords;
   };
@@ -242,7 +252,16 @@ export function ImportModal({
       const reader = new FileReader();
       reader.onload = async (e) => {
         const text = e.target?.result as string;
+
+        // Show initial parsing progress
+        setProgress(10);
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
         const parsed = parseCSV(text);
+
+        // Show parsing completion
+        setProgress(20);
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
         if (parsed.length === 0) {
           toast({
@@ -271,6 +290,15 @@ export function ImportModal({
           const record = parsed[i];
           const recordErrors = validateRecord ? validateRecord(record, i) : [];
 
+          // Show validation progress
+          const validationProgress = 20 + (i / parsed.length) * 20; // 20% to 40%
+          setProgress(validationProgress);
+
+          // Add small delay for better UX on small datasets
+          if (parsed.length < 50 && i % 5 === 0) {
+            await new Promise((resolve) => setTimeout(resolve, 50));
+          }
+
           if (recordErrors.length > 0) {
             errors.push(`Linha ${i + 2}: ${recordErrors.join(", ")}`);
           } else {
@@ -289,17 +317,23 @@ export function ImportModal({
           return;
         }
 
+        // Show validation completion
+        setProgress(60);
+        await new Promise((resolve) => setTimeout(resolve, 200));
+
         // Process related fields
         const processedRecords = onGetRelatedId
           ? await processRelatedFields(validRecords)
           : validRecords;
 
         setProgress(75);
+        await new Promise((resolve) => setTimeout(resolve, 200));
 
         // Import the data
         const result: any = await onImport(processedRecords);
 
-        setProgress(100);
+        setProgress(95);
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         const importedCount =
           typeof result?.imported === "number"
@@ -307,6 +341,10 @@ export function ImportModal({
             : processedRecords.length;
         const hadErrors =
           Array.isArray(result?.errors) && result.errors.length > 0;
+
+        // Final progress
+        setProgress(100);
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         if (result.success && importedCount > 0) {
           toast({
@@ -323,7 +361,11 @@ export function ImportModal({
           setSelectedFile(null);
           setPreviewData([]);
           if (fileInputRef.current) fileInputRef.current.value = "";
-          onClose();
+
+          // Wait a bit before closing so user sees completion
+          setTimeout(() => {
+            onClose();
+          }, 1000);
         } else if (result.success && importedCount === 0) {
           toast({
             title: "Nenhum registro importado",
@@ -335,7 +377,10 @@ export function ImportModal({
           setSelectedFile(null);
           setPreviewData([]);
           if (fileInputRef.current) fileInputRef.current.value = "";
-          onClose();
+
+          setTimeout(() => {
+            onClose();
+          }, 1000);
         } else {
           toast({
             title: "Erro na importação",
