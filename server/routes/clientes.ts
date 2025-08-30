@@ -399,65 +399,175 @@ export const importClientes: RequestHandler = async (req, res) => {
     }
 
     const { records } = z
-      .object({ records: z.array(ClienteSchema) })
+      .object({ records: z.array(z.record(z.any())) })
       .parse(req.body);
     if (records.length === 0)
       return res.status(400).json({ error: "Nenhum registro fornecido" });
     if (records.length > 1000) {
-      return res
-        .status(400)
-        .json({
-          error: "Só é possível importar até 1000 registros por arquivo",
-        });
+      return res.status(400).json({
+        error: "Só é possível importar até 1000 registros por arquivo",
+      });
     }
 
     const supabase = getSupabaseServiceClient();
     const imported: any[] = [];
     const errors: string[] = [];
 
+    const toBool = (v: any): boolean | undefined => {
+      if (typeof v === "boolean") return v;
+      if (v == null || v === "") return undefined;
+      const s = String(v).trim().toLowerCase();
+      if (["1", "true", "ativo", "sim", "yes"].includes(s)) return true;
+      if (["0", "false", "inativo", "nao", "não", "no"].includes(s))
+        return false;
+      return undefined;
+    };
+    const onlyDigits = (v: any): string => String(v || "").replace(/\D/g, "");
+
     for (let i = 0; i < records.length; i++) {
       try {
-        const record = records[i];
+        const raw = records[i] as any;
 
-        // Validate estabelecimento ownership
+        // Resolve estabelecimento by id (estabelecimento_id), id_estabelecimento, or name
+        let estabelecimentoId: number | null = null;
+
+        if (raw.estabelecimento_id != null) {
+          const num = Number(raw.estabelecimento_id);
+          estabelecimentoId = Number.isFinite(num) ? num : null;
+        }
+        if (!estabelecimentoId && raw.id_estabelecimento != null) {
+          const val = raw.id_estabelecimento;
+          const num = Number(val);
+          if (Number.isFinite(num)) {
+            estabelecimentoId = num;
+          } else if (typeof val === "string" && val.trim()) {
+            // treat as nome
+            const nomeBusca = val.trim();
+            // Try exact match first
+            const { data: byEq } = await supabase
+              .from("estabelecimentos")
+              .select("id, id_usuario, nome")
+              .eq("id_usuario", userId)
+              .eq("nome", nomeBusca)
+              .maybeSingle();
+            if (byEq) estabelecimentoId = byEq.id;
+            if (!estabelecimentoId) {
+              const { data: byLike } = await supabase
+                .from("estabelecimentos")
+                .select("id, id_usuario, nome")
+                .eq("id_usuario", userId)
+                .ilike("nome", `%${nomeBusca}%`)
+                .limit(1);
+              if (byLike && byLike.length) estabelecimentoId = byLike[0].id;
+            }
+          }
+        }
+        if (!estabelecimentoId && typeof raw.estabelecimento_nome === "string") {
+          const nomeBusca = raw.estabelecimento_nome.trim();
+          if (nomeBusca) {
+            const { data: byEq } = await supabase
+              .from("estabelecimentos")
+              .select("id, id_usuario, nome")
+              .eq("id_usuario", userId)
+              .eq("nome", nomeBusca)
+              .maybeSingle();
+            if (byEq) estabelecimentoId = byEq.id;
+            if (!estabelecimentoId) {
+              const { data: byLike } = await supabase
+                .from("estabelecimentos")
+                .select("id, id_usuario, nome")
+                .eq("id_usuario", userId)
+                .ilike("nome", `%${nomeBusca}%`)
+                .limit(1);
+              if (byLike && byLike.length) estabelecimentoId = byLike[0].id;
+            }
+          }
+        }
+
+        if (!estabelecimentoId) {
+          errors.push(`Linha ${i + 1}: Estabelecimento inválido ou não encontrado`);
+          continue;
+        }
+
+        // Validate ownership of estabelecimento
         const { data: est } = await supabase
           .from("estabelecimentos")
           .select("id, id_usuario")
-          .eq("id", record.estabelecimento_id)
+          .eq("id", estabelecimentoId)
           .single();
         if (!est || est.id_usuario !== userId) {
           errors.push(`Linha ${i + 1}: Estabelecimento inválido`);
           continue;
         }
 
-        // Basic duplicate rule: same user and same nome + telefone
+        // Normalize cliente data
+        const nome = String(raw.nome || "").trim();
+        if (!nome) {
+          errors.push(`Linha ${i + 1}: Nome é obrigatório`);
+          continue;
+        }
+
+        const email = raw.email ? String(raw.email).trim() : undefined;
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          errors.push(`Linha ${i + 1}: Email inválido`);
+          continue;
+        }
+
+        const ddiRaw = String(raw.ddi || "+55").replace(/\D/g, "");
+        const ddi = `+${ddiRaw || "55"}`;
+        const telefone = onlyDigits(raw.telefone || "");
+
+        const ativo = toBool(raw.ativo);
+        const aceitaProm = toBool(raw.aceita_promocao_email);
+
+        // Duplicate rule: same user and same nome + telefone
         const { data: dup } = await supabase
           .from("clientes")
           .select("id")
           .eq("id_usuario", userId)
-          .eq("nome", record.nome)
-          .eq("telefone", record.telefone)
+          .eq("nome", nome)
+          .eq("telefone", telefone)
           .maybeSingle();
         if (dup) {
           errors.push(`Linha ${i + 1}: Cliente duplicado (nome + telefone)`);
           continue;
         }
 
+        // Insert cliente
         const { data: novo, error: insError } = await supabase
           .from("clientes")
-          .insert({ ...record, id_usuario: userId })
+          .insert({
+            estabelecimento_id: estabelecimentoId,
+            nome,
+            genero: raw.genero,
+            profissao: raw.profissao,
+            email,
+            ddi,
+            telefone,
+            id_usuario: userId,
+            ...(ativo !== undefined ? { ativo } : {}),
+            ...(aceitaProm !== undefined
+              ? { aceita_promocao_email: aceitaProm }
+              : {}),
+          })
           .select()
           .single();
         if (insError) throw insError;
 
-        const { cep, endereco, cidade, uf, pais } = record as any;
-        if (cep || endereco || cidade) {
+        // Insert address if present
+        const cep = onlyDigits(raw.cep || "");
+        const endereco = raw.endereco ? String(raw.endereco).trim() : undefined;
+        const cidade = raw.cidade ? String(raw.cidade).trim() : undefined;
+        const uf = raw.uf ? String(raw.uf).trim().toUpperCase().slice(0, 2) : undefined;
+        const pais = raw.pais ? String(raw.pais).trim() : undefined;
+
+        if (cep || endereco || cidade || uf || pais) {
           await supabase.from("clientes_enderecos").insert({
             cliente_id: (novo as any).id,
-            cep,
-            endereco,
-            cidade,
-            uf,
+            cep: cep || null,
+            endereco: endereco || null,
+            cidade: cidade || null,
+            uf: uf || null,
             pais: pais || "Brasil",
           });
         }
