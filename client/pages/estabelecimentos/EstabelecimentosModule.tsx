@@ -892,22 +892,31 @@ function EstabelecimentosModule() {
             Nome: "nome",
             "Razão Social": "razao_social",
             "Razao Social": "razao_social",
+            Cnpj: "cnpj",
             CNPJ: "cnpj",
             Email: "email",
             DDI: "ddi",
+            Ddi: "ddi",
             Telefone: "telefone",
             CEP: "cep",
+            Cep: "cep",
             Endereço: "endereco",
             Endereco: "endereco",
             Cidade: "cidade",
             UF: "uf",
+            Uf: "uf",
             País: "pais",
             Pais: "pais",
             "Tipo de Estabelecimento": "tipo_estabelecimento",
             "Tipo Estabelecimento": "tipo_estabelecimento",
             Tipo: "tipo_estabelecimento",
+            Ativo: "ativo",
+            "Data de Cadastro": "data_cadastro",
+            "Data Cadastro": "data_cadastro",
           };
-          return map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          const mapped = map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          console.log(`[DEBUG] Header mapping: "${header}" -> "${mapped}"`);
+          return mapped;
         }}
         validateRecord={(record) => {
           const errors: string[] = [];
