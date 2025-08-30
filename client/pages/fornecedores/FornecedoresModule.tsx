@@ -472,6 +472,77 @@ function FornecedoresModule() {
     }
   };
 
+  const onlyDigits = (v: any) => String(v || "").replace(/\D/g, "");
+  const toBool = (v: any): boolean | undefined => {
+    if (typeof v === "boolean") return v;
+    if (v == null || v === "") return undefined;
+    const s = String(v).trim().toLowerCase();
+    if (["1", "true", "ativo", "yes", "sim"].includes(s)) return true;
+    if (["0", "false", "inativo", "no", "nao", "não"].includes(s)) return false;
+    return undefined;
+  };
+
+  const handleImport = async (records: any[]) => {
+    console.log("Processing import records:", records);
+
+    try {
+      const response = await makeRequest(`/api/fornecedores/import`, {
+        method: "POST",
+        body: JSON.stringify({ records }),
+      });
+      loadFornecedores();
+      return response;
+    } catch (error: any) {
+      console.log("API failed, using local storage fallback", error);
+
+      // Fallback to local storage
+      const list = readLocal();
+      const now = new Date().toISOString();
+
+      const mapped = records.map((r: any, i: number) => ({
+        id: Date.now() + i,
+        id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
+        nome: r.nome || "",
+        razao_social: r.razao_social,
+        cnpj: r.cnpj,
+        email: r.email || "",
+        ddi: r.ddi || "+55",
+        telefone: r.telefone || "",
+        nome_responsavel: r.nome_responsavel,
+        ativo: r.ativo ?? true,
+        data_cadastro: now,
+        data_atualizacao: now,
+        endereco:
+          r.cep || r.endereco || r.cidade
+            ? {
+                id: Date.now() + i,
+                fornecedor_id: 0,
+                cep: r.cep,
+                endereco: r.endereco,
+                cidade: r.cidade,
+                uf: r.uf,
+                pais: r.pais || "Brasil",
+                data_cadastro: now,
+                data_atualizacao: now,
+              }
+            : undefined,
+      })) as Fornecedor[];
+
+      console.log("Mapped records for local storage:", mapped);
+
+      const merged = [...mapped, ...list];
+      writeLocal(merged);
+      setFornecedores(merged);
+
+      return {
+        success: true,
+        message: "Importação concluída",
+        imported: mapped.length,
+        errors: [],
+      };
+    }
+  };
+
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
       <div
