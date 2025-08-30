@@ -260,7 +260,10 @@ export default function ItensModule() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => { setCurrentCategoria(r); setShowCategoriaView(true); }}
+              onClick={() => {
+                setCurrentCategoria(r);
+                setShowCategoriaView(true);
+              }}
               className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
               title="Visualizar"
             >
@@ -348,7 +351,6 @@ export default function ItensModule() {
   useEffect(() => {
     setSelectedIds([]);
   }, [activeTab]);
-
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -640,18 +642,32 @@ export default function ItensModule() {
             <div>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
-                  <TabsTrigger value="itens" className={activeTab === "itens" ? "text-foodmax-orange" : ""}>
+                  <TabsTrigger
+                    value="itens"
+                    className={
+                      activeTab === "itens" ? "text-foodmax-orange" : ""
+                    }
+                  >
                     <div className="flex items-center gap-2">
                       <List className="w-4 h-4" />
                       <span>Itens</span>
-                      <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">{totalRecords}</span>
+                      <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">
+                        {totalRecords}
+                      </span>
                     </div>
                   </TabsTrigger>
-                  <TabsTrigger value="categorias" className={activeTab === "categorias" ? "text-foodmax-orange" : ""}>
+                  <TabsTrigger
+                    value="categorias"
+                    className={
+                      activeTab === "categorias" ? "text-foodmax-orange" : ""
+                    }
+                  >
                     <div className="flex items-center gap-2">
                       <Tag className="w-4 h-4" />
                       <span>Categorias</span>
-                      <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">{categorias.length}</span>
+                      <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">
+                        {categorias.length}
+                      </span>
                     </div>
                   </TabsTrigger>
                 </TabsList>
@@ -680,11 +696,19 @@ export default function ItensModule() {
                       Excluir Selecionados ({selectedIds.length})
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowImport(true)}
+                  >
                     <Upload className="w-4 h-4 mr-2" />
                     Importar
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setShowExport(true)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowExport(true)}
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Exportar
                   </Button>
@@ -795,7 +819,10 @@ export default function ItensModule() {
 
       <CategoriaView
         isOpen={showCategoriaView}
-        onClose={() => { setShowCategoriaView(false); setCurrentCategoria(null); }}
+        onClose={() => {
+          setShowCategoriaView(false);
+          setCurrentCategoria(null);
+        }}
         categoria={currentCategoria}
       />
 
