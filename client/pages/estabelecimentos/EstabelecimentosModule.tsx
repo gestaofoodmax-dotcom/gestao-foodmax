@@ -79,6 +79,7 @@ function EstabelecimentosModule() {
     try {
       localStorage.removeItem("fm_estabelecimentos");
       localStorage.removeItem("fm_clientes");
+      console.log("[DEBUG] Cleared localStorage caches");
     } catch {}
   }, []);
   const writeLocal = (list: Estabelecimento[]) => {
@@ -592,9 +593,11 @@ function EstabelecimentosModule() {
   };
   const makeKey = (r: any) => {
     const cnpj = onlyDigits(r.cnpj);
-    return cnpj
-      ? `cnpj:${cnpj}`
-      : `nome:${(r.nome || "").trim().toLowerCase()}`;
+    const nome = (r.nome || "").trim().toLowerCase();
+    // Use both CNPJ and name for uniqueness - allows same CNPJ with different names
+    return cnpj && cnpj.length === 14
+      ? `cnpj_nome:${cnpj}_${nome}`
+      : `nome:${nome}`;
   };
   const normalizeRecord = (r: any) => {
     const ativo = toBool(r.ativo);
@@ -618,15 +621,21 @@ function EstabelecimentosModule() {
 
   // Import handler
   const handleImport = async (records: any[]) => {
+    console.log("[DEBUG] Starting import with", records.length, "records");
+    console.log("[DEBUG] First record:", records[0]);
+
     // Normalize and remove duplicates (within file and against current list)
     const normalized = records.map(normalizeRecord);
+    console.log("[DEBUG] Normalized first record:", normalized[0]);
 
     const existingKeys = new Set(
-      estabelecimentos.map((e) =>
-        e.cnpj
-          ? `cnpj:${onlyDigits(e.cnpj)}`
-          : `nome:${e.nome.trim().toLowerCase()}`,
-      ),
+      estabelecimentos.map((e) => {
+        const cnpj = onlyDigits(e.cnpj || "");
+        const nome = e.nome.trim().toLowerCase();
+        return cnpj && cnpj.length === 14
+          ? `cnpj_nome:${cnpj}_${nome}`
+          : `nome:${nome}`;
+      }),
     );
 
     const seenInFile = new Set<string>();
@@ -638,6 +647,8 @@ function EstabelecimentosModule() {
       unique.push(r);
     }
 
+    console.log("[DEBUG] Unique records to import:", unique.length);
+
     if (unique.length === 0) {
       return {
         success: true,
@@ -648,66 +659,25 @@ function EstabelecimentosModule() {
     }
 
     try {
+      console.log("[DEBUG] Calling API with:", unique);
       const response = await makeRequest("/api/estabelecimentos/import", {
         method: "POST",
         body: JSON.stringify({ records: unique }),
       });
 
+      console.log("[DEBUG] API response:", response);
       loadEstabelecimentos();
       return response;
     } catch (error: any) {
-      // Local fallback with deduplication
-      const list = readLocal();
-      const now = new Date().toISOString();
+      console.error("[DEBUG] Import API failed:", error);
 
-      const localExistingKeys = new Set(
-        list.map((e) =>
-          e.cnpj
-            ? `cnpj:${onlyDigits(e.cnpj)}`
-            : `nome:${(e.nome || "").trim().toLowerCase()}`,
-        ),
-      );
-
-      const toInsert = unique.filter((r) => !localExistingKeys.has(makeKey(r)));
-
-      const mapped = toInsert.map((r: any, i: number) => ({
-        id: Date.now() + i,
-        id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
-        nome: r.nome,
-        razao_social: r.razao_social,
-        cnpj: r.cnpj,
-        tipo_estabelecimento: r.tipo_estabelecimento,
-        email: r.email,
-        ddi: r.ddi,
-        telefone: r.telefone,
-        ativo: r.ativo ?? true,
-        data_cadastro: now,
-        data_atualizacao: now,
-        endereco:
-          r.cep || r.endereco || r.cidade
-            ? {
-                id: Date.now() + i,
-                estabelecimento_id: 0,
-                cep: r.cep,
-                endereco: r.endereco,
-                cidade: r.cidade,
-                uf: r.uf,
-                pais: r.pais || "Brasil",
-                data_cadastro: now,
-                data_atualizacao: now,
-              }
-            : undefined,
-      })) as Estabelecimento[];
-
-      const merged = [...mapped, ...list];
-      writeLocal(merged);
-      setEstabelecimentos(merged);
+      // Return error response instead of throwing
       return {
-        success: true,
-        message: "Importação concluída",
-        imported: mapped.length,
-        errors: [],
-      } as any;
+        success: false,
+        message: `Erro na importação: ${error.message || "Falha na comunicação com o servidor"}`,
+        imported: 0,
+        errors: [error.message || "Erro desconhecido"],
+      };
     }
   };
 
@@ -922,31 +892,42 @@ function EstabelecimentosModule() {
           ].includes(col.key),
         }))}
         onImport={handleImport}
-        userRole={userRole ?? "user"}
+        userRole={userRole}
         hasPayment={hasPaymentPlan}
         mapHeader={(header) => {
           const map: Record<string, string> = {
             Nome: "nome",
             "Razão Social": "razao_social",
             "Razao Social": "razao_social",
+            Cnpj: "cnpj",
             CNPJ: "cnpj",
             Email: "email",
             DDI: "ddi",
+            Ddi: "ddi",
             Telefone: "telefone",
             CEP: "cep",
+            Cep: "cep",
             Endereço: "endereco",
             Endereco: "endereco",
             Cidade: "cidade",
             UF: "uf",
+            Uf: "uf",
             País: "pais",
             Pais: "pais",
             "Tipo de Estabelecimento": "tipo_estabelecimento",
             "Tipo Estabelecimento": "tipo_estabelecimento",
             Tipo: "tipo_estabelecimento",
+            Ativo: "ativo",
+            "Data de Cadastro": "data_cadastro",
+            "Data Cadastro": "data_cadastro",
           };
-          return map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          const mapped =
+            map[header] || header.toLowerCase().replace(/\s+/g, "_");
+          console.log(`[DEBUG] Header mapping: "${header}" -> "${mapped}"`);
+          return mapped;
         }}
-        validateRecord={(record) => {
+        validateRecord={(record, index) => {
+          console.log(`[DEBUG] Validating record ${index + 1}:`, record);
           const errors: string[] = [];
           const required = [
             "nome",
@@ -956,8 +937,10 @@ function EstabelecimentosModule() {
             "telefone",
           ];
           required.forEach((k) => {
-            if (!record[k])
+            if (!record[k]) {
               errors.push(`Campo obrigatório '${k}' não preenchido`);
+              console.log(`[DEBUG] Missing required field: ${k}`);
+            }
           });
           if (
             record.email &&
@@ -965,10 +948,23 @@ function EstabelecimentosModule() {
           ) {
             errors.push("Email inválido");
           }
-          if (record.cnpj) {
+          if (record.cnpj && String(record.cnpj).trim() !== "") {
             const digits = String(record.cnpj).replace(/\D/g, "");
-            if (digits.length !== 14) errors.push("CNPJ deve ter 14 dígitos");
-            else record.cnpj = digits;
+            if (digits.length > 0 && digits.length !== 14) {
+              errors.push("CNPJ deve ter 14 dígitos quando preenchido");
+            } else if (digits.length === 14) {
+              record.cnpj = digits;
+            } else {
+              record.cnpj = undefined; // Remove CNPJ empty or invalid
+            }
+          } else {
+            record.cnpj = undefined; // CNPJ is optional
+          }
+          if (errors.length > 0) {
+            console.log(
+              `[DEBUG] Validation errors for record ${index + 1}:`,
+              errors,
+            );
           }
           return errors;
         }}

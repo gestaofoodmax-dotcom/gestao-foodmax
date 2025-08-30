@@ -601,6 +601,10 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
     const imported: any[] = [];
     const errors: string[] = [];
 
+    console.log(
+      `[DEBUG] Starting import of ${records.length} records for user ${userId}`,
+    );
+
     // Helper functions
     const toBool = (v: any): boolean | undefined => {
       if (typeof v === "boolean") return v;
@@ -666,6 +670,10 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
           : undefined;
         const ativo = toBool(raw.ativo) ?? true;
 
+        console.log(
+          `[DEBUG] Processing record ${i + 1}: ${nome}, CNPJ: ${cnpj}, Email: ${email}`,
+        );
+
         // Address fields
         const cep = onlyDigits(raw.cep || "");
         const endereco = raw.endereco ? String(raw.endereco).trim() : undefined;
@@ -675,29 +683,41 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
           : undefined;
         const pais = raw.pais ? String(raw.pais).trim() : "Brasil";
 
-        // Check for duplicates (by CNPJ if provided, else by Nome)
+        // Check for duplicates by both CNPJ AND name (must match both to be duplicate)
         let isDuplicate = false;
-        if (cnpj) {
-          const { data: existByCnpj } = await supabase
+
+        // Check for exact duplicate: same name AND same CNPJ (if both provided)
+        if (cnpj && cnpj.length === 14) {
+          const { data: exactDuplicate } = await supabase
             .from("estabelecimentos")
-            .select("id")
+            .select("id, nome, cnpj")
             .eq("id_usuario", userId)
             .eq("cnpj", cnpj)
+            .ilike("nome", nome) // Both CNPJ and name must match
             .maybeSingle();
-          if (existByCnpj) isDuplicate = true;
-        }
-        if (!isDuplicate) {
+          if (exactDuplicate) {
+            console.log(
+              `[DEBUG] Exact duplicate found: ${nome} with CNPJ ${cnpj}`,
+            );
+            isDuplicate = true;
+          }
+        } else {
+          // If no CNPJ, check only by name
           const { data: existByName } = await supabase
             .from("estabelecimentos")
             .select("id")
             .eq("id_usuario", userId)
-            .eq("nome", nome)
+            .ilike("nome", nome)
             .maybeSingle();
-          if (existByName) isDuplicate = true;
+          if (existByName) {
+            console.log(`[DEBUG] Name duplicate found (no CNPJ): ${nome}`);
+            isDuplicate = true;
+          }
         }
+
         if (isDuplicate) {
           errors.push(
-            `Linha ${i + 1}: Estabelecimento duplicado (nome ou CNPJ)`,
+            `Linha ${i + 1}: Estabelecimento duplicado (nome e CNPJ já existem)`,
           );
           continue;
         }
@@ -734,9 +754,18 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
         }
 
         imported.push(novoEstabelecimento);
+        console.log(`[DEBUG] Successfully imported record ${i + 1}: ${nome}`);
       } catch (recordError: any) {
+        console.error(`[DEBUG] Failed to import record ${i + 1}:`, recordError);
         errors.push(`Linha ${i + 1}: ${recordError.message}`);
       }
+    }
+
+    console.log(
+      `[DEBUG] Import completed: ${imported.length} imported, ${errors.length} errors`,
+    );
+    if (errors.length > 0) {
+      console.log(`[DEBUG] Import errors:`, errors);
     }
 
     res.json({
