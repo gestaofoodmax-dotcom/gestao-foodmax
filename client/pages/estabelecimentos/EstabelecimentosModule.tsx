@@ -110,6 +110,7 @@ function EstabelecimentosModule() {
     { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
     { icon: Users, label: "Clientes", route: "/clientes" },
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
+    { icon: Package, label: "Itens", route: "/itens" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {

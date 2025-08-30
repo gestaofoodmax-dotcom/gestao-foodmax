@@ -1,5 +1,3 @@
--- FoodMax - Base Schema (users, auth, core entities)
-
 -- Enable extensions if needed
 -- create extension if not exists pgcrypto;
 
@@ -171,3 +169,63 @@ create index if not exists fornecedores_enderecos_fornecedor_idx on public.forne
 create trigger fornecedores_enderecos_set_updated_at
 before update on public.fornecedores_enderecos
 for each row execute function public.set_updated_at();
+
+-- Itens (novo módulo)
+create table if not exists public.itens_categorias (
+  id bigserial primary key,
+  id_usuario bigint not null references public.usuarios(id) on delete cascade,
+  nome text not null,
+  descricao text,
+  ativo boolean not null default true,
+  data_cadastro timestamp with time zone not null default now(),
+  data_atualizacao timestamp with time zone not null default now()
+);
+create index if not exists itens_categorias_usuario_idx on public.itens_categorias(id_usuario);
+create index if not exists itens_categorias_nome_idx on public.itens_categorias(nome);
+create trigger itens_categorias_set_updated_at
+before update on public.itens_categorias
+for each row execute function public.set_updated_at();
+
+create table if not exists public.itens (
+  id bigserial primary key,
+  id_usuario bigint not null references public.usuarios(id) on delete cascade,
+  categoria_id bigint not null references public.itens_categorias(id) on delete restrict,
+  nome text not null,
+  preco_centavos integer not null check (preco_centavos >= 0),
+  custo_pago_centavos integer not null check (custo_pago_centavos >= 0),
+  unidade_medida text not null,
+  peso_gramas integer,
+  estoque_atual integer,
+  ativo boolean not null default true,
+  data_cadastro timestamp with time zone not null default now(),
+  data_atualizacao timestamp with time zone not null default now()
+);
+create index if not exists itens_usuario_idx on public.itens(id_usuario);
+create index if not exists itens_categoria_idx on public.itens(categoria_id);
+create index if not exists itens_nome_idx on public.itens(nome);
+create trigger itens_set_updated_at
+before update on public.itens
+for each row execute function public.set_updated_at();
+
+-- Seed function for default categorias (12 principais)
+create or replace function public.seed_itens_categorias_defaults(p_user_id bigint)
+returns void as $$
+begin
+  if not exists (select 1 from public.itens_categorias where id_usuario = p_user_id) then
+    insert into public.itens_categorias (id_usuario, nome, descricao, ativo)
+    values
+      (p_user_id, 'Carnes', 'Cortes bovinos, suínos e outras carnes vermelhas.', true),
+      (p_user_id, 'Aves', 'Frango, peru e outras aves.', true),
+      (p_user_id, 'Peixes', 'Peixes e frutos do mar frescos ou congelados.', true),
+      (p_user_id, 'Laticínios', 'Leite, queijos, iogurtes e derivados.', true),
+      (p_user_id, 'Bebidas', 'Bebidas alcoólicas e não alcoólicas.', true),
+      (p_user_id, 'Vegetais', 'Hortaliças e legumes frescos.', true),
+      (p_user_id, 'Frutas', 'Frutas frescas e secas.', true),
+      (p_user_id, 'Massas', 'Massas secas e frescas.', true),
+      (p_user_id, 'Grãos e Cereais', 'Arroz, feijão, aveia e outros grãos.', true),
+      (p_user_id, 'Padaria', 'Pães, bolos e produtos de panificação.', true),
+      (p_user_id, 'Sobremesas', 'Doces, tortas e sobremesas em geral.', true),
+      (p_user_id, 'Temperos e Condimentos', 'Ervas, especiarias e molhos prontos.', true);
+  end if;
+end;
+$$ language plpgsql;
