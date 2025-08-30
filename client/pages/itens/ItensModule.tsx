@@ -5,7 +5,7 @@ import {
   Store,
   Users,
   Truck,
-  Package,
+  List,
   Search,
   Plus,
   Trash2,
@@ -96,7 +96,7 @@ export default function ItensModule() {
     { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
     { icon: Users, label: "Clientes", route: "/clientes" },
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
-    { icon: Package, label: "Itens", route: "/itens" },
+    { icon: List, label: "Itens", route: "/itens" },
   ];
   const renderMenuItem = (item: any, index: number) => {
     const isActive = location.pathname === item.route;
@@ -639,39 +639,46 @@ export default function ItensModule() {
         </header>
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-6">
-            <div>
-              <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList>
-                  <TabsTrigger
-                    value="itens"
-                    className={
-                      activeTab === "itens" ? "text-foodmax-orange" : ""
-                    }
+            <div className="w-full">
+              <div className="w-full border-b border-gray-200">
+                <div className="flex gap-6">
+                  <button
+                    className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 ${
+                      activeTab === "itens"
+                        ? "text-foodmax-orange"
+                        : "text-gray-700 hover:text-gray-900"
+                    }`}
+                    onClick={() => setActiveTab("itens")}
                   >
-                    <div className="flex items-center gap-2">
-                      <List className="w-4 h-4" />
-                      <span>Itens</span>
-                      <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">
-                        {totalRecords}
-                      </span>
-                    </div>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="categorias"
-                    className={
-                      activeTab === "categorias" ? "text-foodmax-orange" : ""
-                    }
+                    <List className="w-4 h-4" />
+                    <span>Itens</span>
+                    <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">
+                      {totalRecords}
+                    </span>
+                    {activeTab === "itens" && (
+                      <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                    )}
+                  </button>
+
+                  <button
+                    className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 ${
+                      activeTab === "categorias"
+                        ? "text-foodmax-orange"
+                        : "text-gray-700 hover:text-gray-900"
+                    }`}
+                    onClick={() => setActiveTab("categorias")}
                   >
-                    <div className="flex items-center gap-2">
-                      <Tag className="w-4 h-4" />
-                      <span>Categorias</span>
-                      <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">
-                        {categorias.length}
-                      </span>
-                    </div>
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+                    <Tag className="w-4 h-4" />
+                    <span>Categorias</span>
+                    <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">
+                      {categorias.length}
+                    </span>
+                    {activeTab === "categorias" && (
+                      <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="bg-white rounded-xl border p-4">
