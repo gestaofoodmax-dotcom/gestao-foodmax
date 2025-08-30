@@ -12,6 +12,8 @@ import {
   Eye,
   Edit,
   Power,
+  Upload,
+  Download,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -27,7 +29,6 @@ import {
   ItensListResponse,
   ItensCategoriasListResponse,
   formatCurrencyBRL,
-  principaisCategorias,
 } from "@shared/itens";
 import ItemForm from "./ItemForm";
 import ItemView from "./ItemView";
@@ -340,71 +341,6 @@ export default function ItensModule() {
     loadItens();
   }, [loadItens, loadCategorias, isLoading]);
 
-  // First access default categories injection when opening tab or combobox (handled here on tab focus)
-  useEffect(() => {
-    if (activeTab === "categorias") {
-      if (
-        categorias.length === 0 &&
-        !localStorage.getItem("fm_itens_categorias_seeded")
-      ) {
-        const now = new Date().toISOString();
-        const defaults = [
-          {
-            nome: "Carnes",
-            descricao: "Cortes bovinos, suínos e outras carnes vermelhas.",
-          },
-          { nome: "Aves", descricao: "Frango, peru e outras aves." },
-          {
-            nome: "Peixes",
-            descricao: "Peixes e frutos do mar frescos ou congelados.",
-          },
-          {
-            nome: "Laticínios",
-            descricao: "Leite, queijos, iogurtes e derivados.",
-          },
-          {
-            nome: "Bebidas",
-            descricao: "Bebidas alcoólicas e não alcoólicas.",
-          },
-          { nome: "Vegetais", descricao: "Hortaliças e legumes frescos." },
-          { nome: "Frutas", descricao: "Frutas frescas e secas." },
-          { nome: "Massas", descricao: "Massas secas e frescas." },
-          {
-            nome: "Grãos e Cereais",
-            descricao: "Arroz, feijão, aveia e outros grãos.",
-          },
-          {
-            nome: "Padaria",
-            descricao: "Pães, bolos e produtos de panificação.",
-          },
-          {
-            nome: "Sobremesas",
-            descricao: "Doces, tortas e sobremesas em geral.",
-          },
-          {
-            nome: "Temperos e Condimentos",
-            descricao: "Ervas, especiarias e molhos prontos.",
-          },
-        ];
-        const seeded = defaults.map((c, i) => ({
-          id: Date.now() + i,
-          id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
-          nome: c.nome,
-          descricao: c.descricao,
-          ativo: true,
-          data_cadastro: now,
-          data_atualizacao: now,
-        }));
-        writeLocalCats(seeded);
-        setCategorias(seeded);
-        localStorage.setItem("fm_itens_categorias_seeded", "1");
-        toast({
-          title: "Categorias carregadas",
-          description: "Categorias padrão adicionadas",
-        });
-      }
-    }
-  }, [activeTab, categorias.length]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -693,15 +629,17 @@ export default function ItensModule() {
         </header>
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-6">
-            <div className="bg-white rounded-xl border p-4">
+            <div>
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList>
                   <TabsTrigger value="itens">Itens</TabsTrigger>
                   <TabsTrigger value="categorias">Categorias</TabsTrigger>
                 </TabsList>
               </Tabs>
+            </div>
 
-              <div className="mt-4 flex items-center justify-between gap-4">
+            <div className="bg-white rounded-xl border p-4">
+              <div className="flex items-center justify-between gap-4">
                 <div className="relative flex-1 max-w-md">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
@@ -722,19 +660,13 @@ export default function ItensModule() {
                       Excluir Selecionados ({selectedIds.length})
                     </Button>
                   )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowExport(true)}
-                  >
-                    Exportar
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowImport(true)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
+                    <Upload className="w-4 h-4 mr-2" />
                     Importar
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowExport(true)}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Exportar
                   </Button>
                   {activeTab === "categorias" ? (
                     <Button
