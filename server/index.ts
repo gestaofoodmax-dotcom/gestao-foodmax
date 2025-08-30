@@ -11,6 +11,15 @@ import {
 } from "./routes/auth";
 import { handleDemo } from "./routes/demo";
 import {
+  listFornecedores,
+  getFornecedor,
+  createFornecedor,
+  updateFornecedor,
+  deleteFornecedor,
+  bulkDeleteFornecedores,
+  toggleFornecedorStatus,
+} from "./routes/fornecedores";
+import {
   listEstabelecimentos,
   getEstabelecimento,
   createEstabelecimento,
@@ -76,6 +85,15 @@ export function createServer() {
   app.post("/api/clientes/bulk-delete", bulkDeleteClientes);
   app.patch("/api/clientes/:id/toggle-status", toggleClienteStatus);
   app.post("/api/clientes/import", importClientes);
+
+  // Fornecedores routes
+  app.get("/api/fornecedores", listFornecedores);
+  app.get("/api/fornecedores/:id", getFornecedor);
+  app.post("/api/fornecedores", createFornecedor);
+  app.put("/api/fornecedores/:id", updateFornecedor);
+  app.delete("/api/fornecedores/:id", deleteFornecedor);
+  app.post("/api/fornecedores/bulk-delete", bulkDeleteFornecedores);
+  app.patch("/api/fornecedores/:id/toggle-status", toggleFornecedorStatus);
 
   return app;
 }
