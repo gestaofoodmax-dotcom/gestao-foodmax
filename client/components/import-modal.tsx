@@ -252,7 +252,16 @@ export function ImportModal({
       const reader = new FileReader();
       reader.onload = async (e) => {
         const text = e.target?.result as string;
+
+        // Show initial parsing progress
+        setProgress(10);
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         const parsed = parseCSV(text);
+
+        // Show parsing completion
+        setProgress(20);
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         if (parsed.length === 0) {
           toast({
