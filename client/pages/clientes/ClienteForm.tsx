@@ -356,6 +356,15 @@ export function ClienteForm({
                 />
               </div>
 
+            </div>
+          </div>
+
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <Phone className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Contato</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="email" className="text-sm font-medium">
                   Email
@@ -373,38 +382,31 @@ export function ClienteForm({
                   </p>
                 )}
               </div>
-            </div>
-          </div>
-
-          <div className="space-y-4 bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-3">
-              <Phone className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-green-600">Contato</h3>
-            </div>
-            <div>
-              <Label htmlFor="telefone" className="text-sm font-medium">
-                Telefone *
-              </Label>
-              <div className="flex gap-2">
-                <DDISelect
-                  value={watchedDDI}
-                  onChange={(v) => setValue("ddi", v)}
-                  className={`foodmax-input ${getFieldError("ddi") ? "border-red-500" : ""}`}
-                />
-                <Input
-                  id="telefone"
-                  {...register("telefone")}
-                  onChange={handleTelefoneChange}
-                  className={`flex-1 ${getInputClassName("telefone")}`}
-                  placeholder="DDD + número telefone"
-                  maxLength={15}
-                />
+              <div>
+                <Label htmlFor="telefone" className="text-sm font-medium">
+                  Telefone *
+                </Label>
+                <div className="flex gap-2">
+                  <DDISelect
+                    value={watchedDDI}
+                    onChange={(v) => setValue("ddi", v)}
+                    className={`foodmax-input ${getFieldError("ddi") ? "border-red-500" : ""}`}
+                  />
+                  <Input
+                    id="telefone"
+                    {...register("telefone")}
+                    onChange={handleTelefoneChange}
+                    className={`flex-1 ${getInputClassName("telefone")}`}
+                    placeholder="DDD + número telefone"
+                    maxLength={15}
+                  />
+                </div>
+                {(getFieldError("ddi") || getFieldError("telefone")) && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {getFieldError("ddi") || getFieldError("telefone")}
+                  </p>
+                )}
               </div>
-              {(getFieldError("ddi") || getFieldError("telefone")) && (
-                <p className="text-sm text-red-600 mt-1">
-                  {getFieldError("ddi") || getFieldError("telefone")}
-                </p>
-              )}
             </div>
           </div>
 
@@ -444,30 +446,34 @@ export function ClienteForm({
                 />
               </div>
               <div>
-                <Label htmlFor="cidade" className="text-sm font-medium">
-                  Cidade
-                </Label>
-                <Input
-                  id="cidade"
-                  {...register("cidade")}
-                  className={getInputClassName("cidade")}
-                  placeholder="Nome da cidade"
-                />
-              </div>
-              <div>
-                <Label htmlFor="uf" className="text-sm font-medium">
-                  UF
-                </Label>
-                <Input
-                  id="uf"
-                  {...register("uf")}
-                  onChange={(e) =>
-                    setValue("uf", e.target.value.toUpperCase().slice(0, 2))
-                  }
-                  className={getInputClassName("uf")}
-                  placeholder="UF"
-                  maxLength={2}
-                />
+                <div className="grid grid-cols-[1fr_auto] gap-2">
+                  <div>
+                    <Label htmlFor="cidade" className="text-sm font-medium">
+                      Cidade
+                    </Label>
+                    <Input
+                      id="cidade"
+                      {...register("cidade")}
+                      className={getInputClassName("cidade")}
+                      placeholder="Nome da cidade"
+                    />
+                  </div>
+                  <div className="w-24">
+                    <Label htmlFor="uf" className="text-sm font-medium">
+                      UF
+                    </Label>
+                    <Input
+                      id="uf"
+                      {...register("uf")}
+                      onChange={(e) =>
+                        setValue("uf", e.target.value.toUpperCase().slice(0, 2))
+                      }
+                      className={getInputClassName("uf")}
+                      placeholder="UF"
+                      maxLength={2}
+                    />
+                  </div>
+                </div>
               </div>
               <div>
                 <Label htmlFor="pais" className="text-sm font-medium">
