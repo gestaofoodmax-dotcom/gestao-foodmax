@@ -70,7 +70,7 @@ export default function CategoriaForm({
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
+          <DialogTitle className="text-xl sm:text-2xl font-normal py-1">
             {isEditing ? "Editar Categoria" : "Nova Categoria"}
           </DialogTitle>
         </DialogHeader>
