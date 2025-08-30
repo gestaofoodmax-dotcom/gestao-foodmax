@@ -350,7 +350,7 @@ function FornecedoresModule() {
                 </div>
                 <div className="flex items-center gap-2">
                   {selectedIds.length > 0 && (
-                    <Button variant="destructive" size="sm" onClick={handleBulkDelete}>
+                    <Button variant="destructive" size="sm" onClick={() => setShowBulkDeleteAlert(true)}>
                       <Trash2 className="w-4 h-4 mr-2" />
                       Excluir Selecionados ({selectedIds.length})
                     </Button>
