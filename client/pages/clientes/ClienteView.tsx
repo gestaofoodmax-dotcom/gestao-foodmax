@@ -177,17 +177,13 @@ export function ClienteView({
                 {cliente.endereco.cep && (
                   <DataField label="CEP" value={cliente.endereco.cep} />
                 )}
+                {cliente.endereco.endereco && (
+                  <DataField label="Endereço" value={cliente.endereco.endereco} />
+                )}
                 {(cliente.endereco.cidade || cliente.endereco.uf) && (
                   <DataField
                     label="Cidade/UF"
                     value={formatEndereco(cliente.endereco)}
-                  />
-                )}
-                {cliente.endereco.endereco && (
-                  <DataField
-                    label="Endereço"
-                    value={cliente.endereco.endereco}
-                    fullWidth
                   />
                 )}
                 <DataField label="País" value={cliente.endereco.pais} />
