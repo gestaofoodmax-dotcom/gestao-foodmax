@@ -260,7 +260,7 @@ export default function ItensModule() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setCurrentCategoria(r)}
+              onClick={() => { setCurrentCategoria(r); setShowCategoriaView(true); }}
               className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
               title="Visualizar"
             >
