@@ -209,6 +209,8 @@ export function useAuthenticatedRequest() {
           }
         }
         const err = new Error(friendly);
+        (err as any).status = response.status;
+        (err as any).data = errorData;
         throw err;
       }
 
