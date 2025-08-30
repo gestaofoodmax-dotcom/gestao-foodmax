@@ -480,6 +480,38 @@ function EstabelecimentosModule() {
   };
 
   const confirmBulkDelete = async () => {
+    // Offline/local mode
+    if (!isAuthenticated) {
+      const clientesRaw = localStorage.getItem("fm_clientes");
+      const clientes: any[] = clientesRaw ? JSON.parse(clientesRaw) : [];
+      const blocked = new Set<number>();
+      for (const id of selectedIds) {
+        const hasDeps = clientes.some((c) => Number(c.estabelecimento_id) === id);
+        if (hasDeps) blocked.add(id);
+      }
+      if (blocked.size > 0) {
+        toast({
+          title: "Não foi possível excluir algum(ns) registro(s)",
+          description:
+            `Não é possível excluir ${blocked.size} registro(s): existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir.`,
+          variant: "destructive",
+        });
+      }
+      const deletable = selectedIds.filter((id) => !blocked.has(id));
+      if (deletable.length > 0) {
+        const list = readLocal().filter((e) => !deletable.includes(e.id));
+        writeLocal(list);
+        setEstabelecimentos(list);
+        toast({
+          title: "Estabelecimentos excluídos",
+          description: `${deletable.length} estabelecimento(s) excluído(s) com sucesso`,
+        });
+      }
+      setSelectedIds([]);
+      setShowBulkDeleteAlert(false);
+      return;
+    }
+
     setDeleteLoading(true);
     try {
       await makeRequest("/api/estabelecimentos/bulk-delete", {
