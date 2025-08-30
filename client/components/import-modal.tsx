@@ -340,17 +340,8 @@ export function ImportModal({
         setProgress(80);
         console.log(`[DEBUG] Starting database import of ${processedRecords.length} records`);
 
-        try {
-          const result: any = await onImport(processedRecords);
-          console.log(`[DEBUG] Database import completed:`, result);
-
-          if (!result.success) {
-            throw new Error(result.message || "Erro na importação");
-          }
-        } catch (importError: any) {
-          console.error(`[DEBUG] Import failed:`, importError);
-          throw importError;
-        }
+        const result: any = await onImport(processedRecords);
+        console.log(`[DEBUG] Database import completed:`, result);
 
         setProgress(95);
         await new Promise((resolve) => setTimeout(resolve, 300));
