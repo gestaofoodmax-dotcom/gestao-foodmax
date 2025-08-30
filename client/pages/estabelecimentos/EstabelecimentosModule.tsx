@@ -426,11 +426,24 @@ function EstabelecimentosModule() {
       await loadEstabelecimentos();
       setShowDeleteAlert(false);
     } catch (error: any) {
+      const status = error?.status;
+      const data = error?.data || {};
+      let description: string = error?.message;
+      if (!description || status === 409) {
+        if (data?.blockedIds?.length) {
+          description = `Não é possível excluir ${data.blockedIds.length} registro(s): existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir.`;
+        } else if (
+          /Clientes vinculados|depend.ncias/i.test(String(data?.error || ""))
+        ) {
+          description = String(data.error);
+        } else if (!description) {
+          description =
+            "Existem dependências com outros módulos. Remova-as antes de excluir.";
+        }
+      }
       toast({
         title: "Não foi possível excluir",
-        description:
-          error?.message ||
-          "Existem dependências com outros módulos. Remova-as antes de excluir.",
+        description,
         variant: "destructive",
       });
       await loadEstabelecimentos();
@@ -457,11 +470,24 @@ function EstabelecimentosModule() {
       await loadEstabelecimentos();
       setShowBulkDeleteAlert(false);
     } catch (error: any) {
+      const status = error?.status;
+      const data = error?.data || {};
+      let description: string = error?.message;
+      if (!description || status === 409) {
+        if (data?.blockedIds?.length) {
+          description = `Não é possível excluir ${data.blockedIds.length} registro(s): existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir.`;
+        } else if (
+          /Clientes vinculados|depend.ncias/i.test(String(data?.error || ""))
+        ) {
+          description = String(data.error);
+        } else if (!description) {
+          description =
+            "Existem dependências com outros módulos. Remova-as antes de excluir.";
+        }
+      }
       toast({
         title: "Não foi possível excluir algum(ns) registro(s)",
-        description:
-          error?.message ||
-          "Existem dependências com outros módulos. Remova-as antes de excluir.",
+        description,
         variant: "destructive",
       });
       await loadEstabelecimentos();
