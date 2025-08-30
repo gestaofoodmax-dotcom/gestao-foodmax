@@ -491,38 +491,42 @@ export function ClienteForm({
 
           <div className="bg-white p-4 rounded-lg border">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="ativo" className="text-sm font-medium">
-                    Ativo
-                  </Label>
-                  <p className="text-sm text-gray-600">
-                    {watchedAtivo ? "Ativo" : "Inativo"}
-                  </p>
+              <div className="flex items-center justify-start">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    id="ativo"
+                    checked={watchedAtivo}
+                    onCheckedChange={(c) => setValue("ativo", c)}
+                  />
+                  <div>
+                    <Label htmlFor="ativo" className="text-sm font-medium">
+                      Ativo
+                    </Label>
+                    <p className="text-sm text-gray-600">
+                      {watchedAtivo ? "Ativo" : "Inativo"}
+                    </p>
+                  </div>
                 </div>
-                <Switch
-                  id="ativo"
-                  checked={watchedAtivo}
-                  onCheckedChange={(c) => setValue("ativo", c)}
-                />
               </div>
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label
-                    htmlFor="aceita_promocao_email"
-                    className="text-sm font-medium"
-                  >
-                    Aceita Promoção por Email
-                  </Label>
-                  <p className="text-sm text-gray-600">
-                    {watchedAceita ? "Sim" : "Não"}
-                  </p>
+              <div className="flex items-center justify-start">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    id="aceita_promocao_email"
+                    checked={watchedAceita}
+                    onCheckedChange={(c) => setValue("aceita_promocao_email", c)}
+                  />
+                  <div>
+                    <Label
+                      htmlFor="aceita_promocao_email"
+                      className="text-sm font-medium"
+                    >
+                      Aceita Promoção por Email
+                    </Label>
+                    <p className="text-sm text-gray-600">
+                      {watchedAceita ? "Sim" : "Não"}
+                    </p>
+                  </div>
                 </div>
-                <Switch
-                  id="aceita_promocao_email"
-                  checked={watchedAceita}
-                  onCheckedChange={(c) => setValue("aceita_promocao_email", c)}
-                />
               </div>
             </div>
           </div>
