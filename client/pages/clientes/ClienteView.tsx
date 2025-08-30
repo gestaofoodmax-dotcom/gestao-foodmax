@@ -15,10 +15,8 @@ import {
   Info,
   Edit,
   X,
-  Mail,
   User,
   Calendar,
-  MessageCircle,
 } from "lucide-react";
 
 interface ClienteViewProps {
@@ -143,6 +141,19 @@ export function ClienteView({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <DataField
+                label="Email"
+                value={
+                  cliente.email ? (
+                    <a
+                      href={`mailto:${cliente.email}`}
+                      className="text-blue-600 hover:underline"
+                    >
+                      {cliente.email}
+                    </a>
+                  ) : null
+                }
+              />
+              <DataField
                 label="Telefone"
                 value={
                   <a
@@ -150,19 +161,6 @@ export function ClienteView({
                     className="text-blue-600 hover:underline"
                   >
                     {formatTelefone(cliente.ddi, cliente.telefone)}
-                  </a>
-                }
-              />
-              <DataField
-                label="WhatsApp"
-                value={
-                  <a
-                    href={`http://wa.me/${cliente.ddi}${cliente.telefone}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-blue-600 hover:underline"
-                  >
-                    <MessageCircle className="w-4 h-4" /> Abrir conversa
                   </a>
                 }
               />
