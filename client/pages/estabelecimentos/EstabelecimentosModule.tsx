@@ -918,7 +918,8 @@ function EstabelecimentosModule() {
           console.log(`[DEBUG] Header mapping: "${header}" -> "${mapped}"`);
           return mapped;
         }}
-        validateRecord={(record) => {
+        validateRecord={(record, index) => {
+          console.log(`[DEBUG] Validating record ${index + 1}:`, record);
           const errors: string[] = [];
           const required = [
             "nome",
@@ -928,8 +929,10 @@ function EstabelecimentosModule() {
             "telefone",
           ];
           required.forEach((k) => {
-            if (!record[k])
+            if (!record[k]) {
               errors.push(`Campo obrigatório '${k}' não preenchido`);
+              console.log(`[DEBUG] Missing required field: ${k}`);
+            }
           });
           if (
             record.email &&
@@ -941,6 +944,9 @@ function EstabelecimentosModule() {
             const digits = String(record.cnpj).replace(/\D/g, "");
             if (digits.length !== 14) errors.push("CNPJ deve ter 14 dígitos");
             else record.cnpj = digits;
+          }
+          if (errors.length > 0) {
+            console.log(`[DEBUG] Validation errors for record ${index + 1}:`, errors);
           }
           return errors;
         }}
