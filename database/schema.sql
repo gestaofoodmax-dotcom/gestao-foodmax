@@ -1,5 +1,3 @@
--- FoodMax - Base Schema (users, auth, core entities)
-
 -- Enable extensions if needed
 -- create extension if not exists pgcrypto;
 
@@ -170,4 +168,41 @@ create table if not exists public.fornecedores_enderecos (
 create index if not exists fornecedores_enderecos_fornecedor_idx on public.fornecedores_enderecos(fornecedor_id);
 create trigger fornecedores_enderecos_set_updated_at
 before update on public.fornecedores_enderecos
+for each row execute function public.set_updated_at();
+
+-- Itens (novo módulo)
+create table if not exists public.itens_categorias (
+  id bigserial primary key,
+  id_usuario bigint not null references public.usuarios(id) on delete cascade,
+  nome text not null,
+  descricao text,
+  ativo boolean not null default true,
+  data_cadastro timestamp with time zone not null default now(),
+  data_atualizacao timestamp with time zone not null default now()
+);
+create index if not exists itens_categorias_usuario_idx on public.itens_categorias(id_usuario);
+create index if not exists itens_categorias_nome_idx on public.itens_categorias(nome);
+create trigger itens_categorias_set_updated_at
+before update on public.itens_categorias
+for each row execute function public.set_updated_at();
+
+create table if not exists public.itens (
+  id bigserial primary key,
+  id_usuario bigint not null references public.usuarios(id) on delete cascade,
+  categoria_id bigint not null references public.itens_categorias(id) on delete restrict,
+  nome text not null,
+  preco_centavos integer not null check (preco_centavos >= 0),
+  custo_pago_centavos integer not null check (custo_pago_centavos >= 0),
+  unidade_medida text not null,
+  peso_gramas integer,
+  estoque_atual integer,
+  ativo boolean not null default true,
+  data_cadastro timestamp with time zone not null default now(),
+  data_atualizacao timestamp with time zone not null default now()
+);
+create index if not exists itens_usuario_idx on public.itens(id_usuario);
+create index if not exists itens_categoria_idx on public.itens(categoria_id);
+create index if not exists itens_nome_idx on public.itens(nome);
+create trigger itens_set_updated_at
+before update on public.itens
 for each row execute function public.set_updated_at();
