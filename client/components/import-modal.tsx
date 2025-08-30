@@ -324,6 +324,10 @@ export function ImportModal({
         const hadErrors =
           Array.isArray(result?.errors) && result.errors.length > 0;
 
+        // Final progress
+        setProgress(100);
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         if (result.success && importedCount > 0) {
           toast({
             title: "Importação concluída",
@@ -339,7 +343,11 @@ export function ImportModal({
           setSelectedFile(null);
           setPreviewData([]);
           if (fileInputRef.current) fileInputRef.current.value = "";
-          onClose();
+
+          // Wait a bit before closing so user sees completion
+          setTimeout(() => {
+            onClose();
+          }, 1000);
         } else if (result.success && importedCount === 0) {
           toast({
             title: "Nenhum registro importado",
@@ -351,7 +359,10 @@ export function ImportModal({
           setSelectedFile(null);
           setPreviewData([]);
           if (fileInputRef.current) fileInputRef.current.value = "";
-          onClose();
+
+          setTimeout(() => {
+            onClose();
+          }, 1000);
         } else {
           toast({
             title: "Erro na importação",
