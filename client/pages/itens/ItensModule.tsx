@@ -35,6 +35,7 @@ import {
 import ItemForm from "./ItemForm";
 import ItemView from "./ItemView";
 import CategoriaForm from "./CategoriaForm";
+import CategoriaView from "./CategoriaView";
 import { DeleteAlert } from "@/components/alert-dialog-component";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
