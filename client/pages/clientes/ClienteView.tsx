@@ -9,15 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Cliente } from "@shared/clientes";
 import { formatEndereco, formatTelefone } from "@shared/clientes";
-import {
-  Phone,
-  MapPin,
-  Info,
-  Edit,
-  X,
-  User,
-  Calendar,
-} from "lucide-react";
+import { Phone, MapPin, Info, Edit, X, User, Calendar } from "lucide-react";
 
 interface ClienteViewProps {
   isOpen: boolean;
@@ -165,7 +157,10 @@ export function ClienteView({
                   <DataField label="CEP" value={cliente.endereco.cep} />
                 )}
                 {cliente.endereco.endereco && (
-                  <DataField label="Endereço" value={cliente.endereco.endereco} />
+                  <DataField
+                    label="Endereço"
+                    value={cliente.endereco.endereco}
+                  />
                 )}
                 {(cliente.endereco.cidade || cliente.endereco.uf) && (
                   <DataField
@@ -196,7 +191,11 @@ export function ClienteView({
               />
               <DataField
                 label="Ativo"
-                value={<span className="text-black">{cliente.ativo ? "Sim" : "Não"}</span>}
+                value={
+                  <span className="text-black">
+                    {cliente.ativo ? "Sim" : "Não"}
+                  </span>
+                }
               />
               <DataField
                 label="Aceita Promoções"

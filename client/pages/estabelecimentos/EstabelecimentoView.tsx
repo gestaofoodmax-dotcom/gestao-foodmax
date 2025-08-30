@@ -138,7 +138,10 @@ export function EstabelecimentoView({
               <DataField label="Nome" value={estabelecimento.nome} />
 
               {estabelecimento.razao_social && (
-                <DataField label="Razão Social" value={estabelecimento.razao_social} />
+                <DataField
+                  label="Razão Social"
+                  value={estabelecimento.razao_social}
+                />
               )}
 
               {estabelecimento.cnpj && (
@@ -206,7 +209,10 @@ export function EstabelecimentoView({
                 )}
 
                 {estabelecimento.endereco.endereco && (
-                  <DataField label="Endereço" value={estabelecimento.endereco.endereco} />
+                  <DataField
+                    label="Endereço"
+                    value={estabelecimento.endereco.endereco}
+                  />
                 )}
 
                 {estabelecimento.endereco.cidade &&
@@ -244,7 +250,11 @@ export function EstabelecimentoView({
 
               <DataField
                 label="Ativo"
-                value={<span className="text-black">{estabelecimento.ativo ? "Sim" : "Não"}</span>}
+                value={
+                  <span className="text-black">
+                    {estabelecimento.ativo ? "Sim" : "Não"}
+                  </span>
+                }
               />
             </div>
           </div>

@@ -355,7 +355,6 @@ export function ClienteForm({
                   placeholder="Profissão"
                 />
               </div>
-
             </div>
           </div>
 
@@ -513,7 +512,9 @@ export function ClienteForm({
                   <Switch
                     id="aceita_promocao_email"
                     checked={watchedAceita}
-                    onCheckedChange={(c) => setValue("aceita_promocao_email", c)}
+                    onCheckedChange={(c) =>
+                      setValue("aceita_promocao_email", c)
+                    }
                   />
                   <div>
                     <Label

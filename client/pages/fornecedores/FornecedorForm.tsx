@@ -285,7 +285,6 @@ export function FornecedorForm({
                 )}
               </div>
 
-
               <div>
                 <Label
                   htmlFor="nome_responsavel"

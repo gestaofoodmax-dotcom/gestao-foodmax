@@ -131,7 +131,13 @@ export function DataGrid({
 
     const startIndex = (currentPage - 1) * pageSize;
     return filteredAndSortedData.slice(startIndex, startIndex + pageSize);
-  }, [filteredAndSortedData, currentPage, pageSize, totalRecords, onPageChange]);
+  }, [
+    filteredAndSortedData,
+    currentPage,
+    pageSize,
+    totalRecords,
+    onPageChange,
+  ]);
 
   const totalPages = Math.ceil(
     (totalRecords || filteredAndSortedData.length) / pageSize,

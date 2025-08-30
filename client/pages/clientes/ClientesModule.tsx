@@ -533,7 +533,7 @@ export default function ClientesModule() {
               rel="noreferrer"
               title="WhatsApp"
               className="h-8 w-8 inline-flex items-center justify-center rounded-full border bg-gray-50 hover:bg-gray-100"
->
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 448 512"

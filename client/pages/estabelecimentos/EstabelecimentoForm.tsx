@@ -356,7 +356,6 @@ export function EstabelecimentoForm({
                   </p>
                 )}
               </div>
-
             </div>
           </div>
 
