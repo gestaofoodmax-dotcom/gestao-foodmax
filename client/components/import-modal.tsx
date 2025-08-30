@@ -255,20 +255,26 @@ export function ImportModal({
     try {
       setIsImporting(true);
       setProgress(0);
+      console.log("[DEBUG] Import started, isImporting:", true, "progress:", 0);
 
       const reader = new FileReader();
       reader.onload = async (e) => {
         const text = e.target?.result as string;
+        console.log("[DEBUG] File read, text length:", text.length);
 
         // Show initial parsing progress
         setProgress(10);
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        console.log("[DEBUG] Progress set to 10%");
+        await new Promise((resolve) => setTimeout(resolve, 200));
 
         const parsed = parseCSV(text);
+        console.log("[DEBUG] CSV parsed, records found:", parsed.length);
+        console.log("[DEBUG] First few records:", parsed.slice(0, 3));
 
         // Show parsing completion
         setProgress(20);
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        console.log("[DEBUG] Progress set to 20%");
+        await new Promise((resolve) => setTimeout(resolve, 200));
 
         if (parsed.length === 0) {
           toast({
