@@ -14,6 +14,8 @@ import {
   Power,
   Upload,
   Download,
+  List,
+  Tag,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
