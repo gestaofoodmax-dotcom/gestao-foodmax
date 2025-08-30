@@ -668,6 +668,8 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
           : undefined;
         const ativo = toBool(raw.ativo) ?? true;
 
+        console.log(`[DEBUG] Processing record ${i + 1}: ${nome}, CNPJ: ${cnpj}, Email: ${email}`);
+
         // Address fields
         const cep = onlyDigits(raw.cep || "");
         const endereco = raw.endereco ? String(raw.endereco).trim() : undefined;
@@ -742,9 +744,16 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
         }
 
         imported.push(novoEstabelecimento);
+        console.log(`[DEBUG] Successfully imported record ${i + 1}: ${nome}`);
       } catch (recordError: any) {
+        console.error(`[DEBUG] Failed to import record ${i + 1}:`, recordError);
         errors.push(`Linha ${i + 1}: ${recordError.message}`);
       }
+    }
+
+    console.log(`[DEBUG] Import completed: ${imported.length} imported, ${errors.length} errors`);
+    if (errors.length > 0) {
+      console.log(`[DEBUG] Import errors:`, errors);
     }
 
     res.json({

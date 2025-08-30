@@ -940,10 +940,17 @@ function EstabelecimentosModule() {
           ) {
             errors.push("Email inválido");
           }
-          if (record.cnpj) {
+          if (record.cnpj && String(record.cnpj).trim() !== "") {
             const digits = String(record.cnpj).replace(/\D/g, "");
-            if (digits.length !== 14) errors.push("CNPJ deve ter 14 dígitos");
-            else record.cnpj = digits;
+            if (digits.length > 0 && digits.length !== 14) {
+              errors.push("CNPJ deve ter 14 dígitos quando preenchido");
+            } else if (digits.length === 14) {
+              record.cnpj = digits;
+            } else {
+              record.cnpj = undefined; // Remove CNPJ empty or invalid
+            }
+          } else {
+            record.cnpj = undefined; // CNPJ is optional
           }
           if (errors.length > 0) {
             console.log(`[DEBUG] Validation errors for record ${index + 1}:`, errors);
