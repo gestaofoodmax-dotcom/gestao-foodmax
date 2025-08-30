@@ -95,6 +95,7 @@ export function createServer() {
   app.delete("/api/fornecedores/:id", deleteFornecedor);
   app.post("/api/fornecedores/bulk-delete", bulkDeleteFornecedores);
   app.patch("/api/fornecedores/:id/toggle-status", toggleFornecedorStatus);
+  app.post("/api/fornecedores/import", importFornecedores);
 
   return app;
 }
