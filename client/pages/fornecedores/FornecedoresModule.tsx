@@ -636,7 +636,22 @@ function FornecedoresModule() {
       <ExportModal
         isOpen={showExport}
         onClose={() => setShowExport(false)}
-        data={fornecedores}
+        data={fornecedores.map((fornecedor) => ({
+          nome: fornecedor.nome,
+          razao_social: fornecedor.razao_social || "",
+          cnpj: fornecedor.cnpj || "",
+          email: fornecedor.email,
+          ddi: fornecedor.ddi,
+          telefone: fornecedor.telefone,
+          nome_responsavel: fornecedor.nome_responsavel || "",
+          cep: fornecedor.endereco?.cep || "",
+          endereco: fornecedor.endereco?.endereco || "",
+          cidade: fornecedor.endereco?.cidade || "",
+          uf: fornecedor.endereco?.uf || "",
+          pais: fornecedor.endereco?.pais || "Brasil",
+          ativo: fornecedor.ativo ? "Ativo" : "Inativo",
+          data_cadastro: fornecedor.data_cadastro,
+        }))}
         selectedIds={selectedIds}
         moduleName="Fornecedores"
         columns={[
