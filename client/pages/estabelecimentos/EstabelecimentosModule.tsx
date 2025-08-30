@@ -667,10 +667,13 @@ function EstabelecimentosModule() {
     } catch (error: any) {
       console.error("[DEBUG] Import API failed:", error);
 
-      // Show error to user instead of silent fallback
-      throw new Error(
-        `Erro na importação: ${error.message || "Falha na comunicação com o servidor"}`
-      );
+      // Return error response instead of throwing
+      return {
+        success: false,
+        message: `Erro na importação: ${error.message || "Falha na comunicação com o servidor"}`,
+        imported: 0,
+        errors: [error.message || "Erro desconhecido"]
+      };
     }
   };
 
