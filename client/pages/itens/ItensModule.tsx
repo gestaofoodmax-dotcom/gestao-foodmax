@@ -793,6 +793,12 @@ export default function ItensModule() {
         onSave={handleSaveCategoria}
       />
 
+      <CategoriaView
+        isOpen={showCategoriaView}
+        onClose={() => { setShowCategoriaView(false); setCurrentCategoria(null); }}
+        categoria={currentCategoria}
+      />
+
       <ExportModal
         isOpen={showExport}
         onClose={() => setShowExport(false)}
