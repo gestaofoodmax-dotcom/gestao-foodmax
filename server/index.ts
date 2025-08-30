@@ -97,5 +97,22 @@ export function createServer() {
   app.patch("/api/fornecedores/:id/toggle-status", toggleFornecedorStatus);
   app.post("/api/fornecedores/import", importFornecedores);
 
+  // Itens routes
+  const itens = require("./routes/itens");
+  app.get("/api/itens", itens.listItens);
+  app.get("/api/itens/:id", itens.getItem);
+  app.post("/api/itens", itens.createItem);
+  app.put("/api/itens/:id", itens.updateItem);
+  app.delete("/api/itens/:id", itens.deleteItem);
+  app.post("/api/itens/bulk-delete", itens.bulkDeleteItens);
+  app.patch("/api/itens/:id/toggle-status", itens.toggleItemStatus);
+
+  app.get("/api/itens-categorias", itens.listCategorias);
+  app.post("/api/itens-categorias", itens.createCategoria);
+  app.put("/api/itens-categorias/:id", itens.updateCategoria);
+  app.delete("/api/itens-categorias/:id", itens.deleteCategoria);
+  app.post("/api/itens-categorias/bulk-delete", itens.bulkDeleteCategorias);
+  app.patch("/api/itens-categorias/:id/toggle-status", itens.toggleCategoriaStatus);
+
   return app;
 }
