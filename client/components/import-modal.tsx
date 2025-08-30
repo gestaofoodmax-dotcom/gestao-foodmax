@@ -497,11 +497,7 @@ export function ImportModal({
 
           {selectedFile && (
             <div
-              className={`space-y-3 rounded-lg p-4 border-2 transition-all duration-300 ${
-                isImporting
-                  ? "bg-blue-50 border-blue-400 shadow-lg"
-                  : "bg-gray-50 border-gray-300"
-              }`}
+              className={`space-y-3 rounded-lg p-4 border-2 transition-all duration-300 bg-gray-50 border-gray-300`}
             >
               <div className="relative">
                 <Progress
