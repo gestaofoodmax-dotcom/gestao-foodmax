@@ -61,12 +61,22 @@ export interface UpdateItemCategoriaRequest
 
 export interface ItensListResponse {
   data: Item[];
-  pagination: { page: number; limit: number; total: number; totalPages: number };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export interface ItensCategoriasListResponse {
   data: ItemCategoria[];
-  pagination: { page: number; limit: number; total: number; totalPages: number };
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
 export const UNIDADES_MEDIDA: Item["unidade_medida"][] = [

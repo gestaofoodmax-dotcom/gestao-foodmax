@@ -29,7 +29,8 @@ const getUserId = (req: any): number | null => {
 export const listItens: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const supabase = getSupabaseServiceClient();
     const page = parseInt((req.query.page as string) || "1");
     const limit = parseInt((req.query.limit as string) || "10");
@@ -72,7 +73,8 @@ export const listItens: RequestHandler = async (req, res) => {
 export const getItem: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     const supabase = getSupabaseServiceClient();
     const { data, error } = await supabase
@@ -91,7 +93,8 @@ export const getItem: RequestHandler = async (req, res) => {
 export const createItem: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const input = ItemSchema.parse(req.body);
     const supabase = getSupabaseServiceClient();
     const { data, error } = await supabase
@@ -103,7 +106,9 @@ export const createItem: RequestHandler = async (req, res) => {
     res.status(201).json({ message: "Item criado com sucesso", data });
   } catch (e: any) {
     if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: "Dados inválidos", details: e.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: e.errors });
     }
     console.error("Create item error:", e);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -113,7 +118,8 @@ export const createItem: RequestHandler = async (req, res) => {
 export const updateItem: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     const input = UpdateItemSchema.parse(req.body);
     const supabase = getSupabaseServiceClient();
@@ -127,7 +133,9 @@ export const updateItem: RequestHandler = async (req, res) => {
     res.json({ message: "Item atualizado com sucesso", data });
   } catch (e: any) {
     if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: "Dados inválidos", details: e.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: e.errors });
     }
     console.error("Update item error:", e);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -137,7 +145,8 @@ export const updateItem: RequestHandler = async (req, res) => {
 export const deleteItem: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     const supabase = getSupabaseServiceClient();
     const { error } = await supabase.from("itens").delete().eq("id", id);
@@ -152,15 +161,21 @@ export const deleteItem: RequestHandler = async (req, res) => {
 export const bulkDeleteItens: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const { ids } = z.object({ ids: z.array(z.number()) }).parse(req.body);
     const supabase = getSupabaseServiceClient();
     const { error } = await supabase.from("itens").delete().in("id", ids);
     if (error) throw error;
-    res.json({ message: `${ids.length} item(ns) excluído(s) com sucesso`, deletedCount: ids.length });
+    res.json({
+      message: `${ids.length} item(ns) excluído(s) com sucesso`,
+      deletedCount: ids.length,
+    });
   } catch (e: any) {
     if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: "Dados inválidos", details: e.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: e.errors });
     }
     console.error("Bulk delete itens error:", e);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -170,7 +185,8 @@ export const bulkDeleteItens: RequestHandler = async (req, res) => {
 export const toggleItemStatus: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     const supabase = getSupabaseServiceClient();
     const { data: current, error: ge } = await supabase
@@ -186,7 +202,10 @@ export const toggleItemStatus: RequestHandler = async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-    res.json({ message: `Item ${(data as any).ativo ? "ativado" : "desativado"} com sucesso`, data });
+    res.json({
+      message: `Item ${(data as any).ativo ? "ativado" : "desativado"} com sucesso`,
+      data,
+    });
   } catch (e) {
     console.error("Toggle item status error:", e);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -197,7 +216,8 @@ export const toggleItemStatus: RequestHandler = async (req, res) => {
 export const listCategorias: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const supabase = getSupabaseServiceClient();
     const page = parseInt((req.query.page as string) || "1");
     const limit = parseInt((req.query.limit as string) || "100");
@@ -216,7 +236,9 @@ export const listCategorias: RequestHandler = async (req, res) => {
       .eq("id_usuario", userId);
 
     if ((count || 0) === 0) {
-      await supabase.rpc("seed_itens_categorias_defaults", { p_user_id: userId });
+      await supabase.rpc("seed_itens_categorias_defaults", {
+        p_user_id: userId,
+      });
       query = supabase
         .from("itens_categorias")
         .select("*")
@@ -230,7 +252,12 @@ export const listCategorias: RequestHandler = async (req, res) => {
 
     res.json({
       data: data || [],
-      pagination: { page, limit, total: count || 0, totalPages: Math.ceil((count || 0) / limit) },
+      pagination: {
+        page,
+        limit,
+        total: count || 0,
+        totalPages: Math.ceil((count || 0) / limit),
+      },
     });
   } catch (e) {
     console.error("List categorias error:", e);
@@ -241,7 +268,8 @@ export const listCategorias: RequestHandler = async (req, res) => {
 export const createCategoria: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const input = CategoriaSchema.parse(req.body);
     const supabase = getSupabaseServiceClient();
     const { data, error } = await supabase
@@ -253,7 +281,9 @@ export const createCategoria: RequestHandler = async (req, res) => {
     res.status(201).json({ message: "Categoria criada com sucesso", data });
   } catch (e: any) {
     if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: "Dados inválidos", details: e.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: e.errors });
     }
     console.error("Create categoria error:", e);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -263,7 +293,8 @@ export const createCategoria: RequestHandler = async (req, res) => {
 export const updateCategoria: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     const input = UpdateCategoriaSchema.parse(req.body);
     const supabase = getSupabaseServiceClient();
@@ -277,7 +308,9 @@ export const updateCategoria: RequestHandler = async (req, res) => {
     res.json({ message: "Categoria atualizada com sucesso", data });
   } catch (e: any) {
     if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: "Dados inválidos", details: e.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: e.errors });
     }
     console.error("Update categoria error:", e);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -287,7 +320,8 @@ export const updateCategoria: RequestHandler = async (req, res) => {
 export const deleteCategoria: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     const supabase = getSupabaseServiceClient();
     // Check dependencies: itens referencing this categoria
@@ -296,9 +330,16 @@ export const deleteCategoria: RequestHandler = async (req, res) => {
       .select("id", { count: "exact", head: true })
       .eq("categoria_id", id);
     if ((count || 0) > 0) {
-      return res.status(409).json({ error: "Não é possível excluir Categoria com Itens vinculados" });
+      return res
+        .status(409)
+        .json({
+          error: "Não é possível excluir Categoria com Itens vinculados",
+        });
     }
-    const { error } = await supabase.from("itens_categorias").delete().eq("id", id);
+    const { error } = await supabase
+      .from("itens_categorias")
+      .delete()
+      .eq("id", id);
     if (error) throw error;
     res.json({ message: "Categoria excluída com sucesso" });
   } catch (e) {
@@ -310,7 +351,8 @@ export const deleteCategoria: RequestHandler = async (req, res) => {
 export const bulkDeleteCategorias: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const { ids } = z.object({ ids: z.array(z.number()) }).parse(req.body);
     const supabase = getSupabaseServiceClient();
 
@@ -333,7 +375,9 @@ export const bulkDeleteCategorias: RequestHandler = async (req, res) => {
     });
   } catch (e: any) {
     if (e instanceof z.ZodError) {
-      return res.status(400).json({ error: "Dados inválidos", details: e.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: e.errors });
     }
     console.error("Bulk delete categorias error:", e);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -343,7 +387,8 @@ export const bulkDeleteCategorias: RequestHandler = async (req, res) => {
 export const toggleCategoriaStatus: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     const supabase = getSupabaseServiceClient();
     const { data: current, error: ge } = await supabase
@@ -359,7 +404,10 @@ export const toggleCategoriaStatus: RequestHandler = async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-    res.json({ message: `Categoria ${(data as any).ativo ? "ativada" : "desativada"} com sucesso`, data });
+    res.json({
+      message: `Categoria ${(data as any).ativo ? "ativada" : "desativada"} com sucesso`,
+      data,
+    });
   } catch (e) {
     console.error("Toggle categoria status error:", e);
     res.status(500).json({ error: "Erro interno do servidor" });
