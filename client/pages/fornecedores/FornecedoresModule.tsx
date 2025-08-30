@@ -94,7 +94,7 @@ function FornecedoresModule() {
     { icon: Home, label: "Dashboard", route: "/dashboard" },
     { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
     { icon: Users, label: "Clientes", route: "/clientes" },
-    { icon: Phone, label: "Fornecedores", route: "/fornecedores" },
+    { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {
