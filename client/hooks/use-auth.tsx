@@ -187,8 +187,9 @@ export function useAuthenticatedRequest() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({} as any));
-        const serverMessage = (errorData as any)?.error || (errorData as any)?.message;
+        const errorData = await response.json().catch(() => ({}) as any);
+        const serverMessage =
+          (errorData as any)?.error || (errorData as any)?.message;
         let friendly = serverMessage as string | undefined;
         if (!friendly) {
           switch (response.status) {
@@ -202,7 +203,8 @@ export function useAuthenticatedRequest() {
               friendly = "Recurso não encontrado.";
               break;
             case 409:
-              friendly = "Não é possível excluir: existem dependências vinculadas a este registro.";
+              friendly =
+                "Não é possível excluir: existem dependências vinculadas a este registro.";
               break;
             default:
               friendly = `Erro ${response.status}`;

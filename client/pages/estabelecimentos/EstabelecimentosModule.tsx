@@ -435,7 +435,9 @@ function EstabelecimentosModule() {
         setShowDeleteAlert(false);
         return;
       }
-      const list = readLocal().filter((e) => e.id !== currentEstabelecimento.id);
+      const list = readLocal().filter(
+        (e) => e.id !== currentEstabelecimento.id,
+      );
       writeLocal(list);
       setEstabelecimentos(list);
       setSelectedIds([]);
@@ -493,14 +495,15 @@ function EstabelecimentosModule() {
       const clientes: any[] = clientesRaw ? JSON.parse(clientesRaw) : [];
       const blocked = new Set<number>();
       for (const id of selectedIds) {
-        const hasDeps = clientes.some((c) => Number(c.estabelecimento_id) === id);
+        const hasDeps = clientes.some(
+          (c) => Number(c.estabelecimento_id) === id,
+        );
         if (hasDeps) blocked.add(id);
       }
       if (blocked.size > 0) {
         toast({
           title: "Não foi possível excluir algum(ns) registro(s)",
-          description:
-            `Não é possível excluir ${blocked.size} registro(s): existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir.`,
+          description: `Não é possível excluir ${blocked.size} registro(s): existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir.`,
           variant: "destructive",
         });
       }
