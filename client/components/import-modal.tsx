@@ -145,8 +145,14 @@ export function ImportModal({
     for (let i = 0; i < records.length; i++) {
       const record = { ...records[i] };
 
-      // Update progress
-      setProgress((i / records.length) * 50); // First 50% for processing
+      // Update progress with better visibility
+      const progressValue = (i / records.length) * 40; // First 40% for processing
+      setProgress(progressValue);
+
+      // Add artificial delay for better UX on small datasets
+      if (records.length < 50) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
 
       // Process fields that start with id_ (relationships)
       for (const [key, value] of Object.entries(record)) {
@@ -188,6 +194,10 @@ export function ImportModal({
 
       processedRecords.push(record);
     }
+
+    // Ensure we reach 40% before moving to next phase
+    setProgress(40);
+    await new Promise(resolve => setTimeout(resolve, 100));
 
     return processedRecords;
   };
@@ -289,17 +299,23 @@ export function ImportModal({
           return;
         }
 
+        // Show validation completion
+        setProgress(60);
+        await new Promise(resolve => setTimeout(resolve, 200));
+
         // Process related fields
         const processedRecords = onGetRelatedId
           ? await processRelatedFields(validRecords)
           : validRecords;
 
         setProgress(75);
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         // Import the data
         const result: any = await onImport(processedRecords);
 
-        setProgress(100);
+        setProgress(95);
+        await new Promise(resolve => setTimeout(resolve, 300));
 
         const importedCount =
           typeof result?.imported === "number"
