@@ -6,7 +6,7 @@ import {
   Users,
   Store,
   Truck,
-  Package,
+  List,
   Plus,
   Download,
   Upload,
@@ -89,7 +89,7 @@ function FornecedoresModule() {
     { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
     { icon: Users, label: "Clientes", route: "/clientes" },
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
-    { icon: Package, label: "Itens", route: "/itens" },
+    { icon: List, label: "Itens", route: "/itens" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {
