@@ -45,12 +45,14 @@ export function ImportModal({
   const [progress, setProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewData, setPreviewData] = useState<any[]>([]);
+  const [recordCount, setRecordCount] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setSelectedFile(null);
       setPreviewData([]);
+      setRecordCount(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }, [isOpen]);
@@ -222,26 +224,18 @@ export function ImportModal({
 
     setSelectedFile(file);
 
-    // Preview the file
+    // Preview and count
     const reader = new FileReader();
     reader.onload = (e) => {
       const text = e.target?.result as string;
       const parsed = parseCSV(text);
-      setPreviewData(parsed.slice(0, 5)); // Show first 5 records
+      setRecordCount(parsed.length);
+      setPreviewData(parsed.slice(0, 5));
     };
     reader.readAsText(file);
   };
 
   const handleImport = async () => {
-    console.log(
-      "[DEBUG] Import started - userRole:",
-      userRole,
-      "hasPayment:",
-      hasPayment,
-      "canImport:",
-      canImport,
-    );
-
     if (!selectedFile) {
       toast({
         title: "Nenhum arquivo selecionado",
@@ -260,167 +254,131 @@ export function ImportModal({
     }
 
     try {
+      // PRE-VALIDAÇÃO (antes da barra andar)
+      const text = await selectedFile.text();
+      const parsed = parseCSV(text);
+
+      if (parsed.length === 0) {
+        toast({
+          title: "Arquivo vazio",
+          description: "O arquivo CSV não contém dados válidos",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (parsed.length > 1000) {
+        toast({
+          title: "Limite excedido",
+          description: "Só é possível importar até 1000 registros por arquivo",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const errors: string[] = [];
+      const validRecords: any[] = [];
+      for (let i = 0; i < parsed.length; i++) {
+        const record = parsed[i];
+        const recordErrors = validateRecord ? validateRecord(record, i) : [];
+        if (recordErrors.length > 0) {
+          errors.push(`Linha ${i + 2}: ${recordErrors.join(", ")}`);
+        } else {
+          validRecords.push(record);
+        }
+      }
+
+      if (errors.length > 0 && validRecords.length === 0) {
+        toast({
+          title: "Dados inválidos",
+          description: "Todos os registros contêm erros. Verifique o arquivo.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Inicia importação (agora a barra pode andar)
       setIsImporting(true);
       setProgress(0);
-      console.log("[DEBUG] Import started, isImporting:", true, "progress:", 0);
+      await new Promise((r) => setTimeout(r, 150));
 
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const text = e.target?.result as string;
-        console.log("[DEBUG] File read, text length:", text.length);
+      // Parsing concluído
+      setProgress(20);
+      await new Promise((r) => setTimeout(r, 150));
 
-        // Show initial parsing progress
-        setProgress(10);
-        console.log("[DEBUG] Progress set to 10%");
-        await new Promise((resolve) => setTimeout(resolve, 200));
+      // Validação concluída
+      setProgress(40);
+      await new Promise((r) => setTimeout(r, 150));
 
-        const parsed = parseCSV(text);
-        console.log("[DEBUG] CSV parsed, records found:", parsed.length);
-        console.log("[DEBUG] First few records:", parsed.slice(0, 3));
+      // Processar relacionamentos
+      const processedRecords = onGetRelatedId
+        ? await processRelatedFields(validRecords)
+        : validRecords;
 
-        // Show parsing completion
-        setProgress(20);
-        console.log("[DEBUG] Progress set to 20%");
-        await new Promise((resolve) => setTimeout(resolve, 200));
+      setProgress(75);
+      await new Promise((r) => setTimeout(r, 200));
 
-        if (parsed.length === 0) {
+      // Importar
+      setProgress(80);
+      await new Promise((r) => setTimeout(r, 200));
+
+      const result: any = await onImport(processedRecords);
+
+      setProgress(95);
+      await new Promise((r) => setTimeout(r, 200));
+
+      const importedCount =
+        typeof result?.imported === "number"
+          ? result.imported
+          : processedRecords.length;
+      const hadErrors =
+        Array.isArray(result?.errors) && result.errors.length > 0;
+
+      setProgress(100);
+      await new Promise((r) => setTimeout(r, 350));
+
+      if (result.success && importedCount > 0) {
+        toast({
+          title: "Importação concluída",
+          description: `${importedCount} registro${importedCount > 1 ? "s" : ""} importado${importedCount > 1 ? "s" : ""} com sucesso`,
+        });
+        if (hadErrors) {
           toast({
-            title: "Arquivo vazio",
-            description: "O arquivo CSV não contém dados válidos",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        if (parsed.length > 1000) {
-          toast({
-            title: "Limite excedido",
-            description:
-              "Só é possível importar até 1000 registros por arquivo",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Validate records (module-provided)
-        const errors: string[] = [];
-        const validRecords: any[] = [];
-
-        for (let i = 0; i < parsed.length; i++) {
-          const record = parsed[i];
-          const recordErrors = validateRecord ? validateRecord(record, i) : [];
-
-          // Show validation progress
-          const validationProgress = 20 + (i / parsed.length) * 20; // 20% to 40%
-          setProgress(validationProgress);
-
-          // Add small delay for better UX on small datasets
-          if (parsed.length < 50 && i % 5 === 0) {
-            await new Promise((resolve) => setTimeout(resolve, 50));
-          }
-
-          if (recordErrors.length > 0) {
-            errors.push(`Linha ${i + 2}: ${recordErrors.join(", ")}`);
-          } else {
-            validRecords.push(record);
-          }
-        }
-
-        if (errors.length > 0 && validRecords.length === 0) {
-          toast({
-            title: "Dados inválidos",
-            description:
-              "Todos os registros contêm erros. Verifique o arquivo.",
-            variant: "destructive",
-          });
-          console.error("Validation errors:", errors);
-          return;
-        }
-
-        // Show validation completion
-        setProgress(60);
-        console.log("[DEBUG] Progress set to 60% - validation complete");
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        // Process related fields
-        const processedRecords = onGetRelatedId
-          ? await processRelatedFields(validRecords)
-          : validRecords;
-
-        setProgress(75);
-        console.log("[DEBUG] Progress set to 75% - processing complete");
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        // Import the data
-        setProgress(80);
-        console.log(
-          `[DEBUG] Progress set to 80% - starting database import of ${processedRecords.length} records`,
-        );
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        const result: any = await onImport(processedRecords);
-        console.log(`[DEBUG] Database import completed:`, result);
-
-        setProgress(95);
-        await new Promise((resolve) => setTimeout(resolve, 300));
-
-        const importedCount =
-          typeof result?.imported === "number"
-            ? result.imported
-            : processedRecords.length;
-        const hadErrors =
-          Array.isArray(result?.errors) && result.errors.length > 0;
-
-        // Final progress
-        setProgress(100);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-
-        if (result.success && importedCount > 0) {
-          toast({
-            title: "Importação concluída",
-            description: `${importedCount} registro${importedCount > 1 ? "s" : ""} importado${importedCount > 1 ? "s" : ""} com sucesso`,
-          });
-          if (hadErrors) {
-            toast({
-              title: "Alguns registros ignorados",
-              description: `${result.errors.length} registro(s) duplicado(s) ou inválido(s) foram ignorados`,
-              variant: "destructive",
-            });
-          }
-          setSelectedFile(null);
-          setPreviewData([]);
-          if (fileInputRef.current) fileInputRef.current.value = "";
-
-          // Wait a bit before closing so user sees completion
-          setTimeout(() => {
-            onClose();
-          }, 1000);
-        } else if (result.success && importedCount === 0) {
-          toast({
-            title: "Nenhum registro importado",
-            description: hadErrors
-              ? `${result.errors.length} registro(s) duplicado(s) foram ignorados`
-              : "Registros duplicados ou já existentes foram ignorados",
-            variant: "destructive",
-          });
-          setSelectedFile(null);
-          setPreviewData([]);
-          if (fileInputRef.current) fileInputRef.current.value = "";
-
-          setTimeout(() => {
-            onClose();
-          }, 1000);
-        } else {
-          toast({
-            title: "Erro na importação",
-            description:
-              result?.message || "Ocorreu um erro ao importar os dados",
+            title: "Alguns registros ignorados",
+            description: `${result.errors.length} registro(s) duplicado(s) ou inválido(s) foram ignorados`,
             variant: "destructive",
           });
         }
-      };
-
-      reader.readAsText(selectedFile);
+        setSelectedFile(null);
+        setPreviewData([]);
+        setRecordCount(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        setTimeout(() => {
+          onClose();
+        }, 1000);
+      } else if (result.success && importedCount === 0) {
+        toast({
+          title: "Nenhum registro importado",
+          description: hadErrors
+            ? `${result.errors.length} registro(s) duplicado(s) foram ignorados`
+            : "Registros duplicados ou já existentes foram ignorados",
+          variant: "destructive",
+        });
+        setSelectedFile(null);
+        setPreviewData([]);
+        setRecordCount(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        setTimeout(() => {
+          onClose();
+        }, 1000);
+      } else {
+        toast({
+          title: "Erro na importação",
+          description:
+            result?.message || "Ocorreu um erro ao importar os dados",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Import error:", error);
       toast({
@@ -477,7 +435,7 @@ export function ImportModal({
 
             <div className="text-sm">
               <h5 className="font-medium text-blue-900 mb-1">
-                Campos obrigat��rios:
+                Campos obrigatórios:
               </h5>
               <ul className="grid grid-cols-2 gap-2 mb-3">
                 {requiredColumns.map((col) => (
@@ -496,7 +454,7 @@ export function ImportModal({
 
             <div className="mt-3 text-xs text-blue-600">
               <p>• Limite: 1000 registros por arquivo</p>
-              <p>��� Registros duplicados serão ignorados</p>
+              <p>• Registros duplicados serão ignorados</p>
               <p>• Formato de data: dd/mm/yyyy</p>
             </div>
           </div>
@@ -520,53 +478,31 @@ export function ImportModal({
               >
                 Escolher Arquivo
               </Button>
-              <span className="text-sm text-gray-600 truncate">
-                {selectedFile
-                  ? selectedFile.name
-                  : "Nenhum arquivo selecionado"}
-              </span>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm text-gray-600 truncate">
+                  {selectedFile
+                    ? selectedFile.name
+                    : "Nenhum arquivo selecionado"}
+                </div>
+                {selectedFile && (
+                  <div className="text-xs text-gray-500">
+                    {recordCount !== null
+                      ? `${recordCount} registro${recordCount !== 1 ? "s" : ""}`
+                      : null}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-
-          {selectedFile && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-              <p className="text-sm text-green-800">
-                <strong>Arquivo selecionado:</strong> {selectedFile.name}
-              </p>
-              {previewData.length > 0 && (
-                <p className="text-xs text-green-600 mt-1">
-                  Prévia: {previewData.length} registros detectados
-                </p>
-              )}
-            </div>
-          )}
 
           {selectedFile && (
             <div
               className={`space-y-3 rounded-lg p-4 border-2 transition-all duration-300 ${
                 isImporting
                   ? "bg-blue-50 border-blue-400 shadow-lg"
-                  : "bg-yellow-50 border-yellow-300"
+                  : "bg-gray-50 border-gray-300"
               }`}
             >
-              <div className="flex items-center justify-between text-sm font-medium">
-                <span
-                  className={isImporting ? "text-blue-900" : "text-yellow-800"}
-                >
-                  {isImporting
-                    ? "🔄 PROCESSANDO IMPORTAÇÃO..."
-                    : "📋 PRONTO PARA IMPORTAR"}
-                </span>
-                <span
-                  className={`px-3 py-2 rounded text-lg font-bold border-2 ${
-                    isImporting
-                      ? "bg-blue-100 text-blue-900 border-blue-300"
-                      : "bg-yellow-100 text-yellow-800 border-yellow-300"
-                  }`}
-                >
-                  {Math.round(progress)}%
-                </span>
-              </div>
               <div className="relative">
                 <Progress
                   value={progress}
@@ -577,10 +513,9 @@ export function ImportModal({
                 </div>
               </div>
               <div
-                className={`text-sm font-medium ${isImporting ? "text-blue-800" : "text-yellow-700"}`}
+                className={`text-sm font-medium text-gray-700`}
               >
-                {!isImporting &&
-                  "🚀 Clique em 'Enviar' para iniciar a importação"}
+                {!isImporting && "Clique em 'Enviar' para iniciar a importação"}
                 {isImporting && progress < 20 && "📄 ANALISANDO ARQUIVO CSV..."}
                 {isImporting &&
                   progress >= 20 &&
@@ -608,6 +543,7 @@ export function ImportModal({
             onClick={() => {
               setSelectedFile(null);
               setPreviewData([]);
+              setRecordCount(null);
               if (fileInputRef.current) fileInputRef.current.value = "";
               onClose();
             }}
