@@ -38,6 +38,7 @@ export default function Dashboard() {
     { icon: Home, label: "Dashboard", route: "/dashboard" },
     { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
     { icon: Users, label: "Clientes", route: "/clientes" },
+    { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {
