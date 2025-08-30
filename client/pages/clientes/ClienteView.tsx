@@ -195,8 +195,8 @@ export function ClienteView({
                 value={formatDate(cliente.data_atualizacao)}
               />
               <DataField
-                label=""
-                value={<span className="text-black">{cliente.ativo ? "Ativo" : "Inativo"}</span>}
+                label="Ativo"
+                value={<span className="text-black">{cliente.ativo ? "Sim" : "Não"}</span>}
               />
               <DataField
                 label="Aceita Promoções"
