@@ -5,7 +5,7 @@ import {
   Home,
   Users,
   Store,
-  Phone,
+  Truck,
   Plus,
   Download,
   Upload,
