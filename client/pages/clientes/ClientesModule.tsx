@@ -77,6 +77,14 @@ export default function ClientesModule() {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
   };
 
+  // Always clear caches when entering this page
+  useEffect(() => {
+    try {
+      localStorage.removeItem("fm_clientes");
+      localStorage.removeItem("fm_estabelecimentos");
+    } catch {}
+  }, []);
+
   const menuItems = [
     { icon: Home, label: "Dashboard", route: "/dashboard" },
     { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
@@ -104,8 +112,7 @@ export default function ClientesModule() {
         const res = await makeRequest(`/api/estabelecimentos?${params}`);
         data = (res.data || []) as Estabelecimento[];
       } catch {
-        const raw = localStorage.getItem("fm_estabelecimentos");
-        data = raw ? (JSON.parse(raw) as Estabelecimento[]) : [];
+        data = [];
       }
       data.sort((a, b) => (a.data_cadastro < b.data_cadastro ? 1 : -1));
       setEstabelecimentos(data);
@@ -132,9 +139,8 @@ export default function ClientesModule() {
         setClientes(response.data);
         setTotalRecords(response.pagination.total);
       } else {
-        const local = readLocal();
-        setClientes(local);
-        setTotalRecords(local.length);
+        setClientes([]);
+        setTotalRecords(0);
       }
     } catch (error: any) {
       toast({

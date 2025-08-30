@@ -167,12 +167,12 @@ export function useAuthenticatedRequest() {
   const makeRequest = React.useCallback(
     async (url: string, options: RequestInit = {}) => {
       if (!isAuthenticated) {
-        throw new Error("User not authenticated");
+        throw new Error("Você precisa estar logado para realizar esta ação.");
       }
 
       const userId = user?.id;
       if (!userId) {
-        throw new Error("User ID not found");
+        throw new Error("Sessão inválida. Faça login novamente.");
       }
 
       const headers = {
@@ -187,8 +187,33 @@ export function useAuthenticatedRequest() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}`);
+        const errorData = await response.json().catch(() => ({}) as any);
+        const serverMessage =
+          (errorData as any)?.error || (errorData as any)?.message;
+        let friendly = serverMessage as string | undefined;
+        if (!friendly) {
+          switch (response.status) {
+            case 401:
+              friendly = "Você precisa estar logado para realizar esta ação.";
+              break;
+            case 403:
+              friendly = "Você não tem permissão para realizar esta ação.";
+              break;
+            case 404:
+              friendly = "Recurso não encontrado.";
+              break;
+            case 409:
+              friendly =
+                "Não é possível excluir: existem dependências vinculadas a este registro.";
+              break;
+            default:
+              friendly = `Erro ${response.status}`;
+          }
+        }
+        const err = new Error(friendly);
+        (err as any).status = response.status;
+        (err as any).data = errorData;
+        throw err;
       }
 
       return response.json();

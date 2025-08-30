@@ -73,6 +73,14 @@ function EstabelecimentosModule() {
       return [];
     }
   };
+
+  // Always clear caches when entering this page
+  useEffect(() => {
+    try {
+      localStorage.removeItem("fm_estabelecimentos");
+      localStorage.removeItem("fm_clientes");
+    } catch {}
+  }, []);
   const writeLocal = (list: Estabelecimento[]) => {
     localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
   };
@@ -220,9 +228,8 @@ function EstabelecimentosModule() {
         setEstabelecimentos(response.data);
         setTotalRecords(response.pagination.total);
       } else {
-        const local = readLocal();
-        setEstabelecimentos(local);
-        setTotalRecords(local.length);
+        setEstabelecimentos([]);
+        setTotalRecords(0);
       }
     } catch (error: any) {
       toast({
@@ -411,6 +418,34 @@ function EstabelecimentosModule() {
   const confirmDelete = async () => {
     if (!currentEstabelecimento) return;
 
+    // Offline/local mode: handle without API preserving dependency message
+    if (!isAuthenticated) {
+      const clientesRaw = localStorage.getItem("fm_clientes");
+      const clientes: any[] = clientesRaw ? JSON.parse(clientesRaw) : [];
+      const hasDeps = clientes.some(
+        (c) => Number(c.estabelecimento_id) === currentEstabelecimento.id,
+      );
+      if (hasDeps) {
+        toast({
+          title: "Não foi possível excluir",
+          description:
+            "Não é possível excluir o Estabelecimento pois existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir o estabelecimento.",
+          variant: "destructive",
+        });
+        setShowDeleteAlert(false);
+        return;
+      }
+      const list = readLocal().filter(
+        (e) => e.id !== currentEstabelecimento.id,
+      );
+      writeLocal(list);
+      setEstabelecimentos(list);
+      setSelectedIds([]);
+      toast({ title: "Estabelecimento excluído" });
+      setShowDeleteAlert(false);
+      return;
+    }
+
     setDeleteLoading(true);
     try {
       await makeRequest(`/api/estabelecimentos/${currentEstabelecimento.id}`, {
@@ -426,11 +461,24 @@ function EstabelecimentosModule() {
       await loadEstabelecimentos();
       setShowDeleteAlert(false);
     } catch (error: any) {
+      const status = error?.status;
+      const data = error?.data || {};
+      let description: string = error?.message;
+      if (!description || status === 409) {
+        if (data?.blockedIds?.length) {
+          description = `Não é possível excluir ${data.blockedIds.length} registro(s): existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir.`;
+        } else if (
+          /Clientes vinculados|depend.ncias/i.test(String(data?.error || ""))
+        ) {
+          description = String(data.error);
+        } else if (!description) {
+          description =
+            "Existem dependências com outros módulos. Remova-as antes de excluir.";
+        }
+      }
       toast({
         title: "Não foi possível excluir",
-        description:
-          error?.message ||
-          "Existem dependências com outros módulos. Remova-as antes de excluir.",
+        description,
         variant: "destructive",
       });
       await loadEstabelecimentos();
@@ -441,6 +489,39 @@ function EstabelecimentosModule() {
   };
 
   const confirmBulkDelete = async () => {
+    // Offline/local mode
+    if (!isAuthenticated) {
+      const clientesRaw = localStorage.getItem("fm_clientes");
+      const clientes: any[] = clientesRaw ? JSON.parse(clientesRaw) : [];
+      const blocked = new Set<number>();
+      for (const id of selectedIds) {
+        const hasDeps = clientes.some(
+          (c) => Number(c.estabelecimento_id) === id,
+        );
+        if (hasDeps) blocked.add(id);
+      }
+      if (blocked.size > 0) {
+        toast({
+          title: "Não foi possível excluir algum(ns) registro(s)",
+          description: `Não é possível excluir ${blocked.size} registro(s): existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir.`,
+          variant: "destructive",
+        });
+      }
+      const deletable = selectedIds.filter((id) => !blocked.has(id));
+      if (deletable.length > 0) {
+        const list = readLocal().filter((e) => !deletable.includes(e.id));
+        writeLocal(list);
+        setEstabelecimentos(list);
+        toast({
+          title: "Estabelecimentos excluídos",
+          description: `${deletable.length} estabelecimento(s) excluído(s) com sucesso`,
+        });
+      }
+      setSelectedIds([]);
+      setShowBulkDeleteAlert(false);
+      return;
+    }
+
     setDeleteLoading(true);
     try {
       await makeRequest("/api/estabelecimentos/bulk-delete", {
@@ -457,11 +538,24 @@ function EstabelecimentosModule() {
       await loadEstabelecimentos();
       setShowBulkDeleteAlert(false);
     } catch (error: any) {
+      const status = error?.status;
+      const data = error?.data || {};
+      let description: string = error?.message;
+      if (!description || status === 409) {
+        if (data?.blockedIds?.length) {
+          description = `Não é possível excluir ${data.blockedIds.length} registro(s): existem Clientes vinculados. Exclua ou transfira os clientes antes de excluir.`;
+        } else if (
+          /Clientes vinculados|depend.ncias/i.test(String(data?.error || ""))
+        ) {
+          description = String(data.error);
+        } else if (!description) {
+          description =
+            "Existem dependências com outros módulos. Remova-as antes de excluir.";
+        }
+      }
       toast({
         title: "Não foi possível excluir algum(ns) registro(s)",
-        description:
-          error?.message ||
-          "Existem dependências com outros módulos. Remova-as antes de excluir.",
+        description,
         variant: "destructive",
       });
       await loadEstabelecimentos();
