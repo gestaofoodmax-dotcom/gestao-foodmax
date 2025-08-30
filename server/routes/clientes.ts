@@ -457,7 +457,10 @@ export const importClientes: RequestHandler = async (req, res) => {
             }
           }
         }
-        if (!estabelecimentoId && typeof raw.estabelecimento_nome === "string") {
+        if (
+          !estabelecimentoId &&
+          typeof raw.estabelecimento_nome === "string"
+        ) {
           const nomeBusca = raw.estabelecimento_nome.trim();
           if (nomeBusca) {
             const { data: byEq } = await supabase
@@ -480,7 +483,9 @@ export const importClientes: RequestHandler = async (req, res) => {
         }
 
         if (!estabelecimentoId) {
-          errors.push(`Linha ${i + 1}: Estabelecimento inválido ou não encontrado`);
+          errors.push(
+            `Linha ${i + 1}: Estabelecimento inválido ou não encontrado`,
+          );
           continue;
         }
 
@@ -553,7 +558,9 @@ export const importClientes: RequestHandler = async (req, res) => {
         const cep = onlyDigits(raw.cep || "");
         const endereco = raw.endereco ? String(raw.endereco).trim() : undefined;
         const cidade = raw.cidade ? String(raw.cidade).trim() : undefined;
-        const uf = raw.uf ? String(raw.uf).trim().toUpperCase().slice(0, 2) : undefined;
+        const uf = raw.uf
+          ? String(raw.uf).trim().toUpperCase().slice(0, 2)
+          : undefined;
         const pais = raw.pais ? String(raw.pais).trim() : undefined;
 
         if (cep || endereco || cidade || uf || pais) {
