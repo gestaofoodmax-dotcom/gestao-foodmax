@@ -593,14 +593,14 @@ export const importEstabelecimentos: RequestHandler = async (req, res) => {
 
         if (estError) throw estError;
 
-        // Create endereco if provided
-        if (cep || endereco || cidade) {
+        // Create endereco if provided (any address field)
+        if (cep || endereco || cidade || uf || pais) {
           await supabase.from("estabelecimentos_enderecos").insert({
             estabelecimento_id: novoEstabelecimento.id,
-            cep,
-            endereco,
-            cidade,
-            uf,
+            cep: cep || null,
+            endereco: endereco || null,
+            cidade: cidade || null,
+            uf: uf || null,
             pais: pais || "Brasil",
           });
         }
