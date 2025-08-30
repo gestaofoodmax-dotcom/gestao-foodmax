@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Info, X, Save } from "lucide-react";
@@ -31,7 +32,7 @@ export default function CategoriaForm({ isOpen, onClose, onSave, categoria }: { 
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="w-[50vw] max-w-xl overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="w-[85vw] h-[90vh] max-w-none overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader><DialogTitle className="text-xl sm:text-2xl font-normal py-2">{isEditing ? "Editar Categoria" : "Nova Categoria"}</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit(async (d) => { await onSave(d); onClose(); })} className="space-y-6">
           <div className="space-y-4 bg-white p-4 rounded-lg border">
@@ -41,9 +42,9 @@ export default function CategoriaForm({ isOpen, onClose, onSave, categoria }: { 
                 <Label htmlFor="nome" className="text-sm font-medium">Nome *</Label>
                 <Input id="nome" {...register("nome")} className="foodmax-input" placeholder="Nome da categoria" />
               </div>
-              <div>
+              <div className="md:col-span-2">
                 <Label htmlFor="descricao" className="text-sm font-medium">Descrição</Label>
-                <Input id="descricao" {...register("descricao")} className="foodmax-input" placeholder="Descrição" />
+                <Textarea id="descricao" {...register("descricao")} className="foodmax-input min-h-[120px]" placeholder="Descrição da categoria" />
               </div>
             </div>
           </div>

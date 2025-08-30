@@ -215,6 +215,14 @@ export const listCategorias: RequestHandler = async (req, res) => {
       .select("*", { count: "exact", head: true })
       .eq("id_usuario", userId);
 
+    if ((count || 0) === 0) {
+      await supabase.rpc("seed_itens_categorias_defaults", { p_user_id: userId });
+      query = supabase
+        .from("itens_categorias")
+        .select("*")
+        .eq("id_usuario", userId);
+    }
+
     const { data, error } = await query
       .order("nome", { ascending: true })
       .range(offset, offset + limit - 1);

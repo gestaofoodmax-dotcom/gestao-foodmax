@@ -13,12 +13,14 @@ import ItemForm from "./ItemForm";
 import ItemView from "./ItemView";
 import CategoriaForm from "./CategoriaForm";
 import { DeleteAlert } from "@/components/alert-dialog-component";
+import { ExportModal } from "@/components/export-modal";
+import { ImportModal } from "@/components/import-modal";
 
 export default function ItensModule() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout, isLoading } = useAuth();
+  const { logout, isLoading, getUserRole, hasPayment } = useAuth();
   const { makeRequest } = useAuthenticatedRequest();
 
   const [activeTab, setActiveTab] = useState("itens");
@@ -28,6 +30,8 @@ export default function ItensModule() {
 
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [showExport, setShowExport] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -165,7 +169,21 @@ export default function ItensModule() {
     if (activeTab === "categorias") {
       if (categorias.length === 0 && !localStorage.getItem("fm_itens_categorias_seeded")) {
         const now = new Date().toISOString();
-        const seeded = principaisCategorias.map((nome, i) => ({ id: Date.now() + i, id_usuario: Number(localStorage.getItem("fm_user_id") || 1), nome, descricao: "", ativo: true, data_cadastro: now, data_atualizacao: now }));
+        const defaults = [
+          { nome: "Carnes", descricao: "Cortes bovinos, suínos e outras carnes vermelhas." },
+          { nome: "Aves", descricao: "Frango, peru e outras aves." },
+          { nome: "Peixes", descricao: "Peixes e frutos do mar frescos ou congelados." },
+          { nome: "Laticínios", descricao: "Leite, queijos, iogurtes e derivados." },
+          { nome: "Bebidas", descricao: "Bebidas alcoólicas e não alcoólicas." },
+          { nome: "Vegetais", descricao: "Hortaliças e legumes frescos." },
+          { nome: "Frutas", descricao: "Frutas frescas e secas." },
+          { nome: "Massas", descricao: "Massas secas e frescas." },
+          { nome: "Grãos e Cereais", descricao: "Arroz, feijão, aveia e outros grãos." },
+          { nome: "Padaria", descricao: "Pães, bolos e produtos de panificação." },
+          { nome: "Sobremesas", descricao: "Doces, tortas e sobremesas em geral." },
+          { nome: "Temperos e Condimentos", descricao: "Ervas, especiarias e molhos prontos." }
+        ];
+        const seeded = defaults.map((c, i) => ({ id: Date.now() + i, id_usuario: Number(localStorage.getItem("fm_user_id") || 1), nome: c.nome, descricao: c.descricao, ativo: true, data_cadastro: now, data_atualizacao: now }));
         writeLocalCats(seeded);
         setCategorias(seeded);
         localStorage.setItem("fm_itens_categorias_seeded", "1");
@@ -349,8 +367,10 @@ export default function ItensModule() {
                   {selectedIds.length > 0 && (
                     <Button variant="destructive" size="sm" onClick={() => setShowDeleteAlert(true)}><Trash2 className="w-4 h-4 mr-2" />Excluir Selecionados ({selectedIds.length})</Button>
                   )}
+                  <Button variant="outline" size="sm" onClick={() => setShowExport(true)}>Exportar</Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>Importar</Button>
                   {activeTab === "categorias" ? (
-                    <Button onClick={() => { setCurrentCategoria(null); setIsEditingCategoria(false); setShowCategoriaForm(true); }} className="bg-foodmax-orange text-white hover:bg-orange-600"><Plus className="w-4 h-4 mr-2" />Nova Categoria</Button>
+                    <Button onClick={() => { setCurrentCategoria(null); setIsEditingCategoria(false); setShowCategoriaForm(true); }} className="bg-foodmax-orange text-white hover:bg-orange-600"><Plus className="w-4 h-4 mr-2" />Novo</Button>
                   ) : (
                     <Button onClick={handleNew} className="bg-foodmax-orange text-white hover:bg-orange-600"><Plus className="w-4 h-4 mr-2" />Novo</Button>
                   )}
@@ -371,6 +391,99 @@ export default function ItensModule() {
       <ItemView isOpen={showView} onClose={() => { setShowView(false); setCurrentItem(null); }} item={currentItem} categoriaNome={currentItem ? categorias.find(c => c.id === currentItem.categoria_id)?.nome || null : null} />
 
       <CategoriaForm isOpen={showCategoriaForm} onClose={() => { setShowCategoriaForm(false); setCurrentCategoria(null); setIsEditingCategoria(false); }} categoria={currentCategoria} onSave={handleSaveCategoria} />
+
+      <ExportModal
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={activeTab === "itens" ? itens : categorias}
+        selectedIds={selectedIds}
+        moduleName={activeTab === "itens" ? "Itens" : "Categorias"}
+        columns={activeTab === "itens" ? [
+          { key: "nome", label: "Nome" },
+          { key: "categoria_id", label: "ID Categoria" },
+          { key: "preco_centavos", label: "Preço (centavos)" },
+          { key: "custo_pago_centavos", label: "Custo Pago (centavos)" },
+          { key: "unidade_medida", label: "Unidade de Medida" },
+          { key: "peso_gramas", label: "Peso (gramas)" },
+          { key: "estoque_atual", label: "Estoque Atual" },
+          { key: "ativo", label: "Ativo" },
+          { key: "data_cadastro", label: "Data Cadastro" },
+          { key: "data_atualizacao", label: "Data Atualização" }
+        ] : [
+          { key: "nome", label: "Nome" },
+          { key: "descricao", label: "Descrição" },
+          { key: "ativo", label: "Ativo" },
+          { key: "data_cadastro", label: "Data Cadastro" },
+          { key: "data_atualizacao", label: "Data Atualização" }
+        ]}
+      />
+
+      <ImportModal
+        isOpen={showImport}
+        onClose={() => setShowImport(false)}
+        moduleName={activeTab === "itens" ? "Itens" : "Categorias"}
+        userRole={getUserRole()}
+        hasPayment={hasPayment()}
+        columns={activeTab === "itens" ? [
+          { key: "nome", label: "Nome", required: true },
+          { key: "categoria_id", label: "ID Categoria", required: true },
+          { key: "preco_centavos", label: "Preço (centavos)", required: true },
+          { key: "custo_pago_centavos", label: "Custo Pago (centavos)", required: true },
+          { key: "unidade_medida", label: "Unidade de Medida", required: true },
+          { key: "peso_gramas", label: "Peso (gramas)" },
+          { key: "estoque_atual", label: "Estoque Atual" },
+          { key: "ativo", label: "Ativo" }
+        ] : [
+          { key: "nome", label: "Nome", required: true },
+          { key: "descricao", label: "Descrição" },
+          { key: "ativo", label: "Ativo" }
+        ]}
+        onImport={async (records) => {
+          try {
+            if (activeTab === "itens") {
+              let imported = 0;
+              for (const r of records) {
+                const payload: any = {
+                  nome: r.nome,
+                  categoria_id: Number(r.categoria_id),
+                  preco_centavos: Number(r.preco_centavos),
+                  custo_pago_centavos: Number(r.custo_pago_centavos),
+                  unidade_medida: String(r.unidade_medida || "Unidade"),
+                  peso_gramas: r.peso_gramas ? Number(r.peso_gramas) : undefined,
+                  estoque_atual: r.estoque_atual ? Number(r.estoque_atual) : undefined,
+                  ativo: typeof r.ativo === "string" ? r.ativo.toLowerCase() !== "false" : Boolean(r.ativo ?? true),
+                };
+                try {
+                  await makeRequest(`/api/itens`, { method: "POST", body: JSON.stringify(payload) }); imported++;
+                } catch {
+                  const list = readLocalItens();
+                  const now = new Date().toISOString();
+                  const novo: Item = { id: Date.now() + imported, id_usuario: Number(localStorage.getItem("fm_user_id") || 1), ...payload, data_cadastro: now, data_atualizacao: now } as any;
+                  list.unshift(novo); writeLocalItens(list); setItens(list); imported++;
+                }
+              }
+              await loadItens();
+              return { success: true, message: `${imported} itens importados`, imported } as any;
+            } else {
+              let imported = 0;
+              for (const r of records) {
+                const payload: any = { nome: r.nome, descricao: r.descricao || "", ativo: typeof r.ativo === "string" ? r.ativo.toLowerCase() !== "false" : Boolean(r.ativo ?? true) };
+                try { await makeRequest(`/api/itens-categorias`, { method: "POST", body: JSON.stringify(payload) }); imported++; }
+                catch {
+                  const list = readLocalCats();
+                  const now = new Date().toISOString();
+                  const novo: ItemCategoria = { id: Date.now() + imported, id_usuario: Number(localStorage.getItem("fm_user_id") || 1), ...payload, data_cadastro: now, data_atualizacao: now } as any;
+                  list.unshift(novo); writeLocalCats(list); setCategorias(list); imported++;
+                }
+              }
+              await loadCategorias();
+              return { success: true, message: `${imported} categorias importadas`, imported } as any;
+            }
+          } catch (e) {
+            return { success: false, message: "Erro ao importar" } as any;
+          }
+        }}
+      />
 
       <DeleteAlert isOpen={showDeleteAlert} onClose={() => setShowDeleteAlert(false)} onConfirm={handleDeleteConfirmed} itemName={currentItem?.nome} isLoading={false} />
     </div>
