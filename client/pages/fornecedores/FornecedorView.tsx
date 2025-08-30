@@ -162,7 +162,10 @@ export function FornecedorView({
                   <DataField label="CEP" value={fornecedor.endereco.cep} />
                 )}
                 {fornecedor.endereco.endereco && (
-                  <DataField label="Endereço" value={fornecedor.endereco.endereco} />
+                  <DataField
+                    label="Endereço"
+                    value={fornecedor.endereco.endereco}
+                  />
                 )}
                 {(fornecedor.endereco.cidade || fornecedor.endereco.uf) && (
                   <DataField
@@ -193,7 +196,11 @@ export function FornecedorView({
               />
               <DataField
                 label="Ativo"
-                value={<span className="text-black">{fornecedor.ativo ? "Sim" : "Não"}</span>}
+                value={
+                  <span className="text-black">
+                    {fornecedor.ativo ? "Sim" : "Não"}
+                  </span>
+                }
               />
             </div>
           </div>

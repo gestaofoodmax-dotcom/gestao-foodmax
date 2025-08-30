@@ -148,7 +148,6 @@ export function FornecedorForm({
     }
   }, [isOpen, fornecedor, reset]);
 
-
   const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const numbers = e.target.value.replace(/\D/g, "").slice(0, 14);
     setCNPJDisplay(formatCNPJ(numbers));
@@ -473,7 +472,9 @@ export function FornecedorForm({
                   <Label htmlFor="ativo" className="text-sm font-medium">
                     Ativo
                   </Label>
-                  <p className="text-sm text-gray-600">{watchedAtivo ? "Sim" : "Não"}</p>
+                  <p className="text-sm text-gray-600">
+                    {watchedAtivo ? "Sim" : "Não"}
+                  </p>
                 </div>
               </div>
             </div>

@@ -103,7 +103,10 @@ export function ClienteView({
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <DataField label="Estabelecimento" value={estabelecimentoNome || "-"} />
+              <DataField
+                label="Estabelecimento"
+                value={estabelecimentoNome || "-"}
+              />
               <DataField label="Nome" value={cliente.nome} />
               {cliente.genero && (
                 <DataField label="Gênero" value={cliente.genero} />
