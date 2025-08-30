@@ -391,12 +391,7 @@ export const importClientes: RequestHandler = async (req, res) => {
     if (!userId)
       return res.status(401).json({ error: "Usuário não autenticado" });
 
-    const { role, hasPayment } = await checkUserPermissions(userId);
-    if (role === "user" && !hasPayment) {
-      return res
-        .status(403)
-        .json({ error: "Essa ação só funciona no plano pago" });
-    }
+    await checkUserPermissions(userId);
 
     const { records } = z
       .object({ records: z.array(z.record(z.any())) })
