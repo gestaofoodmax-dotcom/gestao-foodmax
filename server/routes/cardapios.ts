@@ -414,13 +414,19 @@ export const importCardapios: RequestHandler = async (req, res) => {
         z.object({
           nome: z.string().min(1),
           tipo_cardapio: z.enum(["Café", "Almoço", "Janta", "Lanche", "Bebida", "Outro"]),
-          margem_lucro_percentual: z.union([z.number(), z.string()]),
-          preco_total: z.union([z.number(), z.string()]).optional(),
-          preco_total_centavos: z.union([z.number(), z.string()]).optional(),
-          preco_itens: z.union([z.number(), z.string()]).optional(),
+          quantidade_total: z.union([z.number(), z.string()]).optional(),
           preco_itens_centavos: z.union([z.number(), z.string()]).optional(),
+          margem_lucro_percentual: z.union([z.number(), z.string()]),
+          preco_total_centavos: z.union([z.number(), z.string()]),
           descricao: z.string().optional(),
           ativo: z.union([z.boolean(), z.string()]).optional(),
+          itens: z.array(
+            z.object({
+              item_id: z.number(),
+              quantidade: z.number(),
+              valor_unitario_centavos: z.number(),
+            })
+          ).optional(),
         }),
       ),
     });
@@ -453,34 +459,50 @@ export const importCardapios: RequestHandler = async (req, res) => {
 
     let imported = 0;
     for (const r of records) {
-      const preco_total_centavos =
-        r.preco_total_centavos != null && r.preco_total_centavos !== ""
-          ? parseCentavos(r.preco_total_centavos)
-          : parseCentavos(r.preco_total);
+      const preco_total_centavos = parseCentavos(r.preco_total_centavos);
+      const preco_itens_centavos = parseCentavos(r.preco_itens_centavos);
+      const quantidade_total = typeof r.quantidade_total === "string"
+        ? Number(r.quantidade_total) || 0
+        : r.quantidade_total || 0;
 
-      const preco_itens_centavos =
-        r.preco_itens_centavos != null && r.preco_itens_centavos !== ""
-          ? parseCentavos(r.preco_itens_centavos)
-          : parseCentavos(r.preco_itens);
+      const margem_lucro_percentual =
+        typeof r.margem_lucro_percentual === "string"
+          ? Number(String(r.margem_lucro_percentual).replace(",", ".")) || 0
+          : r.margem_lucro_percentual || 0;
 
-      const { error } = await supabase
+      // Create cardapio
+      const { data: cardapio, error } = await supabase
         .from("cardapios")
         .insert({
           id_usuario: userId,
           nome: r.nome,
           tipo_cardapio: r.tipo_cardapio,
-          quantidade_total: 0,
+          quantidade_total,
           preco_itens_centavos,
-          margem_lucro_percentual:
-            typeof r.margem_lucro_percentual === "string"
-              ? Number(String(r.margem_lucro_percentual).replace(",", ".")) || 0
-              : r.margem_lucro_percentual || 0,
+          margem_lucro_percentual,
           preco_total_centavos,
           descricao: r.descricao,
           ativo: r.ativo != null ? toBool(r.ativo) : true,
-        });
+        })
+        .select()
+        .single();
 
-      if (!error) imported++;
+      if (!error && cardapio) {
+        // Create cardapio items if provided
+        if (r.itens && r.itens.length > 0) {
+          const cardapioItens = r.itens.map((item) => ({
+            cardapio_id: cardapio.id,
+            item_id: item.item_id,
+            quantidade: item.quantidade,
+            valor_unitario_centavos: item.valor_unitario_centavos,
+          }));
+
+          await supabase
+            .from("cardapios_itens")
+            .insert(cardapioItens);
+        }
+        imported++;
+      }
     }
 
     res.json({ success: true, imported });
