@@ -766,16 +766,21 @@ export default function CardapioForm({
               />
             </div>
 
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center space-x-2">
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="flex items-center gap-3">
                 <Switch
                   id="ativo"
                   checked={watchedValues.ativo}
                   onCheckedChange={(checked) => setValue("ativo", checked)}
                 />
-                <Label htmlFor="ativo" className="text-sm font-medium">
-                  {watchedValues.ativo ? "Ativar" : "Desativar"}
-                </Label>
+                <div>
+                  <Label htmlFor="ativo" className="text-sm font-medium">
+                    Ativo
+                  </Label>
+                  <p className="text-sm text-gray-600">
+                    {watchedValues.ativo ? "Sim" : "Não"}
+                  </p>
+                </div>
               </div>
             </div>
           </form>
