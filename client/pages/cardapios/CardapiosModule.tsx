@@ -514,7 +514,7 @@ export default function CardapiosModule() {
                                 .length}
                         </span>
                         {activeTab === tipo && (
-                          <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                          <span className="absolute -bottom-px left-0 right-0 h-[3px] bg-foodmax-orange" />
                         )}
                       </button>
                       {idx < arr.length - 1 && (
