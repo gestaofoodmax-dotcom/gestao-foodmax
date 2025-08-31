@@ -24,6 +24,10 @@ import {
   Minus,
   AlertCircle,
   Link,
+  Info,
+  DollarSign,
+  Boxes,
+  FileText,
 } from "lucide-react";
 import {
   Cardapio,
