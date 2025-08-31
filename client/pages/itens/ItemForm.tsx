@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Info, X, Save, AlertTriangle, ChevronsUpDown, Check } from "lucide-react";
+import { Info, X, Save, AlertTriangle, ChevronsUpDown, Check, DollarSign, Boxes } from "lucide-react";
 import { Item, ItemCategoria, UNIDADES_MEDIDA } from "@shared/itens";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -42,8 +42,14 @@ const schema = z.object({
     .number()
     .min(0, "Custo Pago deve ser maior ou igual a 0"),
   unidade_medida: z.string().min(1, "Unidade de Medida é obrigatória"),
-  peso_gramas: z.number().optional(),
-  estoque_atual: z.number().optional(),
+  peso_gramas: z.preprocess(
+    (v) => (v === "" || v === null || (typeof v === "number" && isNaN(v)) ? undefined : v),
+    z.number().int().nonnegative().optional()
+  ),
+  estoque_atual: z.preprocess(
+    (v) => (v === "" || v === null || (typeof v === "number" && isNaN(v)) ? undefined : v),
+    z.number().int().nonnegative().optional()
+  ),
   ativo: z.boolean().default(true),
 });
 
@@ -280,6 +286,45 @@ export default function ItemForm({
               </div>
 
               <div>
+                <Label className="text-sm font-medium">Unidade de Medida</Label>
+                <Select
+                  value={watch("unidade_medida") as any}
+                  onValueChange={(v) => setValue("unidade_medida", v)}
+                >
+                  <SelectTrigger className="foodmax-input">
+                    <SelectValue placeholder="Selecione a unidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {UNIDADES_MEDIDA.map((u) => (
+                      <SelectItem key={u} value={u}>
+                        {u}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="peso" className="text-sm font-medium">
+                  Peso (Gramas)
+                </Label>
+                <Input
+                  id="peso"
+                  type="number"
+                  {...register("peso_gramas", { valueAsNumber: true })}
+                  className="foodmax-input"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <DollarSign className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Preços</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
                 <Label htmlFor="preco" className="text-sm font-medium">
                   Preço (R$) *
                 </Label>
@@ -314,38 +359,15 @@ export default function ItemForm({
                   )}
                 />
               </div>
+            </div>
+          </div>
 
-              <div>
-                <Label className="text-sm font-medium">Unidade de Medida</Label>
-                <Select
-                  value={watch("unidade_medida") as any}
-                  onValueChange={(v) => setValue("unidade_medida", v)}
-                >
-                  <SelectTrigger className="foodmax-input">
-                    <SelectValue placeholder="Selecione a unidade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {UNIDADES_MEDIDA.map((u) => (
-                      <SelectItem key={u} value={u}>
-                        {u}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="peso" className="text-sm font-medium">
-                  Peso (Gramas)
-                </Label>
-                <Input
-                  id="peso"
-                  type="number"
-                  {...register("peso_gramas", { valueAsNumber: true })}
-                  className="foodmax-input"
-                />
-              </div>
-
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <Boxes className="w-5 h-5 text-purple-600" />
+              <h3 className="font-semibold text-purple-600">Estoque</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
               <div>
                 <Label htmlFor="estoque" className="text-sm font-medium">
                   Estoque Atual
@@ -357,12 +379,7 @@ export default function ItemForm({
                   className="foodmax-input"
                 />
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-lg border">
-            <div className="flex items-center justify-start">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 mt-6 md:mt-0">
                 <Switch
                   id="ativo"
                   checked={watchedAtivo}
