@@ -708,6 +708,10 @@ export default function CardapioForm({
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="col-span-1 md:col-span-2 -mt-2 mb-2 flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-green-600" />
+                <h3 className="font-semibold text-green-600">Preços</h3>
+              </div>
               <div>
                 <Label htmlFor="margem_lucro_percentual">
                   Margem de Lucro (%) *
