@@ -533,23 +533,10 @@ export const importCardapios: RequestHandler = async (req, res) => {
           .select()
           .single();
 
-        if (!error && cardapio) {
-          // Create cardapio items if provided (skip for now since we don't have real item mapping)
-          // In a real scenario, you'd need to look up items by name to get their IDs
-          /*
-          if (cardapioData.itens && cardapioData.itens.length > 0) {
-            const cardapioItens = cardapioData.itens.map((item: any) => ({
-              cardapio_id: cardapio.id,
-              item_id: item.item_id,
-              quantidade: item.quantidade,
-              valor_unitario_centavos: item.valor_unitario_centavos,
-            }));
-
-            await supabase
-              .from("cardapios_itens")
-              .insert(cardapioItens);
-          }
-          */
+        if (error) {
+          console.error(`Database error for cardapio ${cardapioData.nome}:`, error);
+        } else if (cardapio) {
+          console.log(`Successfully created cardapio: ${cardapio.nome}`);
           imported++;
         }
       } catch (error) {
