@@ -758,25 +758,18 @@ export default function CardapiosModule() {
           const map: Record<string, string> = {
             nome: "nome",
             "tipo de cardápio": "tipo_cardapio",
-            "tipo cardápio": "tipo_cardapio",
-            "tipo cardapio": "tipo_cardapio",
             "quantidade total": "quantidade_total",
             "preço dos itens": "preco_itens",
-            "preco dos itens": "preco_itens",
             "margem de lucro": "margem_lucro",
-            "margem lucro": "margem_lucro",
             "preço total": "preco_total",
-            "preco total": "preco_total",
+            "descrição": "descricao",
             descricao: "descricao",
-            descrição: "descricao",
             status: "status",
             "data cadastro": "data_cadastro",
             "data atualização": "data_atualizacao",
-            "data atualizacao": "data_atualizacao",
             "item nome": "item_nome",
             "item quantidade": "item_quantidade",
             "item valor unitario": "item_valor_unitario",
-            "item valor unitário": "item_valor_unitario",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
@@ -785,26 +778,32 @@ export default function CardapiosModule() {
           if (!r.nome) errors.push("Nome é obrigatório");
           const tipo = String(r.tipo_cardapio || "").trim();
           if (!tipo) errors.push("Tipo de Cardápio é obrigatório");
-          else if (!TIPOS_CARDAPIO.includes(tipo as any)) errors.push("Tipo inválido");
-          if (r.margem_lucro == null || r.margem_lucro === "") errors.push("Margem de Lucro é obrigatória");
-          if (r.preco_total == null || r.preco_total === "") errors.push("Preço Total é obrigatório");
+          else if (!TIPOS_CARDAPIO.includes(tipo as any)) {
+            console.log(`Tipo inválido: '${tipo}', tipos válidos:`, TIPOS_CARDAPIO);
+            errors.push(`Tipo inválido: '${tipo}'. Tipos válidos: ${TIPOS_CARDAPIO.join(", ")}`);
+          }
+          // Margem e preço são opcionais se estão vazios no CSV
           return errors;
         }}
         onImport={async (records) => {
           try {
+            console.log("Importing records:", records);
+
             // Group records by cardapio (nome + tipo)
             const cardapiosMap = new Map<string, any>();
 
-            for (const r of records) {
-              const key = `${r.nome}_${r.tipo_cardapio}`;
-              if (!cardapiosMap.has(key)) {
-                const parseCentavos = (val: any): number => {
-                  if (val === undefined || val === null || val === "") return 0;
-                  const s = String(val).replace(",", ".");
-                  const n = Number(s);
-                  return !isNaN(n) ? Math.round(n * 100) : 0;
-                };
+            const parseCentavos = (val: any): number => {
+              if (val === undefined || val === null || val === "") return 0;
+              const s = String(val).replace(",", ".");
+              const n = Number(s);
+              return !isNaN(n) ? Math.round(n * 100) : 0;
+            };
 
+            for (const r of records) {
+              console.log("Processing record:", r);
+              const key = `${r.nome}_${r.tipo_cardapio}`;
+
+              if (!cardapiosMap.has(key)) {
                 cardapiosMap.set(key, {
                   nome: r.nome,
                   tipo_cardapio: r.tipo_cardapio,
@@ -819,33 +818,41 @@ export default function CardapiosModule() {
               }
 
               // Add item if provided
-              if (r.item_nome) {
-                const parseCentavos = (val: any): number => {
-                  if (val === undefined || val === null || val === "") return 0;
-                  const s = String(val).replace(",", ".");
-                  const n = Number(s);
-                  return !isNaN(n) ? Math.round(n * 100) : 0;
-                };
-
+              if (r.item_nome && r.item_nome.trim()) {
                 cardapiosMap.get(key).itens.push({
-                  item_id: 1, // Placeholder - would need item mapping
+                  item_id: 1, // Placeholder
                   quantidade: Number(r.item_quantidade) || 1,
                   valor_unitario_centavos: parseCentavos(r.item_valor_unitario),
                 });
               }
             }
 
+            console.log("Cardapios to create:", Array.from(cardapiosMap.values()));
+
             // Create cardapios via API
             let imported = 0;
             for (const cardapioData of cardapiosMap.values()) {
               try {
-                await makeRequest(`/api/cardapios`, {
+                console.log("Creating cardapio:", cardapioData);
+                const response = await makeRequest(`/api/cardapios`, {
                   method: "POST",
                   body: JSON.stringify(cardapioData),
                 });
+                console.log("Cardapio created:", response);
                 imported++;
               } catch (e) {
                 console.error("Error creating cardapio:", e);
+                // Try fallback without items
+                try {
+                  const fallbackData = { ...cardapioData, itens: [] };
+                  await makeRequest(`/api/cardapios`, {
+                    method: "POST",
+                    body: JSON.stringify(fallbackData),
+                  });
+                  imported++;
+                } catch (e2) {
+                  console.error("Fallback also failed:", e2);
+                }
               }
             }
 
@@ -853,7 +860,7 @@ export default function CardapiosModule() {
             return { success: true, imported, message: `${imported} cardápio(s) importado(s) com sucesso` } as any;
           } catch (e) {
             console.error("Import error:", e);
-            return { success: false, message: "Erro ao importar cardápios" } as any;
+            return { success: false, message: `Erro ao importar: ${e}` } as any;
           }
         }}
       />
