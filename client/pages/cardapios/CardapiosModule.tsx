@@ -26,6 +26,7 @@ import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
 import {
   Cardapio,
   CardapiosListResponse,
+  formatCurrencyBRL,
   getTipoCardapioColor,
   TIPOS_CARDAPIO,
   TipoCardapio,
