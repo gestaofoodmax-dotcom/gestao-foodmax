@@ -199,7 +199,7 @@ export default function CardapioForm({
         const catIds = [...new Set(response.itens.map((item: any) => {
           const foundItem = itens.find(i => i.id === item.item_id);
           return foundItem?.categoria_id;
-        }).filter(Boolean))];
+        }).filter(Boolean))] as number[];
         setSelectedCategorias(catIds);
       }
     } catch (error) {
