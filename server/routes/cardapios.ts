@@ -471,6 +471,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
     const cardapiosMap = new Map<string, any>();
 
     for (const r of records) {
+      console.log("Processing record:", r);
       const key = `${r.nome}_${r.tipo_cardapio}`;
 
       if (!cardapiosMap.has(key)) {
