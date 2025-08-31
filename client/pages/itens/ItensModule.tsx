@@ -359,10 +359,22 @@ export default function ItensModule() {
   // Removed: Each tab now has independent selectedIds state
 
   const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
+    if (activeTab === "itens") {
+      setSearchTermItens(value);
+      setCurrentPageItens(1);
+    } else {
+      setSearchTermCategorias(value);
+      setCurrentPageCategorias(1);
+    }
   };
-  const handlePageChange = (page: number) => setCurrentPage(page);
+
+  const handlePageChange = (page: number) => {
+    if (activeTab === "itens") {
+      setCurrentPageItens(page);
+    } else {
+      setCurrentPageCategorias(page);
+    }
+  };
 
   const [showForm, setShowForm] = useState(false);
   const [showView, setShowView] = useState(false);
@@ -976,7 +988,7 @@ export default function ItensModule() {
               ]
             : [
                 { key: "nome", label: "Nome", required: true },
-                { key: "descricao", label: "Descrição" },
+                { key: "descricao", label: "Descri��ão" },
                 { key: "ativo", label: "Ativo" },
               ]
         }
