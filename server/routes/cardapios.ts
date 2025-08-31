@@ -515,7 +515,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
       // Add item if provided
       if (r.item_nome && r.item_nome.trim()) {
         cardapiosMap.get(key).itens.push({
-          item_id: 1, // Placeholder - in real scenario you'd need to look up item by name
+          item_nome: r.item_nome.trim(),
           quantidade:
             typeof r.item_quantidade === "string"
               ? Number(r.item_quantidade) || 1
