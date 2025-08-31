@@ -288,7 +288,9 @@ export default function CardapioForm({
   }, [precoTotal, setValue]);
 
   useEffect(() => {
-    setPrecoTotalMask(formatInputCurrency(watchedValues.preco_total_centavos || 0));
+    setPrecoTotalMask(
+      formatInputCurrency(watchedValues.preco_total_centavos || 0),
+    );
   }, [watchedValues.preco_total_centavos]);
 
   // Low-stock toast on category selection disabled per requirements
@@ -508,7 +510,9 @@ export default function CardapioForm({
                     <PopoverContent className="w-full p-0">
                       <Command>
                         <CommandInput placeholder="Filtrar categorias..." />
-                        <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
+                        <CommandEmpty>
+                          Nenhuma categoria encontrada.
+                        </CommandEmpty>
                         <CommandList>
                           <CommandGroup>
                             {categorias.map((categoria) => (
@@ -571,7 +575,8 @@ export default function CardapioForm({
                               const isAdded = cardapioItens.some(
                                 (ci) => ci.item_id === item.id,
                               );
-                              const isOutOfStock = (item.estoque_atual || 0) === 0;
+                              const isOutOfStock =
+                                (item.estoque_atual || 0) === 0;
 
                               return (
                                 <CommandItem
@@ -591,10 +596,14 @@ export default function CardapioForm({
                                       )}
                                       <span>{item.nome}</span>
                                       {isAdded && (
-                                        <Badge variant="secondary">Já adicionado</Badge>
+                                        <Badge variant="secondary">
+                                          Já adicionado
+                                        </Badge>
                                       )}
                                       {isOutOfStock && (
-                                        <Badge className="bg-red-50 text-red-700 border-red-200">Sem estoque</Badge>
+                                        <Badge className="bg-red-50 text-red-700 border-red-200">
+                                          Sem estoque
+                                        </Badge>
                                       )}
                                     </div>
                                     <span className="text-sm text-gray-500">
@@ -613,14 +622,14 @@ export default function CardapioForm({
               </div>
             </div>
 
-
-
             {/* Items List */}
             {cardapioItens.length > 0 && (
               <div className="border rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-4">
                   <ShoppingBag className="w-5 h-5 text-purple-600" />
-                  <h3 className="text-lg font-semibold text-purple-600">Itens do Cardápio</h3>
+                  <h3 className="text-lg font-semibold text-purple-600">
+                    Itens do Cardápio
+                  </h3>
                 </div>
 
                 <div className="space-y-3">
@@ -746,13 +755,17 @@ export default function CardapioForm({
                 </div>
 
                 <div>
-                  <Label htmlFor="preco_total_centavos">Preço Total (R$) *</Label>
+                  <Label htmlFor="preco_total_centavos">
+                    Preço Total (R$) *
+                  </Label>
                   <Input
                     id="preco_total_centavos"
                     value={precoTotalMask}
                     onChange={(e) => {
                       const cents = parseCurrencyToCentavos(e.target.value);
-                      setPrecoTotalMask(e.target.value === "" ? "" : formatInputCurrency(cents));
+                      setPrecoTotalMask(
+                        e.target.value === "" ? "" : formatInputCurrency(cents),
+                      );
                       setValue("preco_total_centavos", cents);
                     }}
                     className="foodmax-input"

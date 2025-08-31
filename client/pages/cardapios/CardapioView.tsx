@@ -156,8 +156,14 @@ export default function CardapioView({
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <DataField label="Nome" value={cardapio.nome} />
-              <DataField label="Tipo de Cardápio" value={cardapio.tipo_cardapio} />
-              <DataField label="Quantidade Total" value={cardapio.quantidade_total} />
+              <DataField
+                label="Tipo de Cardápio"
+                value={cardapio.tipo_cardapio}
+              />
+              <DataField
+                label="Quantidade Total"
+                value={cardapio.quantidade_total}
+              />
             </div>
           </div>
 
@@ -168,9 +174,19 @@ export default function CardapioView({
               <span className="text-green-600">Informações Financeiras</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <DataField label="Preço dos Itens" value={formatCurrencyBRL(cardapio.preco_itens_centavos)} />
-              <DataField label="Margem de Lucro" value={formatPercentage(cardapio.margem_lucro_percentual)} />
-              <DataField label="Preço Total" value={formatCurrencyBRL(cardapio.preco_total_centavos)} className="text-lg font-semibold" />
+              <DataField
+                label="Preço dos Itens"
+                value={formatCurrencyBRL(cardapio.preco_itens_centavos)}
+              />
+              <DataField
+                label="Margem de Lucro"
+                value={formatPercentage(cardapio.margem_lucro_percentual)}
+              />
+              <DataField
+                label="Preço Total"
+                value={formatCurrencyBRL(cardapio.preco_total_centavos)}
+                className="text-lg font-semibold"
+              />
             </div>
           </div>
 
@@ -200,7 +216,9 @@ export default function CardapioView({
 
               <div className="space-y-3">
                 {cardapioDetalhado.itens.map((item) => {
-                  const total = Number(item.quantidade || 0) * Number(item.valor_unitario_centavos || 0);
+                  const total =
+                    Number(item.quantidade || 0) *
+                    Number(item.valor_unitario_centavos || 0);
 
                   return (
                     <div
@@ -285,8 +303,14 @@ export default function CardapioView({
               <span className="text-gray-700">Detalhes do Cadastro</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DataField label="Data de Cadastro" value={formatDate(cardapio.data_cadastro)} />
-              <DataField label="Última Atualização" value={formatDate(cardapio.data_atualizacao)} />
+              <DataField
+                label="Data de Cadastro"
+                value={formatDate(cardapio.data_cadastro)}
+              />
+              <DataField
+                label="Última Atualização"
+                value={formatDate(cardapio.data_atualizacao)}
+              />
               <DataField label="Ativo" value={cardapio.ativo ? "Sim" : "Não"} />
             </div>
           </div>
