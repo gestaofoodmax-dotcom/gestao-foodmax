@@ -138,8 +138,10 @@ export function ExportModal({
       (col) => col.key !== "id" && col.key !== "id_usuario",
     );
 
-    // Create headers with proper labels
-    const headers = filteredColumns.map((col) => getFieldLabel(col.key));
+    // Create headers with provided labels (fallback to computed)
+    const headers = filteredColumns.map(
+      (col) => col.label || getFieldLabel(col.key),
+    );
 
     // Create CSV content
     const csvContent = [

@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Item, formatCurrencyBRL } from "@shared/itens";
-import { Info, Edit, X } from "lucide-react";
+import { Info, Edit, X, List, FileText, DollarSign, Boxes } from "lucide-react";
 
 export default function ItemView({
   isOpen,
@@ -24,12 +24,23 @@ export default function ItemView({
   categoriaNome: string | null;
 }) {
   if (!item) return null;
+
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
   const DataField = ({ label, value }: { label: string; value: any }) => (
     <div>
       <div className="text-sm font-medium text-gray-600 mb-1">{label}</div>
       <div className="text-sm text-gray-900">{value ?? "-"}</div>
     </div>
   );
+
   return (
     <Dialog
       open={isOpen}
@@ -42,19 +53,55 @@ export default function ItemView({
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
+          <DialogTitle className="text-xl sm:text-2xl font-normal py-1">
             Visualizar Item
           </DialogTitle>
         </DialogHeader>
+
         <div className="space-y-6">
+          {/* Header with status */}
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <List className="w-6 h-6 text-foodmax-orange" />
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
+                  {item.nome}
+                </h2>
+              </div>
+            </div>
+            <div className="text-right">
+              <Badge
+                className={`${item.ativo ? "bg-green-500" : "bg-red-500"} text-white mb-2`}
+              >
+                {item.ativo ? "Ativo" : "Inativo"}
+              </Badge>
+              <p className="text-xs text-gray-500">
+                Cadastrado em {formatDate(item.data_cadastro)}
+              </p>
+            </div>
+          </div>
+
+          {/* Dados Básicos */}
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-4">
-              <Info className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-blue-600" />
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <DataField label="Categoria" value={categoriaNome} />
               <DataField label="Nome" value={item.nome} />
+              <DataField label="Categoria" value={categoriaNome} />
+              <DataField label="Unidade" value={item.unidade_medida} />
+              <DataField label="Peso (g)" value={item.peso_gramas} />
+            </div>
+          </div>
+
+          {/* Preços */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-4">
+              <DollarSign className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Preços</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <DataField
                 label="Preço"
                 value={formatCurrencyBRL(item.preco_centavos)}
@@ -63,8 +110,16 @@ export default function ItemView({
                 label="Custo Pago"
                 value={formatCurrencyBRL(item.custo_pago_centavos)}
               />
-              <DataField label="Unidade" value={item.unidade_medida} />
-              <DataField label="Peso (g)" value={item.peso_gramas} />
+            </div>
+          </div>
+
+          {/* Estoque */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-4">
+              <Boxes className="w-5 h-5 text-purple-600" />
+              <h3 className="font-semibold text-purple-600">Estoque</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <DataField
                 label="Estoque Atual"
                 value={
@@ -75,10 +130,31 @@ export default function ItemView({
                   </Badge>
                 }
               />
+            </div>
+          </div>
+
+          {/* Detalhes do Cadastro */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-4">
+              <Info className="w-5 h-5 text-gray-600" />
+              <h3 className="font-semibold text-gray-600">
+                Detalhes do Cadastro
+              </h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <DataField
+                label="Data de Cadastro"
+                value={formatDate(item.data_cadastro)}
+              />
+              <DataField
+                label="Data de Atualização"
+                value={formatDate(item.data_atualizacao)}
+              />
               <DataField label="Ativo" value={item.ativo ? "Sim" : "Não"} />
             </div>
           </div>
         </div>
+
         <DialogFooter className="flex-row gap-2 sm:gap-0">
           <Button
             variant="outline"

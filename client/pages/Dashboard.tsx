@@ -9,8 +9,9 @@ import {
   Settings,
   LogOut,
   AlertTriangle,
-  Package,
+  List,
   Truck,
+  Package,
   User,
   Store,
   CreditCard,
@@ -39,6 +40,7 @@ export default function Dashboard() {
     { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
     { icon: Users, label: "Clientes", route: "/clientes" },
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
+    { icon: List, label: "Itens", route: "/itens" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {
