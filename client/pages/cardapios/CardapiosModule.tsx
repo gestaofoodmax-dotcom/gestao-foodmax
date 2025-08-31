@@ -14,7 +14,7 @@ import {
   Power,
   Upload,
   Download,
-  ChefHat,
+  Utensils,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -87,7 +87,7 @@ export default function CardapiosModule() {
     { icon: Users, label: "Clientes", route: "/clientes" },
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
-    { icon: ChefHat, label: "Cardápios", route: "/cardapios" },
+    { icon: Utensils, label: "Cardápios", route: "/cardapios" },
   ];
   const renderMenuItem = (item: any, index: number) => {
     const isActive = location.pathname === item.route;
@@ -95,7 +95,7 @@ export default function CardapiosModule() {
       <Link
         key={index}
         to={item.route}
-        className={`w-full flex items-center px-4 py-2 text-left transition-colors ${isActive ? "bg-orange-50 text-foodmax-orange border-r-4 border-foodmax-orange" : "text-gray-700 hover:bg-gray-100"}`}
+        className={`w-full flex items-center px-4 py-2 text-left transition-colors ${isActive ? "bg-orange-50 text-foodmax-orange" : "text-gray-700 hover:bg-gray-100"}`}
       >
         <item.icon className="w-4 h-4" />
         {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
@@ -504,7 +504,6 @@ export default function CardapiosModule() {
                         setActiveTab(tipo as TipoCardapio | "Todos")
                       }
                     >
-                      <ChefHat className="w-4 h-4" />
                       <span>{tipo}</span>
                       <span
                         className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === tipo ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
