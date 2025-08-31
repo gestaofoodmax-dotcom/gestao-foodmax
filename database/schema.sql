@@ -207,6 +207,45 @@ create trigger itens_set_updated_at
 before update on public.itens
 for each row execute function public.set_updated_at();
 
+-- Cardápios (novo módulo)
+create table if not exists public.cardapios (
+  id bigserial primary key,
+  id_usuario bigint not null references public.usuarios(id) on delete cascade,
+  nome text not null,
+  tipo_cardapio text not null check (tipo_cardapio in ('Café', 'Almoço', 'Janta', 'Lanche', 'Bebida', 'Outro')),
+  quantidade_total integer not null default 0,
+  preco_itens_centavos integer not null default 0 check (preco_itens_centavos >= 0),
+  margem_lucro_percentual numeric(5,2) not null default 0 check (margem_lucro_percentual >= 0),
+  preco_total_centavos integer not null default 0 check (preco_total_centavos >= 0),
+  descricao text,
+  ativo boolean not null default true,
+  data_cadastro timestamp with time zone not null default now(),
+  data_atualizacao timestamp with time zone not null default now()
+);
+create index if not exists cardapios_usuario_idx on public.cardapios(id_usuario);
+create index if not exists cardapios_tipo_idx on public.cardapios(tipo_cardapio);
+create index if not exists cardapios_nome_idx on public.cardapios(nome);
+create trigger cardapios_set_updated_at
+before update on public.cardapios
+for each row execute function public.set_updated_at();
+
+-- Itens do cardápio (relacionamento)
+create table if not exists public.cardapios_itens (
+  id bigserial primary key,
+  cardapio_id bigint not null references public.cardapios(id) on delete cascade,
+  item_id bigint not null references public.itens(id) on delete restrict,
+  quantidade integer not null default 1 check (quantidade > 0),
+  valor_unitario_centavos integer not null default 0 check (valor_unitario_centavos >= 0),
+  data_cadastro timestamp with time zone not null default now(),
+  data_atualizacao timestamp with time zone not null default now()
+);
+create index if not exists cardapios_itens_cardapio_idx on public.cardapios_itens(cardapio_id);
+create index if not exists cardapios_itens_item_idx on public.cardapios_itens(item_id);
+create unique index if not exists cardapios_itens_unique on public.cardapios_itens(cardapio_id, item_id);
+create trigger cardapios_itens_set_updated_at
+before update on public.cardapios_itens
+for each row execute function public.set_updated_at();
+
 -- Seed function for default categorias (12 principais)
 -- Only executes on first access - if user already has any categories, skips insertion
 create or replace function public.seed_itens_categorias_defaults(p_user_id bigint)
