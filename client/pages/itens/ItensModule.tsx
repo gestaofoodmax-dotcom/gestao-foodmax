@@ -14,7 +14,6 @@ import {
   Power,
   Upload,
   Download,
-  List,
   Tag,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
