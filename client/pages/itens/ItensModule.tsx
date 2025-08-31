@@ -57,7 +57,9 @@ export default function ItensModule() {
 
   // Independent states for each tab
   const [selectedIdsItens, setSelectedIdsItens] = useState<number[]>([]);
-  const [selectedIdsCategorias, setSelectedIdsCategorias] = useState<number[]>([]);
+  const [selectedIdsCategorias, setSelectedIdsCategorias] = useState<number[]>(
+    [],
+  );
   const [searchTermItens, setSearchTermItens] = useState("");
   const [searchTermCategorias, setSearchTermCategorias] = useState("");
   const [currentPageItens, setCurrentPageItens] = useState(1);
@@ -763,20 +765,34 @@ export default function ItensModule() {
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Buscar registros..."
-                    value={activeTab === "itens" ? searchTermItens : searchTermCategorias}
+                    value={
+                      activeTab === "itens"
+                        ? searchTermItens
+                        : searchTermCategorias
+                    }
                     onChange={(e) => handleSearch(e.target.value)}
                     className="foodmax-input pl-10"
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  {(activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias).length > 0 && (
+                  {(activeTab === "itens"
+                    ? selectedIdsItens
+                    : selectedIdsCategorias
+                  ).length > 0 && (
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => setShowBulkDelete(true)}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Excluir Selecionados ({(activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias).length})
+                      Excluir Selecionados (
+                      {
+                        (activeTab === "itens"
+                          ? selectedIdsItens
+                          : selectedIdsCategorias
+                        ).length
+                      }
+                      )
                     </Button>
                   )}
                   <Button
@@ -938,7 +954,9 @@ export default function ItensModule() {
               }))
             : categorias
         }
-        selectedIds={activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias}
+        selectedIds={
+          activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias
+        }
         moduleName={activeTab === "itens" ? "Itens" : "Categorias"}
         columns={
           activeTab === "itens"
@@ -1216,7 +1234,8 @@ export default function ItensModule() {
         isOpen={showBulkDelete}
         onClose={() => setShowBulkDelete(false)}
         onConfirm={async () => {
-          const currentSelectedIds = activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias;
+          const currentSelectedIds =
+            activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias;
           try {
             if (activeTab === "itens") {
               await makeRequest(`/api/itens/bulk-delete`, {
@@ -1288,7 +1307,11 @@ export default function ItensModule() {
             setShowBulkDelete(false);
           }
         }}
-        selectedCount={activeTab === "itens" ? selectedIdsItens.length : selectedIdsCategorias.length}
+        selectedCount={
+          activeTab === "itens"
+            ? selectedIdsItens.length
+            : selectedIdsCategorias.length
+        }
       />
     </div>
   );
