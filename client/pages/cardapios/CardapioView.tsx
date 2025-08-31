@@ -107,45 +107,49 @@ export default function CardapioView({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="w-[85vw] h-[90vh] max-w-none overflow-y-auto"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-3">
-            <Utensils className="w-6 h-6 text-foodmax-orange" />
-            <span>{cardapio.nome}</span>
-            <Badge className={getTipoCardapioColor(cardapio.tipo_cardapio)}>
-              {cardapio.tipo_cardapio}
-            </Badge>
-            <Badge
-              className={
-                cardapio.ativo
-                  ? "bg-green-50 text-green-700 border border-green-200"
-                  : "bg-red-50 text-red-700 border border-red-200"
-              }
-            >
-              {cardapio.ativo ? "Ativo" : "Inativo"}
-            </Badge>
+          <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
+            Visualizar Cardápio
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Basic Information */}
-          <div className="bg-white rounded-lg p-4 border">
+          <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+              <Utensils className="w-6 h-6 text-foodmax-orange" />
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
+                  {cardapio.nome}
+                </h2>
+              </div>
+            </div>
+
+            <div className="text-right">
+              <Badge
+                variant={cardapio.ativo ? "default" : "secondary"}
+                className={`${cardapio.ativo ? "bg-green-500" : "bg-red-500"} text-white mb-2`}
+              >
+                {cardapio.ativo ? "Ativo" : "Inativo"}
+              </Badge>
+              <p className="text-xs text-gray-500">
+                Cadastrado em {formatDate(cardapio.data_cadastro)}
+              </p>
+            </div>
+          </div>
+          {/* Informações Básicas */}
+          <div className="bg-white p-4 rounded-lg border">
             <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
               <Info className="w-5 h-5 text-blue-600" />
               <span className="text-blue-600">Informações Básicas</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <DataField icon={Utensils} label="Nome" value={cardapio.nome} />
-              <DataField
-                icon={Package}
-                label="Tipo de Cardápio"
-                value={cardapio.tipo_cardapio}
-              />
-              <DataField
-                icon={ShoppingBag}
-                label="Quantidade Total"
-                value={cardapio.quantidade_total}
-              />
+              <DataField icon={Package} label="Tipo de Cardápio" value={cardapio.tipo_cardapio} />
+              <DataField icon={ShoppingBag} label="Quantidade Total" value={cardapio.quantidade_total} />
             </div>
           </div>
 
