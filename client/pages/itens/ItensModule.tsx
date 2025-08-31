@@ -726,7 +726,6 @@ export default function ItensModule() {
                     }`}
                     onClick={() => setActiveTab("itens")}
                   >
-                    <List className="w-4 h-4" />
                     <span>Itens</span>
                     <span
                       className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === "itens" ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
@@ -734,7 +733,7 @@ export default function ItensModule() {
                       {totalRecords}
                     </span>
                     {activeTab === "itens" && (
-                      <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                      <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                     )}
                   </button>
 
@@ -746,7 +745,6 @@ export default function ItensModule() {
                     }`}
                     onClick={() => setActiveTab("categorias")}
                   >
-                    <Tag className="w-4 h-4" />
                     <span>Categorias</span>
                     <span
                       className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === "categorias" ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
@@ -754,7 +752,7 @@ export default function ItensModule() {
                       {categorias.length}
                     </span>
                     {activeTab === "categorias" && (
-                      <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                      <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                     )}
                   </button>
                 </div>
