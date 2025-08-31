@@ -433,10 +433,12 @@ export default function CardapiosModule() {
   }, [cardapios, activeTab]);
 
   const getCardapiosWithItemsForExport = async () => {
+    // If specific cardápios are selected, export only those
+    // Otherwise, export ALL cardápios (not just filtered ones)
     const cardapiosToExport =
       selectedIds.length > 0
-        ? filteredCardapios.filter((c) => selectedIds.includes(c.id))
-        : filteredCardapios;
+        ? cardapios.filter((c) => selectedIds.includes(c.id))
+        : cardapios;
 
     const exportData = [];
     for (const cardapio of cardapiosToExport) {
