@@ -649,7 +649,9 @@ export default function CardapiosModule() {
           descricao: c.descricao || "",
           status: c.ativo ? "Ativo" : "Inativo",
           data_cadastro: new Date(c.data_cadastro).toLocaleDateString("pt-BR"),
-          data_atualizacao: new Date(c.data_atualizacao).toLocaleDateString("pt-BR"),
+          data_atualizacao: new Date(c.data_atualizacao).toLocaleDateString(
+            "pt-BR",
+          ),
         }))}
         selectedIds={selectedIds}
         moduleName="Cardápios"
@@ -677,7 +679,11 @@ export default function CardapiosModule() {
         columns={[
           { key: "nome", label: "Nome", required: true },
           { key: "tipo_cardapio", label: "Tipo", required: true },
-          { key: "margem_lucro_percentual", label: "Margem Lucro (%)", required: true },
+          {
+            key: "margem_lucro_percentual",
+            label: "Margem Lucro (%)",
+            required: true,
+          },
           { key: "preco_total", label: "Preço Total", required: true },
           { key: "qtde_itens", label: "Qtde Itens" },
           { key: "preco_itens", label: "Preço Itens" },
@@ -688,15 +694,15 @@ export default function CardapiosModule() {
         ]}
         mapHeader={(header) => {
           const mapping: Record<string, string> = {
-            "Nome": "nome",
-            "Tipo": "tipo_cardapio",
+            Nome: "nome",
+            Tipo: "tipo_cardapio",
             "Margem Lucro (%)": "margem_lucro_percentual",
             "Preço Total": "preco_total",
             "Qtde Itens": "qtde_itens",
             "Preço Itens": "preco_itens",
             "Quantidade Total": "quantidade_total",
-            "Descrição": "descricao",
-            "Status": "status",
+            Descrição: "descricao",
+            Status: "status",
             "Data Cadastro": "data_cadastro",
           };
           return mapping[header] || header.toLowerCase().replace(/\s+/g, "_");
@@ -705,7 +711,8 @@ export default function CardapiosModule() {
           const errors: string[] = [];
           if (!record.nome) errors.push("Nome é obrigatório");
           if (!record.tipo_cardapio) errors.push("Tipo é obrigatório");
-          if (!record.margem_lucro_percentual) errors.push("Margem Lucro é obrigatória");
+          if (!record.margem_lucro_percentual)
+            errors.push("Margem Lucro é obrigatória");
           if (!record.preco_total) errors.push("Preço Total é obrigatório");
           return errors;
         }}
@@ -719,7 +726,9 @@ export default function CardapiosModule() {
                 // Parse currency values
                 const parsePriceString = (priceStr: string): number => {
                   if (!priceStr) return 0;
-                  const cleanStr = priceStr.replace(/[R$\s]/g, "").replace(",", ".");
+                  const cleanStr = priceStr
+                    .replace(/[R$\s]/g, "")
+                    .replace(",", ".");
                   const value = parseFloat(cleanStr);
                   return isNaN(value) ? 0 : Math.round(value * 100);
                 };
@@ -727,7 +736,9 @@ export default function CardapiosModule() {
                 // Parse percentage
                 const parsePercentage = (percentStr: string): number => {
                   if (!percentStr) return 0;
-                  const cleanStr = percentStr.replace("%", "").replace(",", ".");
+                  const cleanStr = percentStr
+                    .replace("%", "")
+                    .replace(",", ".");
                   const value = parseFloat(cleanStr);
                   return isNaN(value) ? 0 : value;
                 };
@@ -740,7 +751,11 @@ export default function CardapiosModule() {
                   const parts = dateStr.split("/");
                   if (parts.length === 3) {
                     const [day, month, year] = parts;
-                    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                    const date = new Date(
+                      parseInt(year),
+                      parseInt(month) - 1,
+                      parseInt(day),
+                    );
                     return date.toISOString();
                   }
 
@@ -751,12 +766,20 @@ export default function CardapiosModule() {
                 const cardapioData = {
                   nome: record.nome,
                   tipo_cardapio: record.tipo_cardapio,
-                  margem_lucro_percentual: parsePercentage(record.margem_lucro_percentual),
+                  margem_lucro_percentual: parsePercentage(
+                    record.margem_lucro_percentual,
+                  ),
                   preco_total_centavos: parsePriceString(record.preco_total),
-                  preco_itens_centavos: record.preco_itens ? parsePriceString(record.preco_itens) : 0,
-                  quantidade_total: record.quantidade_total ? parseInt(record.quantidade_total) : 0,
+                  preco_itens_centavos: record.preco_itens
+                    ? parsePriceString(record.preco_itens)
+                    : 0,
+                  quantidade_total: record.quantidade_total
+                    ? parseInt(record.quantidade_total)
+                    : 0,
                   descricao: record.descricao || "",
-                  ativo: record.status ? record.status.toLowerCase() === "ativo" : true,
+                  ativo: record.status
+                    ? record.status.toLowerCase() === "ativo"
+                    : true,
                   itens: [], // Empty items array for now
                 };
 
@@ -775,7 +798,9 @@ export default function CardapiosModule() {
                     id: Date.now() + Math.random(),
                     id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
                     ...cardapioData,
-                    data_cadastro: record.data_cadastro ? parseDate(record.data_cadastro) : now,
+                    data_cadastro: record.data_cadastro
+                      ? parseDate(record.data_cadastro)
+                      : now,
                     data_atualizacao: now,
                     qtde_itens: 0,
                   };
@@ -785,7 +810,9 @@ export default function CardapiosModule() {
                 }
               } catch (recordError) {
                 console.error("Error importing record:", recordError);
-                errors.push(`Erro ao importar registro: ${record.nome || "sem nome"}`);
+                errors.push(
+                  `Erro ao importar registro: ${record.nome || "sem nome"}`,
+                );
               }
             }
 
