@@ -55,20 +55,60 @@ export default function CardapioView({
     if (!cardapio) return;
 
     setLoading(true);
+
+    // 1) Tenta API oficial
     try {
       const response = await makeRequest(`/api/cardapios/${cardapio.id}`);
-      if (response) {
+      if (response && Array.isArray(response.itens)) {
         setCardapioDetalhado(response);
+        setLoading(false);
         return;
       }
-    } catch (error) {
-      // ignore here and try local fallback below
-    }
+    } catch {}
 
+    // 2) Fallback local com enriquecimento de nomes/categorias
     try {
       const raw = localStorage.getItem("fm_cardapios_itens");
       const map: Record<string, any[]> = raw ? JSON.parse(raw) : {};
-      const itens = map[String(cardapio.id)] || [];
+      let itens = map[String(cardapio.id)] || [];
+
+      if (itens.length > 0) {
+        let itensCatalogo: any[] = [];
+        let categoriasCatalogo: any[] = [];
+        try {
+          const itensResp = await makeRequest(`/api/itens?page=1&limit=1000`);
+          const catsResp = await makeRequest(`/api/itens-categorias?page=1&limit=200`);
+          itensCatalogo = Array.isArray(itensResp?.data) ? itensResp.data : [];
+          categoriasCatalogo = Array.isArray(catsResp?.data) ? catsResp.data : [];
+        } catch {
+          try {
+            itensCatalogo = JSON.parse(localStorage.getItem("fm_itens") || "[]");
+          } catch {}
+          try {
+            categoriasCatalogo = JSON.parse(localStorage.getItem("fm_itens_categorias") || "[]");
+          } catch {}
+        }
+
+        const catById = new Map<number, string>();
+        categoriasCatalogo.forEach((c: any) => catById.set(c.id, c.nome));
+        const itemById = new Map<number, any>();
+        itensCatalogo.forEach((i: any) => itemById.set(i.id, i));
+
+        itens = itens.map((it: any, idx: number) => {
+          const base = itemById.get(it.item_id) || {};
+          const categoriaNome = catById.get(base.categoria_id) || "";
+          return {
+            id: idx + 1,
+            item_id: it.item_id,
+            item_nome: base.nome || it.item_nome || "",
+            categoria_nome: categoriaNome || it.categoria_nome || "",
+            quantidade: it.quantidade,
+            valor_unitario_centavos: it.valor_unitario_centavos,
+            item_estoque_atual: base.estoque_atual,
+          };
+        });
+      }
+
       setCardapioDetalhado({ ...cardapio, itens });
     } catch {
       setCardapioDetalhado({ ...cardapio, itens: [] });
