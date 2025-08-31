@@ -544,6 +544,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
       }
     }
 
+    console.log(`Import completed. ${imported} cardapios imported.`);
     res.json({ success: true, imported });
   } catch (error: any) {
     console.error("Error importing cardapios:", error);
