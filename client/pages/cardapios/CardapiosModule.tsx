@@ -209,7 +209,7 @@ export default function CardapiosModule() {
         response = null;
       }
       if (response) {
-        setCardapios(response.data);
+        setCardapios(response.data as (Cardapio & { qtde_itens: number })[]);
         setTotalRecords(response.pagination.total);
       } else {
         const local = readLocalCardapios();
