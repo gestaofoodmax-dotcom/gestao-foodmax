@@ -401,7 +401,7 @@ export default function CardapiosModule() {
       });
       toast({
         title: "Cardápio excluído",
-        description: "Cardápio excluído com sucesso",
+        description: "Card��pio excluído com sucesso",
       });
       try {
         localStorage.removeItem(LOCAL_CARDAPIOS);
@@ -880,7 +880,7 @@ export default function CardapiosModule() {
                     Number(String(r.margem_lucro || 0).replace(",", ".")) || 0,
                   preco_total_centavos: 0,
                   descricao: r.descricao || "",
-                  ativo: String(r.status || "Ativo").toLowerCase() === "ativo",
+                  ativo: String(r.ativo || r.status || "Ativo").toLowerCase() === "ativo",
                   data_cadastro: now,
                   data_atualizacao: now,
                   qtde_itens: 0,
