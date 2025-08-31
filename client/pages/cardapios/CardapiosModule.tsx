@@ -491,7 +491,7 @@ export default function CardapiosModule() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
-                <div className="flex items-center gap-4 overflow-x-auto">
+                <div className="flex items-center gap-4 overflow-x-auto py-2">
                   {["Todos", ...TIPOS_CARDAPIO].map((tipo, idx, arr) => (
                     <div key={tipo} className="flex items-center gap-4">
                       <button
