@@ -794,7 +794,7 @@ export default function CardapiosModule() {
           { key: "margem_lucro", label: "Margem de Lucro", required: true },
           { key: "preco_total", label: "Preço Total", required: true },
           { key: "descricao", label: "Descrição" },
-          { key: "status", label: "Status" },
+          { key: "ativo", label: "Ativo" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "item_nome", label: "Item Nome" },
