@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Info, X, Save, AlertTriangle } from "lucide-react";
+import { Info, X, Save, AlertTriangle, ChevronsUpDown, Check } from "lucide-react";
 import { Item, ItemCategoria, UNIDADES_MEDIDA } from "@shared/itens";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -23,12 +23,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 const schema = z.object({
   categoria_id: z.number({ invalid_type_error: "Categoria é obrigatória" }),
   nome: z.string().min(1, "Nome é obrigatório"),
-  preco_centavos: z.number().min(1, "Preço é obrigatório"),
-  custo_pago_centavos: z.number().min(1, "Custo Pago é obrigatório"),
+  preco_centavos: z.number().min(0, "Preço deve ser maior ou igual a 0"),
+  custo_pago_centavos: z
+    .number()
+    .min(0, "Custo Pago deve ser maior ou igual a 0"),
   unidade_medida: z.string().min(1, "Unidade de Medida é obrigatória"),
   peso_gramas: z.number().optional(),
   estoque_atual: z.number().optional(),
@@ -55,7 +67,7 @@ export default function ItemForm({
   onOpenCategorias: () => void;
 }) {
   const isEditing = !!item;
-  const [filter, setFilter] = useState("");
+  const [openCategorias, setOpenCategorias] = useState(false);
 
   const {
     register,
@@ -118,16 +130,16 @@ export default function ItemForm({
     return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   };
 
-  const [precoMask, setPrecoMask] = useState(formatInputCurrency(0));
-  const [custoMask, setCustoMask] = useState(formatInputCurrency(0));
+  const [precoMask, setPrecoMask] = useState("");
+  const [custoMask, setCustoMask] = useState("");
 
   useEffect(() => {
     if (item) {
       setPrecoMask(formatInputCurrency(item.preco_centavos));
       setCustoMask(formatInputCurrency(item.custo_pago_centavos));
     } else {
-      setPrecoMask(formatInputCurrency(0));
-      setCustoMask(formatInputCurrency(0));
+      setPrecoMask("");
+      setCustoMask("");
     }
   }, [item, isOpen]);
 
@@ -148,14 +160,12 @@ export default function ItemForm({
     }
   };
 
-  const filteredCategorias = useMemo(() => {
-    return categorias
-      .slice()
-      .sort((a, b) => a.nome.localeCompare(b.nome))
-      .filter((c) => c.nome.toLowerCase().includes(filter.toLowerCase()));
-  }, [categorias, filter]);
+  const categoriasOrdenadas = useMemo(() => {
+    return categorias.slice().sort((a, b) => a.nome.localeCompare(b.nome));
+  }, [categorias]);
 
   const showNoCategoriasWarning = categorias.length === 0;
+  const categoriaSelecionada = categorias.find((c) => c.id === watchedCategoriaId);
 
   return (
     <Dialog
@@ -179,7 +189,7 @@ export default function ItemForm({
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               <p>
-                Antes de cadastrar, é necessário ter pelo menos uma Categoria.{" "}
+                Antes de cadastrar, é necessário ter pelo menos uma Categoria. {""}
                 <button
                   onClick={onOpenCategorias}
                   className="underline text-yellow-900"
@@ -206,32 +216,50 @@ export default function ItemForm({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm font-medium">Categoria *</Label>
-                <div className="border rounded-lg">
-                  <div className="p-2 border-b">
-                    <Input
-                      placeholder="Filtrar por nome..."
-                      value={filter}
-                      onChange={(e) => setFilter(e.target.value)}
-                    />
-                  </div>
-                  <div className="max-h-48 overflow-auto">
-                    {filteredCategorias.map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        className={`w-full text-left px-3 py-2 hover:bg-gray-50 ${watchedCategoriaId === c.id ? "bg-gray-100" : ""}`}
-                        onClick={() => setValue("categoria_id", c.id)}
-                      >
-                        {c.nome}
-                      </button>
-                    ))}
-                    {filteredCategorias.length === 0 && (
-                      <div className="px-3 py-2 text-sm text-gray-500">
-                        Nenhuma categoria encontrada
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <Popover open={openCategorias} onOpenChange={setOpenCategorias}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openCategorias}
+                      className={cn(
+                        "w-full justify-between foodmax-input bg-white",
+                        errors.categoria_id ? "border-red-500" : "",
+                      )}
+                    >
+                      {categoriaSelecionada ? categoriaSelecionada.nome : "Selecione a categoria"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                    <Command>
+                      <CommandInput placeholder="Buscar categorias..." />
+                      <CommandList>
+                        <CommandEmpty>Nenhuma categoria encontrada</CommandEmpty>
+                        <CommandGroup>
+                          {categoriasOrdenadas.map((c) => (
+                            <CommandItem
+                              key={c.id}
+                              value={c.nome}
+                              onSelect={() => {
+                                setValue("categoria_id", c.id);
+                                setOpenCategorias(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  watchedCategoriaId === c.id ? "opacity-100" : "opacity-0",
+                                )}
+                              />
+                              {c.nome}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 {errors.categoria_id && (
                   <p className="text-sm text-red-600 mt-1">
                     {errors.categoria_id.message as any}
@@ -246,7 +274,7 @@ export default function ItemForm({
                 <Input
                   id="nome"
                   {...register("nome")}
-                  className={`foodmax-input ${errors.nome ? "border-red-500" : ""}`}
+                  className={cn("foodmax-input", errors.nome ? "border-red-500" : "")}
                   placeholder="Nome do item"
                 />
               </div>
@@ -260,10 +288,11 @@ export default function ItemForm({
                   value={precoMask}
                   onChange={(e) => {
                     const cents = parseCurrencyToCentavos(e.target.value);
-                    setPrecoMask(formatInputCurrency(cents));
+                    setPrecoMask(e.target.value === "" ? "" : formatInputCurrency(cents));
                     setValue("preco_centavos", cents);
                   }}
-                  className={`foodmax-input ${errors.preco_centavos ? "border-red-500" : ""}`}
+                  placeholder=""
+                  className={cn("foodmax-input", errors.preco_centavos ? "border-red-500" : "")}
                 />
               </div>
               <div>
@@ -275,10 +304,14 @@ export default function ItemForm({
                   value={custoMask}
                   onChange={(e) => {
                     const cents = parseCurrencyToCentavos(e.target.value);
-                    setCustoMask(formatInputCurrency(cents));
+                    setCustoMask(e.target.value === "" ? "" : formatInputCurrency(cents));
                     setValue("custo_pago_centavos", cents);
                   }}
-                  className={`foodmax-input ${errors.custo_pago_centavos ? "border-red-500" : ""}`}
+                  placeholder=""
+                  className={cn(
+                    "foodmax-input",
+                    errors.custo_pago_centavos ? "border-red-500" : "",
+                  )}
                 />
               </div>
 
