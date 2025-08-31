@@ -541,10 +541,6 @@ export default function CardapioForm({
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-2 -mt-1 mb-2">
-                    <Package className="w-5 h-5 text-purple-600" />
-                    <h3 className="font-semibold text-purple-600">Itens</h3>
-                  </div>
                   <Label>Itens *</Label>
                   <Popover>
                     <PopoverTrigger asChild>
