@@ -34,6 +34,7 @@ export default function App() {
             <Route path="/clientes" element={<ClientesModule />} />
             <Route path="/fornecedores" element={<FornecedoresModule />} />
             <Route path="/itens" element={<ItensModule />} />
+            <Route path="/cardapios" element={<CardapiosModule />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
