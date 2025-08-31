@@ -58,6 +58,7 @@ export default function CardapiosModule() {
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showBulkDelete, setShowBulkDelete] = useState(false);
+  const [exportData, setExportData] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -349,7 +350,7 @@ export default function CardapiosModule() {
           qtde_itens,
         } as any;
         list.unshift(novo);
-        // salvar itens deste cardápio localmente para visualização
+        // salvar itens deste card��pio localmente para visualização
         const map = readLocalCardapiosItens();
         map[String(novo.id)] = data.itens || [];
         writeLocalCardapiosItens(map);
@@ -430,6 +431,90 @@ export default function CardapiosModule() {
       (c) => activeTab === "Todos" || c.tipo_cardapio === activeTab,
     );
   }, [cardapios, activeTab]);
+
+  const getCardapiosWithItemsForExport = async () => {
+    const cardapiosToExport =
+      selectedIds.length > 0
+        ? filteredCardapios.filter((c) => selectedIds.includes(c.id))
+        : filteredCardapios;
+
+    const exportData = [];
+    for (const cardapio of cardapiosToExport) {
+      try {
+        const response = await makeRequest(`/api/cardapios/${cardapio.id}`);
+        const cardapioDetalhado = response;
+
+        if (cardapioDetalhado.itens && cardapioDetalhado.itens.length > 0) {
+          for (const item of cardapioDetalhado.itens) {
+            exportData.push({
+              nome: cardapio.nome,
+              tipo_cardapio: cardapio.tipo_cardapio,
+              quantidade_total: cardapio.quantidade_total,
+              preco_itens: (cardapio.preco_itens_centavos / 100).toFixed(2),
+              margem_lucro: cardapio.margem_lucro_percentual,
+              preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
+              descricao: cardapio.descricao || "",
+              status: cardapio.ativo ? "Ativo" : "Inativo",
+              data_cadastro: new Date(
+                cardapio.data_cadastro,
+              ).toLocaleDateString("pt-BR"),
+              data_atualizacao: new Date(
+                cardapio.data_atualizacao,
+              ).toLocaleDateString("pt-BR"),
+              item_nome: item.item_nome,
+              item_quantidade: item.quantidade,
+              item_valor_unitario: (item.valor_unitario_centavos / 100).toFixed(
+                2,
+              ),
+            });
+          }
+        } else {
+          // Cardápio sem itens
+          exportData.push({
+            nome: cardapio.nome,
+            tipo_cardapio: cardapio.tipo_cardapio,
+            quantidade_total: cardapio.quantidade_total,
+            preco_itens: (cardapio.preco_itens_centavos / 100).toFixed(2),
+            margem_lucro: cardapio.margem_lucro_percentual,
+            preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
+            descricao: cardapio.descricao || "",
+            status: cardapio.ativo ? "Ativo" : "Inativo",
+            data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString(
+              "pt-BR",
+            ),
+            data_atualizacao: new Date(
+              cardapio.data_atualizacao,
+            ).toLocaleDateString("pt-BR"),
+            item_nome: "",
+            item_quantidade: "",
+            item_valor_unitario: "",
+          });
+        }
+      } catch {
+        // Fallback to basic data if detailed fetch fails
+        exportData.push({
+          nome: cardapio.nome,
+          tipo_cardapio: cardapio.tipo_cardapio,
+          quantidade_total: cardapio.quantidade_total,
+          preco_itens: (cardapio.preco_itens_centavos / 100).toFixed(2),
+          margem_lucro: cardapio.margem_lucro_percentual,
+          preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
+          descricao: cardapio.descricao || "",
+          status: cardapio.ativo ? "Ativo" : "Inativo",
+          data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString(
+            "pt-BR",
+          ),
+          data_atualizacao: new Date(
+            cardapio.data_atualizacao,
+          ).toLocaleDateString("pt-BR"),
+          item_nome: "",
+          item_quantidade: "",
+          item_valor_unitario: "",
+        });
+      }
+    }
+    return exportData;
+  };
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
@@ -512,11 +597,11 @@ export default function CardapiosModule() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
-                <div className="flex items-center gap-4 overflow-x-auto py-1">
+                <div className="flex items-center gap-6">
                   {["Todos", ...TIPOS_CARDAPIO].map((tipo, idx, arr) => (
-                    <div key={tipo} className="flex items-center gap-4">
+                    <div key={tipo} className="flex items-center gap-6">
                       <button
-                        className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 whitespace-nowrap ${
+                        className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
                           activeTab === tipo
                             ? "text-foodmax-orange"
                             : "text-gray-700 hover:text-gray-900"
@@ -538,9 +623,6 @@ export default function CardapiosModule() {
                           <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                         )}
                       </button>
-                      {idx < arr.length - 1 && (
-                        <span className="w-px h-5 bg-gray-200" />
-                      )}
                     </div>
                   ))}
                 </div>
@@ -580,7 +662,11 @@ export default function CardapiosModule() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowExport(true)}
+                    onClick={async () => {
+                      const data = await getCardapiosWithItemsForExport();
+                      setExportData(data);
+                      setShowExport(true);
+                    }}
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Exportar
@@ -637,24 +723,27 @@ export default function CardapiosModule() {
 
       <ExportModal
         isOpen={showExport}
-        onClose={() => setShowExport(false)}
-        data={filteredCardapios.map((c) => ({
-          nome: c.nome,
-          qtde_itens: c.qtde_itens,
-          preco_total: formatCurrencyBRL(c.preco_total_centavos),
-          tipo_cardapio: c.tipo_cardapio,
-          status: c.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(c.data_cadastro).toISOString().split("T")[0],
-        }))}
+        onClose={() => {
+          setShowExport(false);
+          setExportData([]);
+        }}
+        data={exportData}
         selectedIds={selectedIds}
         moduleName="Cardápios"
         columns={[
           { key: "nome", label: "Nome" },
-          { key: "qtde_itens", label: "Qtde Itens" },
+          { key: "tipo_cardapio", label: "Tipo de Cardápio" },
+          { key: "quantidade_total", label: "Quantidade Total" },
+          { key: "preco_itens", label: "Preço dos Itens" },
+          { key: "margem_lucro", label: "Margem de Lucro" },
           { key: "preco_total", label: "Preço Total" },
-          { key: "tipo_cardapio", label: "Tipo" },
+          { key: "descricao", label: "Descrição" },
           { key: "status", label: "Status" },
           { key: "data_cadastro", label: "Data Cadastro" },
+          { key: "data_atualizacao", label: "Data Atualização" },
+          { key: "item_nome", label: "Item Nome" },
+          { key: "item_quantidade", label: "Item Quantidade" },
+          { key: "item_valor_unitario", label: "Item Valor Unitario" },
         ]}
       />
 
@@ -666,22 +755,116 @@ export default function CardapiosModule() {
         hasPayment={hasPayment()}
         columns={[
           { key: "nome", label: "Nome", required: true },
-          { key: "tipo_cardapio", label: "Tipo Cardápio", required: true },
-          {
-            key: "margem_lucro_percentual",
-            label: "Margem Lucro (%)",
-            required: true,
-          },
+          { key: "tipo_cardapio", label: "Tipo de Cardápio", required: true },
+          { key: "quantidade_total", label: "Quantidade Total" },
+          { key: "preco_itens", label: "Preço dos Itens" },
+          { key: "margem_lucro", label: "Margem de Lucro", required: true },
           { key: "preco_total", label: "Preço Total", required: true },
           { key: "descricao", label: "Descrição" },
-          { key: "ativo", label: "Status" },
+          { key: "status", label: "Status" },
+          { key: "data_cadastro", label: "Data Cadastro" },
+          { key: "data_atualizacao", label: "Data Atualização" },
+          { key: "item_nome", label: "Item Nome" },
+          { key: "item_quantidade", label: "Item Quantidade" },
+          { key: "item_valor_unitario", label: "Item Valor Unitario" },
         ]}
-        onImport={async (records) => {
-          // Import implementation would go here
-          return {
-            success: false,
-            message: "Importação não implementada ainda",
+        mapHeader={(h) => {
+          const n = h.trim().toLowerCase();
+          const map: Record<string, string> = {
+            nome: "nome",
+            "tipo de cardápio": "tipo_cardapio",
+            "quantidade total": "quantidade_total",
+            "preço dos itens": "preco_itens",
+            "margem de lucro": "margem_lucro",
+            "preço total": "preco_total",
+            descrição: "descricao",
+            descricao: "descricao",
+            status: "status",
+            "data cadastro": "data_cadastro",
+            "data atualização": "data_atualizacao",
+            "item nome": "item_nome",
+            "item quantidade": "item_quantidade",
+            "item valor unitario": "item_valor_unitario",
           };
+          return map[n] || n.replace(/\s+/g, "_");
+        }}
+        validateRecord={(r) => {
+          const errors: string[] = [];
+          if (!r.nome) errors.push("Nome é obrigatório");
+          const tipo = String(r.tipo_cardapio || "").trim();
+          if (!tipo) errors.push("Tipo de Cardápio é obrigatório");
+          else if (!TIPOS_CARDAPIO.includes(tipo as any)) {
+            console.log(
+              `Tipo inválido: '${tipo}', tipos válidos:`,
+              TIPOS_CARDAPIO,
+            );
+            errors.push(
+              `Tipo inválido: '${tipo}'. Tipos válidos: ${TIPOS_CARDAPIO.join(", ")}`,
+            );
+          }
+          // Margem e preço são opcionais se estão vazios no CSV
+          return errors;
+        }}
+        onImport={async (records) => {
+          try {
+            console.log("Importing records:", records);
+
+            // Send records directly to server for processing
+            const response = await makeRequest(`/api/cardapios/import`, {
+              method: "POST",
+              body: JSON.stringify({ records }),
+            });
+
+            console.log("Import response:", response);
+            await loadCardapios();
+
+            return {
+              success: true,
+              imported: response?.imported ?? 0,
+              message: `${response?.imported ?? 0} cardápio(s) importado(s) com sucesso`,
+            } as any;
+          } catch (e: any) {
+            console.error("Import error:", e);
+
+            // Fallback to local storage
+            const list = readLocalCardapios();
+            const now = new Date().toISOString();
+
+            const cardapiosMap = new Map<string, any>();
+
+            for (const r of records) {
+              const key = `${r.nome}_${r.tipo_cardapio}`;
+              if (!cardapiosMap.has(key)) {
+                cardapiosMap.set(key, {
+                  id: Date.now() + Math.random(),
+                  id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
+                  nome: r.nome,
+                  tipo_cardapio: r.tipo_cardapio,
+                  quantidade_total: Number(r.quantidade_total) || 0,
+                  preco_itens_centavos: 0,
+                  margem_lucro_percentual:
+                    Number(String(r.margem_lucro || 0).replace(",", ".")) || 0,
+                  preco_total_centavos: 0,
+                  descricao: r.descricao || "",
+                  ativo: String(r.status || "Ativo").toLowerCase() === "ativo",
+                  data_cadastro: now,
+                  data_atualizacao: now,
+                  qtde_itens: 0,
+                });
+              }
+            }
+
+            const newCardapios = Array.from(cardapiosMap.values());
+            const merged = [...newCardapios, ...list];
+            writeLocalCardapios(merged);
+            setCardapios(merged);
+
+            return {
+              success: true,
+              imported: newCardapios.length,
+              message: `${newCardapios.length} cardápio(s) importado(s) (local)`,
+            } as any;
+          }
         }}
       />
 

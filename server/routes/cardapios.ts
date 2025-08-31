@@ -401,3 +401,177 @@ export const toggleCardapioStatus: RequestHandler = async (req, res) => {
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
+
+// Import cardápios from CSV
+export const importCardapios: RequestHandler = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+
+    const RecordsSchema = z.object({
+      records: z.array(
+        z.object({
+          nome: z.string().min(1),
+          tipo_cardapio: z.enum([
+            "Café",
+            "Almoço",
+            "Janta",
+            "Lanche",
+            "Bebida",
+            "Outro",
+          ]),
+          quantidade_total: z.union([z.number(), z.string()]).optional(),
+          preco_itens: z.union([z.number(), z.string()]).optional(),
+          margem_lucro: z.union([z.number(), z.string()]).optional(),
+          preco_total: z.union([z.number(), z.string()]).optional(),
+          descricao: z.string().optional(),
+          status: z.string().optional(),
+          data_cadastro: z.string().optional(),
+          data_atualizacao: z.string().optional(),
+          item_nome: z.string().optional(),
+          item_quantidade: z.union([z.number(), z.string()]).optional(),
+          item_valor_unitario: z.union([z.number(), z.string()]).optional(),
+        }),
+      ),
+    });
+
+    console.log("Import request body:", req.body);
+
+    let records;
+    try {
+      const parsed = RecordsSchema.parse(req.body);
+      records = parsed.records;
+      console.log("Parsed records:", records);
+    } catch (parseError) {
+      console.error("Schema validation error:", parseError);
+      // Try to work with raw records if schema fails
+      records = req.body.records || [];
+      console.log("Using raw records:", records);
+    }
+
+    const parseCentavos = (val: any): number => {
+      if (val === undefined || val === null || val === "") return 0;
+      if (typeof val === "number") {
+        return Number.isInteger(val) ? val : Math.round(val * 100);
+      }
+      const s = String(val).trim();
+      const clean = s
+        .replace(/[^0-9,.-]/g, "")
+        .replace(/\.(?=\d{3}(,|$))/g, "");
+      const dot = clean.replace(",", ".");
+      const n = Number(dot);
+      if (!isNaN(n)) return Math.round(n * 100);
+      const digits = s.replace(/\D/g, "");
+      return digits ? parseInt(digits, 10) : 0;
+    };
+
+    const toBool = (v: any): boolean => {
+      if (typeof v === "boolean") return v;
+      const s = String(v ?? "")
+        .trim()
+        .toLowerCase();
+      if (["1", "true", "ativo", "sim", "yes"].includes(s)) return true;
+      if (["0", "false", "inativo", "nao", "não", "no"].includes(s))
+        return false;
+      return true;
+    };
+
+    const supabase = getSupabaseServiceClient();
+
+    // Group records by cardapio (nome + tipo_cardapio)
+    const cardapiosMap = new Map<string, any>();
+
+    for (const r of records) {
+      console.log("Processing record:", r);
+      const key = `${r.nome}_${r.tipo_cardapio}`;
+
+      if (!cardapiosMap.has(key)) {
+        const preco_total_centavos = parseCentavos(r.preco_total);
+        const preco_itens_centavos = parseCentavos(r.preco_itens);
+        const quantidade_total =
+          typeof r.quantidade_total === "string"
+            ? Number(r.quantidade_total) || 0
+            : r.quantidade_total || 0;
+
+        const margem_lucro_percentual =
+          typeof r.margem_lucro === "string"
+            ? Number(String(r.margem_lucro).replace(",", ".")) || 0
+            : r.margem_lucro || 0;
+
+        cardapiosMap.set(key, {
+          nome: r.nome,
+          tipo_cardapio: r.tipo_cardapio,
+          quantidade_total,
+          preco_itens_centavos,
+          margem_lucro_percentual,
+          preco_total_centavos,
+          descricao: r.descricao || "",
+          ativo: r.status ? toBool(r.status) : true,
+          itens: [],
+        });
+      }
+
+      // Add item if provided
+      if (r.item_nome && r.item_nome.trim()) {
+        cardapiosMap.get(key).itens.push({
+          item_id: 1, // Placeholder - in real scenario you'd need to look up item by name
+          quantidade:
+            typeof r.item_quantidade === "string"
+              ? Number(r.item_quantidade) || 1
+              : r.item_quantidade || 1,
+          valor_unitario_centavos: parseCentavos(r.item_valor_unitario),
+        });
+      }
+    }
+
+    let imported = 0;
+    console.log(`Processing ${cardapiosMap.size} unique cardapios`);
+
+    for (const cardapioData of cardapiosMap.values()) {
+      try {
+        console.log("Inserting cardapio:", cardapioData);
+
+        // Create cardapio
+        const { data: cardapio, error } = await supabase
+          .from("cardapios")
+          .insert({
+            id_usuario: userId,
+            nome: cardapioData.nome,
+            tipo_cardapio: cardapioData.tipo_cardapio,
+            quantidade_total: cardapioData.quantidade_total,
+            preco_itens_centavos: cardapioData.preco_itens_centavos,
+            margem_lucro_percentual: cardapioData.margem_lucro_percentual,
+            preco_total_centavos: cardapioData.preco_total_centavos,
+            descricao: cardapioData.descricao,
+            ativo: cardapioData.ativo,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          console.error(
+            `Database error for cardapio ${cardapioData.nome}:`,
+            error,
+          );
+        } else if (cardapio) {
+          console.log(`Successfully created cardapio: ${cardapio.nome}`);
+          imported++;
+        }
+      } catch (error) {
+        console.error(`Error importing cardapio ${cardapioData.nome}:`, error);
+      }
+    }
+
+    console.log(`Import completed. ${imported} cardapios imported.`);
+    res.json({ success: true, imported });
+  } catch (error: any) {
+    console.error("Error importing cardapios:", error);
+    if (error instanceof z.ZodError) {
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
+    }
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
