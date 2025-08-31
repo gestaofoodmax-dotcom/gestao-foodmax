@@ -484,17 +484,9 @@ export default function CardapiosModule() {
 
     const exportData = [];
     for (const cardapio of cardapiosToExport) {
-      console.log("Exporting cardapio:", cardapio);
-      console.log("Date fields:", {
-        data_cadastro: cardapio.data_cadastro,
-        data_atualizacao: cardapio.data_atualizacao
-      });
-
       try {
         const response = await makeRequest(`/api/cardapios/${cardapio.id}`);
         const cardapioDetalhado = response;
-
-        console.log("Detailed cardapio response:", cardapioDetalhado);
 
         if (cardapioDetalhado.itens && cardapioDetalhado.itens.length > 0) {
           for (const item of cardapioDetalhado.itens) {
