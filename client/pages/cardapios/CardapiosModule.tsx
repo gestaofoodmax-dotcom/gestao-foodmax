@@ -512,7 +512,7 @@ export default function CardapiosModule() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
-                <div className="flex items-center gap-4 overflow-x-auto py-2">
+                <div className="flex items-center gap-4 overflow-x-auto py-1">
                   {["Todos", ...TIPOS_CARDAPIO].map((tipo, idx, arr) => (
                     <div key={tipo} className="flex items-center gap-4">
                       <button
@@ -535,7 +535,7 @@ export default function CardapiosModule() {
                                 .length}
                         </span>
                         {activeTab === tipo && (
-                          <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                          <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                         )}
                       </button>
                       {idx < arr.length - 1 && (

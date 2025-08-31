@@ -717,16 +717,15 @@ export default function ItensModule() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
-                <div className="flex gap-6">
+                <div className="flex items-center gap-6">
                   <button
-                    className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 ${
+                    className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
                       activeTab === "itens"
                         ? "text-foodmax-orange"
                         : "text-gray-700 hover:text-gray-900"
                     }`}
                     onClick={() => setActiveTab("itens")}
                   >
-                    <List className="w-4 h-4" />
                     <span>Itens</span>
                     <span
                       className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === "itens" ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
@@ -734,19 +733,19 @@ export default function ItensModule() {
                       {totalRecords}
                     </span>
                     {activeTab === "itens" && (
-                      <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                      <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                     )}
                   </button>
+                  <span className="w-px h-5 bg-gray-200" />
 
                   <button
-                    className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 ${
+                    className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
                       activeTab === "categorias"
                         ? "text-foodmax-orange"
                         : "text-gray-700 hover:text-gray-900"
                     }`}
                     onClick={() => setActiveTab("categorias")}
                   >
-                    <Tag className="w-4 h-4" />
                     <span>Categorias</span>
                     <span
                       className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === "categorias" ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
@@ -754,7 +753,7 @@ export default function ItensModule() {
                       {categorias.length}
                     </span>
                     {activeTab === "categorias" && (
-                      <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                      <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                     )}
                   </button>
                 </div>

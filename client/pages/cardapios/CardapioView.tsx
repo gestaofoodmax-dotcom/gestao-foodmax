@@ -152,7 +152,9 @@ export default function CardapioView({
         {Icon && <Icon className="w-4 h-4 text-gray-500" />}
         <div className="text-sm font-medium text-gray-600">{label}</div>
       </div>
-      <div className="text-sm text-gray-900 ml-6">{value ?? "-"}</div>
+      <div className={`text-sm text-gray-900 ${Icon ? "ml-6" : ""}`}>
+        {value ?? "-"}
+      </div>
     </div>
   );
 
@@ -215,40 +217,6 @@ export default function CardapioView({
             </div>
           </div>
 
-          {/* Financial Information */}
-          <div className="bg-white rounded-lg p-4 border">
-            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-green-600" />
-              <span className="text-green-600">Informações Financeiras</span>
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <DataField
-                label="Preço dos Itens"
-                value={formatCurrencyBRL(cardapio.preco_itens_centavos)}
-              />
-              <DataField
-                label="Margem de Lucro"
-                value={formatPercentage(cardapio.margem_lucro_percentual)}
-              />
-              <DataField
-                label="Preço Total"
-                value={formatCurrencyBRL(cardapio.preco_total_centavos)}
-                className="text-lg font-semibold"
-              />
-            </div>
-          </div>
-
-          {/* Description */}
-          {cardapio.descricao && (
-            <div className="bg-white rounded-lg p-4 border">
-              <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-purple-600" />
-                <span className="text-purple-600">Descrição</span>
-              </h3>
-              <div className="text-sm text-gray-900">{cardapio.descricao}</div>
-            </div>
-          )}
-
           {/* Items List */}
           {loading ? (
             <div className="text-center py-8">
@@ -258,8 +226,10 @@ export default function CardapioView({
           ) : cardapioDetalhado?.itens && cardapioDetalhado.itens.length > 0 ? (
             <div className="border rounded-lg p-4">
               <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-gray-600" />
-                Itens do Cardápio ({cardapioDetalhado.itens.length})
+                <ShoppingBag className="w-5 h-5 text-purple-600" />
+                <span className="text-purple-600">
+                  Itens do Cardápio ({cardapioDetalhado.itens.length})
+                </span>
               </h3>
 
               <div className="space-y-3">
@@ -344,10 +314,44 @@ export default function CardapioView({
             </div>
           )}
 
+          {/* Cálculo */}
+          <div className="bg-white rounded-lg p-4 border">
+            <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-green-600" />
+              <span className="text-green-600">Cálculo</span>
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <DataField
+                label="Preço dos Itens"
+                value={formatCurrencyBRL(cardapio.preco_itens_centavos)}
+              />
+              <DataField
+                label="Margem de Lucro"
+                value={formatPercentage(cardapio.margem_lucro_percentual)}
+              />
+              <DataField
+                label="Preço Total"
+                value={formatCurrencyBRL(cardapio.preco_total_centavos)}
+                className="text-lg font-semibold"
+              />
+            </div>
+          </div>
+
+          {/* Descrição */}
+          {cardapio.descricao && (
+            <div className="bg-white rounded-lg p-4 border">
+              <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-red-600" />
+                <span className="text-red-600">Descrição</span>
+              </h3>
+              <div className="text-sm text-gray-900">{cardapio.descricao}</div>
+            </div>
+          )}
+
           {/* Detalhes do Cadastro */}
           <div className="bg-white rounded-lg p-4 border">
             <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-gray-600" />
+              <Info className="w-5 h-5 text-gray-600" />
               <span className="text-gray-700">Detalhes do Cadastro</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
