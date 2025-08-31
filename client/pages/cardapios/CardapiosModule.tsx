@@ -635,21 +635,23 @@ export default function CardapiosModule() {
       <ExportModal
         isOpen={showExport}
         onClose={() => setShowExport(false)}
-        data={filteredCardapios}
+        data={await getCardapiosWithItemsForExport()}
         selectedIds={selectedIds}
         moduleName="Cardápios"
         columns={[
           { key: "nome", label: "Nome" },
           { key: "tipo_cardapio", label: "Tipo de Cardápio" },
-          { key: "qtde_itens", label: "Qtde Itens" },
           { key: "quantidade_total", label: "Quantidade Total" },
-          { key: "preco_itens_centavos", label: "Preço Itens" },
-          { key: "margem_lucro_percentual", label: "Margem Lucro" },
-          { key: "preco_total_centavos", label: "Preço Total" },
+          { key: "preco_itens", label: "Preço dos Itens" },
+          { key: "margem_lucro", label: "Margem de Lucro" },
+          { key: "preco_total", label: "Preço Total" },
           { key: "descricao", label: "Descrição" },
-          { key: "ativo", label: "Ativo" },
-          { key: "data_cadastro", label: "Data de Cadastro" },
-          { key: "data_atualizacao", label: "Data de Atualização" },
+          { key: "status", label: "Status" },
+          { key: "data_cadastro", label: "Data Cadastro" },
+          { key: "data_atualizacao", label: "Data Atualização" },
+          { key: "item_nome", label: "Item Nome" },
+          { key: "item_quantidade", label: "Item Quantidade" },
+          { key: "item_valor_unitario", label: "Item Valor Unitario" },
         ]}
       />
 
