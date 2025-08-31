@@ -17,6 +17,7 @@ import {
   CreditCard,
   FileText,
   ClipboardList,
+  ChefHat,
 } from "lucide-react";
 import {
   Select,
@@ -41,6 +42,7 @@ export default function Dashboard() {
     { icon: Users, label: "Clientes", route: "/clientes" },
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
+    { icon: ChefHat, label: "Cardápios", route: "/cardapios" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {
