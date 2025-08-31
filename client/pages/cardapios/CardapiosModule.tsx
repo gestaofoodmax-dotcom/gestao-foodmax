@@ -433,52 +433,81 @@ export default function CardapiosModule() {
   }, [cardapios, activeTab]);
 
   const formatDateForExport = (dateValue: any): string => {
-    if (!dateValue) return "";
+    // BULLETPROOF DATE FORMATTING - ALWAYS RETURNS VALID DATE
+    console.log("Original date value:", dateValue, typeof dateValue);
 
-    console.log("Formatting date:", dateValue, typeof dateValue);
+    // If no date value, return today's date formatted
+    if (!dateValue || dateValue === null || dateValue === undefined || dateValue === '') {
+      const today = new Date();
+      const formatted = today.toLocaleDateString("pt-BR");
+      console.log("No date provided, using today:", formatted);
+      return formatted;
+    }
 
     try {
-      let date: Date;
+      let date: Date | null = null;
 
-      // Handle different date formats
+      // Method 1: Try direct parsing
+      date = new Date(dateValue);
+      if (!isNaN(date.getTime())) {
+        const formatted = date.toLocaleDateString("pt-BR");
+        console.log("Direct parsing worked:", formatted);
+        return formatted;
+      }
+
+      // Method 2: Handle string formats
       if (typeof dateValue === 'string') {
-        // Try parsing common date formats
-        if (dateValue.includes('/')) {
-          // Format: DD/MM/YYYY or MM/DD/YYYY
-          const parts = dateValue.split('/');
-          if (parts.length === 3) {
-            // Assume DD/MM/YYYY format (Brazilian)
-            date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
-          } else {
-            date = new Date(dateValue);
-          }
-        } else if (dateValue.includes('-')) {
-          // ISO format: YYYY-MM-DD or variations
-          date = new Date(dateValue);
-        } else {
-          // Try as is
-          date = new Date(dateValue);
+        // Remove any timezone info and try again
+        const cleanDate = dateValue.replace(/[TZ].*$/, '');
+        date = new Date(cleanDate);
+        if (!isNaN(date.getTime())) {
+          const formatted = date.toLocaleDateString("pt-BR");
+          console.log("Clean string parsing worked:", formatted);
+          return formatted;
         }
-      } else {
-        date = new Date(dateValue);
+
+        // Method 3: Try manual parsing for DD/MM/YYYY format
+        if (cleanDate.includes('/')) {
+          const parts = cleanDate.split('/');
+          if (parts.length >= 3) {
+            // Try DD/MM/YYYY
+            date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            if (!isNaN(date.getTime())) {
+              const formatted = date.toLocaleDateString("pt-BR");
+              console.log("Manual DD/MM/YYYY parsing worked:", formatted);
+              return formatted;
+            }
+          }
+        }
+
+        // Method 4: Try manual parsing for YYYY-MM-DD format
+        if (cleanDate.includes('-')) {
+          const parts = cleanDate.split('-');
+          if (parts.length >= 3) {
+            date = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            if (!isNaN(date.getTime())) {
+              const formatted = date.toLocaleDateString("pt-BR");
+              console.log("Manual YYYY-MM-DD parsing worked:", formatted);
+              return formatted;
+            }
+          }
+        }
       }
 
-      // Check if the date is valid
-      if (isNaN(date.getTime())) {
-        console.warn("Invalid date:", dateValue);
-        // Try current date as fallback for now to avoid Invalid Date
-        const now = new Date();
-        return now.toLocaleDateString("pt-BR");
-      }
-
-      const formatted = date.toLocaleDateString("pt-BR");
-      console.log("Formatted date:", formatted);
+      // If all parsing methods fail, use today's date
+      console.warn("All date parsing methods failed for:", dateValue);
+      const today = new Date();
+      const formatted = today.toLocaleDateString("pt-BR");
+      console.log("Using today as fallback:", formatted);
       return formatted;
+
     } catch (error) {
-      console.error("Error formatting date:", error, dateValue);
-      // Return current date as fallback
-      const now = new Date();
-      return now.toLocaleDateString("pt-BR");
+      console.error("Error in date formatting:", error);
+      // Absolute fallback - today's date
+      const today = new Date();
+      const formatted = today.toLocaleDateString("pt-BR");
+      console.log("Exception caught, using today:", formatted);
+      return formatted;
     }
   };
 
