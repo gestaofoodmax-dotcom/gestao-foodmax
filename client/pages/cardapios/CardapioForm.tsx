@@ -712,51 +712,53 @@ export default function CardapioForm({
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="col-span-1 md:col-span-2 -mt-2 mb-2 flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-green-600" />
-                <h3 className="font-semibold text-green-600">Preços</h3>
-              </div>
-              <div>
-                <Label htmlFor="margem_lucro_percentual">
-                  Margem de Lucro (%) *
-                </Label>
-                <Input
-                  id="margem_lucro_percentual"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  {...register("margem_lucro_percentual", {
-                    valueAsNumber: true,
-                  })}
-                  className="foodmax-input"
-                  placeholder="0.00"
-                />
-                {errors.margem_lucro_percentual && (
-                  <span className="text-sm text-red-600">
-                    {errors.margem_lucro_percentual.message}
-                  </span>
-                )}
-              </div>
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="col-span-1 md:col-span-2 -mt-2 mb-2 flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                  <h3 className="font-semibold text-green-600">Cálculos</h3>
+                </div>
+                <div>
+                  <Label htmlFor="margem_lucro_percentual">
+                    Margem de Lucro (%) *
+                  </Label>
+                  <Input
+                    id="margem_lucro_percentual"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    {...register("margem_lucro_percentual", {
+                      valueAsNumber: true,
+                    })}
+                    className="foodmax-input"
+                    placeholder="0.00"
+                  />
+                  {errors.margem_lucro_percentual && (
+                    <span className="text-sm text-red-600">
+                      {errors.margem_lucro_percentual.message}
+                    </span>
+                  )}
+                </div>
 
-              <div>
-                <Label htmlFor="preco_total_centavos">Preço Total (R$) *</Label>
-                <Input
-                  id="preco_total_centavos"
-                  value={precoTotalMask}
-                  onChange={(e) => {
-                    const cents = parseCurrencyToCentavos(e.target.value);
-                    setPrecoTotalMask(e.target.value === "" ? "" : formatInputCurrency(cents));
-                    setValue("preco_total_centavos", cents);
-                  }}
-                  className="foodmax-input"
-                  placeholder="R$ 0,00"
-                />
-                {errors.preco_total_centavos && (
-                  <span className="text-sm text-red-600">
-                    {errors.preco_total_centavos.message}
-                  </span>
-                )}
+                <div>
+                  <Label htmlFor="preco_total_centavos">Preço Total (R$) *</Label>
+                  <Input
+                    id="preco_total_centavos"
+                    value={precoTotalMask}
+                    onChange={(e) => {
+                      const cents = parseCurrencyToCentavos(e.target.value);
+                      setPrecoTotalMask(e.target.value === "" ? "" : formatInputCurrency(cents));
+                      setValue("preco_total_centavos", cents);
+                    }}
+                    className="foodmax-input"
+                    placeholder="R$ 0,00"
+                  />
+                  {errors.preco_total_centavos && (
+                    <span className="text-sm text-red-600">
+                      {errors.preco_total_centavos.message}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
