@@ -512,11 +512,11 @@ export default function CardapiosModule() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
-                <div className="flex items-center gap-4 overflow-x-auto py-1">
+                <div className="flex items-center gap-6">
                   {["Todos", ...TIPOS_CARDAPIO].map((tipo, idx, arr) => (
-                    <div key={tipo} className="flex items-center gap-4">
+                    <div key={tipo} className="flex items-center gap-6">
                       <button
-                        className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 whitespace-nowrap ${
+                        className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
                           activeTab === tipo
                             ? "text-foodmax-orange"
                             : "text-gray-700 hover:text-gray-900"
