@@ -431,6 +431,75 @@ export default function CardapiosModule() {
     );
   }, [cardapios, activeTab]);
 
+  const getCardapiosWithItemsForExport = async () => {
+    const cardapiosToExport = selectedIds.length > 0
+      ? filteredCardapios.filter(c => selectedIds.includes(c.id))
+      : filteredCardapios;
+
+    const exportData = [];
+    for (const cardapio of cardapiosToExport) {
+      try {
+        const response = await makeRequest(`/api/cardapios/${cardapio.id}`);
+        const cardapioDetalhado = response;
+
+        if (cardapioDetalhado.itens && cardapioDetalhado.itens.length > 0) {
+          for (const item of cardapioDetalhado.itens) {
+            exportData.push({
+              nome: cardapio.nome,
+              tipo_cardapio: cardapio.tipo_cardapio,
+              quantidade_total: cardapio.quantidade_total,
+              preco_itens: (cardapio.preco_itens_centavos / 100).toFixed(2),
+              margem_lucro: cardapio.margem_lucro_percentual,
+              preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
+              descricao: cardapio.descricao || "",
+              status: cardapio.ativo ? "Ativo" : "Inativo",
+              data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString("pt-BR"),
+              data_atualizacao: new Date(cardapio.data_atualizacao).toLocaleDateString("pt-BR"),
+              item_nome: item.item_nome,
+              item_quantidade: item.quantidade,
+              item_valor_unitario: (item.valor_unitario_centavos / 100).toFixed(2),
+            });
+          }
+        } else {
+          // Cardápio sem itens
+          exportData.push({
+            nome: cardapio.nome,
+            tipo_cardapio: cardapio.tipo_cardapio,
+            quantidade_total: cardapio.quantidade_total,
+            preco_itens: (cardapio.preco_itens_centavos / 100).toFixed(2),
+            margem_lucro: cardapio.margem_lucro_percentual,
+            preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
+            descricao: cardapio.descricao || "",
+            status: cardapio.ativo ? "Ativo" : "Inativo",
+            data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString("pt-BR"),
+            data_atualizacao: new Date(cardapio.data_atualizacao).toLocaleDateString("pt-BR"),
+            item_nome: "",
+            item_quantidade: "",
+            item_valor_unitario: "",
+          });
+        }
+      } catch {
+        // Fallback to basic data if detailed fetch fails
+        exportData.push({
+          nome: cardapio.nome,
+          tipo_cardapio: cardapio.tipo_cardapio,
+          quantidade_total: cardapio.quantidade_total,
+          preco_itens: (cardapio.preco_itens_centavos / 100).toFixed(2),
+          margem_lucro: cardapio.margem_lucro_percentual,
+          preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
+          descricao: cardapio.descricao || "",
+          status: cardapio.ativo ? "Ativo" : "Inativo",
+          data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString("pt-BR"),
+          data_atualizacao: new Date(cardapio.data_atualizacao).toLocaleDateString("pt-BR"),
+          item_nome: "",
+          item_quantidade: "",
+          item_valor_unitario: "",
+        });
+      }
+    }
+    return exportData;
+  };
+
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
       <div
@@ -663,11 +732,18 @@ export default function CardapiosModule() {
         hasPayment={hasPayment()}
         columns={[
           { key: "nome", label: "Nome", required: true },
-          { key: "tipo_cardapio", label: "Tipo Cardápio", required: true },
-          { key: "margem_lucro_percentual", label: "Margem Lucro (%)", required: true },
+          { key: "tipo_cardapio", label: "Tipo de Cardápio", required: true },
+          { key: "quantidade_total", label: "Quantidade Total" },
+          { key: "preco_itens", label: "Preço dos Itens" },
+          { key: "margem_lucro", label: "Margem de Lucro", required: true },
           { key: "preco_total", label: "Preço Total", required: true },
           { key: "descricao", label: "Descrição" },
-          { key: "ativo", label: "Status" },
+          { key: "status", label: "Status" },
+          { key: "data_cadastro", label: "Data Cadastro" },
+          { key: "data_atualizacao", label: "Data Atualização" },
+          { key: "item_nome", label: "Item Nome" },
+          { key: "item_quantidade", label: "Item Quantidade" },
+          { key: "item_valor_unitario", label: "Item Valor Unitario" },
         ]}
         mapHeader={(h) => {
           const n = h.trim().toLowerCase();
