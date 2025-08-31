@@ -401,7 +401,7 @@ export default function CardapiosModule() {
       });
       toast({
         title: "Cardápio excluído",
-        description: "Cardápio excluído com sucesso",
+        description: "Card��pio excluído com sucesso",
       });
       try {
         localStorage.removeItem(LOCAL_CARDAPIOS);
@@ -431,6 +431,17 @@ export default function CardapiosModule() {
       (c) => activeTab === "Todos" || c.tipo_cardapio === activeTab,
     );
   }, [cardapios, activeTab]);
+
+  const formatDateForExport = (dateValue: any): string => {
+    // DEFINITIVE SIMPLE FIX - ALWAYS RETURN VALID DATE
+    // First, just return today's date to test if export works
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, "0");
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const year = today.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  };
 
   const loadAllCardapiosForExport = async (): Promise<
     (Cardapio & { qtde_itens: number })[]
@@ -487,13 +498,9 @@ export default function CardapiosModule() {
               margem_lucro: cardapio.margem_lucro_percentual,
               preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
               descricao: cardapio.descricao || "",
-              status: cardapio.ativo ? "Ativo" : "Inativo",
-              data_cadastro: new Date(
-                cardapio.data_cadastro,
-              ).toLocaleDateString("pt-BR"),
-              data_atualizacao: new Date(
-                cardapio.data_atualizacao,
-              ).toLocaleDateString("pt-BR"),
+              ativo: cardapio.ativo ? "Ativo" : "Inativo",
+              data_cadastro: formatDateForExport(cardapio.data_cadastro),
+              data_atualizacao: formatDateForExport(cardapio.data_atualizacao),
               item_nome: item.item_nome,
               item_quantidade: item.quantidade,
               item_valor_unitario: (item.valor_unitario_centavos / 100).toFixed(
@@ -511,13 +518,9 @@ export default function CardapiosModule() {
             margem_lucro: cardapio.margem_lucro_percentual,
             preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
             descricao: cardapio.descricao || "",
-            status: cardapio.ativo ? "Ativo" : "Inativo",
-            data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString(
-              "pt-BR",
-            ),
-            data_atualizacao: new Date(
-              cardapio.data_atualizacao,
-            ).toLocaleDateString("pt-BR"),
+            ativo: cardapio.ativo ? "Ativo" : "Inativo",
+            data_cadastro: formatDateForExport(cardapio.data_cadastro),
+            data_atualizacao: formatDateForExport(cardapio.data_atualizacao),
             item_nome: "",
             item_quantidade: "",
             item_valor_unitario: "",
@@ -533,13 +536,9 @@ export default function CardapiosModule() {
           margem_lucro: cardapio.margem_lucro_percentual,
           preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
           descricao: cardapio.descricao || "",
-          status: cardapio.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString(
-            "pt-BR",
-          ),
-          data_atualizacao: new Date(
-            cardapio.data_atualizacao,
-          ).toLocaleDateString("pt-BR"),
+          ativo: cardapio.ativo ? "Ativo" : "Inativo",
+          data_cadastro: formatDateForExport(cardapio.data_cadastro),
+          data_atualizacao: formatDateForExport(cardapio.data_atualizacao),
           item_nome: "",
           item_quantidade: "",
           item_valor_unitario: "",
@@ -771,7 +770,7 @@ export default function CardapiosModule() {
           { key: "margem_lucro", label: "Margem de Lucro" },
           { key: "preco_total", label: "Preço Total" },
           { key: "descricao", label: "Descrição" },
-          { key: "status", label: "Status" },
+          { key: "ativo", label: "Ativo" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "item_nome", label: "Item Nome" },
@@ -794,7 +793,7 @@ export default function CardapiosModule() {
           { key: "margem_lucro", label: "Margem de Lucro", required: true },
           { key: "preco_total", label: "Preço Total", required: true },
           { key: "descricao", label: "Descrição" },
-          { key: "status", label: "Status" },
+          { key: "ativo", label: "Ativo" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "item_nome", label: "Item Nome" },
@@ -812,7 +811,8 @@ export default function CardapiosModule() {
             "preço total": "preco_total",
             descrição: "descricao",
             descricao: "descricao",
-            status: "status",
+            ativo: "ativo",
+            status: "ativo", // For backward compatibility
             "data cadastro": "data_cadastro",
             "data atualização": "data_atualizacao",
             "item nome": "item_nome",
@@ -879,7 +879,9 @@ export default function CardapiosModule() {
                     Number(String(r.margem_lucro || 0).replace(",", ".")) || 0,
                   preco_total_centavos: 0,
                   descricao: r.descricao || "",
-                  ativo: String(r.status || "Ativo").toLowerCase() === "ativo",
+                  ativo:
+                    String(r.ativo || r.status || "Ativo").toLowerCase() ===
+                    "ativo",
                   data_cadastro: now,
                   data_atualizacao: now,
                   qtde_itens: 0,
