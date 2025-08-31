@@ -284,15 +284,7 @@ export default function ItemForm({
                   placeholder="Nome do item"
                 />
               </div>
-            </div>
-          </div>
 
-          <div className="space-y-4 bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-3">
-              <Ruler className="w-5 h-5 text-indigo-600" />
-              <h3 className="font-semibold text-indigo-600">Medidas</h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm font-medium">Unidade de Medida</Label>
                 <Select
@@ -325,6 +317,7 @@ export default function ItemForm({
               </div>
             </div>
           </div>
+
 
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
