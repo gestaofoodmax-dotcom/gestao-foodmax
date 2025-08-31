@@ -507,7 +507,7 @@ export default function ItensModule() {
       try {
         localStorage.removeItem(LOCAL_ITENS);
       } catch {}
-      setSelectedIds([]);
+      setSelectedIdsItens([]);
       await loadItens();
       setShowDeleteAlert(false);
     } catch (error: any) {
