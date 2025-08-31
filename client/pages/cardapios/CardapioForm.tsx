@@ -734,18 +734,14 @@ export default function CardapioForm({
                 <Label htmlFor="preco_total_centavos">Preço Total (R$) *</Label>
                 <Input
                   id="preco_total_centavos"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={(watchedValues.preco_total_centavos / 100).toFixed(2)}
-                  onChange={(e) =>
-                    setValue(
-                      "preco_total_centavos",
-                      Math.round(parseFloat(e.target.value || "0") * 100),
-                    )
-                  }
+                  value={precoTotalMask}
+                  onChange={(e) => {
+                    const cents = parseCurrencyToCentavos(e.target.value);
+                    setPrecoTotalMask(e.target.value === "" ? "" : formatInputCurrency(cents));
+                    setValue("preco_total_centavos", cents);
+                  }}
                   className="foodmax-input"
-                  placeholder="0.00"
+                  placeholder="R$ 0,00"
                 />
                 {errors.preco_total_centavos && (
                   <span className="text-sm text-red-600">
