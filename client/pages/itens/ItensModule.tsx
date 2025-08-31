@@ -910,15 +910,13 @@ export default function ItensModule() {
                 nome: i.nome,
                 categoria_nome:
                   categorias.find((c) => c.id === i.categoria_id)?.nome || "",
-                preco: formatCurrencyBRL(i.preco_centavos),
-                custo_pago: formatCurrencyBRL(i.custo_pago_centavos),
+                preco: (i.preco_centavos / 100).toFixed(2),
+                custo_pago: (i.custo_pago_centavos / 100).toFixed(2),
                 estoque_atual: i.estoque_atual ?? 0,
                 unidade_medida: i.unidade_medida,
                 peso_gramas: i.peso_gramas ?? "",
                 status: i.ativo ? "Ativo" : "Inativo",
-                data_cadastro: new Date(i.data_cadastro).toLocaleDateString(
-                  "pt-BR",
-                ),
+                data_cadastro: new Date(i.data_cadastro).toISOString().split('T')[0],
               }))
             : categorias
         }
