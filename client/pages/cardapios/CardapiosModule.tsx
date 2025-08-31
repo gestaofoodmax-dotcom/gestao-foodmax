@@ -435,15 +435,50 @@ export default function CardapiosModule() {
   const formatDateForExport = (dateValue: any): string => {
     if (!dateValue) return "";
 
+    console.log("Formatting date:", dateValue, typeof dateValue);
+
     try {
-      const date = new Date(dateValue);
+      let date: Date;
+
+      // Handle different date formats
+      if (typeof dateValue === 'string') {
+        // Try parsing common date formats
+        if (dateValue.includes('/')) {
+          // Format: DD/MM/YYYY or MM/DD/YYYY
+          const parts = dateValue.split('/');
+          if (parts.length === 3) {
+            // Assume DD/MM/YYYY format (Brazilian)
+            date = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+          } else {
+            date = new Date(dateValue);
+          }
+        } else if (dateValue.includes('-')) {
+          // ISO format: YYYY-MM-DD or variations
+          date = new Date(dateValue);
+        } else {
+          // Try as is
+          date = new Date(dateValue);
+        }
+      } else {
+        date = new Date(dateValue);
+      }
+
       // Check if the date is valid
       if (isNaN(date.getTime())) {
-        return "";
+        console.warn("Invalid date:", dateValue);
+        // Try current date as fallback for now to avoid Invalid Date
+        const now = new Date();
+        return now.toLocaleDateString("pt-BR");
       }
-      return date.toLocaleDateString("pt-BR");
-    } catch {
-      return "";
+
+      const formatted = date.toLocaleDateString("pt-BR");
+      console.log("Formatted date:", formatted);
+      return formatted;
+    } catch (error) {
+      console.error("Error formatting date:", error, dateValue);
+      // Return current date as fallback
+      const now = new Date();
+      return now.toLocaleDateString("pt-BR");
     }
   };
 
