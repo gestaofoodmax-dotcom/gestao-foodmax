@@ -331,7 +331,7 @@ export default function ItensModule() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, makeRequest]);
+  }, [currentPageItens, searchTermItens, makeRequest]);
 
   const loadCategorias = useCallback(async () => {
     try {
