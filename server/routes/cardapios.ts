@@ -564,32 +564,27 @@ export const importCardapios: RequestHandler = async (req, res) => {
             for (const itemData of cardapioData.itens) {
               // First, try to find the item by name in the database
               let item_id = null;
-
-              // Extract item name from the records that created this cardapio
-              const itemName = records.find(r =>
-                r.nome === cardapioData.nome &&
-                r.tipo_cardapio === cardapioData.tipo_cardapio &&
-                r.item_nome && r.item_nome.trim()
-              )?.item_nome;
+              const itemName = itemData.item_nome;
 
               if (itemName) {
                 // Try to find existing item by name
                 const { data: existingItem } = await supabase
                   .from("itens")
                   .select("id")
-                  .eq("nome", itemName.trim())
+                  .eq("nome", itemName)
                   .eq("id_usuario", userId)
                   .single();
 
                 if (existingItem) {
                   item_id = existingItem.id;
+                  console.log(`Found existing item: ${itemName} with id ${item_id}`);
                 } else {
                   // Create new item if it doesn't exist
                   const { data: newItem, error: itemError } = await supabase
                     .from("itens")
                     .insert({
                       id_usuario: userId,
-                      nome: itemName.trim(),
+                      nome: itemName,
                       categoria_id: 1, // Default category - you might want to handle this better
                       unidade_medida: "un",
                       estoque_atual: 0,
