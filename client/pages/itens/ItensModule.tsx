@@ -916,7 +916,9 @@ export default function ItensModule() {
                 unidade_medida: i.unidade_medida,
                 peso_gramas: i.peso_gramas ?? "",
                 status: i.ativo ? "Ativo" : "Inativo",
-                data_cadastro: new Date(i.data_cadastro).toISOString().split('T')[0],
+                data_cadastro: new Date(i.data_cadastro)
+                  .toISOString()
+                  .split("T")[0],
               }))
             : categorias
         }
