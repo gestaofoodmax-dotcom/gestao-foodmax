@@ -20,7 +20,7 @@ import {
   Download,
   Upload,
   Trash2,
-  ChefHat,
+  Utensils,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
