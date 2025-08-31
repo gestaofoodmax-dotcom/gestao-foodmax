@@ -1288,7 +1288,7 @@ export default function ItensModule() {
             setShowBulkDelete(false);
           }
         }}
-        selectedCount={selectedIds.length}
+        selectedCount={activeTab === "itens" ? selectedIdsItens.length : selectedIdsCategorias.length}
       />
     </div>
   );
