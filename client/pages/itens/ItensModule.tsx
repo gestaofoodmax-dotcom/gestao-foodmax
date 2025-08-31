@@ -912,25 +912,71 @@ export default function ItensModule() {
               let imported = 0;
               let remote = 0;
               let local = 0;
+
+              const categoriaByName = new Map<string, ItemCategoria>();
+              categorias.forEach((c) => categoriaByName.set(c.nome.trim().toLowerCase(), c));
+
+              const parseCentavos = (val: any): number => {
+                if (val === undefined || val === null || val === "") return 0;
+                if (typeof val === "number") {
+                  return Number.isInteger(val) ? val : Math.round(val * 100);
+                }
+                const s = String(val).trim();
+                const clean = s.replace(/[^0-9,.-]/g, "").replace(/\.(?=\d{3}(,|$))/g, "");
+                const dot = clean.replace(",", ".");
+                const n = Number(dot);
+                if (!isNaN(n)) return Math.round(n * 100);
+                const digits = s.replace(/\D/g, "");
+                return digits ? parseInt(digits, 10) : 0;
+              };
+
+              const getCategoriaId = async (rec: any): Promise<number> => {
+                const idRaw = rec.categoria_id;
+                const idNum = Number(idRaw);
+                if (!isNaN(idNum) && idNum > 0) return idNum;
+                const name = (rec.categoria_nome || rec.categoria || "").toString().trim();
+                if (name) {
+                  const found = categoriaByName.get(name.toLowerCase());
+                  if (found) return found.id;
+                  try {
+                    const created = await makeRequest(`/api/itens-categorias`, {
+                      method: "POST",
+                      body: JSON.stringify({ nome: name, ativo: true }),
+                    });
+                    const cat = (created?.data as ItemCategoria) || created;
+                    if (cat?.id) {
+                      categoriaByName.set(cat.nome.trim().toLowerCase(), cat);
+                      setCategorias((prev) => {
+                        const next = [cat, ...prev];
+                        writeLocalCats(next);
+                        return next;
+                      });
+                      return cat.id;
+                    }
+                  } catch {}
+                }
+                // fallback: ensure some categoria
+                if (categorias[0]) return categorias[0].id;
+                throw new Error("Categoria inválida para importação");
+              };
+
               for (const r of records) {
-                const payload: any = {
-                  nome: r.nome,
-                  categoria_id: Number(r.categoria_id),
-                  preco_centavos: Number(r.preco_centavos),
-                  custo_pago_centavos: Number(r.custo_pago_centavos),
-                  unidade_medida: String(r.unidade_medida || "Unidade"),
-                  peso_gramas: r.peso_gramas
-                    ? Number(r.peso_gramas)
-                    : undefined,
-                  estoque_atual: r.estoque_atual
-                    ? Number(r.estoque_atual)
-                    : undefined,
-                  ativo:
-                    typeof r.ativo === "string"
-                      ? r.ativo.toLowerCase() !== "false"
-                      : Boolean(r.ativo ?? true),
-                };
                 try {
+                  const categoria_id = await getCategoriaId(r);
+                  const payload: any = {
+                    nome: r.nome,
+                    categoria_id,
+                    preco_centavos: parseCentavos(r.preco_centavos ?? r.preco),
+                    custo_pago_centavos: parseCentavos(r.custo_pago_centavos ?? r.custo ?? r.custo_pago),
+                    unidade_medida: String(r.unidade_medida || "Unidade"),
+                    peso_gramas: r.peso_gramas !== undefined && r.peso_gramas !== "" ? Number(r.peso_gramas) : undefined,
+                    estoque_atual: r.estoque_atual !== undefined && r.estoque_atual !== "" ? Number(r.estoque_atual) : undefined,
+                    ativo:
+                      typeof r.ativo === "string"
+                        ? r.ativo.toLowerCase() !== "false"
+                        : Boolean(r.ativo ?? true),
+                  };
+
                   await makeRequest(`/api/itens`, {
                     method: "POST",
                     body: JSON.stringify(payload),
@@ -940,14 +986,22 @@ export default function ItensModule() {
                 } catch {
                   const list = readLocalItens();
                   const now = new Date().toISOString();
-                  const novo: Item = {
+                  const categoria_id = categorias[0]?.id || 0;
+                  const fallback: Item = {
                     id: Date.now() + imported,
                     id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
-                    ...payload,
+                    categoria_id,
+                    nome: r.nome,
+                    preco_centavos: parseCentavos(r.preco_centavos ?? r.preco),
+                    custo_pago_centavos: parseCentavos(r.custo_pago_centavos ?? r.custo ?? r.custo_pago),
+                    unidade_medida: String(r.unidade_medida || "Unidade"),
+                    peso_gramas: r.peso_gramas !== undefined && r.peso_gramas !== "" ? Number(r.peso_gramas) : undefined,
+                    estoque_atual: r.estoque_atual !== undefined && r.estoque_atual !== "" ? Number(r.estoque_atual) : undefined,
+                    ativo: typeof r.ativo === "string" ? r.ativo.toLowerCase() !== "false" : Boolean(r.ativo ?? true),
                     data_cadastro: now,
                     data_atualizacao: now,
                   } as any;
-                  list.unshift(novo);
+                  list.unshift(fallback);
                   writeLocalItens(list);
                   setItens(list);
                   imported++;
