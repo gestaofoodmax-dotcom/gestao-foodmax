@@ -545,6 +545,10 @@ export default function CardapioForm({
             {/* Items Multi-Select */}
             {selectedCategorias.length > 0 && (
               <div>
+                <div className="flex items-center gap-2 mt-4 mb-1">
+                  <Boxes className="w-5 h-5 text-orange-600" />
+                  <h3 className="font-semibold text-orange-600">Itens</h3>
+                </div>
                 <Label>Itens *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
