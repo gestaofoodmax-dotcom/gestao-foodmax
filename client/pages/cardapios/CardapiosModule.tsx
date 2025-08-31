@@ -291,7 +291,7 @@ export default function CardapiosModule() {
         });
         toast({
           title: "Cardápio atualizado",
-          description: "Cardápio atualizado com sucesso",
+          description: "Card��pio atualizado com sucesso",
         });
       } else {
         await makeRequest(`/api/cardapios`, {
@@ -431,6 +431,21 @@ export default function CardapiosModule() {
       (c) => activeTab === "Todos" || c.tipo_cardapio === activeTab,
     );
   }, [cardapios, activeTab]);
+
+  const formatDateForExport = (dateValue: any): string => {
+    if (!dateValue) return "";
+
+    try {
+      const date = new Date(dateValue);
+      // Check if the date is valid
+      if (isNaN(date.getTime())) {
+        return "";
+      }
+      return date.toLocaleDateString("pt-BR");
+    } catch {
+      return "";
+    }
+  };
 
   const loadAllCardapiosForExport = async (): Promise<
     (Cardapio & { qtde_itens: number })[]
