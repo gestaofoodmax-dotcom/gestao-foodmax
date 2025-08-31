@@ -763,7 +763,7 @@ export default function ItensModule() {
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Buscar registros..."
-                    value={searchTerm}
+                    value={activeTab === "itens" ? searchTermItens : searchTermCategorias}
                     onChange={(e) => handleSearch(e.target.value)}
                     className="foodmax-input pl-10"
                   />
@@ -988,7 +988,7 @@ export default function ItensModule() {
               ]
             : [
                 { key: "nome", label: "Nome", required: true },
-                { key: "descricao", label: "Descri��ão" },
+                { key: "descricao", label: "Descrição" },
                 { key: "ativo", label: "Ativo" },
               ]
         }
