@@ -139,7 +139,9 @@ export function ExportModal({
     );
 
     // Create headers with provided labels (fallback to computed)
-    const headers = filteredColumns.map((col) => col.label || getFieldLabel(col.key));
+    const headers = filteredColumns.map(
+      (col) => col.label || getFieldLabel(col.key),
+    );
 
     // Create CSV content
     const csvContent = [

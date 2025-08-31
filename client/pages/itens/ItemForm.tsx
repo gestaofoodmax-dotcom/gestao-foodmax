@@ -13,7 +13,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Info, X, Save, AlertTriangle, ChevronsUpDown, Check, DollarSign, Boxes } from "lucide-react";
+import {
+  Info,
+  X,
+  Save,
+  AlertTriangle,
+  ChevronsUpDown,
+  Check,
+  DollarSign,
+  Boxes,
+} from "lucide-react";
 import { Item, ItemCategoria, UNIDADES_MEDIDA } from "@shared/itens";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -23,7 +32,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -43,12 +56,18 @@ const schema = z.object({
     .min(0, "Custo Pago deve ser maior ou igual a 0"),
   unidade_medida: z.string().min(1, "Unidade de Medida é obrigatória"),
   peso_gramas: z.preprocess(
-    (v) => (v === "" || v === null || (typeof v === "number" && isNaN(v)) ? undefined : v),
-    z.number().int().nonnegative().optional()
+    (v) =>
+      v === "" || v === null || (typeof v === "number" && isNaN(v))
+        ? undefined
+        : v,
+    z.number().int().nonnegative().optional(),
   ),
   estoque_atual: z.preprocess(
-    (v) => (v === "" || v === null || (typeof v === "number" && isNaN(v)) ? undefined : v),
-    z.number().int().nonnegative().optional()
+    (v) =>
+      v === "" || v === null || (typeof v === "number" && isNaN(v))
+        ? undefined
+        : v,
+    z.number().int().nonnegative().optional(),
   ),
   ativo: z.boolean().default(true),
 });
@@ -171,7 +190,9 @@ export default function ItemForm({
   }, [categorias]);
 
   const showNoCategoriasWarning = categorias.length === 0;
-  const categoriaSelecionada = categorias.find((c) => c.id === watchedCategoriaId);
+  const categoriaSelecionada = categorias.find(
+    (c) => c.id === watchedCategoriaId,
+  );
 
   return (
     <Dialog
@@ -195,7 +216,8 @@ export default function ItemForm({
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               <p>
-                Antes de cadastrar, é necessário ter pelo menos uma Categoria. {""}
+                Antes de cadastrar, é necessário ter pelo menos uma Categoria.{" "}
+                {""}
                 <button
                   onClick={onOpenCategorias}
                   className="underline text-yellow-900"
@@ -233,7 +255,9 @@ export default function ItemForm({
                         errors.categoria_id ? "border-red-500" : "",
                       )}
                     >
-                      {categoriaSelecionada ? categoriaSelecionada.nome : "Selecione a categoria"}
+                      {categoriaSelecionada
+                        ? categoriaSelecionada.nome
+                        : "Selecione a categoria"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
@@ -241,7 +265,9 @@ export default function ItemForm({
                     <Command>
                       <CommandInput placeholder="Buscar categorias..." />
                       <CommandList>
-                        <CommandEmpty>Nenhuma categoria encontrada</CommandEmpty>
+                        <CommandEmpty>
+                          Nenhuma categoria encontrada
+                        </CommandEmpty>
                         <CommandGroup>
                           {categoriasOrdenadas.map((c) => (
                             <CommandItem
@@ -255,7 +281,9 @@ export default function ItemForm({
                               <Check
                                 className={cn(
                                   "mr-2 h-4 w-4",
-                                  watchedCategoriaId === c.id ? "opacity-100" : "opacity-0",
+                                  watchedCategoriaId === c.id
+                                    ? "opacity-100"
+                                    : "opacity-0",
                                 )}
                               />
                               {c.nome}
@@ -280,7 +308,10 @@ export default function ItemForm({
                 <Input
                   id="nome"
                   {...register("nome")}
-                  className={cn("foodmax-input", errors.nome ? "border-red-500" : "")}
+                  className={cn(
+                    "foodmax-input",
+                    errors.nome ? "border-red-500" : "",
+                  )}
                   placeholder="Nome do item"
                 />
               </div>
@@ -318,7 +349,6 @@ export default function ItemForm({
             </div>
           </div>
 
-
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
               <DollarSign className="w-5 h-5 text-green-600" />
@@ -334,11 +364,16 @@ export default function ItemForm({
                   value={precoMask}
                   onChange={(e) => {
                     const cents = parseCurrencyToCentavos(e.target.value);
-                    setPrecoMask(e.target.value === "" ? "" : formatInputCurrency(cents));
+                    setPrecoMask(
+                      e.target.value === "" ? "" : formatInputCurrency(cents),
+                    );
                     setValue("preco_centavos", cents);
                   }}
                   placeholder=""
-                  className={cn("foodmax-input", errors.preco_centavos ? "border-red-500" : "")}
+                  className={cn(
+                    "foodmax-input",
+                    errors.preco_centavos ? "border-red-500" : "",
+                  )}
                 />
               </div>
               <div>
@@ -350,7 +385,9 @@ export default function ItemForm({
                   value={custoMask}
                   onChange={(e) => {
                     const cents = parseCurrencyToCentavos(e.target.value);
-                    setCustoMask(e.target.value === "" ? "" : formatInputCurrency(cents));
+                    setCustoMask(
+                      e.target.value === "" ? "" : formatInputCurrency(cents),
+                    );
                     setValue("custo_pago_centavos", cents);
                   }}
                   placeholder=""

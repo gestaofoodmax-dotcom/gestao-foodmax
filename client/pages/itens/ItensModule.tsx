@@ -34,7 +34,10 @@ import ItemForm from "./ItemForm";
 import ItemView from "./ItemView";
 import CategoriaForm from "./CategoriaForm";
 import CategoriaView from "./CategoriaView";
-import { DeleteAlert, BulkDeleteAlert } from "@/components/alert-dialog-component";
+import {
+  DeleteAlert,
+  BulkDeleteAlert,
+} from "@/components/alert-dialog-component";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
 
@@ -396,7 +399,10 @@ export default function ItensModule() {
           method: "PUT",
           body: JSON.stringify(data),
         });
-        toast({ title: "Item atualizado", description: "Item atualizado com sucesso" });
+        toast({
+          title: "Item atualizado",
+          description: "Item atualizado com sucesso",
+        });
       } else {
         await makeRequest(`/api/itens`, {
           method: "POST",
@@ -404,7 +410,9 @@ export default function ItensModule() {
         });
         toast({ title: "Item criado", description: "Item criado com sucesso" });
       }
-      try { localStorage.removeItem(LOCAL_ITENS); } catch {}
+      try {
+        localStorage.removeItem(LOCAL_ITENS);
+      } catch {}
       setSelectedIds([]);
       await loadItens();
       setShowForm(false);
@@ -416,7 +424,10 @@ export default function ItensModule() {
         const idx = list.findIndex((x) => x.id === currentItem.id);
         if (idx >= 0)
           list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
-        toast({ title: "Item atualizado", description: "Item atualizado com sucesso" });
+        toast({
+          title: "Item atualizado",
+          description: "Item atualizado com sucesso",
+        });
       } else {
         const novo: Item = {
           id: Date.now(),
@@ -448,7 +459,10 @@ export default function ItensModule() {
       await makeRequest(`/api/itens/${i.id}/toggle-status`, {
         method: "PATCH",
       });
-      toast({ title: `Item ${i.ativo ? "desativado" : "ativado"}`, description: `Item ${i.ativo ? "desativado" : "ativado"} com sucesso` });
+      toast({
+        title: `Item ${i.ativo ? "desativado" : "ativado"}`,
+        description: `Item ${i.ativo ? "desativado" : "ativado"} com sucesso`,
+      });
       loadItens();
     } catch {
       const list = readLocalItens();
@@ -458,7 +472,10 @@ export default function ItensModule() {
         list[idx].data_atualizacao = new Date().toISOString();
         writeLocalItens(list);
         setItens(list);
-        toast({ title: "Status atualizado", description: "Status atualizado com sucesso" });
+        toast({
+          title: "Status atualizado",
+          description: "Status atualizado com sucesso",
+        });
       }
     }
   };
@@ -467,8 +484,13 @@ export default function ItensModule() {
     if (!currentItem) return;
     try {
       await makeRequest(`/api/itens/${currentItem.id}`, { method: "DELETE" });
-      toast({ title: "Item excluído", description: "Item excluído com sucesso" });
-      try { localStorage.removeItem(LOCAL_ITENS); } catch {}
+      toast({
+        title: "Item excluído",
+        description: "Item excluído com sucesso",
+      });
+      try {
+        localStorage.removeItem(LOCAL_ITENS);
+      } catch {}
       setSelectedIds([]);
       await loadItens();
       setShowDeleteAlert(false);
@@ -476,7 +498,10 @@ export default function ItensModule() {
       const list = readLocalItens().filter((e) => e.id !== currentItem.id);
       writeLocalItens(list);
       setItens(list);
-      toast({ title: "Item excluído", description: "Item excluído com sucesso" });
+      toast({
+        title: "Item excluído",
+        description: "Item excluído com sucesso",
+      });
       setSelectedIds([]);
       setShowDeleteAlert(false);
     }
@@ -489,15 +514,23 @@ export default function ItensModule() {
           method: "PUT",
           body: JSON.stringify(data),
         });
-        toast({ title: "Categoria atualizada", description: "Categoria atualizada com sucesso" });
+        toast({
+          title: "Categoria atualizada",
+          description: "Categoria atualizada com sucesso",
+        });
       } else {
         await makeRequest(`/api/itens-categorias`, {
           method: "POST",
           body: JSON.stringify(data),
         });
-        toast({ title: "Categoria criada", description: "Categoria criada com sucesso" });
+        toast({
+          title: "Categoria criada",
+          description: "Categoria criada com sucesso",
+        });
       }
-      try { localStorage.removeItem(LOCAL_CATS); } catch {}
+      try {
+        localStorage.removeItem(LOCAL_CATS);
+      } catch {}
       await loadCategorias();
       setShowCategoriaForm(false);
       setCurrentCategoria(null);
@@ -509,7 +542,10 @@ export default function ItensModule() {
         const idx = list.findIndex((x) => x.id === currentCategoria.id);
         if (idx >= 0)
           list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
-        toast({ title: "Categoria atualizada", description: "Categoria atualizada com sucesso" });
+        toast({
+          title: "Categoria atualizada",
+          description: "Categoria atualizada com sucesso",
+        });
       } else {
         const novo: ItemCategoria = {
           id: Date.now(),
@@ -521,7 +557,10 @@ export default function ItensModule() {
           data_atualizacao: now,
         } as any;
         list.unshift(novo);
-        toast({ title: "Categoria criada", description: "Categoria criada com sucesso" });
+        toast({
+          title: "Categoria criada",
+          description: "Categoria criada com sucesso",
+        });
       }
       writeLocalCats(list);
       setCategorias(list);
@@ -534,7 +573,10 @@ export default function ItensModule() {
       await makeRequest(`/api/itens-categorias/${c.id}/toggle-status`, {
         method: "PATCH",
       });
-      toast({ title: `Categoria ${c.ativo ? "desativada" : "ativada"}`, description: `Categoria ${c.ativo ? "desativada" : "ativada"} com sucesso` });
+      toast({
+        title: `Categoria ${c.ativo ? "desativada" : "ativada"}`,
+        description: `Categoria ${c.ativo ? "desativada" : "ativada"} com sucesso`,
+      });
       loadCategorias();
     } catch {
       const list = readLocalCats();
@@ -544,7 +586,10 @@ export default function ItensModule() {
         list[idx].data_atualizacao = new Date().toISOString();
         writeLocalCats(list);
         setCategorias(list);
-        toast({ title: "Status atualizado", description: "Status atualizado com sucesso" });
+        toast({
+          title: "Status atualizado",
+          description: "Status atualizado com sucesso",
+        });
       }
     }
   };
@@ -552,14 +597,22 @@ export default function ItensModule() {
   const handleDeleteCategoria = async (c: ItemCategoria) => {
     try {
       await makeRequest(`/api/itens-categorias/${c.id}`, { method: "DELETE" });
-      toast({ title: "Categoria excluída", description: "Categoria excluída com sucesso" });
-      try { localStorage.removeItem(LOCAL_CATS); } catch {}
+      toast({
+        title: "Categoria excluída",
+        description: "Categoria excluída com sucesso",
+      });
+      try {
+        localStorage.removeItem(LOCAL_CATS);
+      } catch {}
       await loadCategorias();
     } catch {
       const list = readLocalCats().filter((e) => e.id !== c.id);
       writeLocalCats(list);
       setCategorias(list);
-      toast({ title: "Categoria excluída", description: "Categoria excluída com sucesso" });
+      toast({
+        title: "Categoria excluída",
+        description: "Categoria excluída com sucesso",
+      });
     }
   };
 
@@ -655,7 +708,11 @@ export default function ItensModule() {
                   >
                     <List className="w-4 h-4" />
                     <span>Itens</span>
-                    <span className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === "itens" ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}>{totalRecords}</span>
+                    <span
+                      className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === "itens" ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      {totalRecords}
+                    </span>
                     {activeTab === "itens" && (
                       <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
                     )}
@@ -671,7 +728,11 @@ export default function ItensModule() {
                   >
                     <Tag className="w-4 h-4" />
                     <span>Categorias</span>
-                    <span className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === "categorias" ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}>{categorias.length}</span>
+                    <span
+                      className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === "categorias" ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
+                    >
+                      {categorias.length}
+                    </span>
                     {activeTab === "categorias" && (
                       <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
                     )}
@@ -847,14 +908,17 @@ export default function ItensModule() {
           activeTab === "itens"
             ? itens.map((i) => ({
                 nome: i.nome,
-                categoria_nome: categorias.find((c) => c.id === i.categoria_id)?.nome || "",
+                categoria_nome:
+                  categorias.find((c) => c.id === i.categoria_id)?.nome || "",
                 preco: formatCurrencyBRL(i.preco_centavos),
                 custo_pago: formatCurrencyBRL(i.custo_pago_centavos),
                 estoque_atual: i.estoque_atual ?? 0,
                 unidade_medida: i.unidade_medida,
                 peso_gramas: i.peso_gramas ?? "",
                 status: i.ativo ? "Ativo" : "Inativo",
-                data_cadastro: new Date(i.data_cadastro).toLocaleDateString("pt-BR"),
+                data_cadastro: new Date(i.data_cadastro).toLocaleDateString(
+                  "pt-BR",
+                ),
               }))
             : categorias
         }
@@ -893,7 +957,11 @@ export default function ItensModule() {
           activeTab === "itens"
             ? [
                 { key: "nome", label: "Nome", required: true },
-                { key: "categoria_nome", label: "Categoria Nome", required: true },
+                {
+                  key: "categoria_nome",
+                  label: "Categoria Nome",
+                  required: true,
+                },
                 { key: "preco", label: "Preço", required: true },
                 { key: "custo_pago", label: "Custo Pago", required: true },
                 { key: "estoque_atual", label: "Estoque Atual" },
@@ -913,18 +981,18 @@ export default function ItensModule() {
             ? (h) => {
                 const n = h.trim().toLowerCase();
                 const map: Record<string, string> = {
-                  "nome": "nome",
+                  nome: "nome",
                   "categoria nome": "categoria_nome",
-                  "categoria": "categoria_nome",
-                  "categoria_id": "categoria_id",
-                  "preço": "preco",
-                  "preco": "preco",
+                  categoria: "categoria_nome",
+                  categoria_id: "categoria_id",
+                  preço: "preco",
+                  preco: "preco",
                   "custo pago": "custo_pago",
                   "estoque atual": "estoque_atual",
                   "unidade medida": "unidade_medida",
                   "unidade de medida": "unidade_medida",
                   "peso gramas": "peso_gramas",
-                  "status": "ativo",
+                  status: "ativo",
                   "data cadastro": "data_cadastro",
                 };
                 return map[n] || n.replace(/\s+/g, "_");
@@ -939,7 +1007,9 @@ export default function ItensModule() {
               let local = 0;
 
               const categoriaByName = new Map<string, ItemCategoria>();
-              categorias.forEach((c) => categoriaByName.set(c.nome.trim().toLowerCase(), c));
+              categorias.forEach((c) =>
+                categoriaByName.set(c.nome.trim().toLowerCase(), c),
+              );
 
               const parseCentavos = (val: any): number => {
                 if (val === undefined || val === null || val === "") return 0;
@@ -947,7 +1017,9 @@ export default function ItensModule() {
                   return Number.isInteger(val) ? val : Math.round(val * 100);
                 }
                 const s = String(val).trim();
-                const clean = s.replace(/[^0-9,.-]/g, "").replace(/\.(?=\d{3}(,|$))/g, "");
+                const clean = s
+                  .replace(/[^0-9,.-]/g, "")
+                  .replace(/\.(?=\d{3}(,|$))/g, "");
                 const dot = clean.replace(",", ".");
                 const n = Number(dot);
                 if (!isNaN(n)) return Math.round(n * 100);
@@ -959,7 +1031,9 @@ export default function ItensModule() {
                 const idRaw = rec.categoria_id;
                 const idNum = Number(idRaw);
                 if (!isNaN(idNum) && idNum > 0) return idNum;
-                const name = (rec.categoria_nome || rec.categoria || "").toString().trim();
+                const name = (rec.categoria_nome || rec.categoria || "")
+                  .toString()
+                  .trim();
                 if (name) {
                   const found = categoriaByName.get(name.toLowerCase());
                   if (found) return found.id;
@@ -992,10 +1066,18 @@ export default function ItensModule() {
                     nome: r.nome,
                     categoria_id,
                     preco_centavos: parseCentavos(r.preco_centavos ?? r.preco),
-                    custo_pago_centavos: parseCentavos(r.custo_pago_centavos ?? r.custo ?? r.custo_pago),
+                    custo_pago_centavos: parseCentavos(
+                      r.custo_pago_centavos ?? r.custo ?? r.custo_pago,
+                    ),
                     unidade_medida: String(r.unidade_medida || "Unidade"),
-                    peso_gramas: r.peso_gramas !== undefined && r.peso_gramas !== "" ? Number(r.peso_gramas) : undefined,
-                    estoque_atual: r.estoque_atual !== undefined && r.estoque_atual !== "" ? Number(r.estoque_atual) : undefined,
+                    peso_gramas:
+                      r.peso_gramas !== undefined && r.peso_gramas !== ""
+                        ? Number(r.peso_gramas)
+                        : undefined,
+                    estoque_atual:
+                      r.estoque_atual !== undefined && r.estoque_atual !== ""
+                        ? Number(r.estoque_atual)
+                        : undefined,
                     ativo:
                       typeof r.ativo === "string"
                         ? r.ativo.toLowerCase() !== "false"
@@ -1018,11 +1100,22 @@ export default function ItensModule() {
                     categoria_id,
                     nome: r.nome,
                     preco_centavos: parseCentavos(r.preco_centavos ?? r.preco),
-                    custo_pago_centavos: parseCentavos(r.custo_pago_centavos ?? r.custo ?? r.custo_pago),
+                    custo_pago_centavos: parseCentavos(
+                      r.custo_pago_centavos ?? r.custo ?? r.custo_pago,
+                    ),
                     unidade_medida: String(r.unidade_medida || "Unidade"),
-                    peso_gramas: r.peso_gramas !== undefined && r.peso_gramas !== "" ? Number(r.peso_gramas) : undefined,
-                    estoque_atual: r.estoque_atual !== undefined && r.estoque_atual !== "" ? Number(r.estoque_atual) : undefined,
-                    ativo: typeof r.ativo === "string" ? r.ativo.toLowerCase() !== "false" : Boolean(r.ativo ?? true),
+                    peso_gramas:
+                      r.peso_gramas !== undefined && r.peso_gramas !== ""
+                        ? Number(r.peso_gramas)
+                        : undefined,
+                    estoque_atual:
+                      r.estoque_atual !== undefined && r.estoque_atual !== ""
+                        ? Number(r.estoque_atual)
+                        : undefined,
+                    ativo:
+                      typeof r.ativo === "string"
+                        ? r.ativo.toLowerCase() !== "false"
+                        : Boolean(r.ativo ?? true),
                     data_cadastro: now,
                     data_atualizacao: now,
                   } as any;
@@ -1033,7 +1126,9 @@ export default function ItensModule() {
                   local++;
                 }
               }
-              try { localStorage.removeItem(LOCAL_ITENS); } catch {}
+              try {
+                localStorage.removeItem(LOCAL_ITENS);
+              } catch {}
               await loadItens();
               return {
                 success: true,
@@ -1077,7 +1172,9 @@ export default function ItensModule() {
                   local++;
                 }
               }
-              try { localStorage.removeItem(LOCAL_CATS); } catch {}
+              try {
+                localStorage.removeItem(LOCAL_CATS);
+              } catch {}
               await loadCategorias();
               return {
                 success: true,
@@ -1109,36 +1206,59 @@ export default function ItensModule() {
                 method: "POST",
                 body: JSON.stringify({ ids: selectedIds }),
               });
-              toast({ title: "Itens excluídos", description: `${selectedIds.length} registro(s) excluído(s) com sucesso` });
-              try { localStorage.removeItem(LOCAL_ITENS); } catch {}
+              toast({
+                title: "Itens excluídos",
+                description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
+              });
+              try {
+                localStorage.removeItem(LOCAL_ITENS);
+              } catch {}
               await loadItens();
             } else {
-              const res = await makeRequest(`/api/itens-categorias/bulk-delete`, {
-                method: "POST",
-                body: JSON.stringify({ ids: selectedIds }),
-              });
+              const res = await makeRequest(
+                `/api/itens-categorias/bulk-delete`,
+                {
+                  method: "POST",
+                  body: JSON.stringify({ ids: selectedIds }),
+                },
+              );
               const deleted = (res?.deletedCount as number) || 0;
               const blocked = (res?.blockedIds as number[]) || [];
               if (blocked.length) {
-                toast({ title: "Alguns registros não puderam ser excluídos", description: `${blocked.length} categoria(s) possuem Itens vinculados.` });
+                toast({
+                  title: "Alguns registros não puderam ser excluídos",
+                  description: `${blocked.length} categoria(s) possuem Itens vinculados.`,
+                });
               }
-              toast({ title: "Categorias excluídas", description: `${deleted} categoria(s) excluída(s) com sucesso` });
-              try { localStorage.removeItem(LOCAL_CATS); } catch {}
+              toast({
+                title: "Categorias excluídas",
+                description: `${deleted} categoria(s) excluída(s) com sucesso`,
+              });
+              try {
+                localStorage.removeItem(LOCAL_CATS);
+              } catch {}
               await loadCategorias();
             }
             setSelectedIds([]);
             setShowBulkDelete(false);
           } catch (error: any) {
             if (activeTab === "itens") {
-              const list = readLocalItens().filter((e) => !selectedIds.includes(e.id));
+              const list = readLocalItens().filter(
+                (e) => !selectedIds.includes(e.id),
+              );
               writeLocalItens(list);
               setItens(list);
             } else {
-              const list = readLocalCats().filter((e) => !selectedIds.includes(e.id));
+              const list = readLocalCats().filter(
+                (e) => !selectedIds.includes(e.id),
+              );
               writeLocalCats(list);
               setCategorias(list);
             }
-            toast({ title: "Exclusão concluída localmente", description: `${selectedIds.length} registro(s) removido(s)` });
+            toast({
+              title: "Exclusão concluída localmente",
+              description: `${selectedIds.length} registro(s) removido(s)`,
+            });
             setSelectedIds([]);
             setShowBulkDelete(false);
           }
