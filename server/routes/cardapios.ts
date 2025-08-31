@@ -413,7 +413,14 @@ export const importCardapios: RequestHandler = async (req, res) => {
       records: z.array(
         z.object({
           nome: z.string().min(1),
-          tipo_cardapio: z.enum(["Café", "Almoço", "Janta", "Lanche", "Bebida", "Outro"]),
+          tipo_cardapio: z.enum([
+            "Café",
+            "Almoço",
+            "Janta",
+            "Lanche",
+            "Bebida",
+            "Outro",
+          ]),
           quantidade_total: z.union([z.number(), z.string()]).optional(),
           preco_itens: z.union([z.number(), z.string()]).optional(),
           margem_lucro: z.union([z.number(), z.string()]).optional(),
@@ -449,7 +456,9 @@ export const importCardapios: RequestHandler = async (req, res) => {
         return Number.isInteger(val) ? val : Math.round(val * 100);
       }
       const s = String(val).trim();
-      const clean = s.replace(/[^0-9,.-]/g, "").replace(/\.(?=\d{3}(,|$))/g, "");
+      const clean = s
+        .replace(/[^0-9,.-]/g, "")
+        .replace(/\.(?=\d{3}(,|$))/g, "");
       const dot = clean.replace(",", ".");
       const n = Number(dot);
       if (!isNaN(n)) return Math.round(n * 100);
@@ -459,9 +468,12 @@ export const importCardapios: RequestHandler = async (req, res) => {
 
     const toBool = (v: any): boolean => {
       if (typeof v === "boolean") return v;
-      const s = String(v ?? "").trim().toLowerCase();
+      const s = String(v ?? "")
+        .trim()
+        .toLowerCase();
       if (["1", "true", "ativo", "sim", "yes"].includes(s)) return true;
-      if (["0", "false", "inativo", "nao", "não", "no"].includes(s)) return false;
+      if (["0", "false", "inativo", "nao", "não", "no"].includes(s))
+        return false;
       return true;
     };
 
@@ -477,9 +489,10 @@ export const importCardapios: RequestHandler = async (req, res) => {
       if (!cardapiosMap.has(key)) {
         const preco_total_centavos = parseCentavos(r.preco_total);
         const preco_itens_centavos = parseCentavos(r.preco_itens);
-        const quantidade_total = typeof r.quantidade_total === "string"
-          ? Number(r.quantidade_total) || 0
-          : r.quantidade_total || 0;
+        const quantidade_total =
+          typeof r.quantidade_total === "string"
+            ? Number(r.quantidade_total) || 0
+            : r.quantidade_total || 0;
 
         const margem_lucro_percentual =
           typeof r.margem_lucro === "string"
@@ -503,7 +516,10 @@ export const importCardapios: RequestHandler = async (req, res) => {
       if (r.item_nome && r.item_nome.trim()) {
         cardapiosMap.get(key).itens.push({
           item_id: 1, // Placeholder - in real scenario you'd need to look up item by name
-          quantidade: typeof r.item_quantidade === "string" ? Number(r.item_quantidade) || 1 : r.item_quantidade || 1,
+          quantidade:
+            typeof r.item_quantidade === "string"
+              ? Number(r.item_quantidade) || 1
+              : r.item_quantidade || 1,
           valor_unitario_centavos: parseCentavos(r.item_valor_unitario),
         });
       }
@@ -534,7 +550,10 @@ export const importCardapios: RequestHandler = async (req, res) => {
           .single();
 
         if (error) {
-          console.error(`Database error for cardapio ${cardapioData.nome}:`, error);
+          console.error(
+            `Database error for cardapio ${cardapioData.nome}:`,
+            error,
+          );
         } else if (cardapio) {
           console.log(`Successfully created cardapio: ${cardapio.nome}`);
           imported++;
@@ -549,7 +568,9 @@ export const importCardapios: RequestHandler = async (req, res) => {
   } catch (error: any) {
     console.error("Error importing cardapios:", error);
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
     res.status(500).json({ error: "Erro interno do servidor" });
   }

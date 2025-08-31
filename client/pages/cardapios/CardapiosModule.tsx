@@ -433,9 +433,10 @@ export default function CardapiosModule() {
   }, [cardapios, activeTab]);
 
   const getCardapiosWithItemsForExport = async () => {
-    const cardapiosToExport = selectedIds.length > 0
-      ? filteredCardapios.filter(c => selectedIds.includes(c.id))
-      : filteredCardapios;
+    const cardapiosToExport =
+      selectedIds.length > 0
+        ? filteredCardapios.filter((c) => selectedIds.includes(c.id))
+        : filteredCardapios;
 
     const exportData = [];
     for (const cardapio of cardapiosToExport) {
@@ -454,11 +455,17 @@ export default function CardapiosModule() {
               preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
               descricao: cardapio.descricao || "",
               status: cardapio.ativo ? "Ativo" : "Inativo",
-              data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString("pt-BR"),
-              data_atualizacao: new Date(cardapio.data_atualizacao).toLocaleDateString("pt-BR"),
+              data_cadastro: new Date(
+                cardapio.data_cadastro,
+              ).toLocaleDateString("pt-BR"),
+              data_atualizacao: new Date(
+                cardapio.data_atualizacao,
+              ).toLocaleDateString("pt-BR"),
               item_nome: item.item_nome,
               item_quantidade: item.quantidade,
-              item_valor_unitario: (item.valor_unitario_centavos / 100).toFixed(2),
+              item_valor_unitario: (item.valor_unitario_centavos / 100).toFixed(
+                2,
+              ),
             });
           }
         } else {
@@ -472,8 +479,12 @@ export default function CardapiosModule() {
             preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
             descricao: cardapio.descricao || "",
             status: cardapio.ativo ? "Ativo" : "Inativo",
-            data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString("pt-BR"),
-            data_atualizacao: new Date(cardapio.data_atualizacao).toLocaleDateString("pt-BR"),
+            data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString(
+              "pt-BR",
+            ),
+            data_atualizacao: new Date(
+              cardapio.data_atualizacao,
+            ).toLocaleDateString("pt-BR"),
             item_nome: "",
             item_quantidade: "",
             item_valor_unitario: "",
@@ -490,8 +501,12 @@ export default function CardapiosModule() {
           preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
           descricao: cardapio.descricao || "",
           status: cardapio.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString("pt-BR"),
-          data_atualizacao: new Date(cardapio.data_atualizacao).toLocaleDateString("pt-BR"),
+          data_cadastro: new Date(cardapio.data_cadastro).toLocaleDateString(
+            "pt-BR",
+          ),
+          data_atualizacao: new Date(
+            cardapio.data_atualizacao,
+          ).toLocaleDateString("pt-BR"),
           item_nome: "",
           item_quantidade: "",
           item_valor_unitario: "",
@@ -762,7 +777,7 @@ export default function CardapiosModule() {
             "preço dos itens": "preco_itens",
             "margem de lucro": "margem_lucro",
             "preço total": "preco_total",
-            "descrição": "descricao",
+            descrição: "descricao",
             descricao: "descricao",
             status: "status",
             "data cadastro": "data_cadastro",
@@ -779,8 +794,13 @@ export default function CardapiosModule() {
           const tipo = String(r.tipo_cardapio || "").trim();
           if (!tipo) errors.push("Tipo de Cardápio é obrigatório");
           else if (!TIPOS_CARDAPIO.includes(tipo as any)) {
-            console.log(`Tipo inválido: '${tipo}', tipos válidos:`, TIPOS_CARDAPIO);
-            errors.push(`Tipo inválido: '${tipo}'. Tipos válidos: ${TIPOS_CARDAPIO.join(", ")}`);
+            console.log(
+              `Tipo inválido: '${tipo}', tipos válidos:`,
+              TIPOS_CARDAPIO,
+            );
+            errors.push(
+              `Tipo inválido: '${tipo}'. Tipos válidos: ${TIPOS_CARDAPIO.join(", ")}`,
+            );
           }
           // Margem e preço são opcionais se estão vazios no CSV
           return errors;
@@ -801,7 +821,7 @@ export default function CardapiosModule() {
             return {
               success: true,
               imported: response?.imported ?? 0,
-              message: `${response?.imported ?? 0} cardápio(s) importado(s) com sucesso`
+              message: `${response?.imported ?? 0} cardápio(s) importado(s) com sucesso`,
             } as any;
           } catch (e: any) {
             console.error("Import error:", e);
@@ -822,7 +842,8 @@ export default function CardapiosModule() {
                   tipo_cardapio: r.tipo_cardapio,
                   quantidade_total: Number(r.quantidade_total) || 0,
                   preco_itens_centavos: 0,
-                  margem_lucro_percentual: Number(String(r.margem_lucro || 0).replace(",", ".")) || 0,
+                  margem_lucro_percentual:
+                    Number(String(r.margem_lucro || 0).replace(",", ".")) || 0,
                   preco_total_centavos: 0,
                   descricao: r.descricao || "",
                   ativo: String(r.status || "Ativo").toLowerCase() === "ativo",
@@ -841,7 +862,7 @@ export default function CardapiosModule() {
             return {
               success: true,
               imported: newCardapios.length,
-              message: `${newCardapios.length} cardápio(s) importado(s) (local)`
+              message: `${newCardapios.length} cardápio(s) importado(s) (local)`,
             } as any;
           }
         }}
