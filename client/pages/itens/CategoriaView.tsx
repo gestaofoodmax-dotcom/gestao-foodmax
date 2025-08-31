@@ -13,10 +13,12 @@ import { Info, X, Tag, FileText } from "lucide-react";
 export default function CategoriaView({
   isOpen,
   onClose,
+  onEdit,
   categoria,
 }: {
   isOpen: boolean;
   onClose: () => void;
+  onEdit?: (categoria: ItemCategoria) => void;
   categoria: ItemCategoria | null;
 }) {
   if (!categoria) return null;
