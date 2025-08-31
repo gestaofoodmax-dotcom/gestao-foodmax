@@ -63,6 +63,7 @@ import {
   deleteCardapio,
   bulkDeleteCardapios,
   toggleCardapioStatus,
+  importCardapios,
 } from "./routes/cardapios";
 
 export function createServer() {
@@ -145,6 +146,7 @@ export function createServer() {
   app.delete("/api/cardapios/:id", deleteCardapio);
   app.post("/api/cardapios/bulk-delete", bulkDeleteCardapios);
   app.patch("/api/cardapios/:id/toggle-status", toggleCardapioStatus);
+  app.post("/api/cardapios/import", importCardapios);
 
   return app;
 }
