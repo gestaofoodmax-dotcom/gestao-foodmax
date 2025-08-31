@@ -59,10 +59,18 @@ export default function CardapioView({
       const response = await makeRequest(`/api/cardapios/${cardapio.id}`);
       if (response) {
         setCardapioDetalhado(response);
+        return;
       }
     } catch (error) {
-      console.error("Error loading cardapio details:", error);
-      // Fallback to basic cardapio data
+      // ignore here and try local fallback below
+    }
+
+    try {
+      const raw = localStorage.getItem("fm_cardapios_itens");
+      const map: Record<string, any[]> = raw ? JSON.parse(raw) : {};
+      const itens = map[String(cardapio.id)] || [];
+      setCardapioDetalhado({ ...cardapio, itens });
+    } catch {
       setCardapioDetalhado({ ...cardapio, itens: [] });
     } finally {
       setLoading(false);
@@ -147,9 +155,9 @@ export default function CardapioView({
               <span className="text-blue-600">Informações Básicas</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <DataField icon={Utensils} label="Nome" value={cardapio.nome} />
-              <DataField icon={Package} label="Tipo de Cardápio" value={cardapio.tipo_cardapio} />
-              <DataField icon={ShoppingBag} label="Quantidade Total" value={cardapio.quantidade_total} />
+              <DataField label="Nome" value={cardapio.nome} />
+              <DataField label="Tipo de Cardápio" value={cardapio.tipo_cardapio} />
+              <DataField label="Quantidade Total" value={cardapio.quantidade_total} />
             </div>
           </div>
 
@@ -160,22 +168,9 @@ export default function CardapioView({
               <span className="text-green-600">Informações Financeiras</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <DataField
-                icon={DollarSign}
-                label="Preço dos Itens"
-                value={formatCurrencyBRL(cardapio.preco_itens_centavos)}
-              />
-              <DataField
-                icon={Percent}
-                label="Margem de Lucro"
-                value={formatPercentage(cardapio.margem_lucro_percentual)}
-              />
-              <DataField
-                icon={DollarSign}
-                label="Preço Total"
-                value={formatCurrencyBRL(cardapio.preco_total_centavos)}
-                className="text-lg font-semibold"
-              />
+              <DataField label="Preço dos Itens" value={formatCurrencyBRL(cardapio.preco_itens_centavos)} />
+              <DataField label="Margem de Lucro" value={formatPercentage(cardapio.margem_lucro_percentual)} />
+              <DataField label="Preço Total" value={formatCurrencyBRL(cardapio.preco_total_centavos)} className="text-lg font-semibold" />
             </div>
           </div>
 
@@ -283,23 +278,16 @@ export default function CardapioView({
             </div>
           )}
 
-          {/* Timestamps */}
+          {/* Detalhes do Cadastro */}
           <div className="bg-white rounded-lg p-4 border">
             <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-gray-600" />
-              <span className="text-gray-700">Datas</span>
+              <span className="text-gray-700">Detalhes do Cadastro</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DataField
-                icon={Calendar}
-                label="Data de Cadastro"
-                value={formatDate(cardapio.data_cadastro)}
-              />
-              <DataField
-                icon={Calendar}
-                label="Última Atualização"
-                value={formatDate(cardapio.data_atualizacao)}
-              />
+              <DataField label="Data de Cadastro" value={formatDate(cardapio.data_cadastro)} />
+              <DataField label="Última Atualização" value={formatDate(cardapio.data_atualizacao)} />
+              <DataField label="Ativo" value={cardapio.ativo ? "Sim" : "Não"} />
             </div>
           </div>
         </div>

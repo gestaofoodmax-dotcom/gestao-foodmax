@@ -64,6 +64,7 @@ export default function CardapiosModule() {
   const pageSize = 10;
 
   const LOCAL_CARDAPIOS = "fm_cardapios";
+  const LOCAL_CARDAPIOS_ITENS = "fm_cardapios_itens";
   const readLocalCardapios = (): (Cardapio & { qtde_itens: number })[] => {
     try {
       const raw = localStorage.getItem(LOCAL_CARDAPIOS);
@@ -74,6 +75,16 @@ export default function CardapiosModule() {
   };
   const writeLocalCardapios = (list: (Cardapio & { qtde_itens: number })[]) =>
     localStorage.setItem(LOCAL_CARDAPIOS, JSON.stringify(list));
+  const readLocalCardapiosItens = (): Record<string, any[]> => {
+    try {
+      const raw = localStorage.getItem(LOCAL_CARDAPIOS_ITENS);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  };
+  const writeLocalCardapiosItens = (map: Record<string, any[]>) =>
+    localStorage.setItem(LOCAL_CARDAPIOS_ITENS, JSON.stringify(map));
 
   useEffect(() => {
     try {
@@ -305,6 +316,12 @@ export default function CardapiosModule() {
         const idx = list.findIndex((x) => x.id === currentCardapio.id);
         if (idx >= 0)
           list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
+        // persist itens locamente se enviados
+        if (data.itens) {
+          const map = readLocalCardapiosItens();
+          map[String(currentCardapio.id)] = data.itens;
+          writeLocalCardapiosItens(map);
+        }
         toast({
           title: "Cardápio atualizado",
           description: "Cardápio atualizado com sucesso",
@@ -332,6 +349,10 @@ export default function CardapiosModule() {
           qtde_itens,
         } as any;
         list.unshift(novo);
+        // salvar itens deste cardápio localmente para visualização
+        const map = readLocalCardapiosItens();
+        map[String(novo.id)] = data.itens || [];
+        writeLocalCardapiosItens(map);
         toast({
           title: "Cardápio criado",
           description: "Cardápio criado com sucesso",
@@ -495,7 +516,7 @@ export default function CardapiosModule() {
                   {["Todos", ...TIPOS_CARDAPIO].map((tipo, idx, arr) => (
                     <div key={tipo} className="flex items-center gap-4">
                       <button
-                        className={`relative -mb-px pb-3 pt-2 text-sm flex items-center gap-2 whitespace-nowrap ${
+                        className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 whitespace-nowrap ${
                           activeTab === tipo
                             ? "text-foodmax-orange"
                             : "text-gray-700 hover:text-gray-900"
