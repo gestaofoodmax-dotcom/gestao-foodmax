@@ -58,6 +58,7 @@ export default function CardapiosModule() {
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showBulkDelete, setShowBulkDelete] = useState(false);
+  const [exportData, setExportData] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -646,7 +647,11 @@ export default function CardapiosModule() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setShowExport(true)}
+                    onClick={async () => {
+                      const data = await getCardapiosWithItemsForExport();
+                      setExportData(data);
+                      setShowExport(true);
+                    }}
                   >
                     <Download className="w-4 h-4 mr-2" />
                     Exportar
@@ -703,8 +708,11 @@ export default function CardapiosModule() {
 
       <ExportModal
         isOpen={showExport}
-        onClose={() => setShowExport(false)}
-        data={await getCardapiosWithItemsForExport()}
+        onClose={() => {
+          setShowExport(false);
+          setExportData([]);
+        }}
+        data={exportData}
         selectedIds={selectedIds}
         moduleName="Cardápios"
         columns={[
