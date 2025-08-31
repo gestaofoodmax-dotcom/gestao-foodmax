@@ -435,7 +435,7 @@ export default function CardapioForm({
                         className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
                       >
                         <Link className="w-3 h-3" />
-                        (ir para módulo Itens)
+                        (ir para m��dulo Itens)
                       </button>
                     </>
                   )}
@@ -780,7 +780,7 @@ export default function CardapioForm({
               </div>
             </div>
 
-            <div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
               <Label htmlFor="descricao">Descrição</Label>
               <Textarea
                 id="descricao"
