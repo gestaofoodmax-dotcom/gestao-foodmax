@@ -510,8 +510,12 @@ export const importCardapios: RequestHandler = async (req, res) => {
     }
 
     let imported = 0;
+    console.log(`Processing ${cardapiosMap.size} unique cardapios`);
+
     for (const cardapioData of cardapiosMap.values()) {
       try {
+        console.log("Inserting cardapio:", cardapioData);
+
         // Create cardapio
         const { data: cardapio, error } = await supabase
           .from("cardapios")
