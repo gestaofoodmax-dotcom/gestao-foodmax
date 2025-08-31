@@ -488,7 +488,11 @@ export default function CardapioForm({
             </div>
 
             {/* Categories Multi-Select */}
-            <div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 mt-2">
+                <ShoppingBag className="w-5 h-5 text-orange-600" />
+                <h3 className="font-semibold text-orange-600">Seleção de Itens</h3>
+              </div>
               <Label>Categorias *</Label>
               <Popover>
                 <PopoverTrigger asChild>
