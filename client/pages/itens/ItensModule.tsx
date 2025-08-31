@@ -24,7 +24,6 @@ import { Badge } from "@/components/ui/badge";
 import { DataGrid } from "@/components/data-grid";
 import { toast } from "@/hooks/use-toast";
 import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Item,
   ItemCategoria,
