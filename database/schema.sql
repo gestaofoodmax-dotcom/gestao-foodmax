@@ -208,9 +208,11 @@ before update on public.itens
 for each row execute function public.set_updated_at();
 
 -- Seed function for default categorias (12 principais)
+-- Only executes on first access - if user already has any categories, skips insertion
 create or replace function public.seed_itens_categorias_defaults(p_user_id bigint)
 returns void as $$
 begin
+  -- Only insert default categories if user has no categories yet (first access only)
   if not exists (select 1 from public.itens_categorias where id_usuario = p_user_id) then
     insert into public.itens_categorias (id_usuario, nome, descricao, ativo)
     values
