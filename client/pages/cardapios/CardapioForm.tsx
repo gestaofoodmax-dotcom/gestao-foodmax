@@ -286,31 +286,7 @@ export default function CardapioForm({
     setValue("preco_total_centavos", precoTotal);
   }, [precoTotal, setValue]);
 
-  // Check for low stock when categories change
-  useEffect(() => {
-    if (selectedCategorias.length > 0) {
-      const lowStockCategories = selectedCategorias.filter((catId) => {
-        const categoryItens = itens.filter(
-          (item) =>
-            item.categoria_id === catId && (item.estoque_atual || 0) < 3,
-        );
-        return categoryItens.length > 0;
-      });
-
-      if (lowStockCategories.length > 0) {
-        const categoryNames = lowStockCategories
-          .map((catId) => categorias.find((c) => c.id === catId)?.nome)
-          .filter(Boolean)
-          .join(", ");
-
-        toast({
-          title: "Alerta de Estoque",
-          description: `Existem itens com estoque baixo (menos de 3) nas categorias: ${categoryNames}`,
-          variant: "destructive",
-        });
-      }
-    }
-  }, [selectedCategorias, itens, categorias]);
+  // Low-stock toast on category selection disabled per requirements
 
   const addItem = (item: Item) => {
     const existing = cardapioItens.find((ci) => ci.item_id === item.id);
