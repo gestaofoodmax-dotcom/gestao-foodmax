@@ -432,11 +432,44 @@ export default function CardapiosModule() {
     );
   }, [cardapios, activeTab]);
 
+  const loadAllCardapiosForExport = async (): Promise<
+    (Cardapio & { qtde_itens: number })[]
+  > => {
+    try {
+      // Load ALL cardápios without any filters for export
+      const params = new URLSearchParams({
+        page: "1",
+        limit: "1000", // Large limit to get all records
+      });
+
+      let response: CardapiosListResponse | null = null;
+      try {
+        response = await makeRequest(`/api/cardapios?${params}`);
+      } catch {
+        response = null;
+      }
+
+      if (response) {
+        return response.data as (Cardapio & { qtde_itens: number })[];
+      } else {
+        // Fallback to local storage
+        return readLocalCardapios();
+      }
+    } catch {
+      return readLocalCardapios();
+    }
+  };
+
   const getCardapiosWithItemsForExport = async () => {
+    // Load all cardápios for export (not just the filtered ones from current tab)
+    const allCardapios = await loadAllCardapiosForExport();
+
+    // If specific cardápios are selected, export only those
+    // Otherwise, export ALL cardápios
     const cardapiosToExport =
       selectedIds.length > 0
-        ? filteredCardapios.filter((c) => selectedIds.includes(c.id))
-        : filteredCardapios;
+        ? allCardapios.filter((c) => selectedIds.includes(c.id))
+        : allCardapios;
 
     const exportData = [];
     for (const cardapio of cardapiosToExport) {
@@ -757,7 +790,7 @@ export default function CardapiosModule() {
           { key: "nome", label: "Nome", required: true },
           { key: "tipo_cardapio", label: "Tipo de Cardápio", required: true },
           { key: "quantidade_total", label: "Quantidade Total" },
-          { key: "preco_itens", label: "Preço dos Itens" },
+          { key: "preco_itens", label: "Pre��o dos Itens" },
           { key: "margem_lucro", label: "Margem de Lucro", required: true },
           { key: "preco_total", label: "Preço Total", required: true },
           { key: "descricao", label: "Descrição" },
