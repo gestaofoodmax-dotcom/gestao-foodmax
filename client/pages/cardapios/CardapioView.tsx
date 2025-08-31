@@ -258,8 +258,8 @@ export default function CardapioView({
           ) : cardapioDetalhado?.itens && cardapioDetalhado.itens.length > 0 ? (
             <div className="border rounded-lg p-4">
               <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-gray-600" />
-                Itens do Cardápio ({cardapioDetalhado.itens.length})
+                <ShoppingBag className="w-5 h-5 text-purple-600" />
+                <span className="text-purple-600">Itens do Cardápio ({cardapioDetalhado.itens.length})</span>
               </h3>
 
               <div className="space-y-3">
