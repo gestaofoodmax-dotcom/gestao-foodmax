@@ -491,32 +491,36 @@ export default function CardapiosModule() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
-                <div className="flex gap-6 overflow-x-auto">
-                  {["Todos", ...TIPOS_CARDAPIO].map((tipo) => (
-                    <button
-                      key={tipo}
-                      className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 whitespace-nowrap ${
-                        activeTab === tipo
-                          ? "text-foodmax-orange"
-                          : "text-gray-700 hover:text-gray-900"
-                      }`}
-                      onClick={() =>
-                        setActiveTab(tipo as TipoCardapio | "Todos")
-                      }
-                    >
-                      <span>{tipo}</span>
-                      <span
-                        className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === tipo ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
+                <div className="flex items-center gap-4 overflow-x-auto">
+                  {["Todos", ...TIPOS_CARDAPIO].map((tipo, idx, arr) => (
+                    <div key={tipo} className="flex items-center gap-4">
+                      <button
+                        className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 whitespace-nowrap ${
+                          activeTab === tipo
+                            ? "text-foodmax-orange"
+                            : "text-gray-700 hover:text-gray-900"
+                        }`}
+                        onClick={() =>
+                          setActiveTab(tipo as TipoCardapio | "Todos")
+                        }
                       >
-                        {tipo === "Todos"
-                          ? totalRecords
-                          : cardapios.filter((c) => c.tipo_cardapio === tipo)
-                              .length}
-                      </span>
-                      {activeTab === tipo && (
-                        <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                        <span>{tipo}</span>
+                        <span
+                          className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === tipo ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
+                        >
+                          {tipo === "Todos"
+                            ? totalRecords
+                            : cardapios.filter((c) => c.tipo_cardapio === tipo)
+                                .length}
+                        </span>
+                        {activeTab === tipo && (
+                          <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                        )}
+                      </button>
+                      {idx < arr.length - 1 && (
+                        <span className="w-px h-5 bg-gray-200" />
                       )}
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>
