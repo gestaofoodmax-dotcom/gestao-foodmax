@@ -25,11 +25,11 @@ import {
   AlertCircle,
   Link,
 } from "lucide-react";
-import { 
-  Cardapio, 
-  TIPOS_CARDAPIO, 
+import {
+  Cardapio,
+  TIPOS_CARDAPIO,
   TipoCardapio,
-  formatCurrencyBRL
+  formatCurrencyBRL,
 } from "@shared/cardapios";
 import { Item, ItemCategoria } from "@shared/itens";
 import { toast } from "@/hooks/use-toast";
@@ -69,15 +69,22 @@ import {
 
 const schema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
-  tipo_cardapio: z.enum(["Café", "Almoço", "Janta", "Lanche", "Bebida", "Outro"], {
-    required_error: "Tipo de cardápio é obrigatório",
-  }),
-  margem_lucro_percentual: z.number({
-    required_error: "Margem de lucro é obrigatória",
-  }).min(0, "Margem deve ser maior ou igual a 0"),
-  preco_total_centavos: z.number({
-    required_error: "Preço total é obrigatório",
-  }).min(0, "Preço deve ser maior ou igual a 0"),
+  tipo_cardapio: z.enum(
+    ["Café", "Almoço", "Janta", "Lanche", "Bebida", "Outro"],
+    {
+      required_error: "Tipo de cardápio é obrigatório",
+    },
+  ),
+  margem_lucro_percentual: z
+    .number({
+      required_error: "Margem de lucro é obrigatória",
+    })
+    .min(0, "Margem deve ser maior ou igual a 0"),
+  preco_total_centavos: z
+    .number({
+      required_error: "Preço total é obrigatório",
+    })
+    .min(0, "Preço deve ser maior ou igual a 0"),
   descricao: z.string().optional(),
   ativo: z.boolean().default(true),
 });
@@ -141,19 +148,25 @@ export default function CardapioForm({
     setLoading(true);
     try {
       // Load categorias
-      const categoriasResponse = await makeRequest("/api/itens-categorias?page=1&limit=200");
+      const categoriasResponse = await makeRequest(
+        "/api/itens-categorias?page=1&limit=200",
+      );
       if (categoriasResponse?.data) {
-        setCategorias(categoriasResponse.data.sort((a: ItemCategoria, b: ItemCategoria) => 
-          a.nome.localeCompare(b.nome)
-        ));
+        setCategorias(
+          categoriasResponse.data.sort((a: ItemCategoria, b: ItemCategoria) =>
+            a.nome.localeCompare(b.nome),
+          ),
+        );
       }
 
       // Load itens
       const itensResponse = await makeRequest("/api/itens?page=1&limit=1000");
       if (itensResponse?.data) {
-        setItens(itensResponse.data.sort((a: Item, b: Item) => 
-          a.nome.localeCompare(b.nome)
-        ));
+        setItens(
+          itensResponse.data.sort((a: Item, b: Item) =>
+            a.nome.localeCompare(b.nome),
+          ),
+        );
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -196,10 +209,16 @@ export default function CardapioForm({
       if (response?.itens) {
         setCardapioItens(response.itens);
         // Extract selected categories
-        const catIds = [...new Set(response.itens.map((item: any) => {
-          const foundItem = itens.find(i => i.id === item.item_id);
-          return foundItem?.categoria_id;
-        }).filter(Boolean))] as number[];
+        const catIds = [
+          ...new Set(
+            response.itens
+              .map((item: any) => {
+                const foundItem = itens.find((i) => i.id === item.item_id);
+                return foundItem?.categoria_id;
+              })
+              .filter(Boolean),
+          ),
+        ] as number[];
         setSelectedCategorias(catIds);
       }
     } catch (error) {
@@ -210,19 +229,24 @@ export default function CardapioForm({
   // Filter itens by selected categories
   const filteredItens = useMemo(() => {
     if (selectedCategorias.length === 0) return [];
-    return itens.filter(item => selectedCategorias.includes(item.categoria_id));
+    return itens.filter((item) =>
+      selectedCategorias.includes(item.categoria_id),
+    );
   }, [itens, selectedCategorias]);
 
   // Calculate totals
   const { quantidadeTotal, precoItens, precoTotal } = useMemo(() => {
-    const quantidadeTotal = cardapioItens.reduce((sum, item) => sum + item.quantidade, 0);
+    const quantidadeTotal = cardapioItens.reduce(
+      (sum, item) => sum + item.quantidade,
+      0,
+    );
     const precoItens = cardapioItens.reduce(
-      (sum, item) => sum + (item.quantidade * item.valor_unitario_centavos), 
-      0
+      (sum, item) => sum + item.quantidade * item.valor_unitario_centavos,
+      0,
     );
     const margem = watchedValues.margem_lucro_percentual || 0;
     const precoTotal = Math.round(precoItens * (1 + margem / 100));
-    
+
     return { quantidadeTotal, precoItens, precoTotal };
   }, [cardapioItens, watchedValues.margem_lucro_percentual]);
 
@@ -234,18 +258,20 @@ export default function CardapioForm({
   // Check for low stock when categories change
   useEffect(() => {
     if (selectedCategorias.length > 0) {
-      const lowStockCategories = selectedCategorias.filter(catId => {
-        const categoryItens = itens.filter(item => 
-          item.categoria_id === catId && (item.estoque_atual || 0) < 3
+      const lowStockCategories = selectedCategorias.filter((catId) => {
+        const categoryItens = itens.filter(
+          (item) =>
+            item.categoria_id === catId && (item.estoque_atual || 0) < 3,
         );
         return categoryItens.length > 0;
       });
 
       if (lowStockCategories.length > 0) {
-        const categoryNames = lowStockCategories.map(catId => 
-          categorias.find(c => c.id === catId)?.nome
-        ).filter(Boolean).join(", ");
-        
+        const categoryNames = lowStockCategories
+          .map((catId) => categorias.find((c) => c.id === catId)?.nome)
+          .filter(Boolean)
+          .join(", ");
+
         toast({
           title: "Alerta de Estoque",
           description: `Existem itens com estoque baixo (menos de 3) nas categorias: ${categoryNames}`,
@@ -256,7 +282,7 @@ export default function CardapioForm({
   }, [selectedCategorias, itens, categorias]);
 
   const addItem = (item: Item) => {
-    const existing = cardapioItens.find(ci => ci.item_id === item.id);
+    const existing = cardapioItens.find((ci) => ci.item_id === item.id);
     if (existing) {
       toast({
         title: "Item já adicionado",
@@ -266,7 +292,7 @@ export default function CardapioForm({
       return;
     }
 
-    const categoria = categorias.find(c => c.id === item.categoria_id);
+    const categoria = categorias.find((c) => c.id === item.categoria_id);
     const newItem: CardapioItem = {
       item_id: item.id,
       item_nome: item.nome,
@@ -276,55 +302,49 @@ export default function CardapioForm({
       item_estoque_atual: item.estoque_atual,
     };
 
-    setCardapioItens(prev => [...prev, newItem]);
+    setCardapioItens((prev) => [...prev, newItem]);
   };
 
   const removeItem = (itemId: number) => {
-    setCardapioItens(prev => prev.filter(item => item.item_id !== itemId));
+    setCardapioItens((prev) => prev.filter((item) => item.item_id !== itemId));
   };
 
   const updateItemQuantity = (itemId: number, quantidade: number) => {
-    const item = cardapioItens.find(ci => ci.item_id === itemId);
+    const item = cardapioItens.find((ci) => ci.item_id === itemId);
     if (!item) return;
 
     const estoque = item.item_estoque_atual || 0;
-    
+
     if (quantidade > estoque) {
       setStockAlertMessage(
         `A quantidade informada (${quantidade}) está acima do estoque atual (${estoque}). ` +
-        "Para usar uma quantidade maior, você deve aumentar o estoque no módulo Itens."
+          "Para usar uma quantidade maior, você deve aumentar o estoque no módulo Itens.",
       );
       setShowStockAlert(true);
       return;
     }
 
-    setCardapioItens(prev => 
-      prev.map(ci => 
-        ci.item_id === itemId 
-          ? { ...ci, quantidade }
-          : ci
-      )
+    setCardapioItens((prev) =>
+      prev.map((ci) => (ci.item_id === itemId ? { ...ci, quantidade } : ci)),
     );
   };
 
   const updateItemPrice = (itemId: number, valor_unitario_centavos: number) => {
-    setCardapioItens(prev => 
-      prev.map(ci => 
-        ci.item_id === itemId 
-          ? { ...ci, valor_unitario_centavos }
-          : ci
-      )
+    setCardapioItens((prev) =>
+      prev.map((ci) =>
+        ci.item_id === itemId ? { ...ci, valor_unitario_centavos } : ci,
+      ),
     );
   };
 
   const validateStock = () => {
-    const invalidItems = cardapioItens.filter(item => {
+    const invalidItems = cardapioItens.filter((item) => {
       const estoque = item.item_estoque_atual || 0;
       return item.quantidade > estoque;
     });
 
     if (invalidItems.length > 0) {
-      const itemNames = invalidItems.map(item => item.item_nome).join(", ");
+      const itemNames = invalidItems.map((item) => item.item_nome).join(", ");
       toast({
         title: "Erro de Validação",
         description: `Os seguintes itens têm quantidade maior que o estoque: ${itemNames}`,
@@ -375,7 +395,8 @@ export default function CardapioForm({
                 <div className="text-sm text-yellow-800">
                   {categorias.length === 0 ? (
                     <>
-                      Antes de cadastrar, é necessário ter pelo menos uma Categoria{" "}
+                      Antes de cadastrar, é necessário ter pelo menos uma
+                      Categoria{" "}
                       <button
                         onClick={() => window.open("/itens", "_blank")}
                         className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
@@ -412,7 +433,9 @@ export default function CardapioForm({
                   placeholder="Nome do cardápio"
                 />
                 {errors.nome && (
-                  <span className="text-sm text-red-600">{errors.nome.message}</span>
+                  <span className="text-sm text-red-600">
+                    {errors.nome.message}
+                  </span>
                 )}
               </div>
 
@@ -420,7 +443,9 @@ export default function CardapioForm({
                 <Label htmlFor="tipo_cardapio">Tipo de Cardápio *</Label>
                 <Select
                   value={watchedValues.tipo_cardapio}
-                  onValueChange={(value) => setValue("tipo_cardapio", value as TipoCardapio)}
+                  onValueChange={(value) =>
+                    setValue("tipo_cardapio", value as TipoCardapio)
+                  }
                 >
                   <SelectTrigger className="foodmax-input">
                     <SelectValue placeholder="Selecione o tipo" />
@@ -434,7 +459,9 @@ export default function CardapioForm({
                   </SelectContent>
                 </Select>
                 {errors.tipo_cardapio && (
-                  <span className="text-sm text-red-600">{errors.tipo_cardapio.message}</span>
+                  <span className="text-sm text-red-600">
+                    {errors.tipo_cardapio.message}
+                  </span>
                 )}
               </div>
             </div>
@@ -465,17 +492,19 @@ export default function CardapioForm({
                           <CommandItem
                             key={categoria.id}
                             onSelect={() => {
-                              setSelectedCategorias(prev => 
+                              setSelectedCategorias((prev) =>
                                 prev.includes(categoria.id)
-                                  ? prev.filter(id => id !== categoria.id)
-                                  : [...prev, categoria.id]
+                                  ? prev.filter((id) => id !== categoria.id)
+                                  : [...prev, categoria.id],
                               );
                             }}
                           >
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
-                                selectedCategorias.includes(categoria.id) ? "opacity-100" : "opacity-0"
+                                selectedCategorias.includes(categoria.id)
+                                  ? "opacity-100"
+                                  : "opacity-0",
                               )}
                             />
                             {categoria.nome}
@@ -511,8 +540,10 @@ export default function CardapioForm({
                         <CommandGroup>
                           {filteredItens.map((item) => {
                             const isLowStock = (item.estoque_atual || 0) < 3;
-                            const isAdded = cardapioItens.some(ci => ci.item_id === item.id);
-                            
+                            const isAdded = cardapioItens.some(
+                              (ci) => ci.item_id === item.id,
+                            );
+
                             return (
                               <CommandItem
                                 key={item.id}
@@ -527,7 +558,9 @@ export default function CardapioForm({
                                     )}
                                     <span>{item.nome}</span>
                                     {isAdded && (
-                                      <Badge variant="secondary">Já adicionado</Badge>
+                                      <Badge variant="secondary">
+                                        Já adicionado
+                                      </Badge>
                                     )}
                                   </div>
                                   <span className="text-sm text-gray-500">
@@ -552,21 +585,25 @@ export default function CardapioForm({
                   <ShoppingBag className="w-5 h-5 text-gray-600" />
                   <h3 className="text-lg font-medium">Itens do Cardápio</h3>
                 </div>
-                
+
                 <div className="space-y-3">
                   {cardapioItens.map((item) => {
                     const isZeroStock = (item.item_estoque_atual || 0) === 0;
-                    const total = item.quantidade * item.valor_unitario_centavos;
-                    
+                    const total =
+                      item.quantidade * item.valor_unitario_centavos;
+
                     return (
-                      <div key={item.item_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div
+                        key={item.item_id}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
                         <div className="flex-1">
                           <div className="font-medium">{item.item_nome}</div>
                           <div className="text-sm text-gray-600">
                             Estoque Atual: {item.item_estoque_atual || 0}
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center gap-3">
                           <div className="flex flex-col gap-1">
                             <Label className="text-xs">Quantidade</Label>
@@ -574,31 +611,45 @@ export default function CardapioForm({
                               type="number"
                               min="1"
                               value={item.quantidade}
-                              onChange={(e) => updateItemQuantity(item.item_id, parseInt(e.target.value) || 1)}
+                              onChange={(e) =>
+                                updateItemQuantity(
+                                  item.item_id,
+                                  parseInt(e.target.value) || 1,
+                                )
+                              }
                               disabled={isZeroStock}
                               className="w-20 h-8 text-center"
                             />
                           </div>
-                          
+
                           <div className="flex flex-col gap-1">
                             <Label className="text-xs">Valor Unit. (R$)</Label>
                             <Input
                               type="number"
                               min="0"
                               step="0.01"
-                              value={(item.valor_unitario_centavos / 100).toFixed(2)}
-                              onChange={(e) => updateItemPrice(item.item_id, Math.round(parseFloat(e.target.value || "0") * 100))}
+                              value={(
+                                item.valor_unitario_centavos / 100
+                              ).toFixed(2)}
+                              onChange={(e) =>
+                                updateItemPrice(
+                                  item.item_id,
+                                  Math.round(
+                                    parseFloat(e.target.value || "0") * 100,
+                                  ),
+                                )
+                              }
                               className="w-24 h-8 text-center"
                             />
                           </div>
-                          
+
                           <div className="flex flex-col gap-1">
                             <Label className="text-xs">Total</Label>
                             <div className="text-sm font-medium w-20 text-center bg-white p-1 rounded border">
                               {formatCurrencyBRL(total)}
                             </div>
                           </div>
-                          
+
                           <Button
                             type="button"
                             variant="outline"
@@ -613,7 +664,7 @@ export default function CardapioForm({
                     );
                   })}
                 </div>
-                
+
                 <div className="mt-4 pt-4 border-t">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
@@ -631,18 +682,24 @@ export default function CardapioForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="margem_lucro_percentual">Margem de Lucro (%) *</Label>
+                <Label htmlFor="margem_lucro_percentual">
+                  Margem de Lucro (%) *
+                </Label>
                 <Input
                   id="margem_lucro_percentual"
                   type="number"
                   min="0"
                   step="0.01"
-                  {...register("margem_lucro_percentual", { valueAsNumber: true })}
+                  {...register("margem_lucro_percentual", {
+                    valueAsNumber: true,
+                  })}
                   className="foodmax-input"
                   placeholder="0.00"
                 />
                 {errors.margem_lucro_percentual && (
-                  <span className="text-sm text-red-600">{errors.margem_lucro_percentual.message}</span>
+                  <span className="text-sm text-red-600">
+                    {errors.margem_lucro_percentual.message}
+                  </span>
                 )}
               </div>
 
@@ -654,12 +711,19 @@ export default function CardapioForm({
                   min="0"
                   step="0.01"
                   value={(watchedValues.preco_total_centavos / 100).toFixed(2)}
-                  onChange={(e) => setValue("preco_total_centavos", Math.round(parseFloat(e.target.value || "0") * 100))}
+                  onChange={(e) =>
+                    setValue(
+                      "preco_total_centavos",
+                      Math.round(parseFloat(e.target.value || "0") * 100),
+                    )
+                  }
                   className="foodmax-input"
                   placeholder="0.00"
                 />
                 {errors.preco_total_centavos && (
-                  <span className="text-sm text-red-600">{errors.preco_total_centavos.message}</span>
+                  <span className="text-sm text-red-600">
+                    {errors.preco_total_centavos.message}
+                  </span>
                 )}
               </div>
             </div>
@@ -694,8 +758,8 @@ export default function CardapioForm({
               <X className="w-4 h-4 mr-2" />
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               onClick={handleSubmit(onSubmit)}
               disabled={isLoading || !hasPrerequisites}
               className="bg-foodmax-orange hover:bg-orange-600"
@@ -714,14 +778,12 @@ export default function CardapioForm({
               <AlertTriangle className="w-5 h-5 text-yellow-600" />
               Alerta de Estoque
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              {stockAlertMessage}
-            </AlertDialogDescription>
+            <AlertDialogDescription>{stockAlertMessage}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>OK</AlertDialogCancel>
             <AlertDialogAction asChild>
-              <Button 
+              <Button
                 onClick={() => window.open("/itens", "_blank")}
                 className="bg-blue-600 hover:bg-blue-700"
               >

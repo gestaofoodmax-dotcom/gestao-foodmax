@@ -4,16 +4,25 @@ import { getSupabaseServiceClient } from "../supabase";
 
 const CardapioSchema = z.object({
   nome: z.string().min(1),
-  tipo_cardapio: z.enum(["Café", "Almoço", "Janta", "Lanche", "Bebida", "Outro"]),
+  tipo_cardapio: z.enum([
+    "Café",
+    "Almoço",
+    "Janta",
+    "Lanche",
+    "Bebida",
+    "Outro",
+  ]),
   margem_lucro_percentual: z.number().min(0),
   preco_total_centavos: z.number().int().nonnegative(),
   descricao: z.string().optional(),
   ativo: z.boolean().default(true),
-  itens: z.array(z.object({
-    item_id: z.number(),
-    quantidade: z.number().int().positive(),
-    valor_unitario_centavos: z.number().int().nonnegative(),
-  })),
+  itens: z.array(
+    z.object({
+      item_id: z.number(),
+      quantidade: z.number().int().positive(),
+      valor_unitario_centavos: z.number().int().nonnegative(),
+    }),
+  ),
 });
 const UpdateCardapioSchema = CardapioSchema.partial();
 
@@ -34,15 +43,12 @@ export const listCardapios: RequestHandler = async (req, res) => {
     const tipo = (req.query.tipo as string) || "";
     const offset = (page - 1) * limit;
 
-    let query = supabase
-      .from("cardapios")
-      .select("*")
-      .eq("id_usuario", userId);
-    
+    let query = supabase.from("cardapios").select("*").eq("id_usuario", userId);
+
     if (search) {
       query = query.or(`nome.ilike.%${search}%`);
     }
-    
+
     if (tipo && tipo !== "Todos") {
       query = query.eq("tipo_cardapio", tipo);
     }
@@ -65,12 +71,12 @@ export const listCardapios: RequestHandler = async (req, res) => {
           .from("cardapios_itens")
           .select("*", { count: "exact", head: true })
           .eq("cardapio_id", cardapio.id);
-        
+
         return {
           ...cardapio,
           qtde_itens: itemCount || 0,
         };
-      })
+      }),
     );
 
     res.json({
@@ -110,7 +116,8 @@ export const getCardapio: RequestHandler = async (req, res) => {
     // Get cardapio items with item details
     const { data: itens, error: itensError } = await supabase
       .from("cardapios_itens")
-      .select(`
+      .select(
+        `
         *,
         itens:item_id (
           id,
@@ -118,7 +125,8 @@ export const getCardapio: RequestHandler = async (req, res) => {
           estoque_atual,
           itens_categorias:categoria_id (nome)
         )
-      `)
+      `,
+      )
       .eq("cardapio_id", id);
 
     if (itensError) throw itensError;
@@ -153,10 +161,13 @@ export const createCardapio: RequestHandler = async (req, res) => {
     const parsed = CardapioSchema.parse(req.body);
 
     // Calculate totals
-    const quantidade_total = parsed.itens.reduce((sum, item) => sum + item.quantidade, 0);
+    const quantidade_total = parsed.itens.reduce(
+      (sum, item) => sum + item.quantidade,
+      0,
+    );
     const preco_itens_centavos = parsed.itens.reduce(
-      (sum, item) => sum + (item.quantidade * item.valor_unitario_centavos), 
-      0
+      (sum, item) => sum + item.quantidade * item.valor_unitario_centavos,
+      0,
     );
 
     // Create cardapio
@@ -198,7 +209,9 @@ export const createCardapio: RequestHandler = async (req, res) => {
   } catch (error: any) {
     console.error("Error creating cardapio:", error);
     if (error.name === "ZodError") {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
     res.status(500).json({ error: "Erro interno do servidor" });
   }
@@ -231,10 +244,13 @@ export const updateCardapio: RequestHandler = async (req, res) => {
 
     // Calculate totals if items are provided
     if (parsed.itens) {
-      const quantidade_total = parsed.itens.reduce((sum, item) => sum + item.quantidade, 0);
+      const quantidade_total = parsed.itens.reduce(
+        (sum, item) => sum + item.quantidade,
+        0,
+      );
       const preco_itens_centavos = parsed.itens.reduce(
-        (sum, item) => sum + (item.quantidade * item.valor_unitario_centavos), 
-        0
+        (sum, item) => sum + item.quantidade * item.valor_unitario_centavos,
+        0,
       );
       updateData.quantidade_total = quantidade_total;
       updateData.preco_itens_centavos = preco_itens_centavos;
@@ -254,10 +270,7 @@ export const updateCardapio: RequestHandler = async (req, res) => {
     // Update items if provided
     if (parsed.itens) {
       // Delete existing items
-      await supabase
-        .from("cardapios_itens")
-        .delete()
-        .eq("cardapio_id", id);
+      await supabase.from("cardapios_itens").delete().eq("cardapio_id", id);
 
       // Insert new items
       if (parsed.itens.length > 0) {
@@ -280,7 +293,9 @@ export const updateCardapio: RequestHandler = async (req, res) => {
   } catch (error: any) {
     console.error("Error updating cardapio:", error);
     if (error.name === "ZodError") {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
     res.status(500).json({ error: "Erro interno do servidor" });
   }

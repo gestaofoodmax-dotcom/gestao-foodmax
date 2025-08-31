@@ -49,7 +49,9 @@ export default function CardapiosModule() {
 
   const [activeTab, setActiveTab] = useState<TipoCardapio | "Todos">("Todos");
 
-  const [cardapios, setCardapios] = useState<(Cardapio & { qtde_itens: number })[]>([]);
+  const [cardapios, setCardapios] = useState<
+    (Cardapio & { qtde_itens: number })[]
+  >([]);
 
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -116,9 +118,7 @@ export default function CardapiosModule() {
         label: "Tipo",
         sortable: true,
         render: (value: TipoCardapio) => (
-          <Badge className={getTipoCardapioColor(value)}>
-            {value}
-          </Badge>
+          <Badge className={getTipoCardapioColor(value)}>{value}</Badge>
         ),
       },
       {
@@ -213,9 +213,11 @@ export default function CardapiosModule() {
         setTotalRecords(response.pagination.total);
       } else {
         const local = readLocalCardapios();
-        const filtered = local.filter(c => 
-          (activeTab === "Todos" || c.tipo_cardapio === activeTab) &&
-          (!searchTerm || c.nome.toLowerCase().includes(searchTerm.toLowerCase()))
+        const filtered = local.filter(
+          (c) =>
+            (activeTab === "Todos" || c.tipo_cardapio === activeTab) &&
+            (!searchTerm ||
+              c.nome.toLowerCase().includes(searchTerm.toLowerCase())),
         );
         setCardapios(filtered);
         setTotalRecords(filtered.length);
@@ -284,7 +286,10 @@ export default function CardapiosModule() {
           method: "POST",
           body: JSON.stringify(data),
         });
-        toast({ title: "Cardápio criado", description: "Cardápio criado com sucesso" });
+        toast({
+          title: "Cardápio criado",
+          description: "Cardápio criado com sucesso",
+        });
       }
       try {
         localStorage.removeItem(LOCAL_CARDAPIOS);
@@ -305,7 +310,11 @@ export default function CardapiosModule() {
           description: "Cardápio atualizado com sucesso",
         });
       } else {
-        const quantidade_total = data.itens?.reduce((sum: number, item: any) => sum + item.quantidade, 0) || 0;
+        const quantidade_total =
+          data.itens?.reduce(
+            (sum: number, item: any) => sum + item.quantidade,
+            0,
+          ) || 0;
         const qtde_itens = data.itens?.length || 0;
         const novo: Cardapio & { qtde_itens: number } = {
           id: Date.now(),
@@ -323,7 +332,10 @@ export default function CardapiosModule() {
           qtde_itens,
         } as any;
         list.unshift(novo);
-        toast({ title: "Cardápio criado", description: "Cardápio criado com sucesso" });
+        toast({
+          title: "Cardápio criado",
+          description: "Cardápio criado com sucesso",
+        });
       }
       writeLocalCardapios(list);
       setCardapios(list);
@@ -362,7 +374,9 @@ export default function CardapiosModule() {
   const handleDeleteConfirmed = async () => {
     if (!currentCardapio) return;
     try {
-      await makeRequest(`/api/cardapios/${currentCardapio.id}`, { method: "DELETE" });
+      await makeRequest(`/api/cardapios/${currentCardapio.id}`, {
+        method: "DELETE",
+      });
       toast({
         title: "Cardápio excluído",
         description: "Cardápio excluído com sucesso",
@@ -374,7 +388,9 @@ export default function CardapiosModule() {
       await loadCardapios();
       setShowDeleteAlert(false);
     } catch (error: any) {
-      const list = readLocalCardapios().filter((e) => e.id !== currentCardapio.id);
+      const list = readLocalCardapios().filter(
+        (e) => e.id !== currentCardapio.id,
+      );
       writeLocalCardapios(list);
       setCardapios(list);
       toast({
@@ -389,8 +405,8 @@ export default function CardapiosModule() {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
   const filteredCardapios = useMemo(() => {
-    return cardapios.filter(c => 
-      activeTab === "Todos" || c.tipo_cardapio === activeTab
+    return cardapios.filter(
+      (c) => activeTab === "Todos" || c.tipo_cardapio === activeTab,
     );
   }, [cardapios, activeTab]);
 
@@ -462,7 +478,9 @@ export default function CardapiosModule() {
         <header className="bg-foodmax-gray-bg px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-semibold text-gray-800">Cardápios</h2>
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Cardápios
+              </h2>
               <p className="text-gray-600 mt-1">
                 Gerencie seus cardápios por tipo.
               </p>
@@ -482,14 +500,19 @@ export default function CardapiosModule() {
                           ? "text-foodmax-orange"
                           : "text-gray-700 hover:text-gray-900"
                       }`}
-                      onClick={() => setActiveTab(tipo as TipoCardapio | "Todos")}
+                      onClick={() =>
+                        setActiveTab(tipo as TipoCardapio | "Todos")
+                      }
                     >
                       <ChefHat className="w-4 h-4" />
                       <span>{tipo}</span>
                       <span
                         className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === tipo ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
                       >
-                        {tipo === "Todos" ? totalRecords : cardapios.filter(c => c.tipo_cardapio === tipo).length}
+                        {tipo === "Todos"
+                          ? totalRecords
+                          : cardapios.filter((c) => c.tipo_cardapio === tipo)
+                              .length}
                       </span>
                       {activeTab === tipo && (
                         <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
@@ -577,7 +600,7 @@ export default function CardapiosModule() {
         cardapio={currentCardapio}
         isLoading={formLoading}
       />
-      
+
       <CardapioView
         isOpen={showView}
         onClose={() => {
@@ -620,14 +643,21 @@ export default function CardapiosModule() {
         columns={[
           { key: "nome", label: "Nome", required: true },
           { key: "tipo_cardapio", label: "Tipo Cardápio", required: true },
-          { key: "margem_lucro_percentual", label: "Margem Lucro (%)", required: true },
+          {
+            key: "margem_lucro_percentual",
+            label: "Margem Lucro (%)",
+            required: true,
+          },
           { key: "preco_total", label: "Preço Total", required: true },
           { key: "descricao", label: "Descrição" },
           { key: "ativo", label: "Status" },
         ]}
         onImport={async (records) => {
           // Import implementation would go here
-          return { success: false, message: "Importação não implementada ainda" };
+          return {
+            success: false,
+            message: "Importação não implementada ainda",
+          };
         }}
       />
 

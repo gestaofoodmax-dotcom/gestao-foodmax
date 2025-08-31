@@ -8,25 +8,25 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Cardapio, 
-  CardapioDetalhado, 
-  formatCurrencyBRL, 
+import {
+  Cardapio,
+  CardapioDetalhado,
+  formatCurrencyBRL,
   formatPercentage,
-  getTipoCardapioColor 
+  getTipoCardapioColor,
 } from "@shared/cardapios";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
-import { 
-  Info, 
-  Edit, 
-  X, 
-  ChefHat, 
-  ShoppingBag, 
-  DollarSign, 
+import {
+  Info,
+  Edit,
+  X,
+  ChefHat,
+  ShoppingBag,
+  DollarSign,
   Percent,
   Calendar,
   FileText,
-  Package
+  Package,
 } from "lucide-react";
 
 export default function CardapioView({
@@ -41,7 +41,8 @@ export default function CardapioView({
   onEdit?: (c: Cardapio) => void;
 }) {
   const { makeRequest } = useAuthenticatedRequest();
-  const [cardapioDetalhado, setCardapioDetalhado] = useState<CardapioDetalhado | null>(null);
+  const [cardapioDetalhado, setCardapioDetalhado] =
+    useState<CardapioDetalhado | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ export default function CardapioView({
 
   const loadCardapioDetalhado = async () => {
     if (!cardapio) return;
-    
+
     setLoading(true);
     try {
       const response = await makeRequest(`/api/cardapios/${cardapio.id}`);
@@ -79,14 +80,14 @@ export default function CardapioView({
       minute: "2-digit",
     });
 
-  const DataField = ({ 
-    icon: Icon, 
-    label, 
-    value, 
-    className = "" 
-  }: { 
+  const DataField = ({
+    icon: Icon,
+    label,
+    value,
+    className = "",
+  }: {
     icon?: any;
-    label: string; 
+    label: string;
     value: any;
     className?: string;
   }) => (
@@ -134,20 +135,16 @@ export default function CardapioView({
               Informações Básicas
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <DataField 
-                icon={ChefHat}
-                label="Nome" 
-                value={cardapio.nome} 
-              />
-              <DataField 
+              <DataField icon={ChefHat} label="Nome" value={cardapio.nome} />
+              <DataField
                 icon={Package}
-                label="Tipo de Cardápio" 
-                value={cardapio.tipo_cardapio} 
+                label="Tipo de Cardápio"
+                value={cardapio.tipo_cardapio}
               />
-              <DataField 
+              <DataField
                 icon={ShoppingBag}
-                label="Quantidade Total" 
-                value={cardapio.quantidade_total} 
+                label="Quantidade Total"
+                value={cardapio.quantidade_total}
               />
             </div>
           </div>
@@ -159,19 +156,19 @@ export default function CardapioView({
               Informações Financeiras
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <DataField 
+              <DataField
                 icon={DollarSign}
-                label="Preço dos Itens" 
-                value={formatCurrencyBRL(cardapio.preco_itens_centavos)} 
+                label="Preço dos Itens"
+                value={formatCurrencyBRL(cardapio.preco_itens_centavos)}
               />
-              <DataField 
+              <DataField
                 icon={Percent}
-                label="Margem de Lucro" 
-                value={formatPercentage(cardapio.margem_lucro_percentual)} 
+                label="Margem de Lucro"
+                value={formatPercentage(cardapio.margem_lucro_percentual)}
               />
-              <DataField 
+              <DataField
                 icon={DollarSign}
-                label="Preço Total" 
+                label="Preço Total"
                 value={formatCurrencyBRL(cardapio.preco_total_centavos)}
                 className="text-lg font-semibold"
               />
@@ -181,10 +178,10 @@ export default function CardapioView({
           {/* Description */}
           {cardapio.descricao && (
             <div className="bg-gray-50 rounded-lg p-4">
-              <DataField 
+              <DataField
                 icon={FileText}
-                label="Descrição" 
-                value={cardapio.descricao} 
+                label="Descrição"
+                value={cardapio.descricao}
               />
             </div>
           )}
@@ -201,13 +198,16 @@ export default function CardapioView({
                 <ShoppingBag className="w-5 h-5 text-gray-600" />
                 Itens do Cardápio ({cardapioDetalhado.itens.length})
               </h3>
-              
+
               <div className="space-y-3">
                 {cardapioDetalhado.itens.map((item) => {
                   const total = item.quantidade * item.valor_unitario_centavos;
-                  
+
                   return (
-                    <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
                       <div className="flex-1">
                         <div className="font-medium">{item.item_nome}</div>
                         <div className="text-sm text-gray-600">
@@ -217,20 +217,20 @@ export default function CardapioView({
                           Estoque Atual: {item.item_estoque_atual ?? "N/A"}
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-6 text-sm">
                         <div className="text-center">
                           <div className="font-medium">{item.quantidade}</div>
                           <div className="text-gray-500">Qtde</div>
                         </div>
-                        
+
                         <div className="text-center">
                           <div className="font-medium">
                             {formatCurrencyBRL(item.valor_unitario_centavos)}
                           </div>
                           <div className="text-gray-500">Unit.</div>
                         </div>
-                        
+
                         <div className="text-center">
                           <div className="font-medium text-green-600">
                             {formatCurrencyBRL(total)}
@@ -242,13 +242,16 @@ export default function CardapioView({
                   );
                 })}
               </div>
-              
+
               {/* Items Summary */}
               <div className="mt-4 pt-4 border-t bg-white rounded p-3">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div className="text-lg font-bold text-gray-800">
-                      {cardapioDetalhado.itens.reduce((sum, item) => sum + item.quantidade, 0)}
+                      {cardapioDetalhado.itens.reduce(
+                        (sum, item) => sum + item.quantidade,
+                        0,
+                      )}
                     </div>
                     <div className="text-sm text-gray-600">Total de Itens</div>
                   </div>
@@ -270,7 +273,9 @@ export default function CardapioView({
           ) : (
             <div className="border rounded-lg p-8 text-center">
               <ShoppingBag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">Nenhum item encontrado neste cardápio</p>
+              <p className="text-gray-600">
+                Nenhum item encontrado neste cardápio
+              </p>
             </div>
           )}
 
@@ -281,15 +286,15 @@ export default function CardapioView({
               Datas
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DataField 
+              <DataField
                 icon={Calendar}
-                label="Data de Cadastro" 
-                value={formatDate(cardapio.data_cadastro)} 
+                label="Data de Cadastro"
+                value={formatDate(cardapio.data_cadastro)}
               />
-              <DataField 
+              <DataField
                 icon={Calendar}
-                label="Última Atualização" 
-                value={formatDate(cardapio.data_atualizacao)} 
+                label="Última Atualização"
+                value={formatDate(cardapio.data_atualizacao)}
               />
             </div>
           </div>
@@ -301,8 +306,8 @@ export default function CardapioView({
             Fechar
           </Button>
           {onEdit && (
-            <Button 
-              type="button" 
+            <Button
+              type="button"
               onClick={() => onEdit(cardapio)}
               className="bg-foodmax-orange hover:bg-orange-600"
             >
