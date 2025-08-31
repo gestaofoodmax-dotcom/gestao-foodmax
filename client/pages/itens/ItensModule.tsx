@@ -356,9 +356,7 @@ export default function ItensModule() {
     loadItens();
   }, [loadItens, loadCategorias, isLoading]);
 
-  useEffect(() => {
-    setSelectedIds([]);
-  }, [activeTab]);
+  // Removed: Each tab now has independent selectedIds state
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
