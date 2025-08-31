@@ -938,7 +938,7 @@ export default function ItensModule() {
               }))
             : categorias
         }
-        selectedIds={selectedIds}
+        selectedIds={activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias}
         moduleName={activeTab === "itens" ? "Itens" : "Categorias"}
         columns={
           activeTab === "itens"
@@ -1224,7 +1224,7 @@ export default function ItensModule() {
               });
               toast({
                 title: "Itens excluídos",
-                description: `${selectedIds.length} registro(s) exclu��do(s) com sucesso`,
+                description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
               });
               try {
                 localStorage.removeItem(LOCAL_ITENS);
