@@ -132,6 +132,11 @@ export default function CategoriaView({
             <X className="w-4 h-4 mr-2" />
             Fechar
           </Button>
+          {onEdit && (
+            <Button onClick={() => onEdit(categoria)} variant="orange" className="flex-1 sm:flex-none">
+              Editar
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
