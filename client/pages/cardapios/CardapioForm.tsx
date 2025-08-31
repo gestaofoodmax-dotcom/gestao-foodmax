@@ -449,173 +449,182 @@ export default function CardapioForm({
                 <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="nome">Nome *</Label>
-                <Input
-                  id="nome"
-                  {...register("nome")}
-                  className="foodmax-input"
-                  placeholder="Nome do cardápio"
-                />
-                {errors.nome && (
-                  <span className="text-sm text-red-600">
-                    {errors.nome.message}
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <Label htmlFor="tipo_cardapio">Tipo de Cardápio *</Label>
-                <Select
-                  value={watchedValues.tipo_cardapio}
-                  onValueChange={(value) =>
-                    setValue("tipo_cardapio", value as TipoCardapio)
-                  }
-                >
-                  <SelectTrigger className="foodmax-input">
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIPOS_CARDAPIO.map((tipo) => (
-                      <SelectItem key={tipo} value={tipo}>
-                        {tipo}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.tipo_cardapio && (
-                  <span className="text-sm text-red-600">
-                    {errors.tipo_cardapio.message}
-                  </span>
-                )}
-              </div>
-              </div>
-            </div>
-
-            {/* Categories Multi-Select */}
-            <div className="bg-white p-4 rounded-lg border space-y-2">
-              <Label>Categorias *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    className="w-full justify-between foodmax-input"
-                  >
-                    {selectedCategorias.length > 0
-                      ? `${selectedCategorias.length} categoria(s) selecionada(s)`
-                      : "Selecione categorias"}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput placeholder="Filtrar categorias..." />
-                    <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
-                    <CommandList>
-                      <CommandGroup>
-                        {categorias.map((categoria) => (
-                          <CommandItem
-                            key={categoria.id}
-                            onSelect={() => {
-                              setSelectedCategorias((prev) =>
-                                prev.includes(categoria.id)
-                                  ? prev.filter((id) => id !== categoria.id)
-                                  : [...prev, categoria.id],
-                              );
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                selectedCategorias.includes(categoria.id)
-                                  ? "opacity-100"
-                                  : "opacity-0",
-                              )}
-                            />
-                            {categoria.nome}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            {/* Items Multi-Select */}
-            {selectedCategorias.length > 0 && (
-              <div className="bg-white p-4 rounded-lg border">
-                <div className="flex items-center gap-2 -mt-1 mb-2">
-                  <Package className="w-5 h-5 text-purple-600" />
-                  <h3 className="font-semibold text-purple-600">Itens</h3>
+                <div>
+                  <Label htmlFor="nome">Nome *</Label>
+                  <Input
+                    id="nome"
+                    {...register("nome")}
+                    className="foodmax-input"
+                    placeholder="Nome do cardápio"
+                  />
+                  {errors.nome && (
+                    <span className="text-sm text-red-600">
+                      {errors.nome.message}
+                    </span>
+                  )}
                 </div>
-                <Label>Itens *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className="w-full justify-between foodmax-input"
-                    >
-                      Adicionar item ao cardápio
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Filtrar itens..." />
-                      <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
-                      <CommandList>
-                        <CommandGroup>
-                          {filteredItens.map((item) => {
-                            const isLowStock = (item.estoque_atual || 0) < 3;
-                            const isAdded = cardapioItens.some(
-                              (ci) => ci.item_id === item.id,
-                            );
-                            const isOutOfStock = (item.estoque_atual || 0) === 0;
 
-                            return (
+                <div>
+                  <Label htmlFor="tipo_cardapio">Tipo de Cardápio *</Label>
+                  <Select
+                    value={watchedValues.tipo_cardapio}
+                    onValueChange={(value) =>
+                      setValue("tipo_cardapio", value as TipoCardapio)
+                    }
+                  >
+                    <SelectTrigger className="foodmax-input">
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIPOS_CARDAPIO.map((tipo) => (
+                        <SelectItem key={tipo} value={tipo}>
+                          {tipo}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.tipo_cardapio && (
+                    <span className="text-sm text-red-600">
+                      {errors.tipo_cardapio.message}
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <Label>Categorias *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between foodmax-input"
+                      >
+                        {selectedCategorias.length > 0
+                          ? `${selectedCategorias.length} categoria(s) selecionada(s)`
+                          : "Selecione categorias"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Filtrar categorias..." />
+                        <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
+                        <CommandList>
+                          <CommandGroup>
+                            {categorias.map((categoria) => (
                               <CommandItem
-                                key={item.id}
-                                onSelect={() => !isAdded && !isOutOfStock && addItem(item)}
-                                disabled={isAdded || isOutOfStock}
-                                className={isAdded || isOutOfStock ? "opacity-50" : ""}
+                                key={categoria.id}
+                                onSelect={() => {
+                                  setSelectedCategorias((prev) =>
+                                    prev.includes(categoria.id)
+                                      ? prev.filter((id) => id !== categoria.id)
+                                      : [...prev, categoria.id],
+                                  );
+                                }}
                               >
-                                <div className="flex items-center justify-between w-full">
-                                  <div className="flex items-center gap-2">
-                                    {isLowStock && (
-                                      <AlertCircle className="w-4 h-4 text-yellow-600" />
-                                    )}
-                                    <span>{item.nome}</span>
-                                    {isAdded && (
-                                      <Badge variant="secondary">Já adicionado</Badge>
-                                    )}
-                                    {isOutOfStock && (
-                                      <Badge className="bg-red-50 text-red-700 border-red-200">Sem estoque</Badge>
-                                    )}
-                                  </div>
-                                  <span className="text-sm text-gray-500">
-                                    Estoque: {item.estoque_atual || 0}
-                                  </span>
-                                </div>
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedCategorias.includes(categoria.id)
+                                      ? "opacity-100"
+                                      : "opacity-0",
+                                  )}
+                                />
+                                {categoria.nome}
                               </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 -mt-1 mb-2">
+                    <Package className="w-5 h-5 text-purple-600" />
+                    <h3 className="font-semibold text-purple-600">Itens</h3>
+                  </div>
+                  <Label>Itens *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        disabled={selectedCategorias.length === 0}
+                        className={cn(
+                          "w-full justify-between foodmax-input",
+                          selectedCategorias.length === 0 &&
+                            "opacity-60 cursor-not-allowed",
+                        )}
+                      >
+                        {selectedCategorias.length === 0
+                          ? "Selecione categorias para listar itens"
+                          : "Adicionar item ao cardápio"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Filtrar itens..." />
+                        <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                        <CommandList>
+                          <CommandGroup>
+                            {filteredItens.map((item) => {
+                              const isLowStock = (item.estoque_atual || 0) < 3;
+                              const isAdded = cardapioItens.some(
+                                (ci) => ci.item_id === item.id,
+                              );
+                              const isOutOfStock = (item.estoque_atual || 0) === 0;
+
+                              return (
+                                <CommandItem
+                                  key={item.id}
+                                  onSelect={() =>
+                                    !isAdded && !isOutOfStock && addItem(item)
+                                  }
+                                  disabled={isAdded || isOutOfStock}
+                                  className={
+                                    isAdded || isOutOfStock ? "opacity-50" : ""
+                                  }
+                                >
+                                  <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center gap-2">
+                                      {isLowStock && (
+                                        <AlertCircle className="w-4 h-4 text-yellow-600" />
+                                      )}
+                                      <span>{item.nome}</span>
+                                      {isAdded && (
+                                        <Badge variant="secondary">Já adicionado</Badge>
+                                      )}
+                                      {isOutOfStock && (
+                                        <Badge className="bg-red-50 text-red-700 border-red-200">Sem estoque</Badge>
+                                      )}
+                                    </div>
+                                    <span className="text-sm text-gray-500">
+                                      Estoque: {item.estoque_atual || 0}
+                                    </span>
+                                  </div>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
-            )}
+            </div>
+
+
 
             {/* Items List */}
             {cardapioItens.length > 0 && (
               <div className="border rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-4">
-                  <ShoppingBag className="w-5 h-5 text-orange-600" />
-                  <h3 className="text-lg font-semibold text-orange-600">Itens do Cardápio</h3>
+                  <ShoppingBag className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-lg font-semibold text-purple-600">Itens do Cardápio</h3>
                 </div>
 
                 <div className="space-y-3">
