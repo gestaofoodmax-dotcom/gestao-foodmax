@@ -109,6 +109,18 @@ export default function ItemView({
                   </Badge>
                 }
               />
+            </div>
+          </div>
+
+          {/* Detalhes do Cadastro */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-4">
+              <Info className="w-5 h-5 text-gray-600" />
+              <h3 className="font-semibold text-gray-600">Detalhes do Cadastro</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <DataField label="Data de Cadastro" value={formatDate(item.data_cadastro)} />
+              <DataField label="Data de Atualização" value={formatDate(item.data_atualizacao)} />
               <DataField label="Ativo" value={item.ativo ? "Sim" : "Não"} />
             </div>
           </div>
