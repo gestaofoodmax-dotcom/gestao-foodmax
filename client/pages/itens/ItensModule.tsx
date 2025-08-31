@@ -651,7 +651,7 @@ export default function ItensModule() {
                   >
                     <List className="w-4 h-4" />
                     <span>Itens</span>
-                    <span className="ml-1 text-foodmax-orange text-xs font-medium">{totalRecords}</span>
+                    <span className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === "itens" ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}>{totalRecords}</span>
                     {activeTab === "itens" && (
                       <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
                     )}
@@ -667,7 +667,7 @@ export default function ItensModule() {
                   >
                     <Tag className="w-4 h-4" />
                     <span>Categorias</span>
-                    <span className="ml-1 text-foodmax-orange text-xs font-medium">{categorias.length}</span>
+                    <span className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === "categorias" ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}>{categorias.length}</span>
                     {activeTab === "categorias" && (
                       <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
                     )}
