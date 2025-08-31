@@ -843,22 +843,35 @@ export default function ItensModule() {
       <ExportModal
         isOpen={showExport}
         onClose={() => setShowExport(false)}
-        data={activeTab === "itens" ? itens : categorias}
+        data={
+          activeTab === "itens"
+            ? itens.map((i) => ({
+                nome: i.nome,
+                categoria_nome: categorias.find((c) => c.id === i.categoria_id)?.nome || "",
+                preco: formatCurrencyBRL(i.preco_centavos),
+                custo_pago: formatCurrencyBRL(i.custo_pago_centavos),
+                estoque_atual: i.estoque_atual ?? 0,
+                unidade_medida: i.unidade_medida,
+                peso_gramas: i.peso_gramas ?? "",
+                status: i.ativo ? "Ativo" : "Inativo",
+                data_cadastro: new Date(i.data_cadastro).toLocaleDateString("pt-BR"),
+              }))
+            : categorias
+        }
         selectedIds={selectedIds}
         moduleName={activeTab === "itens" ? "Itens" : "Categorias"}
         columns={
           activeTab === "itens"
             ? [
                 { key: "nome", label: "Nome" },
-                { key: "categoria_id", label: "ID Categoria" },
-                { key: "preco_centavos", label: "Preço (centavos)" },
-                { key: "custo_pago_centavos", label: "Custo Pago (centavos)" },
-                { key: "unidade_medida", label: "Unidade de Medida" },
-                { key: "peso_gramas", label: "Peso (gramas)" },
+                { key: "categoria_nome", label: "Categoria Nome" },
+                { key: "preco", label: "Preço" },
+                { key: "custo_pago", label: "Custo Pago" },
                 { key: "estoque_atual", label: "Estoque Atual" },
-                { key: "ativo", label: "Ativo" },
+                { key: "unidade_medida", label: "Unidade Medida" },
+                { key: "peso_gramas", label: "Peso Gramas" },
+                { key: "status", label: "Status" },
                 { key: "data_cadastro", label: "Data Cadastro" },
-                { key: "data_atualizacao", label: "Data Atualização" },
               ]
             : [
                 { key: "nome", label: "Nome" },
@@ -880,31 +893,43 @@ export default function ItensModule() {
           activeTab === "itens"
             ? [
                 { key: "nome", label: "Nome", required: true },
-                { key: "categoria_id", label: "ID Categoria", required: true },
-                {
-                  key: "preco_centavos",
-                  label: "Preço (centavos)",
-                  required: true,
-                },
-                {
-                  key: "custo_pago_centavos",
-                  label: "Custo Pago (centavos)",
-                  required: true,
-                },
-                {
-                  key: "unidade_medida",
-                  label: "Unidade de Medida",
-                  required: true,
-                },
-                { key: "peso_gramas", label: "Peso (gramas)" },
+                { key: "categoria_nome", label: "Categoria Nome", required: true },
+                { key: "preco", label: "Preço", required: true },
+                { key: "custo_pago", label: "Custo Pago", required: true },
                 { key: "estoque_atual", label: "Estoque Atual" },
-                { key: "ativo", label: "Ativo" },
+                { key: "unidade_medida", label: "Unidade Medida" },
+                { key: "peso_gramas", label: "Peso Gramas" },
+                { key: "ativo", label: "Status" },
+                { key: "data_cadastro", label: "Data Cadastro" },
               ]
             : [
                 { key: "nome", label: "Nome", required: true },
                 { key: "descricao", label: "Descrição" },
                 { key: "ativo", label: "Ativo" },
               ]
+        }
+        mapHeader={
+          activeTab === "itens"
+            ? (h) => {
+                const n = h.trim().toLowerCase();
+                const map: Record<string, string> = {
+                  "nome": "nome",
+                  "categoria nome": "categoria_nome",
+                  "categoria": "categoria_nome",
+                  "categoria_id": "categoria_id",
+                  "preço": "preco",
+                  "preco": "preco",
+                  "custo pago": "custo_pago",
+                  "estoque atual": "estoque_atual",
+                  "unidade medida": "unidade_medida",
+                  "unidade de medida": "unidade_medida",
+                  "peso gramas": "peso_gramas",
+                  "status": "ativo",
+                  "data cadastro": "data_cadastro",
+                };
+                return map[n] || n.replace(/\s+/g, "_");
+              }
+            : undefined
         }
         onImport={async (records) => {
           try {
