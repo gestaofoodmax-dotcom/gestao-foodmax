@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Info, X, Save, AlertTriangle, ChevronsUpDown, Check, DollarSign, Boxes } from "lucide-react";
+import { Info, X, Save, AlertTriangle, ChevronsUpDown, Check, DollarSign, Boxes, Ruler } from "lucide-react";
 import { Item, ItemCategoria, UNIDADES_MEDIDA } from "@shared/itens";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -284,7 +284,15 @@ export default function ItemForm({
                   placeholder="Nome do item"
                 />
               </div>
+            </div>
+          </div>
 
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <Ruler className="w-5 h-5 text-indigo-600" />
+              <h3 className="font-semibold text-indigo-600">Medidas</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm font-medium">Unidade de Medida</Label>
                 <Select
@@ -379,20 +387,23 @@ export default function ItemForm({
                   className="foodmax-input"
                 />
               </div>
-              <div className="flex items-center gap-3 mt-6 md:mt-0">
-                <Switch
-                  id="ativo"
-                  checked={watchedAtivo}
-                  onCheckedChange={(c) => setValue("ativo", c)}
-                />
-                <div>
-                  <Label htmlFor="ativo" className="text-sm font-medium">
-                    Ativo
-                  </Label>
-                  <p className="text-sm text-gray-600">
-                    {watchedAtivo ? "Sim" : "Não"}
-                  </p>
-                </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-3">
+              <Switch
+                id="ativo"
+                checked={watchedAtivo}
+                onCheckedChange={(c) => setValue("ativo", c)}
+              />
+              <div>
+                <Label htmlFor="ativo" className="text-sm font-medium">
+                  Ativo
+                </Label>
+                <p className="text-sm text-gray-600">
+                  {watchedAtivo ? "Sim" : "Não"}
+                </p>
               </div>
             </div>
           </div>
