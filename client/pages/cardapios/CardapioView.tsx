@@ -77,15 +77,23 @@ export default function CardapioView({
         let categoriasCatalogo: any[] = [];
         try {
           const itensResp = await makeRequest(`/api/itens?page=1&limit=1000`);
-          const catsResp = await makeRequest(`/api/itens-categorias?page=1&limit=200`);
+          const catsResp = await makeRequest(
+            `/api/itens-categorias?page=1&limit=200`,
+          );
           itensCatalogo = Array.isArray(itensResp?.data) ? itensResp.data : [];
-          categoriasCatalogo = Array.isArray(catsResp?.data) ? catsResp.data : [];
+          categoriasCatalogo = Array.isArray(catsResp?.data)
+            ? catsResp.data
+            : [];
         } catch {
           try {
-            itensCatalogo = JSON.parse(localStorage.getItem("fm_itens") || "[]");
+            itensCatalogo = JSON.parse(
+              localStorage.getItem("fm_itens") || "[]",
+            );
           } catch {}
           try {
-            categoriasCatalogo = JSON.parse(localStorage.getItem("fm_itens_categorias") || "[]");
+            categoriasCatalogo = JSON.parse(
+              localStorage.getItem("fm_itens_categorias") || "[]",
+            );
           } catch {}
         }
 
