@@ -55,6 +55,7 @@ export default function ItensModule() {
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showCategoriaView, setShowCategoriaView] = useState(false);
+  const [showBulkDelete, setShowBulkDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
