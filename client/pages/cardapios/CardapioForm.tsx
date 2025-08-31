@@ -28,6 +28,7 @@ import {
   DollarSign,
   Boxes,
   FileText,
+  Package,
 } from "lucide-react";
 import {
   Cardapio,
