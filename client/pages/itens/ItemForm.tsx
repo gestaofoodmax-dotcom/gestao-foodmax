@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Info, X, Save, AlertTriangle, ChevronsUpDown, Check, DollarSign, Boxes, Ruler } from "lucide-react";
+import { Info, X, Save, AlertTriangle, ChevronsUpDown, Check, DollarSign, Boxes } from "lucide-react";
 import { Item, ItemCategoria, UNIDADES_MEDIDA } from "@shared/itens";
 import { toast } from "@/hooks/use-toast";
 import {
