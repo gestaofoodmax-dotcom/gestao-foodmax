@@ -651,9 +651,7 @@ export default function ItensModule() {
                   >
                     <List className="w-4 h-4" />
                     <span>Itens</span>
-                    <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">
-                      {totalRecords}
-                    </span>
+                    <span className="ml-1 text-foodmax-orange text-xs font-medium">{totalRecords}</span>
                     {activeTab === "itens" && (
                       <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
                     )}
@@ -669,9 +667,7 @@ export default function ItensModule() {
                   >
                     <Tag className="w-4 h-4" />
                     <span>Categorias</span>
-                    <span className="ml-1 inline-flex items-center justify-center text-xs px-2 rounded-full bg-gray-200 text-gray-700">
-                      {categorias.length}
-                    </span>
+                    <span className="ml-1 text-foodmax-orange text-xs font-medium">{categorias.length}</span>
                     {activeTab === "categorias" && (
                       <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
                     )}
@@ -770,10 +766,10 @@ export default function ItensModule() {
                 selectedIds={selectedIds}
                 onSelectionChange={setSelectedIds}
                 searchTerm={searchTerm}
-                currentPage={1}
-                pageSize={999}
+                currentPage={currentPage}
+                pageSize={pageSize}
                 totalRecords={categorias.length}
-                onPageChange={() => {}}
+                onPageChange={handlePageChange}
                 showActions={false}
               />
             )}
@@ -803,6 +799,7 @@ export default function ItensModule() {
           setShowView(false);
           setCurrentItem(null);
         }}
+        onEdit={(i) => handleEdit(i)}
         item={currentItem}
         categoriaNome={
           currentItem
@@ -828,6 +825,13 @@ export default function ItensModule() {
         onClose={() => {
           setShowCategoriaView(false);
           setCurrentCategoria(null);
+        }}
+        onEdit={(c) => {
+          if (!c) return;
+          setCurrentCategoria(c);
+          setIsEditingCategoria(true);
+          setShowCategoriaView(false);
+          setShowCategoriaForm(true);
         }}
         categoria={currentCategoria}
       />
@@ -1000,6 +1004,51 @@ export default function ItensModule() {
         onConfirm={handleDeleteConfirmed}
         itemName={currentItem?.nome}
         isLoading={false}
+      />
+
+      <BulkDeleteAlert
+        isOpen={showBulkDelete}
+        onClose={() => setShowBulkDelete(false)}
+        onConfirm={async () => {
+          try {
+            if (activeTab === "itens") {
+              await makeRequest(`/api/itens/bulk-delete`, {
+                method: "POST",
+                body: JSON.stringify({ ids: selectedIds }),
+              });
+              toast({ title: "Itens excluídos", description: `${selectedIds.length} registro(s) excluído(s) com sucesso` });
+              await loadItens();
+            } else {
+              const res = await makeRequest(`/api/itens-categorias/bulk-delete`, {
+                method: "POST",
+                body: JSON.stringify({ ids: selectedIds }),
+              });
+              const deleted = (res?.deletedCount as number) || 0;
+              const blocked = (res?.blockedIds as number[]) || [];
+              if (blocked.length) {
+                toast({ title: "Alguns registros não puderam ser excluídos", description: `${blocked.length} categoria(s) possuem Itens vinculados.` });
+              }
+              toast({ title: "Categorias excluídas", description: `${deleted} categoria(s) excluída(s) com sucesso` });
+              await loadCategorias();
+            }
+            setSelectedIds([]);
+            setShowBulkDelete(false);
+          } catch (error: any) {
+            if (activeTab === "itens") {
+              const list = readLocalItens().filter((e) => !selectedIds.includes(e.id));
+              writeLocalItens(list);
+              setItens(list);
+            } else {
+              const list = readLocalCats().filter((e) => !selectedIds.includes(e.id));
+              writeLocalCats(list);
+              setCategorias(list);
+            }
+            toast({ title: "Exclusão concluída localmente", description: `${selectedIds.length} registro(s) removido(s)` });
+            setSelectedIds([]);
+            setShowBulkDelete(false);
+          }
+        }}
+        selectedCount={selectedIds.length}
       />
     </div>
   );
