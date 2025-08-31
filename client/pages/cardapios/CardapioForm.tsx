@@ -158,6 +158,23 @@ export default function CardapioForm({
     loadData();
   }, [isOpen]);
 
+  useEffect(() => {
+    if (isOpen && !cardapio) {
+      setSelectedCategorias([]);
+      setCardapioItens([]);
+      setShowStockAlert(false);
+      setStockAlertMessage("");
+      reset({
+        nome: "",
+        tipo_cardapio: undefined as any,
+        margem_lucro_percentual: 0,
+        preco_total_centavos: 0,
+        descricao: "",
+        ativo: true,
+      });
+    }
+  }, [isOpen, cardapio, reset]);
+
   const loadData = async () => {
     setLoading(true);
     try {
