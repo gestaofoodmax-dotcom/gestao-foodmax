@@ -830,10 +830,10 @@ export default function ItensModule() {
                     "-",
                 }))}
                 loading={loading}
-                selectedIds={selectedIds}
-                onSelectionChange={setSelectedIds}
-                searchTerm={searchTerm}
-                currentPage={currentPage}
+                selectedIds={selectedIdsItens}
+                onSelectionChange={setSelectedIdsItens}
+                searchTerm={searchTermItens}
+                currentPage={currentPageItens}
                 pageSize={pageSize}
                 totalRecords={totalRecords}
                 onPageChange={handlePageChange}
@@ -844,10 +844,10 @@ export default function ItensModule() {
                 columns={gridColumnsCategorias}
                 data={categorias}
                 loading={false}
-                selectedIds={selectedIds}
-                onSelectionChange={setSelectedIds}
-                searchTerm={searchTerm}
-                currentPage={currentPage}
+                selectedIds={selectedIdsCategorias}
+                onSelectionChange={setSelectedIdsCategorias}
+                searchTerm={searchTermCategorias}
+                currentPage={currentPageCategorias}
                 pageSize={pageSize}
                 totalRecords={categorias.length}
                 onPageChange={handlePageChange}
@@ -1224,7 +1224,7 @@ export default function ItensModule() {
               });
               toast({
                 title: "Itens excluídos",
-                description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
+                description: `${selectedIds.length} registro(s) exclu��do(s) com sucesso`,
               });
               try {
                 localStorage.removeItem(LOCAL_ITENS);
