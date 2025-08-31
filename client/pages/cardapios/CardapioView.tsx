@@ -152,7 +152,7 @@ export default function CardapioView({
         {Icon && <Icon className="w-4 h-4 text-gray-500" />}
         <div className="text-sm font-medium text-gray-600">{label}</div>
       </div>
-      <div className="text-sm text-gray-900 ml-6">{value ?? "-"}</div>
+      <div className={`text-sm text-gray-900 ${Icon ? "ml-6" : ""}`}>{value ?? "-"}</div>
     </div>
   );
 
