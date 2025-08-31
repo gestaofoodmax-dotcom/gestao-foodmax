@@ -289,6 +289,14 @@ export default function CardapioForm({
   // Low-stock toast on category selection disabled per requirements
 
   const addItem = (item: Item) => {
+    if ((item.estoque_atual || 0) === 0) {
+      toast({
+        title: "Sem estoque",
+        description: "Este item está com estoque 0 e não pode ser adicionado",
+        variant: "destructive",
+      });
+      return;
+    }
     const existing = cardapioItens.find((ci) => ci.item_id === item.id);
     if (existing) {
       toast({
