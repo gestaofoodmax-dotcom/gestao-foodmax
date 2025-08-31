@@ -495,7 +495,7 @@ export default function CardapiosModule() {
                   {["Todos", ...TIPOS_CARDAPIO].map((tipo, idx, arr) => (
                     <div key={tipo} className="flex items-center gap-4">
                       <button
-                        className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 whitespace-nowrap ${
+                        className={`relative -mb-px pb-3 pt-2 text-sm flex items-center gap-2 whitespace-nowrap ${
                           activeTab === tipo
                             ? "text-foodmax-orange"
                             : "text-gray-700 hover:text-gray-900"
