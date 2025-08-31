@@ -558,13 +558,14 @@ export default function CardapioForm({
                             const isAdded = cardapioItens.some(
                               (ci) => ci.item_id === item.id,
                             );
+                            const isOutOfStock = (item.estoque_atual || 0) === 0;
 
                             return (
                               <CommandItem
                                 key={item.id}
-                                onSelect={() => !isAdded && addItem(item)}
-                                disabled={isAdded}
-                                className={isAdded ? "opacity-50" : ""}
+                                onSelect={() => !isAdded && !isOutOfStock && addItem(item)}
+                                disabled={isAdded || isOutOfStock}
+                                className={isAdded || isOutOfStock ? "opacity-50" : ""}
                               >
                                 <div className="flex items-center justify-between w-full">
                                   <div className="flex items-center gap-2">
@@ -573,9 +574,10 @@ export default function CardapioForm({
                                     )}
                                     <span>{item.nome}</span>
                                     {isAdded && (
-                                      <Badge variant="secondary">
-                                        Já adicionado
-                                      </Badge>
+                                      <Badge variant="secondary">Já adicionado</Badge>
+                                    )}
+                                    {isOutOfStock && (
+                                      <Badge className="bg-red-50 text-red-700 border-red-200">Sem estoque</Badge>
                                     )}
                                   </div>
                                   <span className="text-sm text-gray-500">
