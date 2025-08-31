@@ -401,3 +401,94 @@ export const toggleCardapioStatus: RequestHandler = async (req, res) => {
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
+
+// Import cardápios from CSV
+export const importCardapios: RequestHandler = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+
+    const RecordsSchema = z.object({
+      records: z.array(
+        z.object({
+          nome: z.string().min(1),
+          tipo_cardapio: z.enum(["Café", "Almoço", "Janta", "Lanche", "Bebida", "Outro"]),
+          margem_lucro_percentual: z.union([z.number(), z.string()]),
+          preco_total: z.union([z.number(), z.string()]).optional(),
+          preco_total_centavos: z.union([z.number(), z.string()]).optional(),
+          preco_itens: z.union([z.number(), z.string()]).optional(),
+          preco_itens_centavos: z.union([z.number(), z.string()]).optional(),
+          descricao: z.string().optional(),
+          ativo: z.union([z.boolean(), z.string()]).optional(),
+        }),
+      ),
+    });
+
+    const { records } = RecordsSchema.parse(req.body);
+
+    const parseCentavos = (val: any): number => {
+      if (val === undefined || val === null || val === "") return 0;
+      if (typeof val === "number") {
+        return Number.isInteger(val) ? val : Math.round(val * 100);
+      }
+      const s = String(val).trim();
+      const clean = s.replace(/[^0-9,.-]/g, "").replace(/\.(?=\d{3}(,|$))/g, "");
+      const dot = clean.replace(",", ".");
+      const n = Number(dot);
+      if (!isNaN(n)) return Math.round(n * 100);
+      const digits = s.replace(/\D/g, "");
+      return digits ? parseInt(digits, 10) : 0;
+    };
+
+    const toBool = (v: any): boolean => {
+      if (typeof v === "boolean") return v;
+      const s = String(v ?? "").trim().toLowerCase();
+      if (["1", "true", "ativo", "sim", "yes"].includes(s)) return true;
+      if (["0", "false", "inativo", "nao", "não", "no"].includes(s)) return false;
+      return true;
+    };
+
+    const supabase = getSupabaseServiceClient();
+
+    let imported = 0;
+    for (const r of records) {
+      const preco_total_centavos =
+        r.preco_total_centavos != null && r.preco_total_centavos !== ""
+          ? parseCentavos(r.preco_total_centavos)
+          : parseCentavos(r.preco_total);
+
+      const preco_itens_centavos =
+        r.preco_itens_centavos != null && r.preco_itens_centavos !== ""
+          ? parseCentavos(r.preco_itens_centavos)
+          : parseCentavos(r.preco_itens);
+
+      const { error } = await supabase
+        .from("cardapios")
+        .insert({
+          id_usuario: userId,
+          nome: r.nome,
+          tipo_cardapio: r.tipo_cardapio,
+          quantidade_total: 0,
+          preco_itens_centavos,
+          margem_lucro_percentual:
+            typeof r.margem_lucro_percentual === "string"
+              ? Number(String(r.margem_lucro_percentual).replace(",", ".")) || 0
+              : r.margem_lucro_percentual || 0,
+          preco_total_centavos,
+          descricao: r.descricao,
+          ativo: r.ativo != null ? toBool(r.ativo) : true,
+        });
+
+      if (!error) imported++;
+    }
+
+    res.json({ success: true, imported });
+  } catch (error: any) {
+    console.error("Error importing cardapios:", error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+    }
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
