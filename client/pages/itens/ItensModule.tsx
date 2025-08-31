@@ -769,14 +769,14 @@ export default function ItensModule() {
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  {selectedIds.length > 0 && (
+                  {(activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias).length > 0 && (
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => setShowBulkDelete(true)}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Excluir Selecionados ({selectedIds.length})
+                      Excluir Selecionados ({(activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias).length})
                     </Button>
                   )}
                   <Button
