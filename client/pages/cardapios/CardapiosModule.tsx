@@ -812,7 +812,8 @@ export default function CardapiosModule() {
             "preço total": "preco_total",
             descrição: "descricao",
             descricao: "descricao",
-            status: "status",
+            ativo: "ativo",
+            status: "ativo", // For backward compatibility
             "data cadastro": "data_cadastro",
             "data atualização": "data_atualizacao",
             "item nome": "item_nome",
