@@ -24,6 +24,11 @@ import {
   Minus,
   AlertCircle,
   Link,
+  Info,
+  DollarSign,
+  Boxes,
+  FileText,
+  Package,
 } from "lucide-react";
 import {
   Cardapio,
@@ -122,6 +127,16 @@ export default function CardapioForm({
   const [stockAlertMessage, setStockAlertMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const parseCurrencyToCentavos = (val: string) => {
+    const digits = val.replace(/[^0-9]/g, "");
+    return digits ? parseInt(digits, 10) : 0;
+  };
+  const formatInputCurrency = (centavos: number) => {
+    const v = (centavos || 0) / 100;
+    return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  };
+  const [precoTotalMask, setPrecoTotalMask] = useState("");
+
   const {
     register,
     handleSubmit,
@@ -143,6 +158,23 @@ export default function CardapioForm({
     if (!isOpen) return;
     loadData();
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && !cardapio) {
+      setSelectedCategorias([]);
+      setCardapioItens([]);
+      setShowStockAlert(false);
+      setStockAlertMessage("");
+      reset({
+        nome: "",
+        tipo_cardapio: undefined as any,
+        margem_lucro_percentual: 0,
+        preco_total_centavos: 0,
+        descricao: "",
+        ativo: true,
+      });
+    }
+  }, [isOpen, cardapio, reset]);
 
   const loadData = async () => {
     setLoading(true);
@@ -255,33 +287,23 @@ export default function CardapioForm({
     setValue("preco_total_centavos", precoTotal);
   }, [precoTotal, setValue]);
 
-  // Check for low stock when categories change
   useEffect(() => {
-    if (selectedCategorias.length > 0) {
-      const lowStockCategories = selectedCategorias.filter((catId) => {
-        const categoryItens = itens.filter(
-          (item) =>
-            item.categoria_id === catId && (item.estoque_atual || 0) < 3,
-        );
-        return categoryItens.length > 0;
-      });
+    setPrecoTotalMask(
+      formatInputCurrency(watchedValues.preco_total_centavos || 0),
+    );
+  }, [watchedValues.preco_total_centavos]);
 
-      if (lowStockCategories.length > 0) {
-        const categoryNames = lowStockCategories
-          .map((catId) => categorias.find((c) => c.id === catId)?.nome)
-          .filter(Boolean)
-          .join(", ");
-
-        toast({
-          title: "Alerta de Estoque",
-          description: `Existem itens com estoque baixo (menos de 3) nas categorias: ${categoryNames}`,
-          variant: "destructive",
-        });
-      }
-    }
-  }, [selectedCategorias, itens, categorias]);
+  // Low-stock toast on category selection disabled per requirements
 
   const addItem = (item: Item) => {
+    if ((item.estoque_atual || 0) === 0) {
+      toast({
+        title: "Sem estoque",
+        description: "Este item está com estoque 0 e não pode ser adicionado",
+        variant: "destructive",
+      });
+      return;
+    }
     const existing = cardapioItens.find((ci) => ci.item_id === item.id);
     if (existing) {
       toast({
@@ -423,167 +445,191 @@ export default function CardapioForm({
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="nome">Nome *</Label>
-                <Input
-                  id="nome"
-                  {...register("nome")}
-                  className="foodmax-input"
-                  placeholder="Nome do cardápio"
-                />
-                {errors.nome && (
-                  <span className="text-sm text-red-600">
-                    {errors.nome.message}
-                  </span>
-                )}
+            <div className="space-y-4 bg-white p-4 rounded-lg border">
+              <div className="flex items-center gap-2 mb-3">
+                <Info className="w-5 h-5 text-blue-600" />
+                <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="nome">Nome *</Label>
+                  <Input
+                    id="nome"
+                    {...register("nome")}
+                    className="foodmax-input"
+                    placeholder="Nome do cardápio"
+                  />
+                  {errors.nome && (
+                    <span className="text-sm text-red-600">
+                      {errors.nome.message}
+                    </span>
+                  )}
+                </div>
 
-              <div>
-                <Label htmlFor="tipo_cardapio">Tipo de Cardápio *</Label>
-                <Select
-                  value={watchedValues.tipo_cardapio}
-                  onValueChange={(value) =>
-                    setValue("tipo_cardapio", value as TipoCardapio)
-                  }
-                >
-                  <SelectTrigger className="foodmax-input">
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIPOS_CARDAPIO.map((tipo) => (
-                      <SelectItem key={tipo} value={tipo}>
-                        {tipo}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {errors.tipo_cardapio && (
-                  <span className="text-sm text-red-600">
-                    {errors.tipo_cardapio.message}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Categories Multi-Select */}
-            <div>
-              <Label>Categorias *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    className="w-full justify-between foodmax-input"
+                <div>
+                  <Label htmlFor="tipo_cardapio">Tipo de Cardápio *</Label>
+                  <Select
+                    value={watchedValues.tipo_cardapio}
+                    onValueChange={(value) =>
+                      setValue("tipo_cardapio", value as TipoCardapio)
+                    }
                   >
-                    {selectedCategorias.length > 0
-                      ? `${selectedCategorias.length} categoria(s) selecionada(s)`
-                      : "Selecione categorias"}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput placeholder="Filtrar categorias..." />
-                    <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
-                    <CommandList>
-                      <CommandGroup>
-                        {categorias.map((categoria) => (
-                          <CommandItem
-                            key={categoria.id}
-                            onSelect={() => {
-                              setSelectedCategorias((prev) =>
-                                prev.includes(categoria.id)
-                                  ? prev.filter((id) => id !== categoria.id)
-                                  : [...prev, categoria.id],
-                              );
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                selectedCategorias.includes(categoria.id)
-                                  ? "opacity-100"
-                                  : "opacity-0",
-                              )}
-                            />
-                            {categoria.nome}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-            </div>
+                    <SelectTrigger className="foodmax-input">
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TIPOS_CARDAPIO.map((tipo) => (
+                        <SelectItem key={tipo} value={tipo}>
+                          {tipo}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.tipo_cardapio && (
+                    <span className="text-sm text-red-600">
+                      {errors.tipo_cardapio.message}
+                    </span>
+                  )}
+                </div>
 
-            {/* Items Multi-Select */}
-            {selectedCategorias.length > 0 && (
-              <div>
-                <Label>Itens *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className="w-full justify-between foodmax-input"
-                    >
-                      Adicionar item ao cardápio
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Filtrar itens..." />
-                      <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
-                      <CommandList>
-                        <CommandGroup>
-                          {filteredItens.map((item) => {
-                            const isLowStock = (item.estoque_atual || 0) < 3;
-                            const isAdded = cardapioItens.some(
-                              (ci) => ci.item_id === item.id,
-                            );
-
-                            return (
+                <div>
+                  <Label>Categorias *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between foodmax-input"
+                      >
+                        {selectedCategorias.length > 0
+                          ? `${selectedCategorias.length} categoria(s) selecionada(s)`
+                          : "Selecione categorias"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Filtrar categorias..." />
+                        <CommandEmpty>
+                          Nenhuma categoria encontrada.
+                        </CommandEmpty>
+                        <CommandList>
+                          <CommandGroup>
+                            {categorias.map((categoria) => (
                               <CommandItem
-                                key={item.id}
-                                onSelect={() => !isAdded && addItem(item)}
-                                disabled={isAdded}
-                                className={isAdded ? "opacity-50" : ""}
+                                key={categoria.id}
+                                onSelect={() => {
+                                  setSelectedCategorias((prev) =>
+                                    prev.includes(categoria.id)
+                                      ? prev.filter((id) => id !== categoria.id)
+                                      : [...prev, categoria.id],
+                                  );
+                                }}
                               >
-                                <div className="flex items-center justify-between w-full">
-                                  <div className="flex items-center gap-2">
-                                    {isLowStock && (
-                                      <AlertCircle className="w-4 h-4 text-yellow-600" />
-                                    )}
-                                    <span>{item.nome}</span>
-                                    {isAdded && (
-                                      <Badge variant="secondary">
-                                        Já adicionado
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <span className="text-sm text-gray-500">
-                                    Estoque: {item.estoque_atual || 0}
-                                  </span>
-                                </div>
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedCategorias.includes(categoria.id)
+                                      ? "opacity-100"
+                                      : "opacity-0",
+                                  )}
+                                />
+                                {categoria.nome}
                               </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div>
+                  <Label>Itens *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        disabled={selectedCategorias.length === 0}
+                        className={cn(
+                          "w-full justify-between foodmax-input",
+                          selectedCategorias.length === 0 &&
+                            "opacity-60 cursor-not-allowed",
+                        )}
+                      >
+                        {selectedCategorias.length === 0
+                          ? "Selecione categorias para listar itens"
+                          : "Adicionar item ao cardápio"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Filtrar itens..." />
+                        <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                        <CommandList>
+                          <CommandGroup>
+                            {filteredItens.map((item) => {
+                              const isLowStock = (item.estoque_atual || 0) < 3;
+                              const isAdded = cardapioItens.some(
+                                (ci) => ci.item_id === item.id,
+                              );
+                              const isOutOfStock =
+                                (item.estoque_atual || 0) === 0;
+
+                              return (
+                                <CommandItem
+                                  key={item.id}
+                                  onSelect={() =>
+                                    !isAdded && !isOutOfStock && addItem(item)
+                                  }
+                                  disabled={isAdded || isOutOfStock}
+                                  className={
+                                    isAdded || isOutOfStock ? "opacity-50" : ""
+                                  }
+                                >
+                                  <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center gap-2">
+                                      {isLowStock && (
+                                        <AlertCircle className="w-4 h-4 text-yellow-600" />
+                                      )}
+                                      <span>{item.nome}</span>
+                                      {isAdded && (
+                                        <Badge variant="secondary">
+                                          Já adicionado
+                                        </Badge>
+                                      )}
+                                      {isOutOfStock && (
+                                        <Badge className="bg-red-50 text-red-700 border-red-200">
+                                          Sem estoque
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <span className="text-sm text-gray-500">
+                                      Estoque: {item.estoque_atual || 0}
+                                    </span>
+                                  </div>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
-            )}
+            </div>
 
             {/* Items List */}
             {cardapioItens.length > 0 && (
               <div className="border rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-4">
-                  <ShoppingBag className="w-5 h-5 text-gray-600" />
-                  <h3 className="text-lg font-medium">Itens do Cardápio</h3>
+                  <ShoppingBag className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-lg font-semibold text-purple-600">
+                    Itens do Cardápio
+                  </h3>
                 </div>
 
                 <div className="space-y-3">
@@ -680,51 +726,57 @@ export default function CardapioForm({
               </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="margem_lucro_percentual">
-                  Margem de Lucro (%) *
-                </Label>
-                <Input
-                  id="margem_lucro_percentual"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  {...register("margem_lucro_percentual", {
-                    valueAsNumber: true,
-                  })}
-                  className="foodmax-input"
-                  placeholder="0.00"
-                />
-                {errors.margem_lucro_percentual && (
-                  <span className="text-sm text-red-600">
-                    {errors.margem_lucro_percentual.message}
-                  </span>
-                )}
-              </div>
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="col-span-1 md:col-span-2 -mt-2 mb-2 flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-green-600" />
+                  <h3 className="font-semibold text-green-600">Cálculos</h3>
+                </div>
+                <div>
+                  <Label htmlFor="margem_lucro_percentual">
+                    Margem de Lucro (%) *
+                  </Label>
+                  <Input
+                    id="margem_lucro_percentual"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    {...register("margem_lucro_percentual", {
+                      valueAsNumber: true,
+                    })}
+                    className="foodmax-input"
+                    placeholder="0.00"
+                  />
+                  {errors.margem_lucro_percentual && (
+                    <span className="text-sm text-red-600">
+                      {errors.margem_lucro_percentual.message}
+                    </span>
+                  )}
+                </div>
 
-              <div>
-                <Label htmlFor="preco_total_centavos">Preço Total (R$) *</Label>
-                <Input
-                  id="preco_total_centavos"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={(watchedValues.preco_total_centavos / 100).toFixed(2)}
-                  onChange={(e) =>
-                    setValue(
-                      "preco_total_centavos",
-                      Math.round(parseFloat(e.target.value || "0") * 100),
-                    )
-                  }
-                  className="foodmax-input"
-                  placeholder="0.00"
-                />
-                {errors.preco_total_centavos && (
-                  <span className="text-sm text-red-600">
-                    {errors.preco_total_centavos.message}
-                  </span>
-                )}
+                <div>
+                  <Label htmlFor="preco_total_centavos">
+                    Preço Total (R$) *
+                  </Label>
+                  <Input
+                    id="preco_total_centavos"
+                    value={precoTotalMask}
+                    onChange={(e) => {
+                      const cents = parseCurrencyToCentavos(e.target.value);
+                      setPrecoTotalMask(
+                        e.target.value === "" ? "" : formatInputCurrency(cents),
+                      );
+                      setValue("preco_total_centavos", cents);
+                    }}
+                    className="foodmax-input"
+                    placeholder="R$ 0,00"
+                  />
+                  {errors.preco_total_centavos && (
+                    <span className="text-sm text-red-600">
+                      {errors.preco_total_centavos.message}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -739,16 +791,21 @@ export default function CardapioForm({
               />
             </div>
 
-            <div className="border rounded-lg p-4">
-              <div className="flex items-center space-x-2">
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="flex items-center gap-3">
                 <Switch
                   id="ativo"
                   checked={watchedValues.ativo}
                   onCheckedChange={(checked) => setValue("ativo", checked)}
                 />
-                <Label htmlFor="ativo" className="text-sm font-medium">
-                  {watchedValues.ativo ? "Ativar" : "Desativar"}
-                </Label>
+                <div>
+                  <Label htmlFor="ativo" className="text-sm font-medium">
+                    Ativo
+                  </Label>
+                  <p className="text-sm text-gray-600">
+                    {watchedValues.ativo ? "Sim" : "Não"}
+                  </p>
+                </div>
               </div>
             </div>
           </form>

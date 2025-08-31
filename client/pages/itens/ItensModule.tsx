@@ -15,7 +15,7 @@ import {
   Upload,
   Download,
   Tag,
-  ChefHat,
+  Utensils,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -108,7 +108,7 @@ export default function ItensModule() {
     { icon: Users, label: "Clientes", route: "/clientes" },
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
-    { icon: ChefHat, label: "Cardápios", route: "/cardapios" },
+    { icon: Utensils, label: "Cardápios", route: "/cardapios" },
   ];
   const renderMenuItem = (item: any, index: number) => {
     const isActive = location.pathname === item.route;

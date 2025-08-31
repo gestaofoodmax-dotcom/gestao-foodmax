@@ -14,7 +14,7 @@ import {
   Eye,
   Edit,
   Power,
-  ChefHat,
+  Utensils,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,7 +91,7 @@ function FornecedoresModule() {
     { icon: Users, label: "Clientes", route: "/clientes" },
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
-    { icon: ChefHat, label: "Cardápios", route: "/cardapios" },
+    { icon: Utensils, label: "Cardápios", route: "/cardapios" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {

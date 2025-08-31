@@ -14,7 +14,7 @@ import {
   Power,
   Upload,
   Download,
-  ChefHat,
+  Utensils,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -64,6 +64,7 @@ export default function CardapiosModule() {
   const pageSize = 10;
 
   const LOCAL_CARDAPIOS = "fm_cardapios";
+  const LOCAL_CARDAPIOS_ITENS = "fm_cardapios_itens";
   const readLocalCardapios = (): (Cardapio & { qtde_itens: number })[] => {
     try {
       const raw = localStorage.getItem(LOCAL_CARDAPIOS);
@@ -74,6 +75,16 @@ export default function CardapiosModule() {
   };
   const writeLocalCardapios = (list: (Cardapio & { qtde_itens: number })[]) =>
     localStorage.setItem(LOCAL_CARDAPIOS, JSON.stringify(list));
+  const readLocalCardapiosItens = (): Record<string, any[]> => {
+    try {
+      const raw = localStorage.getItem(LOCAL_CARDAPIOS_ITENS);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  };
+  const writeLocalCardapiosItens = (map: Record<string, any[]>) =>
+    localStorage.setItem(LOCAL_CARDAPIOS_ITENS, JSON.stringify(map));
 
   useEffect(() => {
     try {
@@ -87,7 +98,7 @@ export default function CardapiosModule() {
     { icon: Users, label: "Clientes", route: "/clientes" },
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
-    { icon: ChefHat, label: "Cardápios", route: "/cardapios" },
+    { icon: Utensils, label: "Cardápios", route: "/cardapios" },
   ];
   const renderMenuItem = (item: any, index: number) => {
     const isActive = location.pathname === item.route;
@@ -95,7 +106,7 @@ export default function CardapiosModule() {
       <Link
         key={index}
         to={item.route}
-        className={`w-full flex items-center px-4 py-2 text-left transition-colors ${isActive ? "bg-orange-50 text-foodmax-orange border-r-4 border-foodmax-orange" : "text-gray-700 hover:bg-gray-100"}`}
+        className={`w-full flex items-center px-4 py-2 text-left transition-colors ${isActive ? "bg-orange-50 text-foodmax-orange" : "text-gray-700 hover:bg-gray-100"}`}
       >
         <item.icon className="w-4 h-4" />
         {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
@@ -305,6 +316,12 @@ export default function CardapiosModule() {
         const idx = list.findIndex((x) => x.id === currentCardapio.id);
         if (idx >= 0)
           list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
+        // persist itens locamente se enviados
+        if (data.itens) {
+          const map = readLocalCardapiosItens();
+          map[String(currentCardapio.id)] = data.itens;
+          writeLocalCardapiosItens(map);
+        }
         toast({
           title: "Cardápio atualizado",
           description: "Cardápio atualizado com sucesso",
@@ -332,6 +349,10 @@ export default function CardapiosModule() {
           qtde_itens,
         } as any;
         list.unshift(novo);
+        // salvar itens deste cardápio localmente para visualização
+        const map = readLocalCardapiosItens();
+        map[String(novo.id)] = data.itens || [];
+        writeLocalCardapiosItens(map);
         toast({
           title: "Cardápio criado",
           description: "Cardápio criado com sucesso",
@@ -491,33 +512,36 @@ export default function CardapiosModule() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
-                <div className="flex gap-6 overflow-x-auto">
-                  {["Todos", ...TIPOS_CARDAPIO].map((tipo) => (
-                    <button
-                      key={tipo}
-                      className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 whitespace-nowrap ${
-                        activeTab === tipo
-                          ? "text-foodmax-orange"
-                          : "text-gray-700 hover:text-gray-900"
-                      }`}
-                      onClick={() =>
-                        setActiveTab(tipo as TipoCardapio | "Todos")
-                      }
-                    >
-                      <ChefHat className="w-4 h-4" />
-                      <span>{tipo}</span>
-                      <span
-                        className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === tipo ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
+                <div className="flex items-center gap-4 overflow-x-auto py-2">
+                  {["Todos", ...TIPOS_CARDAPIO].map((tipo, idx, arr) => (
+                    <div key={tipo} className="flex items-center gap-4">
+                      <button
+                        className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 whitespace-nowrap ${
+                          activeTab === tipo
+                            ? "text-foodmax-orange"
+                            : "text-gray-700 hover:text-gray-900"
+                        }`}
+                        onClick={() =>
+                          setActiveTab(tipo as TipoCardapio | "Todos")
+                        }
                       >
-                        {tipo === "Todos"
-                          ? totalRecords
-                          : cardapios.filter((c) => c.tipo_cardapio === tipo)
-                              .length}
-                      </span>
-                      {activeTab === tipo && (
-                        <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                        <span>{tipo}</span>
+                        <span
+                          className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === tipo ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
+                        >
+                          {tipo === "Todos"
+                            ? totalRecords
+                            : cardapios.filter((c) => c.tipo_cardapio === tipo)
+                                .length}
+                        </span>
+                        {activeTab === tipo && (
+                          <span className="absolute -bottom-[1px] left-0 right-0 h-[2px] bg-foodmax-orange" />
+                        )}
+                      </button>
+                      {idx < arr.length - 1 && (
+                        <span className="w-px h-5 bg-gray-200" />
                       )}
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>
