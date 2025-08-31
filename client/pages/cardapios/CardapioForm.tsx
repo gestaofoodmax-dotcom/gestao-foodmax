@@ -352,11 +352,7 @@ export default function CardapioForm({
 
     onSave({
       ...data,
-      itens: cardapioItens.map(item => ({
-        item_id: item.item_id,
-        quantidade: item.quantidade,
-        valor_unitario_centavos: item.valor_unitario_centavos,
-      })),
+      itens: cardapioItens,
     });
   };
 
