@@ -429,7 +429,19 @@ export const importCardapios: RequestHandler = async (req, res) => {
       ),
     });
 
-    const { records } = RecordsSchema.parse(req.body);
+    console.log("Import request body:", req.body);
+
+    let records;
+    try {
+      const parsed = RecordsSchema.parse(req.body);
+      records = parsed.records;
+      console.log("Parsed records:", records);
+    } catch (parseError) {
+      console.error("Schema validation error:", parseError);
+      // Try to work with raw records if schema fails
+      records = req.body.records || [];
+      console.log("Using raw records:", records);
+    }
 
     const parseCentavos = (val: any): number => {
       if (val === undefined || val === null || val === "") return 0;
