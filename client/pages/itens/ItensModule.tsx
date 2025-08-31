@@ -404,8 +404,9 @@ export default function ItensModule() {
         });
         toast({ title: "Item criado", description: "Item criado com sucesso" });
       }
+      try { localStorage.removeItem(LOCAL_ITENS); } catch {}
       setSelectedIds([]);
-      loadItens();
+      await loadItens();
       setShowForm(false);
     } catch (error: any) {
       // local fallback
@@ -467,8 +468,9 @@ export default function ItensModule() {
     try {
       await makeRequest(`/api/itens/${currentItem.id}`, { method: "DELETE" });
       toast({ title: "Item excluído", description: "Item excluído com sucesso" });
+      try { localStorage.removeItem(LOCAL_ITENS); } catch {}
       setSelectedIds([]);
-      loadItens();
+      await loadItens();
       setShowDeleteAlert(false);
     } catch (error: any) {
       const list = readLocalItens().filter((e) => e.id !== currentItem.id);
@@ -495,7 +497,8 @@ export default function ItensModule() {
         });
         toast({ title: "Categoria criada", description: "Categoria criada com sucesso" });
       }
-      loadCategorias();
+      try { localStorage.removeItem(LOCAL_CATS); } catch {}
+      await loadCategorias();
       setShowCategoriaForm(false);
       setCurrentCategoria(null);
       setIsEditingCategoria(false);
@@ -550,7 +553,8 @@ export default function ItensModule() {
     try {
       await makeRequest(`/api/itens-categorias/${c.id}`, { method: "DELETE" });
       toast({ title: "Categoria excluída", description: "Categoria excluída com sucesso" });
-      loadCategorias();
+      try { localStorage.removeItem(LOCAL_CATS); } catch {}
+      await loadCategorias();
     } catch {
       const list = readLocalCats().filter((e) => e.id !== c.id);
       writeLocalCats(list);
@@ -906,6 +910,8 @@ export default function ItensModule() {
           try {
             if (activeTab === "itens") {
               let imported = 0;
+              let remote = 0;
+              let local = 0;
               for (const r of records) {
                 const payload: any = {
                   nome: r.nome,
@@ -930,6 +936,7 @@ export default function ItensModule() {
                     body: JSON.stringify(payload),
                   });
                   imported++;
+                  remote++;
                 } catch {
                   const list = readLocalItens();
                   const now = new Date().toISOString();
@@ -944,16 +951,20 @@ export default function ItensModule() {
                   writeLocalItens(list);
                   setItens(list);
                   imported++;
+                  local++;
                 }
               }
+              try { localStorage.removeItem(LOCAL_ITENS); } catch {}
               await loadItens();
               return {
                 success: true,
-                message: `${imported} itens importados`,
+                message: `${imported} itens importados (banco: ${remote}, local: ${local})`,
                 imported,
               } as any;
             } else {
               let imported = 0;
+              let remote = 0;
+              let local = 0;
               for (const r of records) {
                 const payload: any = {
                   nome: r.nome,
@@ -969,6 +980,7 @@ export default function ItensModule() {
                     body: JSON.stringify(payload),
                   });
                   imported++;
+                  remote++;
                 } catch {
                   const list = readLocalCats();
                   const now = new Date().toISOString();
@@ -983,12 +995,14 @@ export default function ItensModule() {
                   writeLocalCats(list);
                   setCategorias(list);
                   imported++;
+                  local++;
                 }
               }
+              try { localStorage.removeItem(LOCAL_CATS); } catch {}
               await loadCategorias();
               return {
                 success: true,
-                message: `${imported} categorias importadas`,
+                message: `${imported} categorias importadas (banco: ${remote}, local: ${local})`,
                 imported,
               } as any;
             }
@@ -1017,6 +1031,7 @@ export default function ItensModule() {
                 body: JSON.stringify({ ids: selectedIds }),
               });
               toast({ title: "Itens excluídos", description: `${selectedIds.length} registro(s) excluído(s) com sucesso` });
+              try { localStorage.removeItem(LOCAL_ITENS); } catch {}
               await loadItens();
             } else {
               const res = await makeRequest(`/api/itens-categorias/bulk-delete`, {
@@ -1029,6 +1044,7 @@ export default function ItensModule() {
                 toast({ title: "Alguns registros não puderam ser excluídos", description: `${blocked.length} categoria(s) possuem Itens vinculados.` });
               }
               toast({ title: "Categorias excluídas", description: `${deleted} categoria(s) excluída(s) com sucesso` });
+              try { localStorage.removeItem(LOCAL_CATS); } catch {}
               await loadCategorias();
             }
             setSelectedIds([]);
