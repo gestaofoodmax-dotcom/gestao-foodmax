@@ -487,13 +487,13 @@ export default function CardapiosModule() {
               margem_lucro: cardapio.margem_lucro_percentual,
               preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
               descricao: cardapio.descricao || "",
-              status: cardapio.ativo ? "Ativo" : "Inativo",
-              data_cadastro: new Date(
+              ativo: cardapio.ativo ? "Ativo" : "Inativo",
+              data_cadastro: cardapio.data_cadastro ? new Date(
                 cardapio.data_cadastro,
-              ).toLocaleDateString("pt-BR"),
-              data_atualizacao: new Date(
+              ).toLocaleDateString("pt-BR") : "",
+              data_atualizacao: cardapio.data_atualizacao ? new Date(
                 cardapio.data_atualizacao,
-              ).toLocaleDateString("pt-BR"),
+              ).toLocaleDateString("pt-BR") : "",
               item_nome: item.item_nome,
               item_quantidade: item.quantidade,
               item_valor_unitario: (item.valor_unitario_centavos / 100).toFixed(
