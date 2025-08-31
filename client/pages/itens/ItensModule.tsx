@@ -518,7 +518,7 @@ export default function ItensModule() {
         title: "Item excluído",
         description: "Item excluído com sucesso",
       });
-      setSelectedIds([]);
+      setSelectedIdsItens([]);
       setShowDeleteAlert(false);
     }
   };
