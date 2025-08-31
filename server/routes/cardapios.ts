@@ -559,7 +559,9 @@ export const importCardapios: RequestHandler = async (req, res) => {
 
           // Create cardapio items if any exist
           if (cardapioData.itens && cardapioData.itens.length > 0) {
-            console.log(`Creating ${cardapioData.itens.length} items for cardapio ${cardapio.nome}`);
+            console.log(
+              `Creating ${cardapioData.itens.length} items for cardapio ${cardapio.nome}`,
+            );
 
             for (const itemData of cardapioData.itens) {
               // First, try to find the item by name in the database
@@ -577,7 +579,9 @@ export const importCardapios: RequestHandler = async (req, res) => {
 
                 if (existingItem) {
                   item_id = existingItem.id;
-                  console.log(`Found existing item: ${itemName} with id ${item_id}`);
+                  console.log(
+                    `Found existing item: ${itemName} with id ${item_id}`,
+                  );
                 } else {
                   // Create new item if it doesn't exist
                   const { data: newItem, error: itemError } = await supabase
@@ -597,9 +601,14 @@ export const importCardapios: RequestHandler = async (req, res) => {
 
                   if (newItem && !itemError) {
                     item_id = newItem.id;
-                    console.log(`Created new item: ${itemName} with id ${item_id}`);
+                    console.log(
+                      `Created new item: ${itemName} with id ${item_id}`,
+                    );
                   } else {
-                    console.error(`Error creating item ${itemName}:`, itemError);
+                    console.error(
+                      `Error creating item ${itemName}:`,
+                      itemError,
+                    );
                   }
                 }
               }
@@ -616,9 +625,14 @@ export const importCardapios: RequestHandler = async (req, res) => {
                   });
 
                 if (itemRelationError) {
-                  console.error(`Error creating cardapio item relation:`, itemRelationError);
+                  console.error(
+                    `Error creating cardapio item relation:`,
+                    itemRelationError,
+                  );
                 } else {
-                  console.log(`Created cardapio item relation for item ${item_id}`);
+                  console.log(
+                    `Created cardapio item relation for item ${item_id}`,
+                  );
                 }
               }
             }

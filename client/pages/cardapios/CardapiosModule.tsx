@@ -432,7 +432,9 @@ export default function CardapiosModule() {
     );
   }, [cardapios, activeTab]);
 
-  const loadAllCardapiosForExport = async (): Promise<(Cardapio & { qtde_itens: number })[]> => {
+  const loadAllCardapiosForExport = async (): Promise<
+    (Cardapio & { qtde_itens: number })[]
+  > => {
     try {
       // Load ALL cardápios without any filters for export
       const params = new URLSearchParams({
