@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Item, formatCurrencyBRL } from "@shared/itens";
-import { Info, Edit, X, List, FileText } from "lucide-react";
+import { Info, Edit, X, List, FileText, DollarSign, Boxes, Ruler } from "lucide-react";
 
 export default function ItemView({
   isOpen,
@@ -53,7 +53,7 @@ export default function ItemView({
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
+          <DialogTitle className="text-xl sm:text-2xl font-normal py-1">
             Visualizar Item
           </DialogTitle>
         </DialogHeader>
@@ -88,17 +88,42 @@ export default function ItemView({
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
+              <DataField label="Nome" value={item.nome} />
               <DataField label="Categoria" value={categoriaNome} />
-              <DataField
-                label="Preço"
-                value={formatCurrencyBRL(item.preco_centavos)}
-              />
-              <DataField
-                label="Custo Pago"
-                value={formatCurrencyBRL(item.custo_pago_centavos)}
-              />
+            </div>
+          </div>
+
+          {/* Medidas */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-4">
+              <Ruler className="w-5 h-5 text-indigo-600" />
+              <h3 className="font-semibold text-indigo-600">Medidas</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <DataField label="Unidade" value={item.unidade_medida} />
               <DataField label="Peso (g)" value={item.peso_gramas} />
+            </div>
+          </div>
+
+          {/* Preços */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-4">
+              <DollarSign className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Preços</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <DataField label="Preço" value={formatCurrencyBRL(item.preco_centavos)} />
+              <DataField label="Custo Pago" value={formatCurrencyBRL(item.custo_pago_centavos)} />
+            </div>
+          </div>
+
+          {/* Estoque */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-4">
+              <Boxes className="w-5 h-5 text-purple-600" />
+              <h3 className="font-semibold text-purple-600">Estoque</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <DataField
                 label="Estoque Atual"
                 value={
