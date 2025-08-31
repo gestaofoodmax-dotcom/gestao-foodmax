@@ -126,6 +126,16 @@ export default function CardapioForm({
   const [stockAlertMessage, setStockAlertMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const parseCurrencyToCentavos = (val: string) => {
+    const digits = val.replace(/[^0-9]/g, "");
+    return digits ? parseInt(digits, 10) : 0;
+  };
+  const formatInputCurrency = (centavos: number) => {
+    const v = (centavos || 0) / 100;
+    return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  };
+  const [precoTotalMask, setPrecoTotalMask] = useState("");
+
   const {
     register,
     handleSubmit,
