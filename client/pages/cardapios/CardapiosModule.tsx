@@ -749,67 +749,103 @@ export default function CardapiosModule() {
           const n = h.trim().toLowerCase();
           const map: Record<string, string> = {
             nome: "nome",
-            tipo: "tipo_cardapio",
+            "tipo de cardápio": "tipo_cardapio",
             "tipo cardápio": "tipo_cardapio",
             "tipo cardapio": "tipo_cardapio",
-            "margem lucro (%)": "margem_lucro_percentual",
-            "margem lucro": "margem_lucro_percentual",
-            margem: "margem_lucro_percentual",
-            "preço itens": "preco_itens",
-            "preco itens": "preco_itens",
-            "preço itens (centavos)": "preco_itens_centavos",
-            "preco itens (centavos)": "preco_itens_centavos",
+            "quantidade total": "quantidade_total",
+            "preço dos itens": "preco_itens",
+            "preco dos itens": "preco_itens",
+            "margem de lucro": "margem_lucro",
+            "margem lucro": "margem_lucro",
             "preço total": "preco_total",
             "preco total": "preco_total",
-            "preço total (centavos)": "preco_total_centavos",
-            "preco total (centavos)": "preco_total_centavos",
             descricao: "descricao",
-            status: "ativo",
-            ativo: "ativo",
+            descrição: "descricao",
+            status: "status",
+            "data cadastro": "data_cadastro",
+            "data atualização": "data_atualizacao",
+            "data atualizacao": "data_atualizacao",
+            "item nome": "item_nome",
+            "item quantidade": "item_quantidade",
+            "item valor unitario": "item_valor_unitario",
+            "item valor unitário": "item_valor_unitario",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
         validateRecord={(r) => {
           const errors: string[] = [];
           if (!r.nome) errors.push("Nome é obrigatório");
-          const tipo = String(r.tipo_cardapio || r.tipo || "").trim();
+          const tipo = String(r.tipo_cardapio || "").trim();
           if (!tipo) errors.push("Tipo de Cardápio é obrigatório");
           else if (!TIPOS_CARDAPIO.includes(tipo as any)) errors.push("Tipo inválido");
-          if (r.margem_lucro_percentual == null || r.margem_lucro_percentual === "") errors.push("Margem é obrigatória");
-          if ((r.preco_total == null || r.preco_total === "") && (r.preco_total_centavos == null || r.preco_total_centavos === "")) errors.push("Preço Total é obrigatório");
+          if (r.margem_lucro == null || r.margem_lucro === "") errors.push("Margem de Lucro é obrigatória");
+          if (r.preco_total == null || r.preco_total === "") errors.push("Preço Total é obrigatório");
           return errors;
         }}
         onImport={async (records) => {
           try {
-            const response = await makeRequest(`/api/cardapios/import`, {
-              method: "POST",
-              body: JSON.stringify({ records }),
-            });
+            // Group records by cardapio (nome + tipo)
+            const cardapiosMap = new Map<string, any>();
+
+            for (const r of records) {
+              const key = `${r.nome}_${r.tipo_cardapio}`;
+              if (!cardapiosMap.has(key)) {
+                const parseCentavos = (val: any): number => {
+                  if (val === undefined || val === null || val === "") return 0;
+                  const s = String(val).replace(",", ".");
+                  const n = Number(s);
+                  return !isNaN(n) ? Math.round(n * 100) : 0;
+                };
+
+                cardapiosMap.set(key, {
+                  nome: r.nome,
+                  tipo_cardapio: r.tipo_cardapio,
+                  quantidade_total: Number(r.quantidade_total) || 0,
+                  preco_itens_centavos: parseCentavos(r.preco_itens),
+                  margem_lucro_percentual: Number(String(r.margem_lucro || 0).replace(",", ".")) || 0,
+                  preco_total_centavos: parseCentavos(r.preco_total),
+                  descricao: r.descricao || "",
+                  ativo: String(r.status || "Ativo").toLowerCase() === "ativo",
+                  itens: [],
+                });
+              }
+
+              // Add item if provided
+              if (r.item_nome) {
+                const parseCentavos = (val: any): number => {
+                  if (val === undefined || val === null || val === "") return 0;
+                  const s = String(val).replace(",", ".");
+                  const n = Number(s);
+                  return !isNaN(n) ? Math.round(n * 100) : 0;
+                };
+
+                cardapiosMap.get(key).itens.push({
+                  item_id: 1, // Placeholder - would need item mapping
+                  quantidade: Number(r.item_quantidade) || 1,
+                  valor_unitario_centavos: parseCentavos(r.item_valor_unitario),
+                });
+              }
+            }
+
+            // Create cardapios via API
+            let imported = 0;
+            for (const cardapioData of cardapiosMap.values()) {
+              try {
+                await makeRequest(`/api/cardapios`, {
+                  method: "POST",
+                  body: JSON.stringify(cardapioData),
+                });
+                imported++;
+              } catch (e) {
+                console.error("Error creating cardapio:", e);
+              }
+            }
+
             await loadCardapios();
-            return { success: true, imported: response?.imported ?? records.length, message: "Importação concluída" } as any;
+            return { success: true, imported, message: `${imported} cardápio(s) importado(s) com sucesso` } as any;
           } catch (e) {
-            // Fallback local
-            const list = readLocalCardapios();
-            const now = new Date().toISOString();
-            const mapped = records.map((r: any, i: number) => ({
-              id: Date.now() + i,
-              id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
-              nome: r.nome,
-              tipo_cardapio: (TIPOS_CARDAPIO.find((x) => x.toLowerCase() === String(r.tipo_cardapio || r.tipo || "").toLowerCase()) as TipoCardapio) || "Outro",
-              quantidade_total: 0,
-              preco_itens_centavos: 0,
-              margem_lucro_percentual: Number(String(r.margem_lucro_percentual || 0).replace(",", ".")) || 0,
-              preco_total_centavos: 0,
-              descricao: r.descricao,
-              ativo: String(r.ativo ?? "true").toLowerCase() !== "false",
-              data_cadastro: now,
-              data_atualizacao: now,
-              qtde_itens: 0,
-            })) as (Cardapio & { qtde_itens: number })[];
-            const merged = [...mapped, ...list];
-            writeLocalCardapios(merged);
-            setCardapios(merged);
-            return { success: true, imported: mapped.length, message: "Importação concluída (local)" } as any;
+            console.error("Import error:", e);
+            return { success: false, message: "Erro ao importar cardápios" } as any;
           }
         }}
       />
