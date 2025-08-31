@@ -1216,15 +1216,16 @@ export default function ItensModule() {
         isOpen={showBulkDelete}
         onClose={() => setShowBulkDelete(false)}
         onConfirm={async () => {
+          const currentSelectedIds = activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias;
           try {
             if (activeTab === "itens") {
               await makeRequest(`/api/itens/bulk-delete`, {
                 method: "POST",
-                body: JSON.stringify({ ids: selectedIds }),
+                body: JSON.stringify({ ids: currentSelectedIds }),
               });
               toast({
                 title: "Itens excluídos",
-                description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
+                description: `${currentSelectedIds.length} registro(s) excluído(s) com sucesso`,
               });
               try {
                 localStorage.removeItem(LOCAL_ITENS);
@@ -1235,7 +1236,7 @@ export default function ItensModule() {
                 `/api/itens-categorias/bulk-delete`,
                 {
                   method: "POST",
-                  body: JSON.stringify({ ids: selectedIds }),
+                  body: JSON.stringify({ ids: currentSelectedIds }),
                 },
               );
               const deleted = (res?.deletedCount as number) || 0;
@@ -1255,27 +1256,35 @@ export default function ItensModule() {
               } catch {}
               await loadCategorias();
             }
-            setSelectedIds([]);
+            if (activeTab === "itens") {
+              setSelectedIdsItens([]);
+            } else {
+              setSelectedIdsCategorias([]);
+            }
             setShowBulkDelete(false);
           } catch (error: any) {
             if (activeTab === "itens") {
               const list = readLocalItens().filter(
-                (e) => !selectedIds.includes(e.id),
+                (e) => !currentSelectedIds.includes(e.id),
               );
               writeLocalItens(list);
               setItens(list);
             } else {
               const list = readLocalCats().filter(
-                (e) => !selectedIds.includes(e.id),
+                (e) => !currentSelectedIds.includes(e.id),
               );
               writeLocalCats(list);
               setCategorias(list);
             }
             toast({
               title: "Exclusão concluída localmente",
-              description: `${selectedIds.length} registro(s) removido(s)`,
+              description: `${currentSelectedIds.length} registro(s) removido(s)`,
             });
-            setSelectedIds([]);
+            if (activeTab === "itens") {
+              setSelectedIdsItens([]);
+            } else {
+              setSelectedIdsCategorias([]);
+            }
             setShowBulkDelete(false);
           }
         }}
