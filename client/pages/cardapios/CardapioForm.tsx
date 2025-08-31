@@ -286,6 +286,10 @@ export default function CardapioForm({
     setValue("preco_total_centavos", precoTotal);
   }, [precoTotal, setValue]);
 
+  useEffect(() => {
+    setPrecoTotalMask(formatInputCurrency(watchedValues.preco_total_centavos || 0));
+  }, [watchedValues.preco_total_centavos]);
+
   // Low-stock toast on category selection disabled per requirements
 
   const addItem = (item: Item) => {
