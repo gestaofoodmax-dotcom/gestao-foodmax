@@ -54,13 +54,19 @@ export default function ItensModule() {
   const [categorias, setCategorias] = useState<ItemCategoria[]>([]);
 
   const [loading, setLoading] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  // Independent states for each tab
+  const [selectedIdsItens, setSelectedIdsItens] = useState<number[]>([]);
+  const [selectedIdsCategorias, setSelectedIdsCategorias] = useState<number[]>([]);
+  const [searchTermItens, setSearchTermItens] = useState("");
+  const [searchTermCategorias, setSearchTermCategorias] = useState("");
+  const [currentPageItens, setCurrentPageItens] = useState(1);
+  const [currentPageCategorias, setCurrentPageCategorias] = useState(1);
+
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showCategoriaView, setShowCategoriaView] = useState(false);
   const [showBulkDelete, setShowBulkDelete] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const pageSize = 10;
 
