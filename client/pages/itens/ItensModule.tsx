@@ -54,13 +54,21 @@ export default function ItensModule() {
   const [categorias, setCategorias] = useState<ItemCategoria[]>([]);
 
   const [loading, setLoading] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  // Independent states for each tab
+  const [selectedIdsItens, setSelectedIdsItens] = useState<number[]>([]);
+  const [selectedIdsCategorias, setSelectedIdsCategorias] = useState<number[]>(
+    [],
+  );
+  const [searchTermItens, setSearchTermItens] = useState("");
+  const [searchTermCategorias, setSearchTermCategorias] = useState("");
+  const [currentPageItens, setCurrentPageItens] = useState(1);
+  const [currentPageCategorias, setCurrentPageCategorias] = useState(1);
+
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showCategoriaView, setShowCategoriaView] = useState(false);
   const [showBulkDelete, setShowBulkDelete] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const pageSize = 10;
 
@@ -304,9 +312,9 @@ export default function ItensModule() {
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        page: String(currentPage),
+        page: String(currentPageItens),
         limit: String(pageSize),
-        ...(searchTerm && { search: searchTerm }),
+        ...(searchTermItens && { search: searchTermItens }),
       });
       let response: ItensListResponse | null = null;
       try {
@@ -325,7 +333,7 @@ export default function ItensModule() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, makeRequest]);
+  }, [currentPageItens, searchTermItens, makeRequest]);
 
   const loadCategorias = useCallback(async () => {
     try {
@@ -350,15 +358,25 @@ export default function ItensModule() {
     loadItens();
   }, [loadItens, loadCategorias, isLoading]);
 
-  useEffect(() => {
-    setSelectedIds([]);
-  }, [activeTab]);
+  // Removed: Each tab now has independent selectedIds state
 
   const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
+    if (activeTab === "itens") {
+      setSearchTermItens(value);
+      setCurrentPageItens(1);
+    } else {
+      setSearchTermCategorias(value);
+      setCurrentPageCategorias(1);
+    }
   };
-  const handlePageChange = (page: number) => setCurrentPage(page);
+
+  const handlePageChange = (page: number) => {
+    if (activeTab === "itens") {
+      setCurrentPageItens(page);
+    } else {
+      setCurrentPageCategorias(page);
+    }
+  };
 
   const [showForm, setShowForm] = useState(false);
   const [showView, setShowView] = useState(false);
@@ -413,7 +431,7 @@ export default function ItensModule() {
       try {
         localStorage.removeItem(LOCAL_ITENS);
       } catch {}
-      setSelectedIds([]);
+      setSelectedIdsItens([]);
       await loadItens();
       setShowForm(false);
     } catch (error: any) {
@@ -491,7 +509,7 @@ export default function ItensModule() {
       try {
         localStorage.removeItem(LOCAL_ITENS);
       } catch {}
-      setSelectedIds([]);
+      setSelectedIdsItens([]);
       await loadItens();
       setShowDeleteAlert(false);
     } catch (error: any) {
@@ -502,7 +520,7 @@ export default function ItensModule() {
         title: "Item excluído",
         description: "Item excluído com sucesso",
       });
-      setSelectedIds([]);
+      setSelectedIdsItens([]);
       setShowDeleteAlert(false);
     }
   };
@@ -747,20 +765,34 @@ export default function ItensModule() {
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Buscar registros..."
-                    value={searchTerm}
+                    value={
+                      activeTab === "itens"
+                        ? searchTermItens
+                        : searchTermCategorias
+                    }
                     onChange={(e) => handleSearch(e.target.value)}
                     className="foodmax-input pl-10"
                   />
                 </div>
                 <div className="flex items-center gap-2">
-                  {selectedIds.length > 0 && (
+                  {(activeTab === "itens"
+                    ? selectedIdsItens
+                    : selectedIdsCategorias
+                  ).length > 0 && (
                     <Button
                       variant="destructive"
                       size="sm"
                       onClick={() => setShowBulkDelete(true)}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Excluir Selecionados ({selectedIds.length})
+                      Excluir Selecionados (
+                      {
+                        (activeTab === "itens"
+                          ? selectedIdsItens
+                          : selectedIdsCategorias
+                        ).length
+                      }
+                      )
                     </Button>
                   )}
                   <Button
@@ -814,10 +846,10 @@ export default function ItensModule() {
                     "-",
                 }))}
                 loading={loading}
-                selectedIds={selectedIds}
-                onSelectionChange={setSelectedIds}
-                searchTerm={searchTerm}
-                currentPage={currentPage}
+                selectedIds={selectedIdsItens}
+                onSelectionChange={setSelectedIdsItens}
+                searchTerm={searchTermItens}
+                currentPage={currentPageItens}
                 pageSize={pageSize}
                 totalRecords={totalRecords}
                 onPageChange={handlePageChange}
@@ -828,10 +860,10 @@ export default function ItensModule() {
                 columns={gridColumnsCategorias}
                 data={categorias}
                 loading={false}
-                selectedIds={selectedIds}
-                onSelectionChange={setSelectedIds}
-                searchTerm={searchTerm}
-                currentPage={currentPage}
+                selectedIds={selectedIdsCategorias}
+                onSelectionChange={setSelectedIdsCategorias}
+                searchTerm={searchTermCategorias}
+                currentPage={currentPageCategorias}
                 pageSize={pageSize}
                 totalRecords={categorias.length}
                 onPageChange={handlePageChange}
@@ -922,7 +954,9 @@ export default function ItensModule() {
               }))
             : categorias
         }
-        selectedIds={selectedIds}
+        selectedIds={
+          activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias
+        }
         moduleName={activeTab === "itens" ? "Itens" : "Categorias"}
         columns={
           activeTab === "itens"
@@ -1200,15 +1234,17 @@ export default function ItensModule() {
         isOpen={showBulkDelete}
         onClose={() => setShowBulkDelete(false)}
         onConfirm={async () => {
+          const currentSelectedIds =
+            activeTab === "itens" ? selectedIdsItens : selectedIdsCategorias;
           try {
             if (activeTab === "itens") {
               await makeRequest(`/api/itens/bulk-delete`, {
                 method: "POST",
-                body: JSON.stringify({ ids: selectedIds }),
+                body: JSON.stringify({ ids: currentSelectedIds }),
               });
               toast({
                 title: "Itens excluídos",
-                description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
+                description: `${currentSelectedIds.length} registro(s) excluído(s) com sucesso`,
               });
               try {
                 localStorage.removeItem(LOCAL_ITENS);
@@ -1219,7 +1255,7 @@ export default function ItensModule() {
                 `/api/itens-categorias/bulk-delete`,
                 {
                   method: "POST",
-                  body: JSON.stringify({ ids: selectedIds }),
+                  body: JSON.stringify({ ids: currentSelectedIds }),
                 },
               );
               const deleted = (res?.deletedCount as number) || 0;
@@ -1239,31 +1275,43 @@ export default function ItensModule() {
               } catch {}
               await loadCategorias();
             }
-            setSelectedIds([]);
+            if (activeTab === "itens") {
+              setSelectedIdsItens([]);
+            } else {
+              setSelectedIdsCategorias([]);
+            }
             setShowBulkDelete(false);
           } catch (error: any) {
             if (activeTab === "itens") {
               const list = readLocalItens().filter(
-                (e) => !selectedIds.includes(e.id),
+                (e) => !currentSelectedIds.includes(e.id),
               );
               writeLocalItens(list);
               setItens(list);
             } else {
               const list = readLocalCats().filter(
-                (e) => !selectedIds.includes(e.id),
+                (e) => !currentSelectedIds.includes(e.id),
               );
               writeLocalCats(list);
               setCategorias(list);
             }
             toast({
               title: "Exclusão concluída localmente",
-              description: `${selectedIds.length} registro(s) removido(s)`,
+              description: `${currentSelectedIds.length} registro(s) removido(s)`,
             });
-            setSelectedIds([]);
+            if (activeTab === "itens") {
+              setSelectedIdsItens([]);
+            } else {
+              setSelectedIdsCategorias([]);
+            }
             setShowBulkDelete(false);
           }
         }}
-        selectedCount={selectedIds.length}
+        selectedCount={
+          activeTab === "itens"
+            ? selectedIdsItens.length
+            : selectedIdsCategorias.length
+        }
       />
     </div>
   );
