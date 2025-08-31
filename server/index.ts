@@ -55,6 +55,15 @@ import {
   bulkDeleteCategorias,
   toggleCategoriaStatus,
 } from "./routes/itens";
+import {
+  listCardapios,
+  getCardapio,
+  createCardapio,
+  updateCardapio,
+  deleteCardapio,
+  bulkDeleteCardapios,
+  toggleCardapioStatus,
+} from "./routes/cardapios";
 
 export function createServer() {
   const app = express();
