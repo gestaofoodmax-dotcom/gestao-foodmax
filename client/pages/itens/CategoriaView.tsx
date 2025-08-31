@@ -87,20 +87,6 @@ export default function CategoriaView({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DataField label="Nome" value={categoria.nome} />
-              <DataField
-                label="Status"
-                value={
-                  <Badge
-                    className={
-                      categoria.ativo
-                        ? "bg-green-50 text-green-700 border border-green-200"
-                        : "bg-red-50 text-red-700 border border-red-200"
-                    }
-                  >
-                    {categoria.ativo ? "Sim" : "Não"}
-                  </Badge>
-                }
-              />
               <div className="md:col-span-2">
                 <DataField
                   label="Descrição"
@@ -119,6 +105,7 @@ export default function CategoriaView({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DataField label="Data de Cadastro" value={formatDate(categoria.data_cadastro)} />
               <DataField label="Data de Atualização" value={formatDate(categoria.data_atualizacao)} />
+              <DataField label="Ativo" value={categoria.ativo ? "Sim" : "Não"} />
             </div>
           </div>
         </div>
