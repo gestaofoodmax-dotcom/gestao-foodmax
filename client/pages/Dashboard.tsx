@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   List,
   Truck,
+  Package,
   User,
   Store,
   CreditCard,
