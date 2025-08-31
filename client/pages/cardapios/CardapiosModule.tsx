@@ -350,7 +350,7 @@ export default function CardapiosModule() {
           qtde_itens,
         } as any;
         list.unshift(novo);
-        // salvar itens deste cardápio localmente para visualização
+        // salvar itens deste card��pio localmente para visualização
         const map = readLocalCardapiosItens();
         map[String(novo.id)] = data.itens || [];
         writeLocalCardapiosItens(map);
@@ -789,78 +789,60 @@ export default function CardapiosModule() {
           try {
             console.log("Importing records:", records);
 
-            // Group records by cardapio (nome + tipo)
+            // Send records directly to server for processing
+            const response = await makeRequest(`/api/cardapios/import`, {
+              method: "POST",
+              body: JSON.stringify({ records }),
+            });
+
+            console.log("Import response:", response);
+            await loadCardapios();
+
+            return {
+              success: true,
+              imported: response?.imported ?? 0,
+              message: `${response?.imported ?? 0} cardápio(s) importado(s) com sucesso`
+            } as any;
+          } catch (e: any) {
+            console.error("Import error:", e);
+
+            // Fallback to local storage
+            const list = readLocalCardapios();
+            const now = new Date().toISOString();
+
             const cardapiosMap = new Map<string, any>();
 
-            const parseCentavos = (val: any): number => {
-              if (val === undefined || val === null || val === "") return 0;
-              const s = String(val).replace(",", ".");
-              const n = Number(s);
-              return !isNaN(n) ? Math.round(n * 100) : 0;
-            };
-
             for (const r of records) {
-              console.log("Processing record:", r);
               const key = `${r.nome}_${r.tipo_cardapio}`;
-
               if (!cardapiosMap.has(key)) {
                 cardapiosMap.set(key, {
+                  id: Date.now() + Math.random(),
+                  id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
                   nome: r.nome,
                   tipo_cardapio: r.tipo_cardapio,
                   quantidade_total: Number(r.quantidade_total) || 0,
-                  preco_itens_centavos: parseCentavos(r.preco_itens),
+                  preco_itens_centavos: 0,
                   margem_lucro_percentual: Number(String(r.margem_lucro || 0).replace(",", ".")) || 0,
-                  preco_total_centavos: parseCentavos(r.preco_total),
+                  preco_total_centavos: 0,
                   descricao: r.descricao || "",
                   ativo: String(r.status || "Ativo").toLowerCase() === "ativo",
-                  itens: [],
-                });
-              }
-
-              // Add item if provided
-              if (r.item_nome && r.item_nome.trim()) {
-                cardapiosMap.get(key).itens.push({
-                  item_id: 1, // Placeholder
-                  quantidade: Number(r.item_quantidade) || 1,
-                  valor_unitario_centavos: parseCentavos(r.item_valor_unitario),
+                  data_cadastro: now,
+                  data_atualizacao: now,
+                  qtde_itens: 0,
                 });
               }
             }
 
-            console.log("Cardapios to create:", Array.from(cardapiosMap.values()));
+            const newCardapios = Array.from(cardapiosMap.values());
+            const merged = [...newCardapios, ...list];
+            writeLocalCardapios(merged);
+            setCardapios(merged);
 
-            // Create cardapios via API
-            let imported = 0;
-            for (const cardapioData of cardapiosMap.values()) {
-              try {
-                console.log("Creating cardapio:", cardapioData);
-                const response = await makeRequest(`/api/cardapios`, {
-                  method: "POST",
-                  body: JSON.stringify(cardapioData),
-                });
-                console.log("Cardapio created:", response);
-                imported++;
-              } catch (e) {
-                console.error("Error creating cardapio:", e);
-                // Try fallback without items
-                try {
-                  const fallbackData = { ...cardapioData, itens: [] };
-                  await makeRequest(`/api/cardapios`, {
-                    method: "POST",
-                    body: JSON.stringify(fallbackData),
-                  });
-                  imported++;
-                } catch (e2) {
-                  console.error("Fallback also failed:", e2);
-                }
-              }
-            }
-
-            await loadCardapios();
-            return { success: true, imported, message: `${imported} cardápio(s) importado(s) com sucesso` } as any;
-          } catch (e) {
-            console.error("Import error:", e);
-            return { success: false, message: `Erro ao importar: ${e}` } as any;
+            return {
+              success: true,
+              imported: newCardapios.length,
+              message: `${newCardapios.length} cardápio(s) importado(s) (local)`
+            } as any;
           }
         }}
       />
