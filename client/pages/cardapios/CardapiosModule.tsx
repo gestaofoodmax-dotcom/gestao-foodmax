@@ -516,7 +516,7 @@ export default function CardapiosModule() {
                   {["Todos", ...TIPOS_CARDAPIO].map((tipo, idx, arr) => (
                     <div key={tipo} className="flex items-center gap-4">
                       <button
-                        className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 whitespace-nowrap ${
+                        className={`relative -mb-px pb-1 pt-1 text-base flex items-center gap-2 whitespace-nowrap ${
                           activeTab === tipo
                             ? "text-foodmax-orange"
                             : "text-gray-700 hover:text-gray-900"
@@ -535,7 +535,7 @@ export default function CardapiosModule() {
                                 .length}
                         </span>
                         {activeTab === tipo && (
-                          <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
+                          <span className="absolute bottom-0 left-0 right-0 h-[3px] bg-foodmax-orange" />
                         )}
                       </button>
                       {idx < arr.length - 1 && (
@@ -642,9 +642,16 @@ export default function CardapiosModule() {
           nome: c.nome,
           qtde_itens: c.qtde_itens,
           preco_total: formatCurrencyBRL(c.preco_total_centavos),
+          preco_itens: formatCurrencyBRL(c.preco_itens_centavos),
+          margem_lucro_percentual: c.margem_lucro_percentual,
+          quantidade_total: c.quantidade_total,
           tipo_cardapio: c.tipo_cardapio,
+          descricao: c.descricao || "",
           status: c.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(c.data_cadastro).toISOString().split("T")[0],
+          data_cadastro: new Date(c.data_cadastro).toLocaleDateString("pt-BR"),
+          data_atualizacao: new Date(c.data_atualizacao).toLocaleDateString(
+            "pt-BR",
+          ),
         }))}
         selectedIds={selectedIds}
         moduleName="Cardápios"
@@ -652,9 +659,14 @@ export default function CardapiosModule() {
           { key: "nome", label: "Nome" },
           { key: "qtde_itens", label: "Qtde Itens" },
           { key: "preco_total", label: "Preço Total" },
+          { key: "preco_itens", label: "Preço Itens" },
+          { key: "margem_lucro_percentual", label: "Margem Lucro (%)" },
+          { key: "quantidade_total", label: "Quantidade Total" },
           { key: "tipo_cardapio", label: "Tipo" },
+          { key: "descricao", label: "Descrição" },
           { key: "status", label: "Status" },
           { key: "data_cadastro", label: "Data Cadastro" },
+          { key: "data_atualizacao", label: "Data Atualização" },
         ]}
       />
 
@@ -666,22 +678,163 @@ export default function CardapiosModule() {
         hasPayment={hasPayment()}
         columns={[
           { key: "nome", label: "Nome", required: true },
-          { key: "tipo_cardapio", label: "Tipo Cardápio", required: true },
+          { key: "tipo_cardapio", label: "Tipo", required: true },
           {
             key: "margem_lucro_percentual",
             label: "Margem Lucro (%)",
             required: true,
           },
           { key: "preco_total", label: "Preço Total", required: true },
+          { key: "qtde_itens", label: "Qtde Itens" },
+          { key: "preco_itens", label: "Preço Itens" },
+          { key: "quantidade_total", label: "Quantidade Total" },
           { key: "descricao", label: "Descrição" },
-          { key: "ativo", label: "Status" },
+          { key: "status", label: "Status" },
+          { key: "data_cadastro", label: "Data Cadastro" },
         ]}
-        onImport={async (records) => {
-          // Import implementation would go here
-          return {
-            success: false,
-            message: "Importação não implementada ainda",
+        mapHeader={(header) => {
+          const mapping: Record<string, string> = {
+            Nome: "nome",
+            Tipo: "tipo_cardapio",
+            "Margem Lucro (%)": "margem_lucro_percentual",
+            "Preço Total": "preco_total",
+            "Qtde Itens": "qtde_itens",
+            "Preço Itens": "preco_itens",
+            "Quantidade Total": "quantidade_total",
+            Descrição: "descricao",
+            Status: "status",
+            "Data Cadastro": "data_cadastro",
           };
+          return mapping[header] || header.toLowerCase().replace(/\s+/g, "_");
+        }}
+        validateRecord={(record, index) => {
+          const errors: string[] = [];
+          if (!record.nome) errors.push("Nome é obrigatório");
+          if (!record.tipo_cardapio) errors.push("Tipo é obrigatório");
+          if (!record.margem_lucro_percentual)
+            errors.push("Margem Lucro é obrigatória");
+          if (!record.preco_total) errors.push("Preço Total é obrigatório");
+          return errors;
+        }}
+        onImport={async (records) => {
+          try {
+            let importedCount = 0;
+            const errors: string[] = [];
+
+            for (const record of records) {
+              try {
+                // Parse currency values
+                const parsePriceString = (priceStr: string): number => {
+                  if (!priceStr) return 0;
+                  const cleanStr = priceStr
+                    .replace(/[R$\s]/g, "")
+                    .replace(",", ".");
+                  const value = parseFloat(cleanStr);
+                  return isNaN(value) ? 0 : Math.round(value * 100);
+                };
+
+                // Parse percentage
+                const parsePercentage = (percentStr: string): number => {
+                  if (!percentStr) return 0;
+                  const cleanStr = percentStr
+                    .replace("%", "")
+                    .replace(",", ".");
+                  const value = parseFloat(cleanStr);
+                  return isNaN(value) ? 0 : value;
+                };
+
+                // Parse date
+                const parseDate = (dateStr: string): string => {
+                  if (!dateStr) return new Date().toISOString();
+
+                  // Try dd/mm/yyyy format first
+                  const parts = dateStr.split("/");
+                  if (parts.length === 3) {
+                    const [day, month, year] = parts;
+                    const date = new Date(
+                      parseInt(year),
+                      parseInt(month) - 1,
+                      parseInt(day),
+                    );
+                    return date.toISOString();
+                  }
+
+                  // Fallback to current date
+                  return new Date().toISOString();
+                };
+
+                const cardapioData = {
+                  nome: record.nome,
+                  tipo_cardapio: record.tipo_cardapio,
+                  margem_lucro_percentual: parsePercentage(
+                    record.margem_lucro_percentual,
+                  ),
+                  preco_total_centavos: parsePriceString(record.preco_total),
+                  preco_itens_centavos: record.preco_itens
+                    ? parsePriceString(record.preco_itens)
+                    : 0,
+                  quantidade_total: record.quantidade_total
+                    ? parseInt(record.quantidade_total)
+                    : 0,
+                  descricao: record.descricao || "",
+                  ativo: record.status
+                    ? record.status.toLowerCase() === "ativo"
+                    : true,
+                  itens: [], // Empty items array for now
+                };
+
+                // Try to save via API first
+                try {
+                  await makeRequest(`/api/cardapios`, {
+                    method: "POST",
+                    body: JSON.stringify(cardapioData),
+                  });
+                  importedCount++;
+                } catch (apiError) {
+                  // Fallback to local storage
+                  const list = readLocalCardapios();
+                  const now = new Date().toISOString();
+                  const novo = {
+                    id: Date.now() + Math.random(),
+                    id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
+                    ...cardapioData,
+                    data_cadastro: record.data_cadastro
+                      ? parseDate(record.data_cadastro)
+                      : now,
+                    data_atualizacao: now,
+                    qtde_itens: 0,
+                  };
+                  list.unshift(novo);
+                  writeLocalCardapios(list);
+                  importedCount++;
+                }
+              } catch (recordError) {
+                console.error("Error importing record:", recordError);
+                errors.push(
+                  `Erro ao importar registro: ${record.nome || "sem nome"}`,
+                );
+              }
+            }
+
+            // Reload the list
+            try {
+              localStorage.removeItem(LOCAL_CARDAPIOS);
+            } catch {}
+            await loadCardapios();
+
+            return {
+              success: true,
+              message: `${importedCount} cardápio(s) importado(s) com sucesso`,
+              imported: importedCount,
+              errors,
+            };
+          } catch (error) {
+            console.error("Import error:", error);
+            return {
+              success: false,
+              message: "Erro ao importar cardápios",
+            };
+          }
         }}
       />
 
