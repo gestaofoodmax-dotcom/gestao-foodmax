@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Item, formatCurrencyBRL } from "@shared/itens";
-import { Info, Edit, X, List, FileText, DollarSign, Boxes, Ruler } from "lucide-react";
+import { Info, Edit, X, List, FileText, DollarSign, Boxes } from "lucide-react";
 
 export default function ItemView({
   isOpen,
