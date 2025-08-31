@@ -90,20 +90,11 @@ export default function ItemView({
             <div className="grid grid-cols-2 gap-4">
               <DataField label="Nome" value={item.nome} />
               <DataField label="Categoria" value={categoriaNome} />
-            </div>
-          </div>
-
-          {/* Medidas */}
-          <div className="bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-4">
-              <Ruler className="w-5 h-5 text-indigo-600" />
-              <h3 className="font-semibold text-indigo-600">Medidas</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
               <DataField label="Unidade" value={item.unidade_medida} />
               <DataField label="Peso (g)" value={item.peso_gramas} />
             </div>
           </div>
+
 
           {/* Preços */}
           <div className="bg-white p-4 rounded-lg border">
