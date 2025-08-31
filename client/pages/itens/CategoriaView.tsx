@@ -51,7 +51,7 @@ export default function CategoriaView({
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl font-normal py-1">
+          <DialogTitle className="text-xl sm:text-2xl font-normal py-0 mb-1">
             Visualizar Categoria
           </DialogTitle>
         </DialogHeader>
