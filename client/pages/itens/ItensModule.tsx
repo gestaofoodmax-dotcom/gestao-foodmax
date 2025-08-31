@@ -696,7 +696,7 @@ export default function ItensModule() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => setShowDeleteAlert(true)}
+                      onClick={() => setShowBulkDelete(true)}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Excluir Selecionados ({selectedIds.length})
