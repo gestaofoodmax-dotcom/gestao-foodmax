@@ -556,6 +556,79 @@ export const importCardapios: RequestHandler = async (req, res) => {
           );
         } else if (cardapio) {
           console.log(`Successfully created cardapio: ${cardapio.nome}`);
+
+          // Create cardapio items if any exist
+          if (cardapioData.itens && cardapioData.itens.length > 0) {
+            console.log(`Creating ${cardapioData.itens.length} items for cardapio ${cardapio.nome}`);
+
+            for (const itemData of cardapioData.itens) {
+              // First, try to find the item by name in the database
+              let item_id = null;
+
+              // Extract item name from the records that created this cardapio
+              const itemName = records.find(r =>
+                r.nome === cardapioData.nome &&
+                r.tipo_cardapio === cardapioData.tipo_cardapio &&
+                r.item_nome && r.item_nome.trim()
+              )?.item_nome;
+
+              if (itemName) {
+                // Try to find existing item by name
+                const { data: existingItem } = await supabase
+                  .from("itens")
+                  .select("id")
+                  .eq("nome", itemName.trim())
+                  .eq("id_usuario", userId)
+                  .single();
+
+                if (existingItem) {
+                  item_id = existingItem.id;
+                } else {
+                  // Create new item if it doesn't exist
+                  const { data: newItem, error: itemError } = await supabase
+                    .from("itens")
+                    .insert({
+                      id_usuario: userId,
+                      nome: itemName.trim(),
+                      categoria_id: 1, // Default category - you might want to handle this better
+                      unidade_medida: "un",
+                      estoque_atual: 0,
+                      estoque_minimo: 0,
+                      custo_unitario_centavos: itemData.valor_unitario_centavos,
+                      ativo: true,
+                    })
+                    .select("id")
+                    .single();
+
+                  if (newItem && !itemError) {
+                    item_id = newItem.id;
+                    console.log(`Created new item: ${itemName} with id ${item_id}`);
+                  } else {
+                    console.error(`Error creating item ${itemName}:`, itemError);
+                  }
+                }
+              }
+
+              // If we have an item_id, create the cardapio_item relationship
+              if (item_id) {
+                const { error: itemRelationError } = await supabase
+                  .from("cardapios_itens")
+                  .insert({
+                    cardapio_id: cardapio.id,
+                    item_id: item_id,
+                    quantidade: itemData.quantidade,
+                    valor_unitario_centavos: itemData.valor_unitario_centavos,
+                  });
+
+                if (itemRelationError) {
+                  console.error(`Error creating cardapio item relation:`, itemRelationError);
+                } else {
+                  console.log(`Created cardapio item relation for item ${item_id}`);
+                }
+              }
+            }
+          }
+
           imported++;
         }
       } catch (error) {
