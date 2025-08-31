@@ -55,6 +55,15 @@ import {
   bulkDeleteCategorias,
   toggleCategoriaStatus,
 } from "./routes/itens";
+import {
+  listCardapios,
+  getCardapio,
+  createCardapio,
+  updateCardapio,
+  deleteCardapio,
+  bulkDeleteCardapios,
+  toggleCardapioStatus,
+} from "./routes/cardapios";
 
 export function createServer() {
   const app = express();
@@ -127,6 +136,15 @@ export function createServer() {
   app.delete("/api/itens-categorias/:id", deleteCategoria);
   app.post("/api/itens-categorias/bulk-delete", bulkDeleteCategorias);
   app.patch("/api/itens-categorias/:id/toggle-status", toggleCategoriaStatus);
+
+  // Cardapios routes
+  app.get("/api/cardapios", listCardapios);
+  app.get("/api/cardapios/:id", getCardapio);
+  app.post("/api/cardapios", createCardapio);
+  app.put("/api/cardapios/:id", updateCardapio);
+  app.delete("/api/cardapios/:id", deleteCardapio);
+  app.post("/api/cardapios/bulk-delete", bulkDeleteCardapios);
+  app.patch("/api/cardapios/:id/toggle-status", toggleCardapioStatus);
 
   return app;
 }
