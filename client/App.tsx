@@ -13,6 +13,7 @@ import EstabelecimentosModule from "./pages/estabelecimentos/EstabelecimentosMod
 import ClientesModule from "./pages/clientes/ClientesModule";
 import FornecedoresModule from "./pages/fornecedores/FornecedoresModule";
 import ItensModule from "./pages/itens/ItensModule";
+import CardapiosModule from "./pages/cardapios/CardapiosModule";
 
 export default function App() {
   return (
