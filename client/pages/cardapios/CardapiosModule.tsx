@@ -523,12 +523,8 @@ export default function CardapiosModule() {
             preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
             descricao: cardapio.descricao || "",
             ativo: cardapio.ativo ? "Ativo" : "Inativo",
-            data_cadastro: cardapio.data_cadastro ? new Date(cardapio.data_cadastro).toLocaleDateString(
-              "pt-BR",
-            ) : "",
-            data_atualizacao: cardapio.data_atualizacao ? new Date(
-              cardapio.data_atualizacao,
-            ).toLocaleDateString("pt-BR") : "",
+            data_cadastro: formatDateForExport(cardapio.data_cadastro),
+            data_atualizacao: formatDateForExport(cardapio.data_atualizacao),
             item_nome: "",
             item_quantidade: "",
             item_valor_unitario: "",
@@ -807,7 +803,7 @@ export default function CardapiosModule() {
           { key: "descricao", label: "Descrição" },
           { key: "ativo", label: "Ativo" },
           { key: "data_cadastro", label: "Data Cadastro" },
-          { key: "data_atualizacao", label: "Data Atualizaç��o" },
+          { key: "data_atualizacao", label: "Data Atualização" },
           { key: "item_nome", label: "Item Nome" },
           { key: "item_quantidade", label: "Item Quantidade" },
           { key: "item_valor_unitario", label: "Item Valor Unitario" },
