@@ -717,9 +717,9 @@ export default function ItensModule() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
-                <div className="flex gap-6">
+                <div className="flex items-center gap-6">
                   <button
-                    className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 ${
+                    className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
                       activeTab === "itens"
                         ? "text-foodmax-orange"
                         : "text-gray-700 hover:text-gray-900"
@@ -736,9 +736,10 @@ export default function ItensModule() {
                       <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                     )}
                   </button>
+                  <span className="w-px h-5 bg-gray-200" />
 
                   <button
-                    className={`relative -mb-px pb-2 pt-1 text-sm flex items-center gap-2 ${
+                    className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
                       activeTab === "categorias"
                         ? "text-foodmax-orange"
                         : "text-gray-700 hover:text-gray-900"
