@@ -310,9 +310,9 @@ export default function ItensModule() {
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        page: String(currentPage),
+        page: String(currentPageItens),
         limit: String(pageSize),
-        ...(searchTerm && { search: searchTerm }),
+        ...(searchTermItens && { search: searchTermItens }),
       });
       let response: ItensListResponse | null = null;
       try {
