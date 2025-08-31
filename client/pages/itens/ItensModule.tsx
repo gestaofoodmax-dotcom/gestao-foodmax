@@ -396,13 +396,13 @@ export default function ItensModule() {
           method: "PUT",
           body: JSON.stringify(data),
         });
-        toast({ title: "Item atualizado" });
+        toast({ title: "Item atualizado", description: "Item atualizado com sucesso" });
       } else {
         await makeRequest(`/api/itens`, {
           method: "POST",
           body: JSON.stringify(data),
         });
-        toast({ title: "Item criado" });
+        toast({ title: "Item criado", description: "Item criado com sucesso" });
       }
       setSelectedIds([]);
       loadItens();
@@ -415,7 +415,7 @@ export default function ItensModule() {
         const idx = list.findIndex((x) => x.id === currentItem.id);
         if (idx >= 0)
           list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
-        toast({ title: "Item atualizado" });
+        toast({ title: "Item atualizado", description: "Item atualizado com sucesso" });
       } else {
         const novo: Item = {
           id: Date.now(),
@@ -432,7 +432,7 @@ export default function ItensModule() {
           data_atualizacao: now,
         } as any;
         list.unshift(novo);
-        toast({ title: "Item criado" });
+        toast({ title: "Item criado", description: "Item criado com sucesso" });
       }
       writeLocalItens(list);
       setItens(list);
@@ -447,7 +447,7 @@ export default function ItensModule() {
       await makeRequest(`/api/itens/${i.id}/toggle-status`, {
         method: "PATCH",
       });
-      toast({ title: i.ativo ? "Desativado" : "Ativado" });
+      toast({ title: `Item ${i.ativo ? "desativado" : "ativado"}`, description: `Item ${i.ativo ? "desativado" : "ativado"} com sucesso` });
       loadItens();
     } catch {
       const list = readLocalItens();
@@ -457,7 +457,7 @@ export default function ItensModule() {
         list[idx].data_atualizacao = new Date().toISOString();
         writeLocalItens(list);
         setItens(list);
-        toast({ title: "Status atualizado" });
+        toast({ title: "Status atualizado", description: "Status atualizado com sucesso" });
       }
     }
   };
@@ -466,7 +466,7 @@ export default function ItensModule() {
     if (!currentItem) return;
     try {
       await makeRequest(`/api/itens/${currentItem.id}`, { method: "DELETE" });
-      toast({ title: "Item excluído" });
+      toast({ title: "Item excluído", description: "Item excluído com sucesso" });
       setSelectedIds([]);
       loadItens();
       setShowDeleteAlert(false);
@@ -474,7 +474,7 @@ export default function ItensModule() {
       const list = readLocalItens().filter((e) => e.id !== currentItem.id);
       writeLocalItens(list);
       setItens(list);
-      toast({ title: "Item excluído" });
+      toast({ title: "Item excluído", description: "Item excluído com sucesso" });
       setSelectedIds([]);
       setShowDeleteAlert(false);
     }
@@ -487,13 +487,13 @@ export default function ItensModule() {
           method: "PUT",
           body: JSON.stringify(data),
         });
-        toast({ title: "Categoria atualizada" });
+        toast({ title: "Categoria atualizada", description: "Categoria atualizada com sucesso" });
       } else {
         await makeRequest(`/api/itens-categorias`, {
           method: "POST",
           body: JSON.stringify(data),
         });
-        toast({ title: "Categoria criada" });
+        toast({ title: "Categoria criada", description: "Categoria criada com sucesso" });
       }
       loadCategorias();
       setShowCategoriaForm(false);
@@ -506,7 +506,7 @@ export default function ItensModule() {
         const idx = list.findIndex((x) => x.id === currentCategoria.id);
         if (idx >= 0)
           list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
-        toast({ title: "Categoria atualizada" });
+        toast({ title: "Categoria atualizada", description: "Categoria atualizada com sucesso" });
       } else {
         const novo: ItemCategoria = {
           id: Date.now(),
@@ -518,7 +518,7 @@ export default function ItensModule() {
           data_atualizacao: now,
         } as any;
         list.unshift(novo);
-        toast({ title: "Categoria criada" });
+        toast({ title: "Categoria criada", description: "Categoria criada com sucesso" });
       }
       writeLocalCats(list);
       setCategorias(list);
@@ -531,7 +531,7 @@ export default function ItensModule() {
       await makeRequest(`/api/itens-categorias/${c.id}/toggle-status`, {
         method: "PATCH",
       });
-      toast({ title: c.ativo ? "Desativada" : "Ativada" });
+      toast({ title: `Categoria ${c.ativo ? "desativada" : "ativada"}`, description: `Categoria ${c.ativo ? "desativada" : "ativada"} com sucesso` });
       loadCategorias();
     } catch {
       const list = readLocalCats();
@@ -541,7 +541,7 @@ export default function ItensModule() {
         list[idx].data_atualizacao = new Date().toISOString();
         writeLocalCats(list);
         setCategorias(list);
-        toast({ title: "Status atualizado" });
+        toast({ title: "Status atualizado", description: "Status atualizado com sucesso" });
       }
     }
   };
@@ -549,13 +549,13 @@ export default function ItensModule() {
   const handleDeleteCategoria = async (c: ItemCategoria) => {
     try {
       await makeRequest(`/api/itens-categorias/${c.id}`, { method: "DELETE" });
-      toast({ title: "Categoria excluída" });
+      toast({ title: "Categoria excluída", description: "Categoria excluída com sucesso" });
       loadCategorias();
     } catch {
       const list = readLocalCats().filter((e) => e.id !== c.id);
       writeLocalCats(list);
       setCategorias(list);
-      toast({ title: "Categoria excluída" });
+      toast({ title: "Categoria excluída", description: "Categoria excluída com sucesso" });
     }
   };
 
