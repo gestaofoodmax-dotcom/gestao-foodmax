@@ -41,7 +41,11 @@ export interface PedidoDetalhado extends Pedido {
   estabelecimento_nome?: string;
   cliente_nome?: string | null;
   cardapios: (PedidoCardapio & { cardapio_nome?: string })[];
-  itens_extras: (PedidoItemExtra & { item_nome?: string; categoria_nome?: string; estoque_atual?: number })[];
+  itens_extras: (PedidoItemExtra & {
+    item_nome?: string;
+    categoria_nome?: string;
+    estoque_atual?: number;
+  })[];
 }
 
 export interface CreatePedidoRequest {
@@ -53,7 +57,12 @@ export interface CreatePedidoRequest {
   status?: StatusPedido; // default Pendente
   valor_total_centavos: number; // calculated client-side but editable
   cardapios: { cardapio_id: number; preco_total_centavos?: number }[]; // preco can be filled by server
-  itens_extras: { item_id: number; categoria_id: number; quantidade: number; valor_unitario_centavos: number }[];
+  itens_extras: {
+    item_id: number;
+    categoria_id: number;
+    quantidade: number;
+    valor_unitario_centavos: number;
+  }[];
   data_hora_finalizado?: string | null;
 }
 
@@ -69,9 +78,18 @@ export interface PedidosListResponse {
   };
 }
 
-export const TIPOS_PEDIDO: TipoPedido[] = ["Atendente", "QR Code", "APP", "Outro"];
+export const TIPOS_PEDIDO: TipoPedido[] = [
+  "Atendente",
+  "QR Code",
+  "APP",
+  "Outro",
+];
 
-export const STATUS_PEDIDO: StatusPedido[] = ["Pendente", "Finalizado", "Cancelado"];
+export const STATUS_PEDIDO: StatusPedido[] = [
+  "Pendente",
+  "Finalizado",
+  "Cancelado",
+];
 
 export const formatCurrencyBRL = (centavos: number | undefined) => {
   const v = typeof centavos === "number" ? centavos / 100 : 0;

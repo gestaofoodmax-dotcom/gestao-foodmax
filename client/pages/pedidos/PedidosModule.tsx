@@ -34,7 +34,10 @@ import {
 } from "@shared/pedidos";
 import PedidoForm from "./PedidoForm";
 import PedidoView from "./PedidoView";
-import { BulkDeleteAlert, DeleteAlert } from "@/components/alert-dialog-component";
+import {
+  BulkDeleteAlert,
+  DeleteAlert,
+} from "@/components/alert-dialog-component";
 
 export default function PedidosModule() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -62,7 +65,8 @@ export default function PedidosModule() {
       return [];
     }
   };
-  const writeLocalPedidos = (list: Pedido[]) => localStorage.setItem(LOCAL_PEDIDOS, JSON.stringify(list));
+  const writeLocalPedidos = (list: Pedido[]) =>
+    localStorage.setItem(LOCAL_PEDIDOS, JSON.stringify(list));
 
   const menuItems = [
     { icon: Home, label: "Dashboard", route: "/dashboard" },
@@ -89,13 +93,19 @@ export default function PedidosModule() {
 
   const gridColumns = useMemo(
     () => [
-      { key: "estabelecimento_nome", label: "Estabelecimento", sortable: false },
+      {
+        key: "estabelecimento_nome",
+        label: "Estabelecimento",
+        sortable: false,
+      },
       { key: "codigo", label: "Código", sortable: true },
       {
         key: "tipo_pedido",
         label: "Tipo",
         sortable: true,
-        render: (v: any) => <Badge className={getTipoPedidoColor(v)}>{v}</Badge>,
+        render: (v: any) => (
+          <Badge className={getTipoPedidoColor(v)}>{v}</Badge>
+        ),
       },
       {
         key: "valor_total_centavos",
@@ -107,13 +117,16 @@ export default function PedidosModule() {
         key: "data_hora_finalizado",
         label: "Data/Hora Finalizado",
         sortable: true,
-        render: (v: string | null) => (v ? new Date(v).toLocaleString("pt-BR") : "-"),
+        render: (v: string | null) =>
+          v ? new Date(v).toLocaleString("pt-BR") : "-",
       },
       {
         key: "status",
         label: "Status",
         sortable: true,
-        render: (v: any) => <Badge className={getStatusPedidoColor(v)}>{v}</Badge>,
+        render: (v: any) => (
+          <Badge className={getStatusPedidoColor(v)}>{v}</Badge>
+        ),
       },
       {
         key: "data_cadastro",
@@ -189,9 +202,13 @@ export default function PedidosModule() {
         setTotalRecords(response.pagination.total);
       } else {
         const local = readLocalPedidos();
-        const filtered = local.filter(
-          (p) => activeTab === "Todos" || p.status === activeTab,
-        ).filter((p) => !searchTerm || p.codigo.toLowerCase().includes(searchTerm.toLowerCase()));
+        const filtered = local
+          .filter((p) => activeTab === "Todos" || p.status === activeTab)
+          .filter(
+            (p) =>
+              !searchTerm ||
+              p.codigo.toLowerCase().includes(searchTerm.toLowerCase()),
+          );
         setPedidos(filtered);
         setTotalRecords(filtered.length);
       }
@@ -250,13 +267,19 @@ export default function PedidosModule() {
           method: "PUT",
           body: JSON.stringify(data),
         });
-        toast({ title: "Pedido atualizado", description: "Pedido atualizado com sucesso" });
+        toast({
+          title: "Pedido atualizado",
+          description: "Pedido atualizado com sucesso",
+        });
       } else {
         await makeRequest(`/api/pedidos`, {
           method: "POST",
           body: JSON.stringify(data),
         });
-        toast({ title: "Pedido criado", description: "Pedido criado com sucesso" });
+        toast({
+          title: "Pedido criado",
+          description: "Pedido criado com sucesso",
+        });
       }
       setSelectedIds([]);
       await loadPedidos();
@@ -266,8 +289,12 @@ export default function PedidosModule() {
       const now = new Date().toISOString();
       if (isEditing && currentPedido) {
         const idx = list.findIndex((x) => x.id === currentPedido.id);
-        if (idx >= 0) list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
-        toast({ title: "Pedido atualizado", description: "Pedido atualizado (local)" });
+        if (idx >= 0)
+          list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
+        toast({
+          title: "Pedido atualizado",
+          description: "Pedido atualizado (local)",
+        });
       } else {
         const novo: Pedido = {
           id: Date.now(),
@@ -297,7 +324,10 @@ export default function PedidosModule() {
   const handleFinalize = async (p: Pedido) => {
     try {
       await makeRequest(`/api/pedidos/${p.id}/finalizar`, { method: "PATCH" });
-      toast({ title: "Pedido finalizado", description: "Status alterado para Finalizado" });
+      toast({
+        title: "Pedido finalizado",
+        description: "Status alterado para Finalizado",
+      });
       loadPedidos();
     } catch {
       const list = readLocalPedidos();
@@ -307,7 +337,10 @@ export default function PedidosModule() {
         list[idx].data_hora_finalizado = new Date().toISOString();
         writeLocalPedidos(list);
         setPedidos(list);
-        toast({ title: "Pedido finalizado", description: "Status alterado (local)" });
+        toast({
+          title: "Pedido finalizado",
+          description: "Status alterado (local)",
+        });
       }
     }
   };
@@ -315,8 +348,13 @@ export default function PedidosModule() {
   const handleDeleteConfirmed = async () => {
     if (!currentPedido) return;
     try {
-      await makeRequest(`/api/pedidos/${currentPedido.id}`, { method: "DELETE" });
-      toast({ title: "Pedido excluído", description: "Pedido excluído com sucesso" });
+      await makeRequest(`/api/pedidos/${currentPedido.id}`, {
+        method: "DELETE",
+      });
+      toast({
+        title: "Pedido excluído",
+        description: "Pedido excluído com sucesso",
+      });
       setSelectedIds([]);
       await loadPedidos();
       setShowDeleteAlert(false);
@@ -324,7 +362,10 @@ export default function PedidosModule() {
       const list = readLocalPedidos().filter((e) => e.id !== currentPedido.id);
       writeLocalPedidos(list);
       setPedidos(list);
-      toast({ title: "Pedido excluído", description: "Pedido excluído (local)" });
+      toast({
+        title: "Pedido excluído",
+        description: "Pedido excluído (local)",
+      });
       setSelectedIds([]);
       setShowDeleteAlert(false);
     }
@@ -333,12 +374,16 @@ export default function PedidosModule() {
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
   const filteredPedidos = useMemo(() => {
-    return pedidos.filter((p) => activeTab === "Todos" || p.status === activeTab);
+    return pedidos.filter(
+      (p) => activeTab === "Todos" || p.status === activeTab,
+    );
   }, [pedidos, activeTab]);
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
-      <div className={`${sidebarOpen ? "w-64" : "w-16"} bg-white shadow-lg transition-all duration-300 flex flex-col h-full`}>
+      <div
+        className={`${sidebarOpen ? "w-64" : "w-16"} bg-white shadow-lg transition-all duration-300 flex flex-col h-full`}
+      >
         <div className="flex-1 overflow-y-auto sidebar-scroll">
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between">
@@ -352,17 +397,24 @@ export default function PedidosModule() {
                   </div>
                 )}
               </div>
-              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg hover:bg-gray-100">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 rounded-lg hover:bg-gray-100"
+              >
                 <Menu className="w-5 h-5" />
               </button>
             </div>
           </div>
           {sidebarOpen && (
             <div className="px-4 py-2">
-              <span className="text-xs text-gray-500 uppercase tracking-wide">PRINCIPAL</span>
+              <span className="text-xs text-gray-500 uppercase tracking-wide">
+                PRINCIPAL
+              </span>
             </div>
           )}
-          <nav className="mt-2 pb-4">{menuItems.map((item, index) => renderMenuItem(item, index))}</nav>
+          <nav className="mt-2 pb-4">
+            {menuItems.map((item, index) => renderMenuItem(item, index))}
+          </nav>
         </div>
         <div className="bg-white border-t border-gray-200 flex-shrink-0">
           <div className="flex items-center px-4 py-4">
@@ -396,7 +448,9 @@ export default function PedidosModule() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-semibold text-gray-800">Pedidos</h2>
-              <p className="text-gray-600 mt-1">Gerencie os pedidos por status.</p>
+              <p className="text-gray-600 mt-1">
+                Gerencie os pedidos por status.
+              </p>
             </div>
           </div>
         </header>
@@ -405,28 +459,36 @@ export default function PedidosModule() {
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
                 <div className="flex items-center gap-6">
-                  {["Todos", "Pendente", "Finalizado", "Cancelado"].map((st) => (
-                    <div key={st} className="flex items-center gap-6">
-                      <button
-                        className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
-                          activeTab === (st as any) ? "text-foodmax-orange" : "text-gray-700 hover:text-gray-900"
-                        }`}
-                        onClick={() => setActiveTab(st as any)}
-                      >
-                        <span>{st}</span>
-                        <span
-                          className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
-                            activeTab === (st as any) ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"
+                  {["Todos", "Pendente", "Finalizado", "Cancelado"].map(
+                    (st) => (
+                      <div key={st} className="flex items-center gap-6">
+                        <button
+                          className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
+                            activeTab === (st as any)
+                              ? "text-foodmax-orange"
+                              : "text-gray-700 hover:text-gray-900"
                           }`}
+                          onClick={() => setActiveTab(st as any)}
                         >
-                          {st === "Todos" ? totalRecords : pedidos.filter((p) => p.status === st).length}
-                        </span>
-                        {activeTab === (st as any) && (
-                          <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
-                        )}
-                      </button>
-                    </div>
-                  ))}
+                          <span>{st}</span>
+                          <span
+                            className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
+                              activeTab === (st as any)
+                                ? "bg-orange-100 text-foodmax-orange"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {st === "Todos"
+                              ? totalRecords
+                              : pedidos.filter((p) => p.status === st).length}
+                          </span>
+                          {activeTab === (st as any) && (
+                            <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
+                          )}
+                        </button>
+                      </div>
+                    ),
+                  )}
                 </div>
               </div>
             </div>
@@ -444,12 +506,19 @@ export default function PedidosModule() {
                 </div>
                 <div className="flex items-center gap-2">
                   {selectedIds.length > 0 && (
-                    <Button variant="destructive" size="sm" onClick={() => setShowBulkDelete(true)}>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setShowBulkDelete(true)}
+                    >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Excluir Selecionados ({selectedIds.length})
                     </Button>
                   )}
-                  <Button onClick={handleNew} className="bg-foodmax-orange text-white hover:bg-orange-600">
+                  <Button
+                    onClick={handleNew}
+                    className="bg-foodmax-orange text-white hover:bg-orange-600"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Novo
                   </Button>
@@ -521,10 +590,15 @@ export default function PedidosModule() {
             setSelectedIds([]);
             setShowBulkDelete(false);
           } catch (error: any) {
-            const list = readLocalPedidos().filter((e) => !selectedIds.includes(e.id));
+            const list = readLocalPedidos().filter(
+              (e) => !selectedIds.includes(e.id),
+            );
             writeLocalPedidos(list);
             setPedidos(list);
-            toast({ title: "Exclusão concluída localmente", description: `${selectedIds.length} registro(s) removido(s)` });
+            toast({
+              title: "Exclusão concluída localmente",
+              description: `${selectedIds.length} registro(s) removido(s)`,
+            });
             setSelectedIds([]);
             setShowBulkDelete(false);
           }

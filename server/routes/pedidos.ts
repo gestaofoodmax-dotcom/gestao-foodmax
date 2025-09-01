@@ -17,7 +17,7 @@ const PedidoSchema = z.object({
     z.object({
       cardapio_id: z.number().int().positive(),
       preco_total_centavos: z.number().int().nonnegative().optional(),
-    })
+    }),
   ),
   itens_extras: z.array(
     z.object({
@@ -25,7 +25,7 @@ const PedidoSchema = z.object({
       categoria_id: z.number().int().positive(),
       quantidade: z.number().int().positive(),
       valor_unitario_centavos: z.number().int().nonnegative(),
-    })
+    }),
   ),
   data_hora_finalizado: z.string().nullable().optional(),
 });
@@ -45,7 +45,8 @@ function generateCodigo(): string {
 export const listPedidos: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const supabase = getSupabaseServiceClient();
 
     const page = parseInt((req.query.page as string) || "1");
@@ -54,7 +55,10 @@ export const listPedidos: RequestHandler = async (req, res) => {
     const status = (req.query.status as string) || "";
     const offset = (page - 1) * limit;
 
-    let query = supabase.from("pedidos").select("*", { count: "exact" }).eq("id_usuario", userId);
+    let query = supabase
+      .from("pedidos")
+      .select("*", { count: "exact" })
+      .eq("id_usuario", userId);
 
     if (search) {
       query = query.or(`codigo.ilike.%${search}%`);
@@ -64,7 +68,9 @@ export const listPedidos: RequestHandler = async (req, res) => {
       query = query.eq("status", status);
     }
 
-    const { data, count, error } = await query.order("data_cadastro", { ascending: false }).range(offset, offset + limit - 1);
+    const { data, count, error } = await query
+      .order("data_cadastro", { ascending: false })
+      .range(offset, offset + limit - 1);
     if (error) throw error;
 
     // Load estabelecimento names
@@ -98,7 +104,8 @@ export const listPedidos: RequestHandler = async (req, res) => {
 export const getPedido: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const supabase = getSupabaseServiceClient();
     const { id } = req.params;
 
@@ -109,7 +116,8 @@ export const getPedido: RequestHandler = async (req, res) => {
       .eq("id_usuario", userId)
       .single();
 
-    if (error || !pedido) return res.status(404).json({ error: "Pedido não encontrado" });
+    if (error || !pedido)
+      return res.status(404).json({ error: "Pedido não encontrado" });
 
     const { data: est } = await supabase
       .from("estabelecimentos")
@@ -130,7 +138,9 @@ export const getPedido: RequestHandler = async (req, res) => {
 
     const { data: extras } = await supabase
       .from("pedidos_itens_extras")
-      .select("*, itens:item_id(nome, estoque_atual), itens_categorias:categoria_id(nome)")
+      .select(
+        "*, itens:item_id(nome, estoque_atual), itens_categorias:categoria_id(nome)",
+      )
       .eq("pedido_id", id);
 
     res.json({
@@ -157,14 +167,19 @@ export const getPedido: RequestHandler = async (req, res) => {
 export const createPedido: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const supabase = getSupabaseServiceClient();
 
     const parsed = PedidoSchema.parse(req.body);
-    const codigo = parsed.codigo && parsed.codigo.trim() ? parsed.codigo : generateCodigo();
+    const codigo =
+      parsed.codigo && parsed.codigo.trim() ? parsed.codigo : generateCodigo();
 
     // If cardapio price not supplied, load it
-    const cardapiosData = [] as { cardapio_id: number; preco_total_centavos: number }[];
+    const cardapiosData = [] as {
+      cardapio_id: number;
+      preco_total_centavos: number;
+    }[];
     for (const c of parsed.cardapios) {
       let preco = c.preco_total_centavos;
       if (typeof preco !== "number") {
@@ -175,7 +190,10 @@ export const createPedido: RequestHandler = async (req, res) => {
           .single();
         preco = cd?.preco_total_centavos || 0;
       }
-      cardapiosData.push({ cardapio_id: c.cardapio_id, preco_total_centavos: preco! });
+      cardapiosData.push({
+        cardapio_id: c.cardapio_id,
+        preco_total_centavos: preco!,
+      });
     }
 
     const { data: pedido, error } = await supabase
@@ -202,7 +220,7 @@ export const createPedido: RequestHandler = async (req, res) => {
           pedido_id: pedido.id,
           cardapio_id: c.cardapio_id,
           preco_total_centavos: c.preco_total_centavos,
-        }))
+        })),
       );
     }
 
@@ -214,7 +232,7 @@ export const createPedido: RequestHandler = async (req, res) => {
           categoria_id: e.categoria_id,
           quantidade: e.quantidade,
           valor_unitario_centavos: e.valor_unitario_centavos,
-        }))
+        })),
       );
     }
 
@@ -222,7 +240,9 @@ export const createPedido: RequestHandler = async (req, res) => {
   } catch (error: any) {
     console.error("Error creating pedido:", error);
     if (error.name === "ZodError") {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
     res.status(500).json({ error: "Erro interno do servidor" });
   }
@@ -231,7 +251,8 @@ export const createPedido: RequestHandler = async (req, res) => {
 export const updatePedido: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const supabase = getSupabaseServiceClient();
     const { id } = req.params;
 
@@ -244,7 +265,8 @@ export const updatePedido: RequestHandler = async (req, res) => {
       .eq("id", id)
       .eq("id_usuario", userId)
       .single();
-    if (!existing) return res.status(404).json({ error: "Pedido não encontrado" });
+    if (!existing)
+      return res.status(404).json({ error: "Pedido não encontrado" });
 
     const updateData: any = { ...parsed };
     // never update id_usuario directly
@@ -261,7 +283,10 @@ export const updatePedido: RequestHandler = async (req, res) => {
     if (parsed.cardapios) {
       await supabase.from("pedidos_cardapios").delete().eq("pedido_id", id);
       if (parsed.cardapios.length > 0) {
-        const cardapiosData = [] as { cardapio_id: number; preco_total_centavos: number }[];
+        const cardapiosData = [] as {
+          cardapio_id: number;
+          preco_total_centavos: number;
+        }[];
         for (const c of parsed.cardapios) {
           let preco = c.preco_total_centavos;
           if (typeof preco !== "number") {
@@ -272,20 +297,27 @@ export const updatePedido: RequestHandler = async (req, res) => {
               .single();
             preco = cd?.preco_total_centavos || 0;
           }
-          cardapiosData.push({ cardapio_id: c.cardapio_id, preco_total_centavos: preco! });
+          cardapiosData.push({
+            cardapio_id: c.cardapio_id,
+            preco_total_centavos: preco!,
+          });
         }
-        await supabase.from("pedidos_cardapios").insert(
-          cardapiosData.map((c) => ({ pedido_id: parseInt(id), ...c }))
-        );
+        await supabase
+          .from("pedidos_cardapios")
+          .insert(
+            cardapiosData.map((c) => ({ pedido_id: parseInt(id), ...c })),
+          );
       }
     }
 
     if (parsed.itens_extras) {
       await supabase.from("pedidos_itens_extras").delete().eq("pedido_id", id);
       if (parsed.itens_extras.length > 0) {
-        await supabase.from("pedidos_itens_extras").insert(
-          parsed.itens_extras.map((e) => ({ pedido_id: parseInt(id), ...e }))
-        );
+        await supabase
+          .from("pedidos_itens_extras")
+          .insert(
+            parsed.itens_extras.map((e) => ({ pedido_id: parseInt(id), ...e })),
+          );
       }
     }
 
@@ -293,7 +325,9 @@ export const updatePedido: RequestHandler = async (req, res) => {
   } catch (error: any) {
     console.error("Error updating pedido:", error);
     if (error.name === "ZodError") {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
     res.status(500).json({ error: "Erro interno do servidor" });
   }
@@ -302,7 +336,8 @@ export const updatePedido: RequestHandler = async (req, res) => {
 export const deletePedido: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const supabase = getSupabaseServiceClient();
     const { id } = req.params;
 
@@ -312,9 +347,14 @@ export const deletePedido: RequestHandler = async (req, res) => {
       .eq("id", id)
       .eq("id_usuario", userId)
       .single();
-    if (!existing) return res.status(404).json({ error: "Pedido não encontrado" });
+    if (!existing)
+      return res.status(404).json({ error: "Pedido não encontrado" });
 
-    const { error } = await supabase.from("pedidos").delete().eq("id", id).eq("id_usuario", userId);
+    const { error } = await supabase
+      .from("pedidos")
+      .delete()
+      .eq("id", id)
+      .eq("id_usuario", userId);
     if (error) throw error;
 
     res.status(204).send();
@@ -327,13 +367,19 @@ export const deletePedido: RequestHandler = async (req, res) => {
 export const bulkDeletePedidos: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const supabase = getSupabaseServiceClient();
 
     const { ids }: { ids: number[] } = req.body;
-    if (!Array.isArray(ids) || ids.length === 0) return res.status(400).json({ error: "IDs inválidos" });
+    if (!Array.isArray(ids) || ids.length === 0)
+      return res.status(400).json({ error: "IDs inválidos" });
 
-    const { error } = await supabase.from("pedidos").delete().in("id", ids).eq("id_usuario", userId);
+    const { error } = await supabase
+      .from("pedidos")
+      .delete()
+      .in("id", ids)
+      .eq("id_usuario", userId);
     if (error) throw error;
 
     res.json({ deletedCount: ids.length });
@@ -346,7 +392,8 @@ export const bulkDeletePedidos: RequestHandler = async (req, res) => {
 export const finalizarPedido: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const supabase = getSupabaseServiceClient();
     const { id } = req.params;
 
