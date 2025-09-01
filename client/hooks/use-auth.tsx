@@ -124,9 +124,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setHasPaymentFlag(false);
     localStorage.setItem("fm_user_id", userId.toString());
     try {
-      const name = localStorage.getItem("fm_user_name");
-      if (!name && email) {
-        localStorage.setItem("fm_user_name", String(email).split("@")[0]);
+      if (email) {
+        const base = String(email).split("@")[0];
+        localStorage.setItem("fm_user_name", base);
       }
     } catch {}
   };
@@ -134,7 +134,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     setUser(null);
     setHasPaymentFlag(false);
-    localStorage.removeItem("fm_user_id");
+    try { localStorage.removeItem("fm_user_id"); } catch {}
+    // Best-effort: clear caches on logout as well
+    try {
+      import("@/lib/cache").then((m) => m.clearAllAppCaches());
+    } catch {}
   };
 
   const getUserRole = (): "admin" | "user" | null => {
