@@ -598,9 +598,6 @@ export default function PedidoForm({
                   </PopoverContent>
                 </Popover>
               </div>
-
-
-
             </div>
           </div>
 
@@ -628,9 +625,7 @@ export default function PedidoForm({
                   <PopoverContent className="w-full p-0">
                     <Command>
                       <CommandInput placeholder="Filtrar categorias..." />
-                      <CommandEmpty>
-                        Nenhuma categoria encontrada.
-                      </CommandEmpty>
+                      <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
                       <CommandList>
                         <CommandGroup>
                           {categorias.map((cat) => (
@@ -690,24 +685,30 @@ export default function PedidoForm({
                           {filteredExtras.map((item) => {
                             const isLow = (item.estoque_atual || 0) < 3;
                             const isOut = (item.estoque_atual || 0) === 0;
-                            const isAdded = selectedExtras.some((e) => e.item_id === item.id);
+                            const isAdded = selectedExtras.some(
+                              (e) => e.item_id === item.id,
+                            );
                             return (
                               <CommandItem
                                 key={item.id}
                                 onSelect={() =>
-                                  !isAdded && !isOut &&
+                                  !isAdded &&
+                                  !isOut &&
                                   setSelectedExtras((prev) => [
                                     ...prev,
                                     {
                                       item_id: item.id,
                                       categoria_id: item.categoria_id,
                                       quantidade: 1,
-                                      valor_unitario_centavos: item.preco_centavos,
+                                      valor_unitario_centavos:
+                                        item.preco_centavos,
                                     },
                                   ])
                                 }
                                 disabled={isAdded || isOut}
-                                className={cn(isAdded || isOut ? "opacity-50" : "")}
+                                className={cn(
+                                  isAdded || isOut ? "opacity-50" : "",
+                                )}
                               >
                                 <div className="flex items-center justify-between w-full">
                                   <div className="flex items-center gap-2">
@@ -715,9 +716,15 @@ export default function PedidoForm({
                                       <AlertCircle className="w-4 h-4 text-yellow-600" />
                                     )}
                                     <span>{item.nome}</span>
-                                    {isAdded && <Badge variant="secondary">Já adicionado</Badge>}
+                                    {isAdded && (
+                                      <Badge variant="secondary">
+                                        Já adicionado
+                                      </Badge>
+                                    )}
                                     {isOut && (
-                                      <Badge className="bg-red-50 text-red-700 border-red-200">Sem estoque</Badge>
+                                      <Badge className="bg-red-50 text-red-700 border-red-200">
+                                        Sem estoque
+                                      </Badge>
                                     )}
                                   </div>
                                   <span className="text-sm text-gray-500">
@@ -738,7 +745,8 @@ export default function PedidoForm({
             {selectedCategoriaIds.length > 0 &&
               filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                  Atenção: existem itens desta categoria com estoque baixo (&lt; 3).
+                  Atenção: existem itens desta categoria com estoque baixo (&lt;
+                  3).
                 </div>
               )}
 
@@ -762,7 +770,8 @@ export default function PedidoForm({
                           {item.nome}
                         </div>
                         <div className="text-xs text-gray-600">
-                          {categorias.find((c) => c.id === item.categoria_id)?.nome || "-"}
+                          {categorias.find((c) => c.id === item.categoria_id)
+                            ?.nome || "-"}
                         </div>
                         <div className="text-xs text-gray-600">
                           Estoque Atual: {item.estoque_atual ?? 0}

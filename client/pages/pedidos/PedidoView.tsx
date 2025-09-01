@@ -11,7 +11,16 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrencyBRL, getStatusPedidoColor } from "@shared/pedidos";
 import { Pedido } from "@shared/pedidos";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
-import { Info, Utensils, CupSoda, FileText, Calendar, X, Edit, ShoppingBag } from "lucide-react";
+import {
+  Info,
+  Utensils,
+  CupSoda,
+  FileText,
+  Calendar,
+  X,
+  Edit,
+  ShoppingBag,
+} from "lucide-react";
 
 export default function PedidoView({
   isOpen,
@@ -87,7 +96,8 @@ export default function PedidoView({
                   {detalhe.status}
                 </Badge>
                 <p className="text-xs text-gray-500 mt-1">
-                  Cadastrado em {new Date(detalhe.data_cadastro).toLocaleString("pt-BR")}
+                  Cadastrado em{" "}
+                  {new Date(detalhe.data_cadastro).toLocaleString("pt-BR")}
                 </p>
               </div>
             </div>
@@ -232,7 +242,13 @@ export default function PedidoView({
                 />
                 <DataField
                   label="Data/Hora Finalizado"
-                  value={detalhe.data_hora_finalizado ? new Date(detalhe.data_hora_finalizado).toLocaleString("pt-BR") : "-"}
+                  value={
+                    detalhe.data_hora_finalizado
+                      ? new Date(detalhe.data_hora_finalizado).toLocaleString(
+                          "pt-BR",
+                        )
+                      : "-"
+                  }
                 />
                 <DataField label="Status" value={detalhe.status} />
               </div>

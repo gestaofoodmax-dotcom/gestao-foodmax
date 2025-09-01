@@ -70,9 +70,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setUser(userData.user);
             setHasPaymentFlag(!!userData.user?.hasPayment);
           } else {
-            console.log(
-              "[DEBUG] Auth API failed, keeping fallback admin user",
-            );
+            console.log("[DEBUG] Auth API failed, keeping fallback admin user");
             // Keep provisional admin
             setHasPaymentFlag(true);
           }
@@ -208,7 +206,10 @@ export function useAuthenticatedRequest() {
       let effectiveUserId: number | null = user?.id ?? null;
       if (!effectiveUserId) {
         try {
-          const ls = typeof window !== "undefined" ? localStorage.getItem("fm_user_id") : null;
+          const ls =
+            typeof window !== "undefined"
+              ? localStorage.getItem("fm_user_id")
+              : null;
           if (ls) {
             effectiveUserId = parseInt(ls, 10) || null;
           } else {
