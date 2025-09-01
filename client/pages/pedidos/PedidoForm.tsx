@@ -753,7 +753,7 @@ export default function PedidoForm({
                 <h3 className="font-semibold text-green-600">Totais</h3>
               </div>
               <div>
-                <Label>Valor do Pedido (R$) *</nLabel>
+                <Label>Valor do Pedido (R$) *</Label>
                 <Input
                   value={valorTotalMask}
                   onChange={(e) => {
