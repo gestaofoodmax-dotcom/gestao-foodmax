@@ -15,7 +15,7 @@ import {
   Upload,
   Download,
   Utensils,
-  ShoppingCart,
+  ShoppingBag,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -101,7 +101,7 @@ export default function CardapiosModule() {
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
     { icon: Utensils, label: "Cardápios", route: "/cardapios" },
-    { icon: ShoppingCart, label: "Pedidos", route: "/pedidos" },
+    { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
   ];
   const renderMenuItem = (item: any, index: number) => {
     const isActive = location.pathname === item.route;
@@ -111,7 +111,7 @@ export default function CardapiosModule() {
         to={item.route}
         className={`w-full flex items-center px-4 py-2 text-left transition-colors ${isActive ? "bg-orange-50 text-foodmax-orange border-r-4 border-foodmax-orange" : "text-gray-700 hover:bg-gray-100"}`}
       >
-        <item.icon className={`w-4 h-4 ${item.label === "Pedidos" ? "text-gray-700" : ""}`} />
+        <item.icon className="w-4 h-4" />
         {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
       </Link>
     );
@@ -808,7 +808,7 @@ export default function CardapiosModule() {
             nome: "nome",
             "tipo de cardápio": "tipo_cardapio",
             "quantidade total": "quantidade_total",
-            "pre��o dos itens": "preco_itens",
+            "preço dos itens": "preco_itens",
             "margem de lucro": "margem_lucro",
             "preço total": "preco_total",
             descrição: "descricao",
