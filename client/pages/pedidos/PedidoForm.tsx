@@ -381,7 +381,7 @@ export default function PedidoForm({
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <Info className="w-5 h-5 text-blue-600" />
-              <h3 className="font-semibold text-blue-600">Dados do Pedido</h3>
+              <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
