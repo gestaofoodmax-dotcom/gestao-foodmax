@@ -40,9 +40,10 @@ export default function Dashboard() {
   const displayName = useMemo(() => {
     try {
       const n = localStorage.getItem("fm_user_name");
-      if (n && n.trim()) return n.trim();
+      if (n && n.trim()) return toTitleCase(n.trim());
     } catch {}
-    return user?.email ? user.email.split("@")[0] : "Usuário";
+    const base = user?.email ? user.email.split("@")[0] : "Usuário";
+    return toTitleCase(base);
   }, [user?.email]);
 
   useEffect(() => {
