@@ -129,7 +129,7 @@ function EstabelecimentosModule() {
             : "text-gray-700 hover:bg-gray-100"
         }`}
       >
-        <item.icon className={`w-4 h-4 ${item.label === "Pedidos" ? "text-gray-700" : ""}`} />
+        <item.icon className="w-4 h-4" />
         {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
       </Link>
     );
@@ -660,7 +660,7 @@ function EstabelecimentosModule() {
         success: true,
         message: "Nenhum novo registro para importar",
         imported: 0,
-        errors: ["Registros duplicados ou já existentes foram ignorados"],
+        errors: ["Registros duplicados ou j�� existentes foram ignorados"],
       } as any;
     }
 
