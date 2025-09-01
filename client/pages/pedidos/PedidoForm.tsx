@@ -889,10 +889,7 @@ export default function PedidoForm({
               className="foodmax-input resize-none"
               placeholder="Observações..."
             />
-          </div>
-
-          <div className="bg-white p-4 rounded-lg border">
-            <div>
+            <div className="mt-4">
               <Label>Data/Hora Finalizado</Label>
               <Input
                 type="datetime-local"
