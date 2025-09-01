@@ -65,6 +65,15 @@ import {
   toggleCardapioStatus,
   importCardapios,
 } from "./routes/cardapios";
+import {
+  listPedidos,
+  getPedido,
+  createPedido,
+  updatePedido,
+  deletePedido,
+  bulkDeletePedidos,
+  finalizarPedido,
+} from "./routes/pedidos";
 
 export function createServer() {
   const app = express();
@@ -147,6 +156,15 @@ export function createServer() {
   app.post("/api/cardapios/bulk-delete", bulkDeleteCardapios);
   app.patch("/api/cardapios/:id/toggle-status", toggleCardapioStatus);
   app.post("/api/cardapios/import", importCardapios);
+
+  // Pedidos routes
+  app.get("/api/pedidos", listPedidos);
+  app.get("/api/pedidos/:id", getPedido);
+  app.post("/api/pedidos", createPedido);
+  app.put("/api/pedidos/:id", updatePedido);
+  app.delete("/api/pedidos/:id", deletePedido);
+  app.post("/api/pedidos/bulk-delete", bulkDeletePedidos);
+  app.patch("/api/pedidos/:id/finalizar", finalizarPedido);
 
   return app;
 }

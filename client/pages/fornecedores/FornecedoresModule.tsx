@@ -15,6 +15,7 @@ import {
   Edit,
   Power,
   Utensils,
+  ShoppingCart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,6 +93,7 @@ function FornecedoresModule() {
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
     { icon: Utensils, label: "Cardápios", route: "/cardapios" },
+    { icon: ShoppingCart, label: "Pedidos", route: "/pedidos" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {

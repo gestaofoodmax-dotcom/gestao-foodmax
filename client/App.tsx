@@ -14,6 +14,7 @@ import ClientesModule from "./pages/clientes/ClientesModule";
 import FornecedoresModule from "./pages/fornecedores/FornecedoresModule";
 import ItensModule from "./pages/itens/ItensModule";
 import CardapiosModule from "./pages/cardapios/CardapiosModule";
+import PedidosModule from "./pages/pedidos/PedidosModule";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/fornecedores" element={<FornecedoresModule />} />
             <Route path="/itens" element={<ItensModule />} />
             <Route path="/cardapios" element={<CardapiosModule />} />
+            <Route path="/pedidos" element={<PedidosModule />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

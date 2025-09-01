@@ -15,6 +15,7 @@ import {
   Upload,
   Download,
   Utensils,
+  ShoppingCart,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -100,6 +101,7 @@ export default function CardapiosModule() {
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
     { icon: Utensils, label: "Cardápios", route: "/cardapios" },
+    { icon: ShoppingCart, label: "Pedidos", route: "/pedidos" },
   ];
   const renderMenuItem = (item: any, index: number) => {
     const isActive = location.pathname === item.route;
