@@ -76,6 +76,10 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
   );
 
   const displayName = useMemo(() => {
+    try {
+      const stored = localStorage.getItem("fm_user_name");
+      if (stored && stored.trim()) return stored.trim();
+    } catch {}
     const email = user?.email || "";
     const base = email.split("@")[0] || "Usuário";
     return base.charAt(0).toUpperCase() + base.slice(1);
