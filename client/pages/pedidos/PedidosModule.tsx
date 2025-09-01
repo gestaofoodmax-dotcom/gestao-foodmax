@@ -31,6 +31,8 @@ import {
   getStatusPedidoColor,
   getTipoPedidoColor,
   formatCurrencyBRL,
+  TIPOS_PEDIDO,
+  STATUS_PEDIDO,
 } from "@shared/pedidos";
 import PedidoForm from "./PedidoForm";
 import PedidoView from "./PedidoView";
@@ -38,23 +40,59 @@ import {
   BulkDeleteAlert,
   DeleteAlert,
 } from "@/components/alert-dialog-component";
+import { ExportModal } from "@/components/export-modal";
+import { ImportModal } from "@/components/import-modal";
 
 export default function PedidosModule() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, getUserRole, hasPayment } = useAuth();
   const { makeRequest } = useAuthenticatedRequest();
 
+  const tabs: (StatusPedido | "Todos")[] = [
+    "Todos",
+    "Pendente",
+    "Finalizado",
+    "Cancelado",
+  ];
   const [activeTab, setActiveTab] = useState<StatusPedido | "Todos">("Todos");
+
+  type TabState = { search: string; page: number };
+  const [tabState, setTabState] = useState<Record<string, TabState>>({
+    Todos: { search: "", page: 1 },
+    Pendente: { search: "", page: 1 },
+    Finalizado: { search: "", page: 1 },
+    Cancelado: { search: "", page: 1 },
+  });
+  const currentSearch = tabState[activeTab]?.search ?? "";
+  const currentPage = tabState[activeTab]?.page ?? 1;
+  const setCurrentSearch = (val: string) =>
+    setTabState((s) => ({
+      ...s,
+      [activeTab]: { ...s[activeTab], search: val, page: 1 },
+    }));
+  const setCurrentPage = (page: number) =>
+    setTabState((s) => ({ ...s, [activeTab]: { ...s[activeTab], page } }));
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalRecords, setTotalRecords] = useState(0);
+  const [totalCounts, setTotalCounts] = useState<Record<string, number>>({
+    Todos: 0,
+    Pendente: 0,
+    Finalizado: 0,
+    Cancelado: 0,
+  });
   const pageSize = 10;
+
+  const [showExport, setShowExport] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [exportData, setExportData] = useState<any[]>([]);
+
+  const [estabelecimentosMap, setEstabelecimentosMap] = useState<
+    Map<number, string>
+  >(new Map());
 
   const LOCAL_PEDIDOS = "fm_pedidos";
   const readLocalPedidos = (): Pedido[] => {
@@ -97,6 +135,7 @@ export default function PedidosModule() {
         key: "estabelecimento_nome",
         label: "Estabelecimento",
         sortable: false,
+        render: (v: any, r: any) => r.estabelecimento_nome || "-",
       },
       { key: "codigo", label: "Código", sortable: true },
       {
@@ -182,13 +221,75 @@ export default function PedidosModule() {
     [],
   );
 
+  const enrichWithEstabelecimentoNome = (list: Pedido[]) => {
+    if (!estabelecimentosMap || estabelecimentosMap.size === 0)
+      return list as any;
+    return list.map((p: any) => ({
+      ...p,
+      estabelecimento_nome:
+        p.estabelecimento_nome ||
+        estabelecimentosMap.get(p.estabelecimento_id) ||
+        p.estabelecimento_nome,
+    }));
+  };
+
+  const loadEstabelecimentosMap = useCallback(async () => {
+    try {
+      const resp = await makeRequest(`/api/estabelecimentos?page=1&limit=1000`);
+      const map = new Map<number, string>();
+      if (Array.isArray(resp?.data)) {
+        resp.data.forEach((e: any) => map.set(e.id, e.nome));
+      } else {
+        try {
+          const local = JSON.parse(
+            localStorage.getItem("fm_estabelecimentos") || "[]",
+          );
+          (local || []).forEach((e: any) => map.set(e.id, e.nome));
+        } catch {}
+      }
+      setEstabelecimentosMap(map);
+    } catch {}
+  }, [makeRequest]);
+
+  const loadCounts = useCallback(async () => {
+    try {
+      const requests = [
+        makeRequest(`/api/pedidos?page=1&limit=1`),
+        makeRequest(`/api/pedidos?page=1&limit=1&status=Pendente`),
+        makeRequest(`/api/pedidos?page=1&limit=1&status=Finalizado`),
+        makeRequest(`/api/pedidos?page=1&limit=1&status=Cancelado`),
+      ];
+      let [allResp, pendResp, finResp, cancResp] = await Promise.all(
+        requests.map((p) => p.catch(() => null)),
+      );
+
+      if (allResp || pendResp || finResp || cancResp) {
+        setTotalCounts({
+          Todos: allResp?.pagination?.total || 0,
+          Pendente: pendResp?.pagination?.total || 0,
+          Finalizado: finResp?.pagination?.total || 0,
+          Cancelado: cancResp?.pagination?.total || 0,
+        });
+        return;
+      }
+
+      const local = readLocalPedidos();
+      setTotalCounts({
+        Todos: local.length,
+        Pendente: local.filter((p) => p.status === "Pendente").length,
+        Finalizado: local.filter((p) => p.status === "Finalizado").length,
+        Cancelado: local.filter((p) => p.status === "Cancelado").length,
+      });
+    } catch {}
+  }, [makeRequest]);
+
   const loadPedidos = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
         page: String(currentPage),
         limit: String(pageSize),
-        ...(searchTerm && { search: searchTerm }),
+        ...(currentSearch && { search: currentSearch }),
         ...(activeTab !== "Todos" && { status: activeTab }),
       });
       let response: PedidosListResponse | null = null;
@@ -198,24 +299,28 @@ export default function PedidosModule() {
         response = null;
       }
       if (response) {
-        setPedidos(response.data as any);
-        setTotalRecords(response.pagination.total);
+        const data = enrichWithEstabelecimentoNome(response.data as any);
+        setPedidos(data as any);
       } else {
         const local = readLocalPedidos();
         const filtered = local
           .filter((p) => activeTab === "Todos" || p.status === activeTab)
           .filter(
             (p) =>
-              !searchTerm ||
-              p.codigo.toLowerCase().includes(searchTerm.toLowerCase()),
+              !currentSearch ||
+              p.codigo.toLowerCase().includes(currentSearch.toLowerCase()),
           );
-        setPedidos(filtered);
-        setTotalRecords(filtered.length);
+        setPedidos(enrichWithEstabelecimentoNome(filtered) as any);
       }
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, activeTab, makeRequest]);
+  }, [currentPage, currentSearch, activeTab, makeRequest, estabelecimentosMap]);
+
+  useEffect(() => {
+    loadEstabelecimentosMap();
+    loadCounts();
+  }, [loadEstabelecimentosMap, loadCounts]);
 
   useEffect(() => {
     loadPedidos();
@@ -223,12 +328,10 @@ export default function PedidosModule() {
 
   useEffect(() => {
     setSelectedIds([]);
-    setCurrentPage(1);
   }, [activeTab]);
 
   const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
+    setCurrentSearch(value);
   };
   const handlePageChange = (page: number) => setCurrentPage(page);
 
@@ -238,6 +341,7 @@ export default function PedidosModule() {
   const [formLoading, setFormLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showBulkDelete, setShowBulkDelete] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
   const handleNew = () => {
     setCurrentPedido(null);
@@ -257,6 +361,10 @@ export default function PedidosModule() {
   const handleDelete = (p: Pedido) => {
     setCurrentPedido(p);
     setShowDeleteAlert(true);
+  };
+
+  const refreshAfterMutation = async () => {
+    await Promise.all([loadPedidos(), loadCounts()]);
   };
 
   const handleSave = async (data: any) => {
@@ -282,7 +390,7 @@ export default function PedidosModule() {
         });
       }
       setSelectedIds([]);
-      await loadPedidos();
+      await refreshAfterMutation();
       setShowForm(false);
     } catch (error: any) {
       const list = readLocalPedidos();
@@ -314,7 +422,8 @@ export default function PedidosModule() {
         toast({ title: "Pedido criado", description: "Pedido criado (local)" });
       }
       writeLocalPedidos(list);
-      setPedidos(list);
+      setPedidos(enrichWithEstabelecimentoNome(list) as any);
+      await loadCounts();
       setShowForm(false);
     } finally {
       setFormLoading(false);
@@ -328,7 +437,7 @@ export default function PedidosModule() {
         title: "Pedido finalizado",
         description: "Status alterado para Finalizado",
       });
-      loadPedidos();
+      await refreshAfterMutation();
     } catch {
       const list = readLocalPedidos();
       const idx = list.findIndex((x) => x.id === p.id);
@@ -336,11 +445,12 @@ export default function PedidosModule() {
         list[idx].status = "Finalizado" as any;
         list[idx].data_hora_finalizado = new Date().toISOString();
         writeLocalPedidos(list);
-        setPedidos(list);
+        setPedidos(enrichWithEstabelecimentoNome(list) as any);
         toast({
           title: "Pedido finalizado",
           description: "Status alterado (local)",
         });
+        await loadCounts();
       }
     }
   };
@@ -356,28 +466,123 @@ export default function PedidosModule() {
         description: "Pedido excluído com sucesso",
       });
       setSelectedIds([]);
-      await loadPedidos();
+      await refreshAfterMutation();
       setShowDeleteAlert(false);
     } catch (error: any) {
       const list = readLocalPedidos().filter((e) => e.id !== currentPedido.id);
       writeLocalPedidos(list);
-      setPedidos(list);
+      setPedidos(enrichWithEstabelecimentoNome(list) as any);
       toast({
         title: "Pedido excluído",
         description: "Pedido excluído (local)",
       });
       setSelectedIds([]);
+      await loadCounts();
       setShowDeleteAlert(false);
     }
   };
-
-  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
   const filteredPedidos = useMemo(() => {
     return pedidos.filter(
       (p) => activeTab === "Todos" || p.status === activeTab,
     );
   }, [pedidos, activeTab]);
+
+  const getAllPedidosForExport = async (): Promise<any[]> => {
+    try {
+      const params = new URLSearchParams({ page: "1", limit: "1000" });
+      const resp = await makeRequest(`/api/pedidos?${params}`);
+      const data = Array.isArray(resp?.data) ? resp.data : [];
+      return enrichWithEstabelecimentoNome(data as any);
+    } catch {
+      return enrichWithEstabelecimentoNome(readLocalPedidos() as any);
+    }
+  };
+
+  const handleImportPedidos = async (records: any[]) => {
+    try {
+      const estMap = estabelecimentosMap;
+      const now = new Date().toISOString();
+      const valid: Pedido[] = [];
+      for (const r of records) {
+        const nomeEst = String(
+          r.estabelecimento_nome || r.estabelecimento || "",
+        ).trim();
+        const estId = nomeEst
+          ? Array.from(estMap.entries()).find(
+              ([, nome]) => nome.toLowerCase() === nomeEst.toLowerCase(),
+            )?.[0]
+          : Number(r.estabelecimento_id || r.id_estabelecimento || 0);
+        if (!estId) continue;
+
+        const tipo = String(r.tipo_pedido || "").trim() as any;
+        if (!TIPOS_PEDIDO.includes(tipo)) continue;
+        const status = String(r.status || "Pendente").trim() as any;
+        if (!STATUS_PEDIDO.includes(status)) continue;
+
+        const valor = Number(
+          String(r.valor_total || r.valor_total_centavos || 0)
+            .toString()
+            .replace(/\./g, "")
+            .replace(/,/g, "."),
+        );
+        const valor_centavos = Number.isFinite(valor)
+          ? Math.round(
+              String(r.valor_total).includes(",") ||
+                String(r.valor_total).includes(".")
+                ? valor * 100
+                : Number(r.valor_total_centavos || valor),
+            )
+          : 0;
+
+        const novo: Pedido = {
+          id: Date.now() + Math.floor(Math.random() * 1000),
+          id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
+          estabelecimento_id: estId,
+          cliente_id: null,
+          codigo:
+            String(r.codigo || "").trim() ||
+            `${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+          tipo_pedido: tipo,
+          valor_total_centavos: valor_centavos,
+          data_hora_finalizado: r.data_hora_finalizado
+            ? new Date(r.data_hora_finalizado).toISOString()
+            : null,
+          observacao: r.observacao || null,
+          status: status,
+          data_cadastro: now,
+          data_atualizacao: now,
+        } as any;
+        (novo as any).estabelecimento_nome = estMap.get(estId);
+        valid.push(novo);
+      }
+
+      if (valid.length === 0) {
+        return {
+          success: true,
+          imported: 0,
+          message: "Nenhum registro válido",
+        } as any;
+      }
+
+      const existing = readLocalPedidos();
+      const merged = [...valid, ...existing];
+      writeLocalPedidos(merged);
+      setPedidos(enrichWithEstabelecimentoNome(merged) as any);
+      await loadCounts();
+      return {
+        success: true,
+        imported: valid.length,
+        message: `${valid.length} pedido(s) importado(s) (local)`,
+      } as any;
+    } catch (e) {
+      return {
+        success: false,
+        imported: 0,
+        message: "Erro ao importar",
+      } as any;
+    }
+  };
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
@@ -459,36 +664,32 @@ export default function PedidosModule() {
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
                 <div className="flex items-center gap-6">
-                  {["Todos", "Pendente", "Finalizado", "Cancelado"].map(
-                    (st) => (
-                      <div key={st} className="flex items-center gap-6">
-                        <button
-                          className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
+                  {tabs.map((st) => (
+                    <div key={st} className="flex items-center gap-6">
+                      <button
+                        className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
+                          activeTab === (st as any)
+                            ? "text-foodmax-orange"
+                            : "text-gray-700 hover:text-gray-900"
+                        }`}
+                        onClick={() => setActiveTab(st as any)}
+                      >
+                        <span>{st}</span>
+                        <span
+                          className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
                             activeTab === (st as any)
-                              ? "text-foodmax-orange"
-                              : "text-gray-700 hover:text-gray-900"
+                              ? "bg-orange-100 text-foodmax-orange"
+                              : "bg-gray-100 text-gray-600"
                           }`}
-                          onClick={() => setActiveTab(st as any)}
                         >
-                          <span>{st}</span>
-                          <span
-                            className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
-                              activeTab === (st as any)
-                                ? "bg-orange-100 text-foodmax-orange"
-                                : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            {st === "Todos"
-                              ? totalRecords
-                              : pedidos.filter((p) => p.status === st).length}
-                          </span>
-                          {activeTab === (st as any) && (
-                            <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
-                          )}
-                        </button>
-                      </div>
-                    ),
-                  )}
+                          {totalCounts[st] ?? 0}
+                        </span>
+                        {activeTab === (st as any) && (
+                          <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
+                        )}
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -499,7 +700,7 @@ export default function PedidosModule() {
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Buscar registros..."
-                    value={searchTerm}
+                    value={currentSearch}
                     onChange={(e) => handleSearch(e.target.value)}
                     className="foodmax-input pl-10"
                   />
@@ -515,6 +716,26 @@ export default function PedidosModule() {
                       Excluir Selecionados ({selectedIds.length})
                     </Button>
                   )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowImport(true)}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Importar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      const data = await getAllPedidosForExport();
+                      setExportData(data);
+                      setShowExport(true);
+                    }}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Exportar
+                  </Button>
                   <Button
                     onClick={handleNew}
                     className="bg-foodmax-orange text-white hover:bg-orange-600"
@@ -532,7 +753,7 @@ export default function PedidosModule() {
               loading={loading}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
-              searchTerm={searchTerm}
+              searchTerm={currentSearch}
               currentPage={currentPage}
               pageSize={pageSize}
               totalRecords={filteredPedidos.length}
@@ -565,6 +786,82 @@ export default function PedidosModule() {
         pedido={currentPedido as any}
       />
 
+      <ExportModal
+        isOpen={showExport}
+        onClose={() => {
+          setShowExport(false);
+          setExportData([]);
+        }}
+        data={exportData}
+        selectedIds={selectedIds}
+        moduleName="Pedidos"
+        columns={[
+          { key: "estabelecimento_nome", label: "Estabelecimento" },
+          { key: "codigo", label: "Código" },
+          { key: "tipo_pedido", label: "Tipo de Pedido" },
+          { key: "valor_total_centavos", label: "Valor Total (centavos)" },
+          { key: "status", label: "Status" },
+          { key: "data_hora_finalizado", label: "Data/Hora Finalizado" },
+          { key: "data_cadastro", label: "Data Cadastro" },
+          { key: "data_atualizacao", label: "Data Atualização" },
+        ]}
+      />
+
+      <ImportModal
+        isOpen={showImport}
+        onClose={() => setShowImport(false)}
+        moduleName="Pedidos"
+        userRole={getUserRole()}
+        hasPayment={hasPayment()}
+        columns={[
+          {
+            key: "estabelecimento_nome",
+            label: "Estabelecimento",
+            required: true,
+          },
+          { key: "codigo", label: "Código", required: false },
+          { key: "tipo_pedido", label: "Tipo de Pedido", required: true },
+          { key: "valor_total", label: "Valor Total" },
+          { key: "valor_total_centavos", label: "Valor Total (centavos)" },
+          { key: "status", label: "Status" },
+          { key: "data_hora_finalizado", label: "Data/Hora Finalizado" },
+          { key: "observacao", label: "Observação" },
+        ]}
+        mapHeader={(h) => {
+          const n = h.trim().toLowerCase();
+          const map: Record<string, string> = {
+            estabelecimento: "estabelecimento_nome",
+            "estabelecimento nome": "estabelecimento_nome",
+            código: "codigo",
+            codigo: "codigo",
+            tipo: "tipo_pedido",
+            "tipo de pedido": "tipo_pedido",
+            valor: "valor_total",
+            "valor total": "valor_total",
+            "valor total (centavos)": "valor_total_centavos",
+            status: "status",
+            observação: "observacao",
+            observacao: "observacao",
+            "data/hora finalizado": "data_hora_finalizado",
+          };
+          return map[n] || n.replace(/\s+/g, "_");
+        }}
+        validateRecord={(r) => {
+          const errors: string[] = [];
+          if (!r.estabelecimento_nome && !r.estabelecimento_id)
+            errors.push("Estabelecimento é obrigatório");
+          const tipo = String(r.tipo_pedido || "").trim();
+          if (!tipo) errors.push("Tipo de Pedido é obrigatório");
+          else if (!TIPOS_PEDIDO.includes(tipo as any))
+            errors.push(`Tipo inválido: '${tipo}'`);
+          const status = String(r.status || "Pendente").trim();
+          if (status && !STATUS_PEDIDO.includes(status as any))
+            errors.push(`Status inválido: '${status}'`);
+          return errors;
+        }}
+        onImport={handleImportPedidos}
+      />
+
       <DeleteAlert
         isOpen={showDeleteAlert}
         onClose={() => setShowDeleteAlert(false)}
@@ -586,7 +883,7 @@ export default function PedidosModule() {
               title: "Pedidos excluídos",
               description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
             });
-            await loadPedidos();
+            await refreshAfterMutation();
             setSelectedIds([]);
             setShowBulkDelete(false);
           } catch (error: any) {
@@ -594,12 +891,13 @@ export default function PedidosModule() {
               (e) => !selectedIds.includes(e.id),
             );
             writeLocalPedidos(list);
-            setPedidos(list);
+            setPedidos(enrichWithEstabelecimentoNome(list) as any);
             toast({
               title: "Exclusão concluída localmente",
               description: `${selectedIds.length} registro(s) removido(s)`,
             });
             setSelectedIds([]);
+            await loadCounts();
             setShowBulkDelete(false);
           }
         }}

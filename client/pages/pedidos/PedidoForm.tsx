@@ -57,8 +57,12 @@ import {
   Check,
   X,
   Save,
-  Link,
+  Link as LinkIcon,
   AlertCircle,
+  Info,
+  ShoppingBag,
+  DollarSign,
+  FileText,
 } from "lucide-react";
 
 const schema = z.object({
@@ -168,7 +172,6 @@ export default function PedidoForm({
 
   const loadData = async () => {
     try {
-      // Estabelecimentos: order desc by data_cadastro, default to last active
       const estResp = await makeRequest(
         "/api/estabelecimentos?page=1&limit=1000",
       );
@@ -182,7 +185,6 @@ export default function PedidoForm({
         if (!pedido && lastActive)
           setValue("estabelecimento_id", lastActive.id);
       }
-      // Clientes: asc by nome; add Não Cliente option (id 0)
       const cliResp = await makeRequest("/api/clientes?page=1&limit=1000");
       if (cliResp?.data) {
         const ordered = cliResp.data.sort((a: Cliente, b: Cliente) =>
@@ -191,7 +193,6 @@ export default function PedidoForm({
         setClientes(ordered);
         if (!pedido) setValue("cliente_id", null);
       }
-      // Cardápios: asc by nome
       const cardResp = await makeRequest("/api/cardapios?page=1&limit=1000");
       if (cardResp?.data)
         setCardapios(
@@ -199,7 +200,6 @@ export default function PedidoForm({
             a.nome.localeCompare(b.nome),
           ),
         );
-      // Categorias e Itens (para extras)
       const catResp = await makeRequest(
         "/api/itens-categorias?page=1&limit=1000",
       );
@@ -216,12 +216,9 @@ export default function PedidoForm({
             a.nome.localeCompare(b.nome),
           ),
         );
-    } catch (e) {
-      // ignore; UI will still allow local save through parent fallback
-    }
+    } catch {}
   };
 
-  // If editing, we don't load related details to keep simpler; user can adjust
   useEffect(() => {
     if (pedido) {
       reset({
@@ -243,7 +240,6 @@ export default function PedidoForm({
     return itens.filter((i) => i.categoria_id === selectedCategoriaId);
   }, [itens, selectedCategoriaId]);
 
-  // Totals
   const valorExtras = useMemo(() => {
     return selectedExtras.reduce(
       (sum, e) => sum + e.quantidade * e.valor_unitario_centavos,
@@ -295,7 +291,7 @@ export default function PedidoForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h[90vh] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{pedido ? "Editar Pedido" : "Novo Pedido"}</DialogTitle>
         </DialogHeader>
@@ -308,33 +304,36 @@ export default function PedidoForm({
                 {estabelecimentos.length === 0 ? (
                   <>
                     Antes de cadastrar, é necessário ter pelo menos um
-                    Estabelecimento.{" "}
+                    Estabelecimento. {""}
                     <button
                       onClick={() => window.open("/estabelecimentos", "_blank")}
                       className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
                     >
-                      <Link className="w-3 h-3" /> (ir para módulo
+                      <LinkIcon className="w-3 h-3" /> (ir para módulo
                       Estabelecimentos)
                     </button>
                   </>
                 ) : clientes.length === 0 ? (
                   <>
                     Antes de cadastrar, é necessário ter pelo menos um Cliente.{" "}
+                    {""}
                     <button
                       onClick={() => window.open("/clientes", "_blank")}
                       className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
                     >
-                      <Link className="w-3 h-3" /> (ir para módulo Clientes)
+                      <LinkIcon className="w-3 h-3" /> (ir para módulo Clientes)
                     </button>
                   </>
                 ) : (
                   <>
                     Antes de cadastrar, é necessário ter pelo menos um Cardápio.{" "}
+                    {""}
                     <button
                       onClick={() => window.open("/cardapios", "_blank")}
                       className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
                     >
-                      <Link className="w-3 h-3" /> (ir para módulo Cardápios)
+                      <LinkIcon className="w-3 h-3" /> (ir para módulo
+                      Cardápios)
                     </button>
                   </>
                 )}
@@ -345,6 +344,10 @@ export default function PedidoForm({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <Info className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-blue-600">Dados do Pedido</h3>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Estabelecimento *</Label>
@@ -497,8 +500,19 @@ export default function PedidoForm({
                   </PopoverContent>
                 </Popover>
               </div>
+            </div>
+          </div>
 
-              <div className="md:col-span-2">
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <ShoppingBag className="w-5 h-5 text-purple-600" />
+              <h3 className="font-semibold text-purple-600">
+                Seleção de Cardápios e Itens Extra
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4">
+              <div>
                 <Label>Cardápios *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -551,219 +565,219 @@ export default function PedidoForm({
                 </Popover>
               </div>
 
-              <div className="md:col-span-2">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Categoria</Label>
-                    <Select
-                      value={
-                        selectedCategoriaId
-                          ? String(selectedCategoriaId)
-                          : undefined
-                      }
-                      onValueChange={(v) => setSelectedCategoriaId(parseInt(v))}
-                    >
-                      <SelectTrigger className="foodmax-input">
-                        <SelectValue placeholder="Selecione a categoria" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categorias.map((cat) => (
-                          <SelectItem key={cat.id} value={String(cat.id)}>
-                            {cat.nome}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Itens Extra</Label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          role="combobox"
-                          disabled={!selectedCategoriaId}
-                          className={cn(
-                            "w-full justify-between foodmax-input",
-                            !selectedCategoriaId &&
-                              "opacity-60 cursor-not-allowed",
-                          )}
-                        >
-                          {selectedCategoriaId
-                            ? "Selecionar Itens Extra"
-                            : "Selecione uma categoria"}
-                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-full p-0">
-                        <Command>
-                          <CommandInput placeholder="Filtrar itens..." />
-                          <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
-                          <CommandList>
-                            <CommandGroup>
-                              {filteredExtras.map((item) => {
-                                const isLow = (item.estoque_atual || 0) < 3;
-                                return (
-                                  <CommandItem
-                                    key={item.id}
-                                    onSelect={() => {
-                                      setSelectedExtras((prev) => {
-                                        const existing = prev.find(
-                                          (e) => e.item_id === item.id,
-                                        );
-                                        if (existing) return prev;
-                                        return [
-                                          ...prev,
-                                          {
-                                            item_id: item.id,
-                                            categoria_id: item.categoria_id,
-                                            quantidade: 1,
-                                            valor_unitario_centavos:
-                                              item.preco_centavos,
-                                          },
-                                        ];
-                                      });
-                                    }}
-                                  >
-                                    <div className="flex items-center justify-between w-full">
-                                      <div className="flex items-center gap-2">
-                                        {isLow && (
-                                          <AlertCircle className="w-4 h-4 text-yellow-600" />
-                                        )}
-                                        <span>{item.nome}</span>
-                                      </div>
-                                      <span className="text-xs text-gray-500">
-                                        Estoque: {item.estoque_atual ?? 0}
-                                      </span>
-                                    </div>
-                                  </CommandItem>
-                                );
-                              })}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Categoria</Label>
+                  <Select
+                    value={
+                      selectedCategoriaId
+                        ? String(selectedCategoriaId)
+                        : undefined
+                    }
+                    onValueChange={(v) => setSelectedCategoriaId(parseInt(v))}
+                  >
+                    <SelectTrigger className="foodmax-input">
+                      <SelectValue placeholder="Selecione a categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categorias.map((cat) => (
+                        <SelectItem key={cat.id} value={String(cat.id)}>
+                          {cat.nome}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                {selectedCategoriaId &&
-                  filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
-                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                      Atenção: existem itens desta categoria com estoque baixo
-                      (&lt; 3).
-                    </div>
-                  )}
+                <div>
+                  <Label>Itens Extra</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        disabled={!selectedCategoriaId}
+                        className={cn(
+                          "w-full justify-between foodmax-input",
+                          !selectedCategoriaId &&
+                            "opacity-60 cursor-not-allowed",
+                        )}
+                      >
+                        {selectedCategoriaId
+                          ? "Selecionar Itens Extra"
+                          : "Selecione uma categoria"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Filtrar itens..." />
+                        <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                        <CommandList>
+                          <CommandGroup>
+                            {filteredExtras.map((item) => {
+                              const isLow = (item.estoque_atual || 0) < 3;
+                              return (
+                                <CommandItem
+                                  key={item.id}
+                                  onSelect={() => {
+                                    setSelectedExtras((prev) => {
+                                      const existing = prev.find(
+                                        (e) => e.item_id === item.id,
+                                      );
+                                      if (existing) return prev;
+                                      return [
+                                        ...prev,
+                                        {
+                                          item_id: item.id,
+                                          categoria_id: item.categoria_id,
+                                          quantidade: 1,
+                                          valor_unitario_centavos:
+                                            item.preco_centavos,
+                                        },
+                                      ];
+                                    });
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between w-full">
+                                    <div className="flex items-center gap-2">
+                                      {isLow && (
+                                        <AlertCircle className="w-4 h-4 text-yellow-600" />
+                                      )}
+                                      <span>{item.nome}</span>
+                                    </div>
+                                    <span className="text-xs text-gray-500">
+                                      Estoque: {item.estoque_atual ?? 0}
+                                    </span>
+                                  </div>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
 
-                {selectedExtras.length > 0 && (
-                  <div className="mt-3 space-y-2">
-                    {selectedExtras.map((ex) => {
-                      const item = itens.find((i) => i.id === ex.item_id);
-                      if (!item) return null;
-                      const total = ex.quantidade * ex.valor_unitario_centavos;
-                      const isZero = (item.estoque_atual || 0) === 0;
-                      return (
-                        <div
-                          key={ex.item_id}
-                          className="flex items-center justify-between bg-gray-50 rounded p-2"
-                        >
-                          <div>
-                            <div className="font-medium flex items-center gap-2">
-                              {(item.estoque_atual || 0) < 3 && (
-                                <AlertCircle className="w-4 h-4 text-yellow-600" />
-                              )}{" "}
-                              {item.nome}
-                            </div>
-                            <div className="text-xs text-gray-600">
-                              Estoque Atual: {item.estoque_atual ?? 0}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="flex flex-col gap-1">
-                              <Label className="text-xs">Qtd</Label>
-                              <Input
-                                type="number"
-                                min="1"
-                                value={ex.quantidade}
-                                onChange={(e) =>
-                                  setSelectedExtras((prev) =>
-                                    prev.map((p) =>
-                                      p.item_id === ex.item_id
-                                        ? {
-                                            ...p,
-                                            quantidade: Math.max(
-                                              1,
-                                              parseInt(e.target.value) || 1,
-                                            ),
-                                          }
-                                        : p,
-                                    ),
-                                  )
-                                }
-                                disabled={isZero}
-                                className="w-20 h-8 text-center"
-                              />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <Label className="text-xs">
-                                Valor Unit. (R$)
-                              </Label>
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={(
-                                  ex.valor_unitario_centavos / 100
-                                ).toFixed(2)}
-                                onChange={(e) =>
-                                  setSelectedExtras((prev) =>
-                                    prev.map((p) =>
-                                      p.item_id === ex.item_id
-                                        ? {
-                                            ...p,
-                                            valor_unitario_centavos: Math.round(
-                                              parseFloat(
-                                                e.target.value || "0",
-                                              ) * 100,
-                                            ),
-                                          }
-                                        : p,
-                                    ),
-                                  )
-                                }
-                                className="w-24 h-8 text-center"
-                              />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <Label className="text-xs">Total</Label>
-                              <div className="text-sm font-medium w-20 text-center bg-white p-1 rounded border">
-                                {formatCurrencyBRL(total)}
-                              </div>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                setSelectedExtras((prev) =>
-                                  prev.filter((p) => p.item_id !== ex.item_id),
-                                )
-                              }
-                              className="h-8 w-8 p-0 border-red-200 hover:bg-red-50"
-                            >
-                              <X className="w-4 h-4 text-red-600" />
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
+              {selectedCategoriaId &&
+                filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
+                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                    Atenção: existem itens desta categoria com estoque baixo
+                    (&lt; 3).
                   </div>
                 )}
-              </div>
+
+              {selectedExtras.length > 0 && (
+                <div className="mt-1 space-y-2">
+                  {selectedExtras.map((ex) => {
+                    const item = itens.find((i) => i.id === ex.item_id);
+                    if (!item) return null;
+                    const total = ex.quantidade * ex.valor_unitario_centavos;
+                    const isZero = (item.estoque_atual || 0) === 0;
+                    return (
+                      <div
+                        key={ex.item_id}
+                        className="flex items-center justify-between bg-gray-50 rounded p-2"
+                      >
+                        <div>
+                          <div className="font-medium flex items-center gap-2">
+                            {(item.estoque_atual || 0) < 3 && (
+                              <AlertCircle className="w-4 h-4 text-yellow-600" />
+                            )}{" "}
+                            {item.nome}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            Estoque Atual: {item.estoque_atual ?? 0}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex flex-col gap-1">
+                            <Label className="text-xs">Qtd</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={ex.quantidade}
+                              onChange={(e) =>
+                                setSelectedExtras((prev) =>
+                                  prev.map((p) =>
+                                    p.item_id === ex.item_id
+                                      ? {
+                                          ...p,
+                                          quantidade: Math.max(
+                                            1,
+                                            parseInt(e.target.value) || 1,
+                                          ),
+                                        }
+                                      : p,
+                                  ),
+                                )
+                              }
+                              disabled={isZero}
+                              className="w-20 h-8 text-center"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <Label className="text-xs">Valor Unit. (R$)</Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={(ex.valor_unitario_centavos / 100).toFixed(
+                                2,
+                              )}
+                              onChange={(e) =>
+                                setSelectedExtras((prev) =>
+                                  prev.map((p) =>
+                                    p.item_id === ex.item_id
+                                      ? {
+                                          ...p,
+                                          valor_unitario_centavos: Math.round(
+                                            parseFloat(e.target.value || "0") *
+                                              100,
+                                          ),
+                                        }
+                                      : p,
+                                  ),
+                                )
+                              }
+                              className="w-24 h-8 text-center"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <Label className="text-xs">Total</Label>
+                            <div className="text-sm font-medium w-20 text-center bg-white p-1 rounded border">
+                              {formatCurrencyBRL(total)}
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              setSelectedExtras((prev) =>
+                                prev.filter((p) => p.item_id !== ex.item_id),
+                              )
+                            }
+                            className="h-8 w-8 p-0 border-red-200 hover:bg-red-50"
+                          >
+                            <X className="w-4 h-4 text-red-600" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="col-span-1 md:col-span-2 -mt-2 mb-2 flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-green-600" />
+                <h3 className="font-semibold text-green-600">Totais</h3>
+              </div>
               <div>
                 <Label>Valor do Pedido (R$) *</Label>
                 <Input
@@ -806,16 +820,20 @@ export default function PedidoForm({
                   className="foodmax-input"
                 />
               </div>
-              <div className="md:col-span-2">
-                <Label>Observação</Label>
-                <Textarea
-                  rows={3}
-                  {...register("observacao")}
-                  className="foodmax-input resize-none"
-                  placeholder="Observações..."
-                />
-              </div>
             </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="w-5 h-5 text-red-600" />
+              <h3 className="font-semibold text-red-600">Observação</h3>
+            </div>
+            <Textarea
+              rows={3}
+              {...register("observacao")}
+              className="foodmax-input resize-none"
+              placeholder="Observações..."
+            />
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
