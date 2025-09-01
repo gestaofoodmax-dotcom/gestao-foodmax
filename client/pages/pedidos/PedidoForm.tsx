@@ -59,7 +59,6 @@ import {
   Save,
   Link as LinkIcon,
   AlertCircle,
-  Info,
   Utensils,
   CupSoda,
   DollarSign,
@@ -904,7 +903,7 @@ export default function PedidoForm({
               rows={3}
               {...register("observacao")}
               className="foodmax-input resize-none"
-              placeholder="Observações..."
+              placeholder="Observaç��es..."
             />
             <div className="mt-4">
               <Label>Data/Hora Finalizado</Label>
