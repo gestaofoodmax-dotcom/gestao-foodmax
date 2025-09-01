@@ -1,8 +1,12 @@
 export async function clearAllAppCaches(): Promise<void> {
   try {
     if (typeof window !== "undefined") {
-      try { localStorage.clear(); } catch {}
-      try { sessionStorage.clear(); } catch {}
+      try {
+        localStorage.clear();
+      } catch {}
+      try {
+        sessionStorage.clear();
+      } catch {}
       try {
         if ("caches" in window) {
           const keys = await caches.keys();

@@ -77,7 +77,10 @@ export default function Onboarding() {
       if (successData.success) {
         try {
           const mod = await import("@/lib/utils");
-          localStorage.setItem("fm_user_name", mod.toTitleCase(formData.nome || ""));
+          localStorage.setItem(
+            "fm_user_name",
+            mod.toTitleCase(formData.nome || ""),
+          );
         } catch {}
         navigate("/dashboard");
       } else {

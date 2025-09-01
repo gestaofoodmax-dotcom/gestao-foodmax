@@ -134,7 +134,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = () => {
     setUser(null);
     setHasPaymentFlag(false);
-    try { localStorage.removeItem("fm_user_id"); } catch {}
+    try {
+      localStorage.removeItem("fm_user_id");
+    } catch {}
     // Best-effort: clear caches on logout as well
     try {
       import("@/lib/cache").then((m) => m.clearAllAppCaches());
