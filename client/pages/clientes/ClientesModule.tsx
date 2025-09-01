@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Menu,
   Home,
@@ -47,7 +49,8 @@ import { ClienteForm } from "./ClienteForm";
 import { ClienteView } from "./ClienteView";
 
 export default function ClientesModule() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, getUserRole, hasPayment, isLoading } = useAuth();
@@ -66,6 +69,10 @@ export default function ClientesModule() {
 
   const userRole = getUserRole();
   const hasPaymentPlan = hasPayment();
+
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
 
   const LOCAL_KEY = "fm_clientes";
   const readLocal = (): Cliente[] => {
@@ -87,29 +94,6 @@ export default function ClientesModule() {
       localStorage.removeItem("fm_estabelecimentos");
     } catch {}
   }, []);
-
-  const menuItems = [
-    { icon: Home, label: "Dashboard", route: "/dashboard" },
-    { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
-    { icon: Users, label: "Clientes", route: "/clientes" },
-    { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
-    { icon: List, label: "Itens", route: "/itens" },
-    { icon: Utensils, label: "Cardápios", route: "/cardapios" },
-    { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
-  ];
-  const renderMenuItem = (item: any, index: number) => {
-    const isActive = location.pathname === item.route;
-    return (
-      <Link
-        key={index}
-        to={item.route}
-        className={`w-full flex items-center px-4 py-2 text-left transition-colors ${isActive ? "bg-orange-50 text-foodmax-orange border-r-4 border-foodmax-orange" : "text-gray-700 hover:bg-gray-100"}`}
-      >
-        <item.icon className="w-4 h-4" />
-        {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
-      </Link>
-    );
-  };
 
   const loadEstabelecimentos = useCallback(async () => {
     try {
@@ -595,76 +579,32 @@ export default function ClientesModule() {
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
-      <div
-        className={`${sidebarOpen ? "w-64" : "w-16"} bg-white shadow-lg transition-all duration-300 flex flex-col h-full`}
-      >
-        <div className="flex-1 overflow-y-auto sidebar-scroll">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-foodmax-red rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">F</span>
-                </div>
-                {sidebarOpen && (
-                  <div className="ml-3">
-                    <h1 className="font-bold text-lg text-gray-800">FoodMax</h1>
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-          {sidebarOpen && (
-            <div className="px-4 py-2">
-              <span className="text-xs text-gray-500 uppercase tracking-wide">
-                PRINCIPAL
-              </span>
-            </div>
-          )}
-          <nav className="mt-2 pb-4">
-            {menuItems.map((item, i) => renderMenuItem(item, i))}
-          </nav>
-        </div>
-        <div className="bg-white border-t border-gray-200 flex-shrink-0">
-          <div className="flex items-center px-4 py-4">
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-600">A</span>
-            </div>
-            {sidebarOpen && (
-              <div className="ml-3 flex-1 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-800">Ana</p>
-                  <p className="text-xs text-gray-500">Administrador</p>
-                </div>
-                <button
-                  onClick={() => {
-                    logout();
-                    navigate("/login");
-                  }}
-                  className="flex items-center gap-1 text-sm text-gray-700 hover:text-foodmax-orange"
-                  title="Sair"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <Sidebar
+        open={sidebarOpen}
+        onToggle={(next) =>
+          setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)
+        }
+      />
 
       <div className="flex-1 flex flex-col">
         <header className="bg-foodmax-gray-bg px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-semibold text-gray-800">Clientes</h2>
-              <p className="text-gray-600 mt-1">
-                Gerencie todos os clientes cadastrados no sistema.
-              </p>
+            <div className="flex items-center">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="md:hidden p-2 mr-3 rounded-lg border bg-white"
+                aria-label="Abrir menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <div>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Clientes
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Gerencie todos os clientes cadastrados no sistema.
+                </p>
+              </div>
             </div>
           </div>
         </header>
@@ -672,8 +612,8 @@ export default function ClientesModule() {
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="bg-white rounded-xl border p-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="relative flex-1 max-w-md">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="relative md:flex-1 md:max-w-md">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Buscar registros..."
@@ -682,7 +622,7 @@ export default function ClientesModule() {
                     className="foodmax-input pl-10"
                   />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full md:w-auto md:ml-auto flex-wrap">
                   {selectedIds.length > 0 && (
                     <Button
                       variant="destructive"

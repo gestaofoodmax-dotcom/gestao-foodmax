@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { X, Save, Phone, MapPin, Info } from "lucide-react";
+import { X, Save, Phone, MapPin, FileText } from "lucide-react";
 import { DDISelect } from "@/components/ddi-select";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -266,7 +266,7 @@ export function EstabelecimentoForm({
           {/* Dados Básicos */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
-              <Info className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-blue-600" />
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
 
