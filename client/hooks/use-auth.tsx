@@ -69,10 +69,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
             console.log("[DEBUG] User data loaded:", userData);
             setUser(userData.user);
             setHasPaymentFlag(!!userData.user?.hasPayment);
+            try {
+              const existingName = localStorage.getItem("fm_user_name");
+              if (!existingName && userData?.user?.email) {
+                const fallback = String(userData.user.email).split("@")[0];
+                localStorage.setItem("fm_user_name", fallback);
+              }
+            } catch {}
           } else {
             console.log("[DEBUG] Auth API failed, keeping fallback admin user");
             // Keep provisional admin
             setHasPaymentFlag(true);
+            try {
+              const existingName = localStorage.getItem("fm_user_name");
+              if (!existingName) {
+                localStorage.setItem("fm_user_name", "Admin");
+              }
+            } catch {}
           }
         }
       } catch (error) {
@@ -98,11 +111,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const login = (userId: number, email: string) => {
-    // Store basic user info (we'll fetch full data from server later)
     const basicUser: User = {
       id: userId,
       email,
-      role: "user", // Will be updated when full data is fetched
+      role: "user",
       ativo: true,
       onboarding: true,
       data_cadastro: new Date().toISOString(),
@@ -111,12 +123,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setUser(basicUser);
     setHasPaymentFlag(false);
     localStorage.setItem("fm_user_id", userId.toString());
+    try {
+      if (email) {
+        const base = String(email).split("@")[0];
+        localStorage.setItem("fm_user_name", base);
+      }
+    } catch {}
   };
 
   const logout = () => {
     setUser(null);
     setHasPaymentFlag(false);
-    localStorage.removeItem("fm_user_id");
+    try {
+      localStorage.removeItem("fm_user_id");
+    } catch {}
+    // Best-effort: clear caches on logout as well
+    try {
+      import("@/lib/cache").then((m) => m.clearAllAppCaches());
+    } catch {}
   };
 
   const getUserRole = (): "admin" | "user" | null => {

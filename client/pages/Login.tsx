@@ -17,6 +17,12 @@ export default function Login() {
     setIsLoading(true);
     setError("");
 
+    // Clear all caches before attempting login, as requested
+    try {
+      const mod = await import("@/lib/cache");
+      await mod.clearAllAppCaches();
+    } catch {}
+
     if (!email || !password) {
       setError("Por favor, preencha todos os campos");
       setIsLoading(false);
