@@ -280,6 +280,28 @@ export default function PedidoForm({
       return;
     }
 
+    // Validate extras stock before submit
+    for (const ex of selectedExtras) {
+      const itemInfo = itens.find((i) => i.id === ex.item_id);
+      const estoque = itemInfo?.estoque_atual ?? 0;
+      if (estoque <= 0) {
+        setStockAlert({
+          open: true,
+          message:
+            `O item selecionado está com estoque 0. Ajuste o estoque no módulo Itens antes de continuar.`,
+        });
+        return;
+      }
+      if (ex.quantidade > estoque) {
+        setStockAlert({
+          open: true,
+          message:
+            `Quantidade informada (${ex.quantidade}) é maior que o estoque atual (${estoque}). Ajuste o estoque no módulo Itens.`,
+        });
+        return;
+      }
+    }
+
     const payload: CreatePedidoRequest = {
       estabelecimento_id: data.estabelecimento_id,
       cliente_id: data.cliente_id ?? null,
