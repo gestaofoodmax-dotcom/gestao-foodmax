@@ -64,6 +64,15 @@ import {
   DollarSign,
   FileText,
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const schema = z.object({
   estabelecimento_id: z.number({
@@ -106,8 +115,8 @@ export default function PedidoForm({
   const [itens, setItens] = useState<Item[]>([]);
 
   const [selectedCardapios, setSelectedCardapios] = useState<number[]>([]);
-  const [selectedCategoriaId, setSelectedCategoriaId] = useState<number | null>(
-    null,
+  const [selectedCategoriaIds, setSelectedCategoriaIds] = useState<number[]>(
+    [],
   );
   const [selectedExtras, setSelectedExtras] = useState<
     {
@@ -117,6 +126,10 @@ export default function PedidoForm({
       valor_unitario_centavos: number;
     }[]
   >([]);
+  const [stockAlert, setStockAlert] = useState<{
+    open: boolean;
+    message: string;
+  }>({ open: false, message: "" });
 
   const parseCurrencyToCentavos = (val: string) => {
     const digits = val.replace(/[^0-9]/g, "");
@@ -166,7 +179,7 @@ export default function PedidoForm({
       });
       setSelectedCardapios([]);
       setSelectedExtras([]);
-      setSelectedCategoriaId(null);
+      setSelectedCategoriaIds([]);
     }
   }, [isOpen, pedido, reset]);
 
@@ -236,9 +249,10 @@ export default function PedidoForm({
   }, [pedido, reset]);
 
   const filteredExtras = useMemo(() => {
-    if (!selectedCategoriaId) return [] as Item[];
-    return itens.filter((i) => i.categoria_id === selectedCategoriaId);
-  }, [itens, selectedCategoriaId]);
+    if (!selectedCategoriaIds || selectedCategoriaIds.length === 0)
+      return [] as Item[];
+    return itens.filter((i) => selectedCategoriaIds.includes(i.categoria_id));
+  }, [itens, selectedCategoriaIds]);
 
   const valorExtras = useMemo(() => {
     return selectedExtras.reduce(
@@ -268,6 +282,26 @@ export default function PedidoForm({
         variant: "destructive",
       });
       return;
+    }
+
+    // Validate extras stock before submit
+    for (const ex of selectedExtras) {
+      const itemInfo = itens.find((i) => i.id === ex.item_id);
+      const estoque = itemInfo?.estoque_atual ?? 0;
+      if (estoque <= 0) {
+        setStockAlert({
+          open: true,
+          message: `O item selecionado está com estoque 0. Ajuste o estoque no módulo Itens antes de continuar.`,
+        });
+        return;
+      }
+      if (ex.quantidade > estoque) {
+        setStockAlert({
+          open: true,
+          message: `Quantidade informada (${ex.quantidade}) é maior que o estoque atual (${estoque}). Ajuste o estoque no módulo Itens.`,
+        });
+        return;
+      }
     }
 
     const payload: CreatePedidoRequest = {
@@ -507,7 +541,7 @@ export default function PedidoForm({
             <div className="flex items-center gap-2 mb-2">
               <ShoppingBag className="w-5 h-5 text-purple-600" />
               <h3 className="font-semibold text-purple-600">
-                Seleção de Cardápios e Itens Extra
+                Cardápios e Itens Extra
               </h3>
             </div>
 
@@ -567,26 +601,55 @@ export default function PedidoForm({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Categoria</Label>
-                  <Select
-                    value={
-                      selectedCategoriaId
-                        ? String(selectedCategoriaId)
-                        : undefined
-                    }
-                    onValueChange={(v) => setSelectedCategoriaId(parseInt(v))}
-                  >
-                    <SelectTrigger className="foodmax-input">
-                      <SelectValue placeholder="Selecione a categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categorias.map((cat) => (
-                        <SelectItem key={cat.id} value={String(cat.id)}>
-                          {cat.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Categorias</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between foodmax-input"
+                      >
+                        {selectedCategoriaIds.length > 0
+                          ? `${selectedCategoriaIds.length} selecionada(s)`
+                          : "Selecione Categorias"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Filtrar categorias..." />
+                        <CommandEmpty>
+                          Nenhuma categoria encontrada.
+                        </CommandEmpty>
+                        <CommandList>
+                          <CommandGroup>
+                            {categorias.map((cat) => (
+                              <CommandItem
+                                key={cat.id}
+                                onSelect={() =>
+                                  setSelectedCategoriaIds((prev) =>
+                                    prev.includes(cat.id)
+                                      ? prev.filter((id) => id !== cat.id)
+                                      : [...prev, cat.id],
+                                  )
+                                }
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedCategoriaIds.includes(cat.id)
+                                      ? "opacity-100"
+                                      : "opacity-0",
+                                  )}
+                                />
+                                {cat.nome}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div>
                   <Label>Itens Extra</Label>
@@ -595,16 +658,16 @@ export default function PedidoForm({
                       <Button
                         variant="outline"
                         role="combobox"
-                        disabled={!selectedCategoriaId}
+                        disabled={selectedCategoriaIds.length === 0}
                         className={cn(
                           "w-full justify-between foodmax-input",
-                          !selectedCategoriaId &&
+                          selectedCategoriaIds.length === 0 &&
                             "opacity-60 cursor-not-allowed",
                         )}
                       >
-                        {selectedCategoriaId
+                        {selectedCategoriaIds.length > 0
                           ? "Selecionar Itens Extra"
-                          : "Selecione uma categoria"}
+                          : "Selecione categorias"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
@@ -660,7 +723,7 @@ export default function PedidoForm({
                 </div>
               </div>
 
-              {selectedCategoriaId &&
+              {selectedCategoriaIds.length > 0 &&
                 filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
                   <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
                     Atenção: existem itens desta categoria com estoque baixo
@@ -698,21 +761,31 @@ export default function PedidoForm({
                               type="number"
                               min="1"
                               value={ex.quantidade}
-                              onChange={(e) =>
-                                setSelectedExtras((prev) =>
-                                  prev.map((p) =>
+                              onChange={(e) => {
+                                const next = Math.max(
+                                  1,
+                                  parseInt(e.target.value) || 1,
+                                );
+                                setSelectedExtras((prev) => {
+                                  const itemInfo = itens.find(
+                                    (i) => i.id === ex.item_id,
+                                  );
+                                  const estoque = itemInfo?.estoque_atual ?? 0;
+                                  const adjusted =
+                                    estoque > 0 ? Math.min(next, estoque) : 1;
+                                  if (next > estoque && estoque >= 0) {
+                                    setStockAlert({
+                                      open: true,
+                                      message: `Quantidade informada (${next}) é maior que o estoque atual (${estoque}). Para usar quantidade maior, ajuste o estoque no módulo Itens.`,
+                                    });
+                                  }
+                                  return prev.map((p) =>
                                     p.item_id === ex.item_id
-                                      ? {
-                                          ...p,
-                                          quantidade: Math.max(
-                                            1,
-                                            parseInt(e.target.value) || 1,
-                                          ),
-                                        }
+                                      ? { ...p, quantidade: adjusted }
                                       : p,
-                                  ),
-                                )
-                              }
+                                  );
+                                });
+                              }}
                               disabled={isZero}
                               className="w-20 h-8 text-center"
                             />
@@ -776,7 +849,7 @@ export default function PedidoForm({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="col-span-1 md:col-span-2 -mt-2 mb-2 flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-green-600" />
-                <h3 className="font-semibold text-green-600">Totais</h3>
+                <h3 className="font-semibold text-green-600">Valor</h3>
               </div>
               <div>
                 <Label>Valor do Pedido (R$) *</Label>
@@ -798,42 +871,42 @@ export default function PedidoForm({
                   </span>
                 )}
               </div>
-              <div>
-                <Label>Data/Hora Finalizado</Label>
-                <Input
-                  type="datetime-local"
-                  value={
-                    watchedValues.data_hora_finalizado
-                      ? new Date(watchedValues.data_hora_finalizado)
-                          .toISOString()
-                          .slice(0, 16)
-                      : ""
-                  }
-                  onChange={(e) =>
-                    setValue(
-                      "data_hora_finalizado",
-                      e.target.value
-                        ? new Date(e.target.value).toISOString()
-                        : null,
-                    )
-                  }
-                  className="foodmax-input"
-                />
-              </div>
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-5 h-5 text-red-600" />
-              <h3 className="font-semibold text-red-600">Observação</h3>
-            </div>
+            <Label>Observação</Label>
             <Textarea
               rows={3}
               {...register("observacao")}
               className="foodmax-input resize-none"
               placeholder="Observações..."
             />
+          </div>
+
+          <div className="bg-white p-4 rounded-lg border">
+            <div>
+              <Label>Data/Hora Finalizado</Label>
+              <Input
+                type="datetime-local"
+                value={
+                  watchedValues.data_hora_finalizado
+                    ? new Date(watchedValues.data_hora_finalizado)
+                        .toISOString()
+                        .slice(0, 16)
+                    : ""
+                }
+                onChange={(e) =>
+                  setValue(
+                    "data_hora_finalizado",
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
+                  )
+                }
+                className="foodmax-input"
+              />
+            </div>
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
@@ -873,6 +946,30 @@ export default function PedidoForm({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <AlertDialog
+        open={stockAlert.open}
+        onOpenChange={(open) => setStockAlert((s) => ({ ...s, open }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Estoque insuficiente</AlertDialogTitle>
+          </AlertDialogHeader>
+          <div className="text-sm text-gray-700">{stockAlert.message}</div>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => setStockAlert({ open: false, message: "" })}
+            >
+              Fechar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => setStockAlert({ open: false, message: "" })}
+            >
+              Ok
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }

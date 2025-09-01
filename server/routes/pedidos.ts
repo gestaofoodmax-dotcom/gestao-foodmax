@@ -175,6 +175,50 @@ export const createPedido: RequestHandler = async (req, res) => {
     const codigo =
       parsed.codigo && parsed.codigo.trim() ? parsed.codigo : generateCodigo();
 
+    // Validate itens_extras stock and categoria
+    if (parsed.itens_extras.length > 0) {
+      const ids = [...new Set(parsed.itens_extras.map((e) => e.item_id))];
+      const { data: itens, error: itensError } = await supabase
+        .from("itens")
+        .select("id, estoque_atual, categoria_id")
+        .in("id", ids);
+      if (itensError) throw itensError;
+      const byId = new Map<
+        number,
+        { estoque_atual: number | null; categoria_id: number }
+      >();
+      (itens || []).forEach((i: any) =>
+        byId.set(i.id, {
+          estoque_atual: i.estoque_atual,
+          categoria_id: i.categoria_id,
+        }),
+      );
+      for (const e of parsed.itens_extras) {
+        const info = byId.get(e.item_id);
+        const estoque = info?.estoque_atual ?? 0;
+        if (!info) {
+          return res.status(400).json({
+            error: `Item inválido (${e.item_id})`,
+          });
+        }
+        if (info.categoria_id !== e.categoria_id) {
+          return res.status(400).json({
+            error: `Categoria do item não confere para o item ${e.item_id}`,
+          });
+        }
+        if (estoque <= 0) {
+          return res.status(400).json({
+            error: `Item sem estoque (${e.item_id}). Ajuste no módulo Itens.`,
+          });
+        }
+        if (e.quantidade > estoque) {
+          return res.status(400).json({
+            error: `Quantidade informada (${e.quantidade}) é maior que o estoque atual (${estoque}) do item ${e.item_id}. Ajuste o estoque no módulo Itens.`,
+          });
+        }
+      }
+    }
+
     // If cardapio price not supplied, load it
     const cardapiosData = [] as {
       cardapio_id: number;
@@ -268,8 +312,51 @@ export const updatePedido: RequestHandler = async (req, res) => {
     if (!existing)
       return res.status(404).json({ error: "Pedido não encontrado" });
 
+    // Validate itens_extras if provided
+    if (parsed.itens_extras && parsed.itens_extras.length > 0) {
+      const ids = [...new Set(parsed.itens_extras.map((e) => e.item_id))];
+      const { data: itens, error: itensError } = await supabase
+        .from("itens")
+        .select("id, estoque_atual, categoria_id")
+        .in("id", ids);
+      if (itensError) throw itensError;
+      const byId = new Map<
+        number,
+        { estoque_atual: number | null; categoria_id: number }
+      >();
+      (itens || []).forEach((i: any) =>
+        byId.set(i.id, {
+          estoque_atual: i.estoque_atual,
+          categoria_id: i.categoria_id,
+        }),
+      );
+      for (const e of parsed.itens_extras) {
+        const info = byId.get(e.item_id);
+        const estoque = info?.estoque_atual ?? 0;
+        if (!info) {
+          return res
+            .status(400)
+            .json({ error: `Item inválido (${e.item_id})` });
+        }
+        if (info.categoria_id !== e.categoria_id) {
+          return res.status(400).json({
+            error: `Categoria do item não confere para o item ${e.item_id}`,
+          });
+        }
+        if (estoque <= 0) {
+          return res.status(400).json({
+            error: `Item sem estoque (${e.item_id}). Ajuste no módulo Itens.`,
+          });
+        }
+        if (e.quantidade > estoque) {
+          return res.status(400).json({
+            error: `Quantidade informada (${e.quantidade}) é maior que o estoque atual (${estoque}) do item ${e.item_id}. Ajuste o estoque no módulo Itens.`,
+          });
+        }
+      }
+    }
+
     const updateData: any = { ...parsed };
-    // never update id_usuario directly
 
     const { data: pedido, error } = await supabase
       .from("pedidos")
