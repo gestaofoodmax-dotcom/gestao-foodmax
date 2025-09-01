@@ -4,7 +4,7 @@ import {
   Menu,
   Home,
   Users,
-  ShoppingCart,
+  ShoppingBag,
   BarChart3,
   Settings,
   LogOut,
