@@ -762,7 +762,7 @@ export default function PedidoForm({
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="flex flex-col gap-1">
+                          <div className="text-center">
                             <Label className="text-xs">Quantidade</Label>
                             <Input
                               type="number"
@@ -797,7 +797,7 @@ export default function PedidoForm({
                               className="w-20 h-8 text-center"
                             />
                           </div>
-                          <div className="flex flex-col gap-1">
+                          <div className="text-center">
                             <Label className="text-xs">Valor Unit. (R$)</Label>
                             <Input
                               type="number"
@@ -824,7 +824,7 @@ export default function PedidoForm({
                               className="w-24 h-8 text-center"
                             />
                           </div>
-                          <div className="flex flex-col gap-1">
+                          <div className="text-center">
                             <Label className="text-xs">Total</Label>
                             <div className="text-sm font-medium w-20 text-center bg-white p-1 rounded border">
                               {formatCurrencyBRL(total)}
