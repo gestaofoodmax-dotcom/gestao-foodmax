@@ -115,7 +115,9 @@ export default function PedidoForm({
   const [itens, setItens] = useState<Item[]>([]);
 
   const [selectedCardapios, setSelectedCardapios] = useState<number[]>([]);
-  const [selectedCategoriaIds, setSelectedCategoriaIds] = useState<number[]>([]);
+  const [selectedCategoriaIds, setSelectedCategoriaIds] = useState<number[]>(
+    [],
+  );
   const [selectedExtras, setSelectedExtras] = useState<
     {
       item_id: number;
@@ -538,7 +540,9 @@ export default function PedidoForm({
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <ShoppingBag className="w-5 h-5 text-purple-600" />
-              <h3 className="font-semibold text-purple-600">Cardápios e Itens Extra</h3>
+              <h3 className="font-semibold text-purple-600">
+                Cardápios e Itens Extra
+              </h3>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -614,7 +618,9 @@ export default function PedidoForm({
                     <PopoverContent className="w-full p-0">
                       <Command>
                         <CommandInput placeholder="Filtrar categorias..." />
-                        <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
+                        <CommandEmpty>
+                          Nenhuma categoria encontrada.
+                        </CommandEmpty>
                         <CommandList>
                           <CommandGroup>
                             {categorias.map((cat) => (
@@ -893,7 +899,9 @@ export default function PedidoForm({
                 onChange={(e) =>
                   setValue(
                     "data_hora_finalizado",
-                    e.target.value ? new Date(e.target.value).toISOString() : null,
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
                   )
                 }
                 className="foodmax-input"
