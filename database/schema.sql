@@ -1,6 +1,9 @@
 -- Pedidos module schema (PostgreSQL compatible)
 -- This script creates the required tables, relations and triggers for the Pedidos module
 
+-- Extensions
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Enum-like constraints via CHECK
 CREATE TABLE IF NOT EXISTS pedidos (
   id BIGSERIAL PRIMARY KEY,
