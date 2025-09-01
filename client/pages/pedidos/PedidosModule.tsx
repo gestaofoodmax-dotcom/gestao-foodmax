@@ -220,6 +220,7 @@ export default function PedidosModule() {
   const [currentPedido, setCurrentPedido] = useState<Pedido | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showBulkDelete, setShowBulkDelete] = useState(false);
 
   const handleNew = () => {
     setCurrentPedido(null);
