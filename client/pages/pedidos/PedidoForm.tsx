@@ -656,7 +656,7 @@ export default function PedidoForm({
                   </Popover>
                 </div>
                 <div>
-                  <Label>Itens Extra</Label>
+                  <Label>Itens Extras</Label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button
