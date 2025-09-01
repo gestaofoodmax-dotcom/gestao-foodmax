@@ -329,7 +329,9 @@ export default function PedidoForm({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h[90vh] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{pedido ? "Editar Pedido" : "Novo Pedido"}</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl font-normal">
+            {pedido ? "Editar Pedido" : "Novo Pedido"}
+          </DialogTitle>
         </DialogHeader>
 
         {!hasPrerequisites && (
@@ -381,7 +383,7 @@ export default function PedidoForm({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <Info className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-blue-600" />
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
