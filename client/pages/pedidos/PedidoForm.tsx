@@ -60,9 +60,11 @@ import {
   Link as LinkIcon,
   AlertCircle,
   Info,
-  ShoppingBag,
+  Utensils,
+  CupSoda,
   DollarSign,
   FileText,
+  Minus,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -380,7 +382,7 @@ export default function PedidoForm({
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <Info className="w-5 h-5 text-blue-600" />
-              <h3 className="font-semibold text-blue-600">Dados do Pedido</h3>
+              <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -539,10 +541,8 @@ export default function PedidoForm({
 
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <ShoppingBag className="w-5 h-5 text-purple-600" />
-              <h3 className="font-semibold text-purple-600">
-                Cardápios e Itens Extra
-              </h3>
+              <Utensils className="w-5 h-5 text-purple-600" />
+              <h3 className="font-semibold text-purple-600">Cardápios</h3>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -598,251 +598,273 @@ export default function PedidoForm({
                   </PopoverContent>
                 </Popover>
               </div>
+            </div>
+          </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Categorias</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className="w-full justify-between foodmax-input"
-                      >
-                        {selectedCategoriaIds.length > 0
-                          ? `${selectedCategoriaIds.length} selecionada(s)`
-                          : "Selecione Categorias"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
-                      <Command>
-                        <CommandInput placeholder="Filtrar categorias..." />
-                        <CommandEmpty>
-                          Nenhuma categoria encontrada.
-                        </CommandEmpty>
-                        <CommandList>
-                          <CommandGroup>
-                            {categorias.map((cat) => (
-                              <CommandItem
-                                key={cat.id}
-                                onSelect={() =>
-                                  setSelectedCategoriaIds((prev) =>
-                                    prev.includes(cat.id)
-                                      ? prev.filter((id) => id !== cat.id)
-                                      : [...prev, cat.id],
-                                  )
-                                }
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    selectedCategoriaIds.includes(cat.id)
-                                      ? "opacity-100"
-                                      : "opacity-0",
-                                  )}
-                                />
-                                {cat.nome}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div>
-                  <Label>Itens Extra</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        disabled={selectedCategoriaIds.length === 0}
-                        className={cn(
-                          "w-full justify-between foodmax-input",
-                          selectedCategoriaIds.length === 0 &&
-                            "opacity-60 cursor-not-allowed",
-                        )}
-                      >
-                        {selectedCategoriaIds.length > 0
-                          ? "Selecionar Itens Extra"
-                          : "Selecione categorias"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
-                      <Command>
-                        <CommandInput placeholder="Filtrar itens..." />
-                        <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
-                        <CommandList>
-                          <CommandGroup>
-                            {filteredExtras.map((item) => {
-                              const isLow = (item.estoque_atual || 0) < 3;
-                              return (
-                                <CommandItem
-                                  key={item.id}
-                                  onSelect={() => {
-                                    setSelectedExtras((prev) => {
-                                      const existing = prev.find(
-                                        (e) => e.item_id === item.id,
-                                      );
-                                      if (existing) return prev;
-                                      return [
-                                        ...prev,
-                                        {
-                                          item_id: item.id,
-                                          categoria_id: item.categoria_id,
-                                          quantidade: 1,
-                                          valor_unitario_centavos:
-                                            item.preco_centavos,
-                                        },
-                                      ];
-                                    });
-                                  }}
-                                >
-                                  <div className="flex items-center justify-between w-full">
-                                    <div className="flex items-center gap-2">
-                                      {isLow && (
-                                        <AlertCircle className="w-4 h-4 text-yellow-600" />
-                                      )}
-                                      <span>{item.nome}</span>
-                                    </div>
-                                    <span className="text-xs text-gray-500">
-                                      Estoque: {item.estoque_atual ?? 0}
-                                    </span>
-                                  </div>
-                                </CommandItem>
-                              );
-                            })}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
-              </div>
-
-              {selectedCategoriaIds.length > 0 &&
-                filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
-                  <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                    Atenção: existem itens desta categoria com estoque baixo
-                    (&lt; 3).
-                  </div>
-                )}
-
-              {selectedExtras.length > 0 && (
-                <div className="mt-1 space-y-2">
-                  {selectedExtras.map((ex) => {
-                    const item = itens.find((i) => i.id === ex.item_id);
-                    if (!item) return null;
-                    const total = ex.quantidade * ex.valor_unitario_centavos;
-                    const isZero = (item.estoque_atual || 0) === 0;
-                    return (
-                      <div
-                        key={ex.item_id}
-                        className="flex items-center justify-between bg-gray-50 rounded p-2"
-                      >
-                        <div>
-                          <div className="font-medium flex items-center gap-2">
-                            {(item.estoque_atual || 0) < 3 && (
-                              <AlertCircle className="w-4 h-4 text-yellow-600" />
-                            )}{" "}
-                            {item.nome}
-                          </div>
-                          <div className="text-xs text-gray-600">
-                            Estoque Atual: {item.estoque_atual ?? 0}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex flex-col gap-1">
-                            <Label className="text-xs">Qtd</Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              value={ex.quantidade}
-                              onChange={(e) => {
-                                const next = Math.max(
-                                  1,
-                                  parseInt(e.target.value) || 1,
-                                );
-                                setSelectedExtras((prev) => {
-                                  const itemInfo = itens.find(
-                                    (i) => i.id === ex.item_id,
-                                  );
-                                  const estoque = itemInfo?.estoque_atual ?? 0;
-                                  const adjusted =
-                                    estoque > 0 ? Math.min(next, estoque) : 1;
-                                  if (next > estoque && estoque >= 0) {
-                                    setStockAlert({
-                                      open: true,
-                                      message: `Quantidade informada (${next}) é maior que o estoque atual (${estoque}). Para usar quantidade maior, ajuste o estoque no módulo Itens.`,
-                                    });
-                                  }
-                                  return prev.map((p) =>
-                                    p.item_id === ex.item_id
-                                      ? { ...p, quantidade: adjusted }
-                                      : p,
-                                  );
-                                });
-                              }}
-                              disabled={isZero}
-                              className="w-20 h-8 text-center"
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <Label className="text-xs">Valor Unit. (R$)</Label>
-                            <Input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={(ex.valor_unitario_centavos / 100).toFixed(
-                                2,
-                              )}
-                              onChange={(e) =>
-                                setSelectedExtras((prev) =>
-                                  prev.map((p) =>
-                                    p.item_id === ex.item_id
-                                      ? {
-                                          ...p,
-                                          valor_unitario_centavos: Math.round(
-                                            parseFloat(e.target.value || "0") *
-                                              100,
-                                          ),
-                                        }
-                                      : p,
-                                  ),
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <CupSoda className="w-5 h-5 text-yellow-700" />
+              <h3 className="font-semibold text-yellow-700">Itens Extras</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label>Categorias</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between foodmax-input"
+                    >
+                      {selectedCategoriaIds.length > 0
+                        ? `${selectedCategoriaIds.length} selecionada(s)`
+                        : "Selecione Categorias"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Filtrar categorias..." />
+                      <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
+                      <CommandList>
+                        <CommandGroup>
+                          {categorias.map((cat) => (
+                            <CommandItem
+                              key={cat.id}
+                              onSelect={() =>
+                                setSelectedCategoriaIds((prev) =>
+                                  prev.includes(cat.id)
+                                    ? prev.filter((id) => id !== cat.id)
+                                    : [...prev, cat.id],
                                 )
                               }
-                              className="w-24 h-8 text-center"
-                            />
-                          </div>
-                          <div className="flex flex-col gap-1">
-                            <Label className="text-xs">Total</Label>
-                            <div className="text-sm font-medium w-20 text-center bg-white p-1 rounded border">
-                              {formatCurrencyBRL(total)}
-                            </div>
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              setSelectedExtras((prev) =>
-                                prev.filter((p) => p.item_id !== ex.item_id),
-                              )
-                            }
-                            className="h-8 w-8 p-0 border-red-200 hover:bg-red-50"
-                          >
-                            <X className="w-4 h-4 text-red-600" />
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedCategoriaIds.includes(cat.id)
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {cat.nome}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div>
+                <Label>Itens Extras</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      disabled={selectedCategoriaIds.length === 0}
+                      className={cn(
+                        "w-full justify-between foodmax-input",
+                        selectedCategoriaIds.length === 0 &&
+                          "opacity-60 cursor-not-allowed",
+                      )}
+                    >
+                      {selectedCategoriaIds.length > 0
+                        ? "Selecionar Itens Extras"
+                        : "Selecione categorias"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Filtrar itens..." />
+                      <CommandEmpty>Nenhum item encontrado.</CommandEmpty>
+                      <CommandList>
+                        <CommandGroup>
+                          {filteredExtras.map((item) => {
+                            const isLow = (item.estoque_atual || 0) < 3;
+                            const isOut = (item.estoque_atual || 0) === 0;
+                            const isAdded = selectedExtras.some(
+                              (e) => e.item_id === item.id,
+                            );
+                            return (
+                              <CommandItem
+                                key={item.id}
+                                onSelect={() =>
+                                  !isAdded &&
+                                  !isOut &&
+                                  setSelectedExtras((prev) => [
+                                    ...prev,
+                                    {
+                                      item_id: item.id,
+                                      categoria_id: item.categoria_id,
+                                      quantidade: 1,
+                                      valor_unitario_centavos:
+                                        item.preco_centavos,
+                                    },
+                                  ])
+                                }
+                                disabled={isAdded || isOut}
+                                className={cn(
+                                  isAdded || isOut ? "opacity-50" : "",
+                                )}
+                              >
+                                <div className="flex items-center justify-between w-full">
+                                  <div className="flex items-center gap-2">
+                                    {isLow && (
+                                      <AlertCircle className="w-4 h-4 text-yellow-600" />
+                                    )}
+                                    <span>{item.nome}</span>
+                                    {isAdded && (
+                                      <Badge variant="secondary">
+                                        Já adicionado
+                                      </Badge>
+                                    )}
+                                    {isOut && (
+                                      <Badge className="bg-red-50 text-red-700 border-red-200">
+                                        Sem estoque
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <span className="text-sm text-gray-500">
+                                    Estoque: {item.estoque_atual ?? 0}
+                                  </span>
+                                </div>
+                              </CommandItem>
+                            );
+                          })}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
+            {selectedCategoriaIds.length > 0 &&
+              filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
+                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
+                  Atenção: existem itens desta categoria com estoque baixo (&lt;
+                  3).
                 </div>
               )}
-            </div>
+
+            {selectedExtras.length > 0 && (
+              <div className="mt-1 space-y-2">
+                {selectedExtras.map((ex) => {
+                  const item = itens.find((i) => i.id === ex.item_id);
+                  if (!item) return null;
+                  const total = ex.quantidade * ex.valor_unitario_centavos;
+                  const isZero = (item.estoque_atual || 0) === 0;
+                  return (
+                    <div
+                      key={ex.item_id}
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    >
+                      <div>
+                        <div className="font-medium flex items-center gap-2">
+                          {(item.estoque_atual || 0) < 3 && (
+                            <AlertCircle className="w-4 h-4 text-yellow-600" />
+                          )}{" "}
+                          {item.nome}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {categorias.find((c) => c.id === item.categoria_id)
+                            ?.nome || "-"}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          Estoque Atual: {item.estoque_atual ?? 0}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-center">
+                          <Label className="text-xs">Quantidade</Label>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={ex.quantidade}
+                            onChange={(e) => {
+                              const next = Math.max(
+                                1,
+                                parseInt(e.target.value) || 1,
+                              );
+                              setSelectedExtras((prev) => {
+                                const itemInfo = itens.find(
+                                  (i) => i.id === ex.item_id,
+                                );
+                                const estoque = itemInfo?.estoque_atual ?? 0;
+                                const adjusted =
+                                  estoque > 0 ? Math.min(next, estoque) : 1;
+                                if (next > estoque && estoque >= 0) {
+                                  setStockAlert({
+                                    open: true,
+                                    message: `Quantidade informada (${next}) é maior que o estoque atual (${estoque}). Para usar quantidade maior, ajuste o estoque no módulo Itens.`,
+                                  });
+                                }
+                                return prev.map((p) =>
+                                  p.item_id === ex.item_id
+                                    ? { ...p, quantidade: adjusted }
+                                    : p,
+                                );
+                              });
+                            }}
+                            disabled={isZero}
+                            className="w-20 h-8 text-center"
+                          />
+                        </div>
+                        <div className="text-center">
+                          <Label className="text-xs">Valor Unit. (R$)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={(ex.valor_unitario_centavos / 100).toFixed(
+                              2,
+                            )}
+                            onChange={(e) =>
+                              setSelectedExtras((prev) =>
+                                prev.map((p) =>
+                                  p.item_id === ex.item_id
+                                    ? {
+                                        ...p,
+                                        valor_unitario_centavos: Math.round(
+                                          parseFloat(e.target.value || "0") *
+                                            100,
+                                        ),
+                                      }
+                                    : p,
+                                ),
+                              )
+                            }
+                            className="w-24 h-8 text-center"
+                          />
+                        </div>
+                        <div className="text-center">
+                          <Label className="text-xs">Total</Label>
+                          <div className="text-sm font-medium w-20 text-center bg-white p-1 rounded border">
+                            {formatCurrencyBRL(total)}
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            setSelectedExtras((prev) =>
+                              prev.filter((p) => p.item_id !== ex.item_id),
+                            )
+                          }
+                          className="h-8 w-8 p-0 border-red-200 hover:bg-red-50"
+                        >
+                          <Minus className="w-4 h-4 text-red-600" />
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
@@ -882,10 +904,7 @@ export default function PedidoForm({
               className="foodmax-input resize-none"
               placeholder="Observações..."
             />
-          </div>
-
-          <div className="bg-white p-4 rounded-lg border">
-            <div>
+            <div className="mt-4">
               <Label>Data/Hora Finalizado</Label>
               <Input
                 type="datetime-local"

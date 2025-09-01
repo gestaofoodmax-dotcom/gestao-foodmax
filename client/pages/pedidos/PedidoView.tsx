@@ -8,10 +8,19 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrencyBRL } from "@shared/pedidos";
+import { formatCurrencyBRL, getStatusPedidoColor } from "@shared/pedidos";
 import { Pedido } from "@shared/pedidos";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
-import { Info, ShoppingBag, FileText, Calendar, X, Edit } from "lucide-react";
+import {
+  Info,
+  Utensils,
+  CupSoda,
+  FileText,
+  Calendar,
+  X,
+  Edit,
+  ShoppingBag,
+} from "lucide-react";
 
 export default function PedidoView({
   isOpen,
@@ -26,15 +35,19 @@ export default function PedidoView({
 }) {
   const { makeRequest } = useAuthenticatedRequest();
   const [detalhe, setDetalhe] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       if (!pedido) return;
+      setLoading(true);
       try {
         const data = await makeRequest(`/api/pedidos/${pedido.id}`);
         setDetalhe(data);
       } catch {
         setDetalhe(pedido);
+      } finally {
+        setLoading(false);
       }
     };
     if (isOpen) load();
@@ -56,58 +69,56 @@ export default function PedidoView({
           </DialogTitle>
         </DialogHeader>
 
+        {loading && !detalhe && (
+          <div className="space-y-6 animate-pulse">
+            <div className="flex items-start justify-between">
+              <div className="h-8 bg-gray-200 w-48 rounded" />
+              <div className="h-6 bg-gray-200 w-32 rounded" />
+            </div>
+            <div className="h-32 bg-gray-100 rounded" />
+          </div>
+        )}
+
         {detalhe && (
           <div className="space-y-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <Info className="w-6 h-6 text-foodmax-orange" />
+                <ShoppingBag className="w-6 h-6 text-foodmax-orange" />
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
                     {detalhe.codigo}
                   </h2>
-                  <div className="text-sm text-gray-600">
-                    {detalhe.estabelecimento_nome || detalhe.estabelecimento_id}
-                  </div>
                 </div>
               </div>
 
               <div className="text-right">
-                <Badge className="bg-gray-100 text-gray-800">
+                <Badge className={getStatusPedidoColor(detalhe.status)}>
                   {detalhe.status}
                 </Badge>
-                {detalhe.data_hora_finalizado && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Finalizado em{" "}
-                    {new Date(detalhe.data_hora_finalizado).toLocaleString(
-                      "pt-BR",
-                    )}
-                  </p>
-                )}
+                <p className="text-xs text-gray-500 mt-1">
+                  Cadastrado em{" "}
+                  {new Date(detalhe.data_cadastro).toLocaleString("pt-BR")}
+                </p>
               </div>
             </div>
 
             <div className="bg-white p-4 rounded-lg border">
               <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
                 <Info className="w-5 h-5 text-blue-600" />
-                <span className="text-blue-600">Informações Básicas</span>
+                <span className="text-blue-600">Dados Básicos</span>
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <DataField label="Código" value={detalhe.codigo} />
                 <DataField
                   label="Estabelecimento"
                   value={
                     detalhe.estabelecimento_nome || detalhe.estabelecimento_id
                   }
                 />
+                <DataField label="Tipo de Pedido" value={detalhe.tipo_pedido} />
+                <DataField label="Código do Pedido" value={detalhe.codigo} />
                 <DataField
                   label="Cliente"
                   value={detalhe.cliente_nome || "Não Cliente"}
-                />
-                <DataField label="Tipo" value={detalhe.tipo_pedido} />
-                <DataField label="Status" value={detalhe.status} />
-                <DataField
-                  label="Valor Total"
-                  value={formatCurrencyBRL(detalhe.valor_total_centavos)}
                 />
               </div>
             </div>
@@ -115,20 +126,37 @@ export default function PedidoView({
             {detalhe?.cardapios && detalhe.cardapios.length > 0 && (
               <div className="border rounded-lg p-4">
                 <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-purple-600" />
+                  <Utensils className="w-5 h-5 text-purple-600" />
                   <span className="text-purple-600">Cardápios</span>
                 </h3>
                 <div className="space-y-2">
                   {detalhe.cardapios.map((c: any) => (
                     <div
                       key={c.id}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                     >
-                      <div className="font-medium">
-                        {c.cardapio_nome || c.cardapio_id}
+                      <div className="flex-1">
+                        <div className="font-medium">
+                          {c.cardapio_nome || c.cardapio_id}
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-700">
-                        {formatCurrencyBRL(c.preco_total_centavos)}
+                      <div className="flex items-center gap-6 text-sm">
+                        <div className="text-center">
+                          <div className="font-medium">1</div>
+                          <div className="text-gray-500">Qtde</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-medium">
+                            {formatCurrencyBRL(c.preco_total_centavos)}
+                          </div>
+                          <div className="text-gray-500">Unit.</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-medium text-green-600">
+                            {formatCurrencyBRL(c.preco_total_centavos)}
+                          </div>
+                          <div className="text-gray-500">Total</div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -139,27 +167,42 @@ export default function PedidoView({
             {detalhe?.itens_extras && detalhe.itens_extras.length > 0 && (
               <div className="border rounded-lg p-4">
                 <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-purple-600" />
-                  <span className="text-purple-600">Itens Extra</span>
+                  <CupSoda className="w-5 h-5 text-yellow-700" />
+                  <span className="text-yellow-700">Itens Extras</span>
                 </h3>
                 <div className="space-y-2">
                   {detalhe.itens_extras.map((e: any) => (
                     <div
                       key={e.id}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                     >
-                      <div>
+                      <div className="flex-1">
                         <div className="font-medium">
                           {e.item_nome || e.item_id}
                         </div>
-                        <div className="text-xs text-gray-600">
-                          Qtd: {e.quantidade}
+                        <div className="text-xs text-gray-500">
+                          {e.categoria_nome || "-"}
                         </div>
                       </div>
-                      <div className="text-sm text-gray-700">
-                        {formatCurrencyBRL(
-                          e.valor_unitario_centavos * e.quantidade,
-                        )}
+                      <div className="flex items-center gap-6 text-sm">
+                        <div className="text-center">
+                          <div className="font-medium">{e.quantidade}</div>
+                          <div className="text-gray-500">Qtde</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-medium">
+                            {formatCurrencyBRL(e.valor_unitario_centavos)}
+                          </div>
+                          <div className="text-gray-500">Unit.</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="font-medium text-green-600">
+                            {formatCurrencyBRL(
+                              e.valor_unitario_centavos * e.quantidade,
+                            )}
+                          </div>
+                          <div className="text-gray-500">Total</div>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -181,7 +224,7 @@ export default function PedidoView({
 
             <div className="bg-white rounded-lg p-4 border">
               <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-gray-600" />
+                <Info className="w-5 h-5 text-gray-600" />
                 <span className="text-gray-700">Detalhes do Cadastro</span>
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -197,6 +240,17 @@ export default function PedidoView({
                     "pt-BR",
                   )}
                 />
+                <DataField
+                  label="Data/Hora Finalizado"
+                  value={
+                    detalhe.data_hora_finalizado
+                      ? new Date(detalhe.data_hora_finalizado).toLocaleString(
+                          "pt-BR",
+                        )
+                      : "-"
+                  }
+                />
+                <DataField label="Status" value={detalhe.status} />
               </div>
             </div>
           </div>
