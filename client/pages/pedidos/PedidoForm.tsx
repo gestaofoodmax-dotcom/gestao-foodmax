@@ -115,9 +115,7 @@ export default function PedidoForm({
   const [itens, setItens] = useState<Item[]>([]);
 
   const [selectedCardapios, setSelectedCardapios] = useState<number[]>([]);
-  const [selectedCategoriaId, setSelectedCategoriaId] = useState<number | null>(
-    null,
-  );
+  const [selectedCategoriaIds, setSelectedCategoriaIds] = useState<number[]>([]);
   const [selectedExtras, setSelectedExtras] = useState<
     {
       item_id: number;
@@ -179,7 +177,7 @@ export default function PedidoForm({
       });
       setSelectedCardapios([]);
       setSelectedExtras([]);
-      setSelectedCategoriaId(null);
+      setSelectedCategoriaIds([]);
     }
   }, [isOpen, pedido, reset]);
 
@@ -249,9 +247,10 @@ export default function PedidoForm({
   }, [pedido, reset]);
 
   const filteredExtras = useMemo(() => {
-    if (!selectedCategoriaId) return [] as Item[];
-    return itens.filter((i) => i.categoria_id === selectedCategoriaId);
-  }, [itens, selectedCategoriaId]);
+    if (!selectedCategoriaIds || selectedCategoriaIds.length === 0)
+      return [] as Item[];
+    return itens.filter((i) => selectedCategoriaIds.includes(i.categoria_id));
+  }, [itens, selectedCategoriaIds]);
 
   const valorExtras = useMemo(() => {
     return selectedExtras.reduce(
@@ -539,9 +538,7 @@ export default function PedidoForm({
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <ShoppingBag className="w-5 h-5 text-purple-600" />
-              <h3 className="font-semibold text-purple-600">
-                Seleção de Cardápios e Itens Extra
-              </h3>
+              <h3 className="font-semibold text-purple-600">Cardápios e Itens Extra</h3>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -600,26 +597,53 @@ export default function PedidoForm({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label>Categoria</Label>
-                  <Select
-                    value={
-                      selectedCategoriaId
-                        ? String(selectedCategoriaId)
-                        : undefined
-                    }
-                    onValueChange={(v) => setSelectedCategoriaId(parseInt(v))}
-                  >
-                    <SelectTrigger className="foodmax-input">
-                      <SelectValue placeholder="Selecione a categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categorias.map((cat) => (
-                        <SelectItem key={cat.id} value={String(cat.id)}>
-                          {cat.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label>Categorias</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        className="w-full justify-between foodmax-input"
+                      >
+                        {selectedCategoriaIds.length > 0
+                          ? `${selectedCategoriaIds.length} selecionada(s)`
+                          : "Selecione Categorias"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Filtrar categorias..." />
+                        <CommandEmpty>Nenhuma categoria encontrada.</CommandEmpty>
+                        <CommandList>
+                          <CommandGroup>
+                            {categorias.map((cat) => (
+                              <CommandItem
+                                key={cat.id}
+                                onSelect={() =>
+                                  setSelectedCategoriaIds((prev) =>
+                                    prev.includes(cat.id)
+                                      ? prev.filter((id) => id !== cat.id)
+                                      : [...prev, cat.id],
+                                  )
+                                }
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedCategoriaIds.includes(cat.id)
+                                      ? "opacity-100"
+                                      : "opacity-0",
+                                  )}
+                                />
+                                {cat.nome}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div>
                   <Label>Itens Extra</Label>
@@ -628,14 +652,14 @@ export default function PedidoForm({
                       <Button
                         variant="outline"
                         role="combobox"
-                        disabled={!selectedCategoriaId}
+                        disabled={selectedCategoriaIds.length === 0}
                         className={cn(
                           "w-full justify-between foodmax-input",
-                          !selectedCategoriaId &&
+                          selectedCategoriaIds.length === 0 &&
                             "opacity-60 cursor-not-allowed",
                         )}
                       >
-                        {selectedCategoriaId
+                        {selectedCategoriaIds.length > 0
                           ? "Selecionar Itens Extra"
                           : "Selecione uma categoria"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -693,7 +717,7 @@ export default function PedidoForm({
                 </div>
               </div>
 
-              {selectedCategoriaId &&
+              {selectedCategoriaIds.length > 0 &&
                 filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
                   <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
                     Atenção: existem itens desta categoria com estoque baixo
@@ -819,7 +843,7 @@ export default function PedidoForm({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="col-span-1 md:col-span-2 -mt-2 mb-2 flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-green-600" />
-                <h3 className="font-semibold text-green-600">Totais</h3>
+                <h3 className="font-semibold text-green-600">Valor</h3>
               </div>
               <div>
                 <Label>Valor do Pedido (R$) *</Label>
@@ -841,42 +865,40 @@ export default function PedidoForm({
                   </span>
                 )}
               </div>
-              <div>
-                <Label>Data/Hora Finalizado</Label>
-                <Input
-                  type="datetime-local"
-                  value={
-                    watchedValues.data_hora_finalizado
-                      ? new Date(watchedValues.data_hora_finalizado)
-                          .toISOString()
-                          .slice(0, 16)
-                      : ""
-                  }
-                  onChange={(e) =>
-                    setValue(
-                      "data_hora_finalizado",
-                      e.target.value
-                        ? new Date(e.target.value).toISOString()
-                        : null,
-                    )
-                  }
-                  className="foodmax-input"
-                />
-              </div>
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-5 h-5 text-red-600" />
-              <h3 className="font-semibold text-red-600">Observação</h3>
-            </div>
+            <Label>Observação</Label>
             <Textarea
               rows={3}
               {...register("observacao")}
               className="foodmax-input resize-none"
               placeholder="Observações..."
             />
+          </div>
+
+          <div className="bg-white p-4 rounded-lg border">
+            <div>
+              <Label>Data/Hora Finalizado</Label>
+              <Input
+                type="datetime-local"
+                value={
+                  watchedValues.data_hora_finalizado
+                    ? new Date(watchedValues.data_hora_finalizado)
+                        .toISOString()
+                        .slice(0, 16)
+                    : ""
+                }
+                onChange={(e) =>
+                  setValue(
+                    "data_hora_finalizado",
+                    e.target.value ? new Date(e.target.value).toISOString() : null,
+                  )
+                }
+                className="foodmax-input"
+              />
+            </div>
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
