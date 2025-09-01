@@ -23,6 +23,7 @@ import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Estabelecimento } from "@shared/estabelecimentos";
+import { toTitleCase } from "@/lib/utils";
 
 export default function Dashboard() {
   const isMobile = useIsMobile();
