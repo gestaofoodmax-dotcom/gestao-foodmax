@@ -11,14 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrencyBRL } from "@shared/pedidos";
 import { Pedido } from "@shared/pedidos";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
-import {
-  Info,
-  ShoppingBag,
-  FileText,
-  Calendar,
-  X,
-  Edit,
-} from "lucide-react";
+import { Info, ShoppingBag, FileText, Calendar, X, Edit } from "lucide-react";
 
 export default function PedidoView({
   isOpen,
@@ -47,13 +40,7 @@ export default function PedidoView({
     if (isOpen) load();
   }, [isOpen, pedido, makeRequest]);
 
-  const DataField = ({
-    label,
-    value,
-  }: {
-    label: string;
-    value: any;
-  }) => (
+  const DataField = ({ label, value }: { label: string; value: any }) => (
     <div className="space-y-1">
       <div className="text-sm font-medium text-gray-600">{label}</div>
       <div className="text-sm text-gray-900">{value ?? "-"}</div>
@@ -90,7 +77,10 @@ export default function PedidoView({
                 </Badge>
                 {detalhe.data_hora_finalizado && (
                   <p className="text-xs text-gray-500 mt-1">
-                    Finalizado em {new Date(detalhe.data_hora_finalizado).toLocaleString("pt-BR")}
+                    Finalizado em{" "}
+                    {new Date(detalhe.data_hora_finalizado).toLocaleString(
+                      "pt-BR",
+                    )}
                   </p>
                 )}
               </div>
@@ -103,11 +93,22 @@ export default function PedidoView({
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <DataField label="Código" value={detalhe.codigo} />
-                <DataField label="Estabelecimento" value={detalhe.estabelecimento_nome || detalhe.estabelecimento_id} />
-                <DataField label="Cliente" value={detalhe.cliente_nome || "Não Cliente"} />
+                <DataField
+                  label="Estabelecimento"
+                  value={
+                    detalhe.estabelecimento_nome || detalhe.estabelecimento_id
+                  }
+                />
+                <DataField
+                  label="Cliente"
+                  value={detalhe.cliente_nome || "Não Cliente"}
+                />
                 <DataField label="Tipo" value={detalhe.tipo_pedido} />
                 <DataField label="Status" value={detalhe.status} />
-                <DataField label="Valor Total" value={formatCurrencyBRL(detalhe.valor_total_centavos)} />
+                <DataField
+                  label="Valor Total"
+                  value={formatCurrencyBRL(detalhe.valor_total_centavos)}
+                />
               </div>
             </div>
 
@@ -119,8 +120,13 @@ export default function PedidoView({
                 </h3>
                 <div className="space-y-2">
                   {detalhe.cardapios.map((c: any) => (
-                    <div key={c.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                      <div className="font-medium">{c.cardapio_nome || c.cardapio_id}</div>
+                    <div
+                      key={c.id}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                    >
+                      <div className="font-medium">
+                        {c.cardapio_nome || c.cardapio_id}
+                      </div>
                       <div className="text-sm text-gray-700">
                         {formatCurrencyBRL(c.preco_total_centavos)}
                       </div>
@@ -138,13 +144,22 @@ export default function PedidoView({
                 </h3>
                 <div className="space-y-2">
                   {detalhe.itens_extras.map((e: any) => (
-                    <div key={e.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div
+                      key={e.id}
+                      className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                    >
                       <div>
-                        <div className="font-medium">{e.item_nome || e.item_id}</div>
-                        <div className="text-xs text-gray-600">Qtd: {e.quantidade}</div>
+                        <div className="font-medium">
+                          {e.item_nome || e.item_id}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          Qtd: {e.quantidade}
+                        </div>
                       </div>
                       <div className="text-sm text-gray-700">
-                        {formatCurrencyBRL(e.valor_unitario_centavos * e.quantidade)}
+                        {formatCurrencyBRL(
+                          e.valor_unitario_centavos * e.quantidade,
+                        )}
                       </div>
                     </div>
                   ))}
@@ -172,11 +187,15 @@ export default function PedidoView({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DataField
                   label="Data de Cadastro"
-                  value={new Date(detalhe.data_cadastro).toLocaleString("pt-BR")}
+                  value={new Date(detalhe.data_cadastro).toLocaleString(
+                    "pt-BR",
+                  )}
                 />
                 <DataField
                   label="Última Atualização"
-                  value={new Date(detalhe.data_atualizacao).toLocaleString("pt-BR")}
+                  value={new Date(detalhe.data_atualizacao).toLocaleString(
+                    "pt-BR",
+                  )}
                 />
               </div>
             </div>

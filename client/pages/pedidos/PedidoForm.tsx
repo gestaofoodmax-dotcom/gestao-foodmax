@@ -76,9 +76,7 @@ const schema = z.object({
   cliente_id: z.number().nullable().optional(),
   valor_total_centavos: z.number().min(0, "Valor obrigatório"),
   observacao: z.string().optional(),
-  status: z.enum(["Pendente", "Finalizado", "Cancelado"]).default(
-    "Pendente",
-  ),
+  status: z.enum(["Pendente", "Finalizado", "Cancelado"]).default("Pendente"),
   data_hora_finalizado: z.string().nullable().optional(),
 });
 
@@ -184,7 +182,8 @@ export default function PedidoForm({
         );
         setEstabelecimentos(ordered);
         const lastActive = ordered.find((e: Estabelecimento) => e.ativo);
-        if (!pedido && lastActive) setValue("estabelecimento_id", lastActive.id);
+        if (!pedido && lastActive)
+          setValue("estabelecimento_id", lastActive.id);
       }
       const cliResp = await makeRequest("/api/clientes?page=1&limit=1000");
       if (cliResp?.data) {
@@ -213,7 +212,9 @@ export default function PedidoForm({
       const itensResp = await makeRequest("/api/itens?page=1&limit=1000");
       if (itensResp?.data)
         setItens(
-          itensResp.data.sort((a: Item, b: Item) => a.nome.localeCompare(b.nome)),
+          itensResp.data.sort((a: Item, b: Item) =>
+            a.nome.localeCompare(b.nome),
+          ),
         );
     } catch {}
   };
@@ -314,7 +315,8 @@ export default function PedidoForm({
                   </>
                 ) : clientes.length === 0 ? (
                   <>
-                    Antes de cadastrar, é necessário ter pelo menos um Cliente. {""}
+                    Antes de cadastrar, é necessário ter pelo menos um Cliente.{" "}
+                    {""}
                     <button
                       onClick={() => window.open("/clientes", "_blank")}
                       className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
@@ -324,12 +326,14 @@ export default function PedidoForm({
                   </>
                 ) : (
                   <>
-                    Antes de cadastrar, é necessário ter pelo menos um Cardápio. {""}
+                    Antes de cadastrar, é necessário ter pelo menos um Cardápio.{" "}
+                    {""}
                     <button
                       onClick={() => window.open("/cardapios", "_blank")}
                       className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
                     >
-                      <LinkIcon className="w-3 h-3" /> (ir para módulo Cardápios)
+                      <LinkIcon className="w-3 h-3" /> (ir para módulo
+                      Cardápios)
                     </button>
                   </>
                 )}
@@ -373,7 +377,9 @@ export default function PedidoForm({
                           {estabelecimentos.map((e) => (
                             <CommandItem
                               key={e.id}
-                              onSelect={() => setValue("estabelecimento_id", e.id)}
+                              onSelect={() =>
+                                setValue("estabelecimento_id", e.id)
+                              }
                             >
                               <Check
                                 className={cn(
@@ -424,7 +430,11 @@ export default function PedidoForm({
 
               <div>
                 <Label>Código do Pedido *</Label>
-                <Input id="codigo" {...register("codigo")} className="foodmax-input" />
+                <Input
+                  id="codigo"
+                  {...register("codigo")}
+                  className="foodmax-input"
+                />
                 {errors.codigo && (
                   <span className="text-sm text-red-600">
                     {errors.codigo.message}
@@ -442,7 +452,9 @@ export default function PedidoForm({
                       className="w-full justify-between foodmax-input"
                     >
                       {watchedValues.cliente_id
-                        ? clientes.find((c) => c.id === watchedValues.cliente_id)?.nome
+                        ? clientes.find(
+                            (c) => c.id === watchedValues.cliente_id,
+                          )?.nome
                         : "Não Cliente"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -453,7 +465,9 @@ export default function PedidoForm({
                       <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
                       <CommandList>
                         <CommandGroup>
-                          <CommandItem onSelect={() => setValue("cliente_id", null)}>
+                          <CommandItem
+                            onSelect={() => setValue("cliente_id", null)}
+                          >
                             <Check
                               className={cn(
                                 "mr-2 h-4 w-4",
@@ -555,7 +569,11 @@ export default function PedidoForm({
                 <div>
                   <Label>Categoria</Label>
                   <Select
-                    value={selectedCategoriaId ? String(selectedCategoriaId) : undefined}
+                    value={
+                      selectedCategoriaId
+                        ? String(selectedCategoriaId)
+                        : undefined
+                    }
                     onValueChange={(v) => setSelectedCategoriaId(parseInt(v))}
                   >
                     <SelectTrigger className="foodmax-input">
@@ -580,7 +598,8 @@ export default function PedidoForm({
                         disabled={!selectedCategoriaId}
                         className={cn(
                           "w-full justify-between foodmax-input",
-                          !selectedCategoriaId && "opacity-60 cursor-not-allowed",
+                          !selectedCategoriaId &&
+                            "opacity-60 cursor-not-allowed",
                         )}
                       >
                         {selectedCategoriaId
@@ -602,7 +621,9 @@ export default function PedidoForm({
                                   key={item.id}
                                   onSelect={() => {
                                     setSelectedExtras((prev) => {
-                                      const existing = prev.find((e) => e.item_id === item.id);
+                                      const existing = prev.find(
+                                        (e) => e.item_id === item.id,
+                                      );
                                       if (existing) return prev;
                                       return [
                                         ...prev,
@@ -610,7 +631,8 @@ export default function PedidoForm({
                                           item_id: item.id,
                                           categoria_id: item.categoria_id,
                                           quantidade: 1,
-                                          valor_unitario_centavos: item.preco_centavos,
+                                          valor_unitario_centavos:
+                                            item.preco_centavos,
                                         },
                                       ];
                                     });
@@ -641,7 +663,8 @@ export default function PedidoForm({
               {selectedCategoriaId &&
                 filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
                   <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                    Atenção: existem itens desta categoria com estoque baixo (&lt; 3).
+                    Atenção: existem itens desta categoria com estoque baixo
+                    (&lt; 3).
                   </div>
                 )}
 
@@ -700,7 +723,9 @@ export default function PedidoForm({
                               type="number"
                               min="0"
                               step="0.01"
-                              value={(ex.valor_unitario_centavos / 100).toFixed(2)}
+                              value={(ex.valor_unitario_centavos / 100).toFixed(
+                                2,
+                              )}
                               onChange={(e) =>
                                 setSelectedExtras((prev) =>
                                   prev.map((p) =>
@@ -708,7 +733,8 @@ export default function PedidoForm({
                                       ? {
                                           ...p,
                                           valor_unitario_centavos: Math.round(
-                                            parseFloat(e.target.value || "0") * 100,
+                                            parseFloat(e.target.value || "0") *
+                                              100,
                                           ),
                                         }
                                       : p,
@@ -842,7 +868,8 @@ export default function PedidoForm({
             disabled={isLoading || !hasPrerequisites}
             className="bg-foodmax-orange hover:bg-orange-600"
           >
-            <Save className="w-4 h-4 mr-2" /> {isLoading ? "Salvando..." : "Salvar"}
+            <Save className="w-4 h-4 mr-2" />{" "}
+            {isLoading ? "Salvando..." : "Salvar"}
           </Button>
         </DialogFooter>
       </DialogContent>

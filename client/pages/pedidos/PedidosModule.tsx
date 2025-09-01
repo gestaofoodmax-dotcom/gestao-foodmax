@@ -68,7 +68,10 @@ export default function PedidosModule() {
   const currentSearch = tabState[activeTab]?.search ?? "";
   const currentPage = tabState[activeTab]?.page ?? 1;
   const setCurrentSearch = (val: string) =>
-    setTabState((s) => ({ ...s, [activeTab]: { ...s[activeTab], search: val, page: 1 } }));
+    setTabState((s) => ({
+      ...s,
+      [activeTab]: { ...s[activeTab], search: val, page: 1 },
+    }));
   const setCurrentPage = (page: number) =>
     setTabState((s) => ({ ...s, [activeTab]: { ...s[activeTab], page } }));
 
@@ -219,11 +222,14 @@ export default function PedidosModule() {
   );
 
   const enrichWithEstabelecimentoNome = (list: Pedido[]) => {
-    if (!estabelecimentosMap || estabelecimentosMap.size === 0) return list as any;
+    if (!estabelecimentosMap || estabelecimentosMap.size === 0)
+      return list as any;
     return list.map((p: any) => ({
       ...p,
       estabelecimento_nome:
-        p.estabelecimento_nome || estabelecimentosMap.get(p.estabelecimento_id) || p.estabelecimento_nome,
+        p.estabelecimento_nome ||
+        estabelecimentosMap.get(p.estabelecimento_id) ||
+        p.estabelecimento_nome,
     }));
   };
 
@@ -235,7 +241,9 @@ export default function PedidosModule() {
         resp.data.forEach((e: any) => map.set(e.id, e.nome));
       } else {
         try {
-          const local = JSON.parse(localStorage.getItem("fm_estabelecimentos") || "[]");
+          const local = JSON.parse(
+            localStorage.getItem("fm_estabelecimentos") || "[]",
+          );
           (local || []).forEach((e: any) => map.set(e.id, e.nome));
         } catch {}
       }
@@ -475,7 +483,9 @@ export default function PedidosModule() {
   };
 
   const filteredPedidos = useMemo(() => {
-    return pedidos.filter((p) => activeTab === "Todos" || p.status === activeTab);
+    return pedidos.filter(
+      (p) => activeTab === "Todos" || p.status === activeTab,
+    );
   }, [pedidos, activeTab]);
 
   const getAllPedidosForExport = async (): Promise<any[]> => {
@@ -495,9 +505,13 @@ export default function PedidosModule() {
       const now = new Date().toISOString();
       const valid: Pedido[] = [];
       for (const r of records) {
-        const nomeEst = String(r.estabelecimento_nome || r.estabelecimento || "").trim();
+        const nomeEst = String(
+          r.estabelecimento_nome || r.estabelecimento || "",
+        ).trim();
         const estId = nomeEst
-          ? Array.from(estMap.entries()).find(([, nome]) => nome.toLowerCase() === nomeEst.toLowerCase())?.[0]
+          ? Array.from(estMap.entries()).find(
+              ([, nome]) => nome.toLowerCase() === nomeEst.toLowerCase(),
+            )?.[0]
           : Number(r.estabelecimento_id || r.id_estabelecimento || 0);
         if (!estId) continue;
 
@@ -513,7 +527,12 @@ export default function PedidosModule() {
             .replace(/,/g, "."),
         );
         const valor_centavos = Number.isFinite(valor)
-          ? Math.round((String(r.valor_total).includes(",") || String(r.valor_total).includes(".")) ? valor * 100 : Number(r.valor_total_centavos || valor))
+          ? Math.round(
+              String(r.valor_total).includes(",") ||
+                String(r.valor_total).includes(".")
+                ? valor * 100
+                : Number(r.valor_total_centavos || valor),
+            )
           : 0;
 
         const novo: Pedido = {
@@ -521,10 +540,14 @@ export default function PedidosModule() {
           id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
           estabelecimento_id: estId,
           cliente_id: null,
-          codigo: String(r.codigo || "").trim() || `${Math.random().toString(36).substring(2,6).toUpperCase()}-${Math.random().toString(36).substring(2,6).toUpperCase()}`,
+          codigo:
+            String(r.codigo || "").trim() ||
+            `${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
           tipo_pedido: tipo,
           valor_total_centavos: valor_centavos,
-          data_hora_finalizado: r.data_hora_finalizado ? new Date(r.data_hora_finalizado).toISOString() : null,
+          data_hora_finalizado: r.data_hora_finalizado
+            ? new Date(r.data_hora_finalizado).toISOString()
+            : null,
           observacao: r.observacao || null,
           status: status,
           data_cadastro: now,
@@ -535,7 +558,11 @@ export default function PedidosModule() {
       }
 
       if (valid.length === 0) {
-        return { success: true, imported: 0, message: "Nenhum registro válido" } as any;
+        return {
+          success: true,
+          imported: 0,
+          message: "Nenhum registro válido",
+        } as any;
       }
 
       const existing = readLocalPedidos();
@@ -787,7 +814,11 @@ export default function PedidosModule() {
         userRole={getUserRole()}
         hasPayment={hasPayment()}
         columns={[
-          { key: "estabelecimento_nome", label: "Estabelecimento", required: true },
+          {
+            key: "estabelecimento_nome",
+            label: "Estabelecimento",
+            required: true,
+          },
           { key: "codigo", label: "Código", required: false },
           { key: "tipo_pedido", label: "Tipo de Pedido", required: true },
           { key: "valor_total", label: "Valor Total" },
