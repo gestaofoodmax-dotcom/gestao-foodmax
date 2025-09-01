@@ -89,14 +89,6 @@ export default function PedidoView({
                 <p className="text-xs text-gray-500 mt-1">
                   Cadastrado em {new Date(detalhe.data_cadastro).toLocaleString("pt-BR")}
                 </p>
-                {detalhe.data_hora_finalizado && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    Finalizado em{" "}
-                    {new Date(detalhe.data_hora_finalizado).toLocaleString(
-                      "pt-BR",
-                    )}
-                  </p>
-                )}
               </div>
             </div>
 
@@ -222,7 +214,7 @@ export default function PedidoView({
 
             <div className="bg-white rounded-lg p-4 border">
               <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-gray-600" />
+                <Info className="w-5 h-5 text-gray-600" />
                 <span className="text-gray-700">Detalhes do Cadastro</span>
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -238,12 +230,11 @@ export default function PedidoView({
                     "pt-BR",
                   )}
                 />
-                <div className="space-y-1">
-                  <div className="text-sm font-medium text-gray-600">Status</div>
-                  <div>
-                    <Badge className={getStatusPedidoColor(detalhe.status)}>{detalhe.status}</Badge>
-                  </div>
-                </div>
+                <DataField
+                  label="Data/Hora Finalizado"
+                  value={detalhe.data_hora_finalizado ? new Date(detalhe.data_hora_finalizado).toLocaleString("pt-BR") : "-"}
+                />
+                <DataField label="Status" value={detalhe.status} />
               </div>
             </div>
           </div>
