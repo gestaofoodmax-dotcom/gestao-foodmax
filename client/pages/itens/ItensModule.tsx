@@ -120,7 +120,7 @@ export default function ItensModule() {
         to={item.route}
         className={`w-full flex items-center px-4 py-2 text-left transition-colors ${isActive ? "bg-orange-50 text-foodmax-orange border-r-4 border-foodmax-orange" : "text-gray-700 hover:bg-gray-100"}`}
       >
-        <item.icon className="w-4 h-4" />
+        <item.icon className={`w-4 h-4 ${item.label === "Pedidos" ? "text-gray-700" : ""}`} />
         {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
       </Link>
     );
@@ -738,7 +738,6 @@ export default function ItensModule() {
                       <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                     )}
                   </button>
-                  <span className="w-px h-5 bg-gray-200" />
 
                   <button
                     className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
