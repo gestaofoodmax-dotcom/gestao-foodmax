@@ -75,7 +75,10 @@ export default function Onboarding() {
       const successData = data as OnboardingResponse;
 
       if (successData.success) {
-        try { localStorage.setItem("fm_user_name", formData.nome || ""); } catch {}
+        try {
+          const mod = await import("@/lib/utils");
+          localStorage.setItem("fm_user_name", mod.toTitleCase(formData.nome || ""));
+        } catch {}
         navigate("/dashboard");
       } else {
         setError(successData.message || "Erro ao finalizar cadastro");
