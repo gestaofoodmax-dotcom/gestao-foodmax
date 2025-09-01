@@ -4,10 +4,21 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { formatCurrencyBRL } from "@shared/pedidos";
 import { Pedido } from "@shared/pedidos";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
+import {
+  Info,
+  ShoppingBag,
+  FileText,
+  Calendar,
+  X,
+  Edit,
+} from "lucide-react";
 
 export default function PedidoView({
   isOpen,
@@ -36,94 +47,158 @@ export default function PedidoView({
     if (isOpen) load();
   }, [isOpen, pedido, makeRequest]);
 
+  const DataField = ({
+    label,
+    value,
+  }: {
+    label: string;
+    value: any;
+  }) => (
+    <div className="space-y-1">
+      <div className="text-sm font-medium text-gray-600">{label}</div>
+      <div className="text-sm text-gray-900">{value ?? "-"}</div>
+    </div>
+  );
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="w-[85vw] h-[90vh] max-w-none overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Visualizar Pedido</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
+            Visualizar Pedido
+          </DialogTitle>
         </DialogHeader>
 
         {detalhe && (
-          <div className="space-y-4">
-            <div className="bg-white p-4 rounded border">
-              <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="space-y-6">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <Info className="w-6 h-6 text-foodmax-orange" />
                 <div>
-                  <span className="font-medium">Estabelecimento:</span>{" "}
-                  {detalhe.estabelecimento_nome || detalhe.estabelecimento_id}
+                  <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
+                    {detalhe.codigo}
+                  </h2>
+                  <div className="text-sm text-gray-600">
+                    {detalhe.estabelecimento_nome || detalhe.estabelecimento_id}
+                  </div>
                 </div>
-                <div>
-                  <span className="font-medium">Código:</span> {detalhe.codigo}
-                </div>
-                <div>
-                  <span className="font-medium">Tipo:</span>{" "}
-                  {detalhe.tipo_pedido}
-                </div>
-                <div>
-                  <span className="font-medium">Status:</span> {detalhe.status}
-                </div>
-                <div>
-                  <span className="font-medium">Cliente:</span>{" "}
-                  {detalhe.cliente_nome || "Não Cliente"}
-                </div>
-                <div>
-                  <span className="font-medium">Valor Total:</span>{" "}
-                  {formatCurrencyBRL(detalhe.valor_total_centavos)}
-                </div>
-                <div>
-                  <span className="font-medium">Finalizado em:</span>{" "}
-                  {detalhe.data_hora_finalizado
-                    ? new Date(detalhe.data_hora_finalizado).toLocaleString(
-                        "pt-BR",
-                      )
-                    : "-"}
-                </div>
-                <div>
-                  <span className="font-medium">Data Cadastro:</span>{" "}
-                  {new Date(detalhe.data_cadastro).toLocaleString("pt-BR")}
-                </div>
+              </div>
+
+              <div className="text-right">
+                <Badge className="bg-gray-100 text-gray-800">
+                  {detalhe.status}
+                </Badge>
+                {detalhe.data_hora_finalizado && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Finalizado em {new Date(detalhe.data_hora_finalizado).toLocaleString("pt-BR")}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-white p-4 rounded-lg border">
+              <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                <Info className="w-5 h-5 text-blue-600" />
+                <span className="text-blue-600">Informações Básicas</span>
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <DataField label="Código" value={detalhe.codigo} />
+                <DataField label="Estabelecimento" value={detalhe.estabelecimento_nome || detalhe.estabelecimento_id} />
+                <DataField label="Cliente" value={detalhe.cliente_nome || "Não Cliente"} />
+                <DataField label="Tipo" value={detalhe.tipo_pedido} />
+                <DataField label="Status" value={detalhe.status} />
+                <DataField label="Valor Total" value={formatCurrencyBRL(detalhe.valor_total_centavos)} />
               </div>
             </div>
 
             {detalhe?.cardapios && detalhe.cardapios.length > 0 && (
-              <div className="bg-white p-4 rounded border">
-                <h3 className="font-semibold mb-2">Cardápios</h3>
-                <ul className="list-disc pl-5 text-sm space-y-1">
+              <div className="border rounded-lg p-4">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-purple-600" />
+                  <span className="text-purple-600">Cardápios</span>
+                </h3>
+                <div className="space-y-2">
                   {detalhe.cardapios.map((c: any) => (
-                    <li key={c.id}>
-                      {c.cardapio_nome || c.cardapio_id} -{" "}
-                      {formatCurrencyBRL(c.preco_total_centavos)}
-                    </li>
+                    <div key={c.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <div className="font-medium">{c.cardapio_nome || c.cardapio_id}</div>
+                      <div className="text-sm text-gray-700">
+                        {formatCurrencyBRL(c.preco_total_centavos)}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
 
             {detalhe?.itens_extras && detalhe.itens_extras.length > 0 && (
-              <div className="bg-white p-4 rounded border">
-                <h3 className="font-semibold mb-2">Itens Extra</h3>
-                <ul className="list-disc pl-5 text-sm space-y-1">
+              <div className="border rounded-lg p-4">
+                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-purple-600" />
+                  <span className="text-purple-600">Itens Extra</span>
+                </h3>
+                <div className="space-y-2">
                   {detalhe.itens_extras.map((e: any) => (
-                    <li key={e.id}>
-                      {e.item_nome || e.item_id} (Qtd: {e.quantidade}) -{" "}
-                      {formatCurrencyBRL(
-                        e.valor_unitario_centavos * e.quantidade,
-                      )}
-                    </li>
+                    <div key={e.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                      <div>
+                        <div className="font-medium">{e.item_nome || e.item_id}</div>
+                        <div className="text-xs text-gray-600">Qtd: {e.quantidade}</div>
+                      </div>
+                      <div className="text-sm text-gray-700">
+                        {formatCurrencyBRL(e.valor_unitario_centavos * e.quantidade)}
+                      </div>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             )}
 
             {detalhe?.observacao && (
-              <div className="bg-white p-4 rounded border">
-                <h3 className="font-semibold mb-2">Observação</h3>
-                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+              <div className="bg-white p-4 rounded-lg border">
+                <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-red-600" />
+                  <span className="text-red-600">Observação</span>
+                </h3>
+                <div className="text-sm text-gray-900 whitespace-pre-wrap">
                   {detalhe.observacao}
-                </p>
+                </div>
               </div>
             )}
+
+            <div className="bg-white rounded-lg p-4 border">
+              <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-gray-600" />
+                <span className="text-gray-700">Detalhes do Cadastro</span>
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DataField
+                  label="Data de Cadastro"
+                  value={new Date(detalhe.data_cadastro).toLocaleString("pt-BR")}
+                />
+                <DataField
+                  label="Última Atualização"
+                  value={new Date(detalhe.data_atualizacao).toLocaleString("pt-BR")}
+                />
+              </div>
+            </div>
           </div>
         )}
+
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={onClose}>
+            <X className="w-4 h-4 mr-2" />
+            Fechar
+          </Button>
+          {pedido && (
+            <Button
+              type="button"
+              onClick={() => onEdit(pedido)}
+              className="bg-foodmax-orange hover:bg-orange-600"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Editar
+            </Button>
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
