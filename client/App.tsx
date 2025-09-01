@@ -15,6 +15,7 @@ import FornecedoresModule from "./pages/fornecedores/FornecedoresModule";
 import ItensModule from "./pages/itens/ItensModule";
 import CardapiosModule from "./pages/cardapios/CardapiosModule";
 import PedidosModule from "./pages/pedidos/PedidosModule";
+import MinhaConta from "./pages/MinhaConta";
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/itens" element={<ItensModule />} />
             <Route path="/cardapios" element={<CardapiosModule />} />
             <Route path="/pedidos" element={<PedidosModule />} />
+            <Route path="/minha-conta" element={<MinhaConta />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
