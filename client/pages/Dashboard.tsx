@@ -7,6 +7,8 @@ import {
   AlertTriangle,
   Truck,
   Package,
+  Star,
+  ShoppingBag,
 } from "lucide-react";
 import {
   Select,
