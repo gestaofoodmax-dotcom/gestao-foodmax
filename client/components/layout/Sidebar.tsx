@@ -44,7 +44,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
 
   const activeClass =
     "bg-orange-50 text-foodmax-orange border-r-4 border-foodmax-orange";
-  const linkBase = "w-full flex items-center px-4 py-2 text-left text-gray-700";
+  const linkBase = "w-full flex items-center px-4 py-2 text-left text-black";
 
   const menuGroups = useMemo(
     () => [
@@ -170,12 +170,10 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
           </div>
           {open && (
             <div className="ml-3 flex-1 flex items-center justify-between">
-              <div>
-                <Link to="/onboarding" className="text-sm font-medium text-gray-800">
-                  {displayName}
-                </Link>
-                <p className="text-xs text-gray-500">{user?.email}</p>
-              </div>
+              <Link to="/minha-conta" className="block">
+                <div className="text-sm font-medium text-gray-800">{displayName}</div>
+                <div className="text-xs text-gray-500">{user?.email}</div>
+              </Link>
               <button
                 onClick={() => {
                   logout();
