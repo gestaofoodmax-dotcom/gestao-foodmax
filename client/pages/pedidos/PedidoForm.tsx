@@ -761,6 +761,9 @@ export default function PedidoForm({
                           {item.nome}
                         </div>
                         <div className="text-xs text-gray-600">
+                          {categorias.find((c) => c.id === item.categoria_id)?.nome || "-"}
+                        </div>
+                        <div className="text-xs text-gray-600">
                           Estoque Atual: {item.estoque_atual ?? 0}
                         </div>
                       </div>
@@ -844,7 +847,7 @@ export default function PedidoForm({
                           }
                           className="h-8 w-8 p-0 border-red-200 hover:bg-red-50"
                         >
-                          <X className="w-4 h-4 text-red-600" />
+                          <Minus className="w-4 h-4 text-red-600" />
                         </Button>
                       </div>
                     </div>
