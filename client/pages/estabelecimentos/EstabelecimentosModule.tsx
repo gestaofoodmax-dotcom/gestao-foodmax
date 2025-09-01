@@ -54,7 +54,8 @@ function EstabelecimentosModule() {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const location = useLocation();
-  const { getUserRole, hasPayment, logout, isAuthenticated, isLoading } = useAuth();
+  const { getUserRole, hasPayment, logout, isAuthenticated, isLoading } =
+    useAuth();
   const navigate = useNavigate();
   const { makeRequest } = useAuthenticatedRequest();
 
@@ -667,7 +668,12 @@ function EstabelecimentosModule() {
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
-      <Sidebar open={sidebarOpen} onToggle={(next) => setSidebarOpen(typeof next === 'boolean' ? next : !sidebarOpen)} />
+      <Sidebar
+        open={sidebarOpen}
+        onToggle={(next) =>
+          setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)
+        }
+      />
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
@@ -683,8 +689,12 @@ function EstabelecimentosModule() {
                 <Menu className="w-5 h-5" />
               </button>
               <div>
-                <h2 className="text-2xl font-semibold text-gray-800">Estabelecimentos</h2>
-                <p className="text-gray-600 mt-1">Gerencie todos os estabelecimentos cadastrados no sistema.</p>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Estabelecimentos
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Gerencie todos os estabelecimentos cadastrados no sistema.
+                </p>
               </div>
             </div>
           </div>

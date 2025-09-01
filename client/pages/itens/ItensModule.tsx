@@ -110,7 +110,6 @@ export default function ItensModule() {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
 
-
   const gridColumnsItens = useMemo(
     () => [
       { key: "nome", label: "Nome", sortable: true },
@@ -627,7 +626,12 @@ export default function ItensModule() {
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
-      <Sidebar open={sidebarOpen} onToggle={(next) => setSidebarOpen(typeof next === 'boolean' ? next : !sidebarOpen)} />
+      <Sidebar
+        open={sidebarOpen}
+        onToggle={(next) =>
+          setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)
+        }
+      />
 
       <div className="flex-1 flex flex-col">
         <header className="bg-foodmax-gray-bg px-6 py-4">
@@ -642,7 +646,9 @@ export default function ItensModule() {
               </button>
               <div>
                 <h2 className="text-2xl font-semibold text-gray-800">Itens</h2>
-                <p className="text-gray-600 mt-1">Gerencie seus itens e categorias.</p>
+                <p className="text-gray-600 mt-1">
+                  Gerencie seus itens e categorias.
+                </p>
               </div>
             </div>
           </div>

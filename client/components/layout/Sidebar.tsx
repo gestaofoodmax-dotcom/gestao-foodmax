@@ -53,7 +53,11 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
         label: "Gestão",
         items: [
           { icon: Home, label: "Dashboard", route: "/dashboard" },
-          { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
+          {
+            icon: Store,
+            label: "Estabelecimentos",
+            route: "/estabelecimentos",
+          },
           { icon: Users, label: "Clientes", route: "/clientes" },
           { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
         ],
@@ -102,8 +106,12 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
               </div>
               {open && (
                 <div>
-                  <h1 className="font-bold text-lg text-gray-800 leading-tight">FoodMax</h1>
-                  <p className="text-xs text-gray-500 -mt-1">Gestão Gastronômica</p>
+                  <h1 className="font-bold text-lg text-gray-800 leading-tight">
+                    FoodMax
+                  </h1>
+                  <p className="text-xs text-gray-500 -mt-1">
+                    Gestão Gastronômica
+                  </p>
                 </div>
               )}
             </Link>
@@ -124,7 +132,10 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
             {open && (
               <button
                 onClick={() =>
-                  setGroupsOpen((prev) => ({ ...prev, [group.key]: !prev[group.key] }))
+                  setGroupsOpen((prev) => ({
+                    ...prev,
+                    [group.key]: !prev[group.key],
+                  }))
                 }
                 className="w-full flex items-center justify-between px-4 py-2 text-xs text-gray-500 uppercase tracking-wide"
               >
@@ -151,7 +162,9 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
                       }}
                     >
                       <Icon className="w-4 h-4" />
-                      {open && <span className="ml-3 text-sm">{item.label}</span>}
+                      {open && (
+                        <span className="ml-3 text-sm">{item.label}</span>
+                      )}
                     </Link>
                   );
                 })}
@@ -171,7 +184,9 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
           {open && (
             <div className="ml-3 flex-1 flex items-center justify-between">
               <Link to="/minha-conta" className="block">
-                <div className="text-sm font-medium text-gray-800">{displayName}</div>
+                <div className="text-sm font-medium text-gray-800">
+                  {displayName}
+                </div>
                 <div className="text-xs text-gray-500">{user?.email}</div>
               </Link>
               <button

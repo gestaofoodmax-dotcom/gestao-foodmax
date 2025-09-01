@@ -570,7 +570,12 @@ export default function PedidosModule() {
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
-      <Sidebar open={sidebarOpen} onToggle={(next) => setSidebarOpen(typeof next === 'boolean' ? next : !sidebarOpen)} />
+      <Sidebar
+        open={sidebarOpen}
+        onToggle={(next) =>
+          setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)
+        }
+      />
 
       <div className="flex-1 flex flex-col">
         <header className="bg-foodmax-gray-bg px-6 py-4">
@@ -584,8 +589,12 @@ export default function PedidosModule() {
                 <Menu className="w-5 h-5" />
               </button>
               <div>
-                <h2 className="text-2xl font-semibold text-gray-800">Pedidos</h2>
-                <p className="text-gray-600 mt-1">Gerencie os pedidos por status.</p>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Pedidos
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Gerencie os pedidos por status.
+                </p>
               </div>
             </div>
           </div>
