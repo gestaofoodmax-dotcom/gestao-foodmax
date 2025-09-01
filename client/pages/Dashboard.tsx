@@ -4,7 +4,7 @@ import {
   Menu,
   Home,
   Users,
-  ShoppingCart,
+  ShoppingBag,
   BarChart3,
   Settings,
   LogOut,
@@ -43,7 +43,7 @@ export default function Dashboard() {
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
     { icon: Utensils, label: "Cardápios", route: "/cardapios" },
-    { icon: ShoppingCart, label: "Pedidos", route: "/pedidos" },
+    { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {
@@ -58,7 +58,7 @@ export default function Dashboard() {
             : "text-gray-700 hover:bg-gray-100"
         }`}
       >
-        <item.icon className={`w-4 h-4 ${item.label === "Pedidos" ? "text-gray-700" : ""}`} />
+        <item.icon className="w-4 h-4" />
         {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
       </Link>
     );
