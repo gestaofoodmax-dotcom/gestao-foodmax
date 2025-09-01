@@ -748,7 +748,7 @@ export default function PedidoForm({
                     return (
                       <div
                         key={ex.item_id}
-                        className="flex items-center justify-between bg-gray-50 rounded p-2"
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                       >
                         <div>
                           <div className="font-medium flex items-center gap-2">
