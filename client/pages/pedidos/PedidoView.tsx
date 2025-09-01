@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatCurrencyBRL } from "@shared/pedidos";
 import { Pedido } from "@shared/pedidos";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
-import { Info, ShoppingBag, FileText, Calendar, X, Edit } from "lucide-react";
+import { Info, Utensils, CupSoda, FileText, Calendar, X, Edit } from "lucide-react";
 
 export default function PedidoView({
   isOpen,
