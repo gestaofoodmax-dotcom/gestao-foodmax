@@ -126,7 +126,10 @@ export default function PedidoForm({
       valor_unitario_centavos: number;
     }[]
   >([]);
-  const [stockAlert, setStockAlert] = useState<{ open: boolean; message: string }>({ open: false, message: "" });
+  const [stockAlert, setStockAlert] = useState<{
+    open: boolean;
+    message: string;
+  }>({ open: false, message: "" });
 
   const parseCurrencyToCentavos = (val: string) => {
     const digits = val.replace(/[^0-9]/g, "");
@@ -287,16 +290,14 @@ export default function PedidoForm({
       if (estoque <= 0) {
         setStockAlert({
           open: true,
-          message:
-            `O item selecionado está com estoque 0. Ajuste o estoque no módulo Itens antes de continuar.`,
+          message: `O item selecionado está com estoque 0. Ajuste o estoque no módulo Itens antes de continuar.`,
         });
         return;
       }
       if (ex.quantidade > estoque) {
         setStockAlert({
           open: true,
-          message:
-            `Quantidade informada (${ex.quantidade}) é maior que o estoque atual (${estoque}). Ajuste o estoque no módulo Itens.`,
+          message: `Quantidade informada (${ex.quantidade}) é maior que o estoque atual (${estoque}). Ajuste o estoque no módulo Itens.`,
         });
         return;
       }
@@ -731,20 +732,27 @@ export default function PedidoForm({
                               min="1"
                               value={ex.quantidade}
                               onChange={(e) => {
-                                const next = Math.max(1, parseInt(e.target.value) || 1);
+                                const next = Math.max(
+                                  1,
+                                  parseInt(e.target.value) || 1,
+                                );
                                 setSelectedExtras((prev) => {
-                                  const itemInfo = itens.find((i) => i.id === ex.item_id);
+                                  const itemInfo = itens.find(
+                                    (i) => i.id === ex.item_id,
+                                  );
                                   const estoque = itemInfo?.estoque_atual ?? 0;
-                                  const adjusted = estoque > 0 ? Math.min(next, estoque) : 1;
+                                  const adjusted =
+                                    estoque > 0 ? Math.min(next, estoque) : 1;
                                   if (next > estoque && estoque >= 0) {
                                     setStockAlert({
                                       open: true,
-                                      message:
-                                        `Quantidade informada (${next}) é maior que o estoque atual (${estoque}). Para usar quantidade maior, ajuste o estoque no módulo Itens.`,
+                                      message: `Quantidade informada (${next}) é maior que o estoque atual (${estoque}). Para usar quantidade maior, ajuste o estoque no módulo Itens.`,
                                     });
                                   }
                                   return prev.map((p) =>
-                                    p.item_id === ex.item_id ? { ...p, quantidade: adjusted } : p,
+                                    p.item_id === ex.item_id
+                                      ? { ...p, quantidade: adjusted }
+                                      : p,
                                   );
                                 });
                               }}
@@ -909,17 +917,24 @@ export default function PedidoForm({
         </DialogFooter>
       </DialogContent>
 
-      <AlertDialog open={stockAlert.open} onOpenChange={(open) => setStockAlert((s) => ({ ...s, open }))}>
+      <AlertDialog
+        open={stockAlert.open}
+        onOpenChange={(open) => setStockAlert((s) => ({ ...s, open }))}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Estoque insuficiente</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="text-sm text-gray-700">{stockAlert.message}</div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setStockAlert({ open: false, message: "" })}>
+            <AlertDialogCancel
+              onClick={() => setStockAlert({ open: false, message: "" })}
+            >
               Fechar
             </AlertDialogCancel>
-            <AlertDialogAction onClick={() => setStockAlert({ open: false, message: "" })}>
+            <AlertDialogAction
+              onClick={() => setStockAlert({ open: false, message: "" })}
+            >
               Ok
             </AlertDialogAction>
           </AlertDialogFooter>

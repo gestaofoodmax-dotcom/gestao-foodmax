@@ -183,9 +183,15 @@ export const createPedido: RequestHandler = async (req, res) => {
         .select("id, estoque_atual, categoria_id")
         .in("id", ids);
       if (itensError) throw itensError;
-      const byId = new Map<number, { estoque_atual: number | null; categoria_id: number }>();
+      const byId = new Map<
+        number,
+        { estoque_atual: number | null; categoria_id: number }
+      >();
       (itens || []).forEach((i: any) =>
-        byId.set(i.id, { estoque_atual: i.estoque_atual, categoria_id: i.categoria_id }),
+        byId.set(i.id, {
+          estoque_atual: i.estoque_atual,
+          categoria_id: i.categoria_id,
+        }),
       );
       for (const e of parsed.itens_extras) {
         const info = byId.get(e.item_id);
@@ -207,8 +213,7 @@ export const createPedido: RequestHandler = async (req, res) => {
         }
         if (e.quantidade > estoque) {
           return res.status(400).json({
-            error:
-              `Quantidade informada (${e.quantidade}) é maior que o estoque atual (${estoque}) do item ${e.item_id}. Ajuste o estoque no módulo Itens.`,
+            error: `Quantidade informada (${e.quantidade}) é maior que o estoque atual (${estoque}) do item ${e.item_id}. Ajuste o estoque no módulo Itens.`,
           });
         }
       }
@@ -315,15 +320,23 @@ export const updatePedido: RequestHandler = async (req, res) => {
         .select("id, estoque_atual, categoria_id")
         .in("id", ids);
       if (itensError) throw itensError;
-      const byId = new Map<number, { estoque_atual: number | null; categoria_id: number }>();
+      const byId = new Map<
+        number,
+        { estoque_atual: number | null; categoria_id: number }
+      >();
       (itens || []).forEach((i: any) =>
-        byId.set(i.id, { estoque_atual: i.estoque_atual, categoria_id: i.categoria_id }),
+        byId.set(i.id, {
+          estoque_atual: i.estoque_atual,
+          categoria_id: i.categoria_id,
+        }),
       );
       for (const e of parsed.itens_extras) {
         const info = byId.get(e.item_id);
         const estoque = info?.estoque_atual ?? 0;
         if (!info) {
-          return res.status(400).json({ error: `Item inválido (${e.item_id})` });
+          return res
+            .status(400)
+            .json({ error: `Item inválido (${e.item_id})` });
         }
         if (info.categoria_id !== e.categoria_id) {
           return res.status(400).json({
@@ -337,8 +350,7 @@ export const updatePedido: RequestHandler = async (req, res) => {
         }
         if (e.quantidade > estoque) {
           return res.status(400).json({
-            error:
-              `Quantidade informada (${e.quantidade}) é maior que o estoque atual (${estoque}) do item ${e.item_id}. Ajuste o estoque no módulo Itens.`,
+            error: `Quantidade informada (${e.quantidade}) é maior que o estoque atual (${estoque}) do item ${e.item_id}. Ajuste o estoque no módulo Itens.`,
           });
         }
       }
