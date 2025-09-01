@@ -405,7 +405,7 @@ export default function CardapioForm({
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-xl sm:text-2xl font-normal">
               {cardapio ? "Editar Cardápio" : "Novo Cardápio"}
             </DialogTitle>
           </DialogHeader>
@@ -447,7 +447,7 @@ export default function CardapioForm({
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-4 bg-white p-4 rounded-lg border">
               <div className="flex items-center gap-2 mb-3">
-                <Info className="w-5 h-5 text-blue-600" />
+                <FileText className="w-5 h-5 text-blue-600" />
                 <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -626,7 +626,7 @@ export default function CardapioForm({
             {cardapioItens.length > 0 && (
               <div className="border rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-4">
-                  <ShoppingBag className="w-5 h-5 text-purple-600" />
+                  <Utensils className="w-5 h-5 text-purple-600" />
                   <h3 className="text-lg font-semibold text-purple-600">
                     Itens do Cardápio
                   </h3>
@@ -645,9 +645,7 @@ export default function CardapioForm({
                       >
                         <div className="flex-1">
                           <div className="font-medium">{item.item_nome}</div>
-                          <div className="text-sm text-gray-600">
-                            Estoque Atual: {item.item_estoque_atual || 0}
-                          </div>
+                          <div className="text-sm text-gray-600">{item.categoria_nome}</div>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -730,7 +728,7 @@ export default function CardapioForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="col-span-1 md:col-span-2 -mt-2 mb-2 flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-green-600" />
-                  <h3 className="font-semibold text-green-600">Cálculos</h3>
+                  <h3 className="font-semibold text-green-600">Preço</h3>
                 </div>
                 <div>
                   <Label htmlFor="margem_lucro_percentual">
