@@ -60,7 +60,8 @@ import {
   Link as LinkIcon,
   AlertCircle,
   Info,
-  ShoppingBag,
+  Utensils,
+  CupSoda,
   DollarSign,
   FileText,
 } from "lucide-react";
