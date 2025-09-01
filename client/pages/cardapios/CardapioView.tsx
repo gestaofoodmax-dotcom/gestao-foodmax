@@ -245,7 +245,9 @@ export default function CardapioView({
                     >
                       <div className="flex-1">
                         <div className="font-medium">{item.item_nome}</div>
-                        <div className="text-sm text-gray-600">{item.categoria_nome}</div>
+                        <div className="text-sm text-gray-600">
+                          {item.categoria_nome}
+                        </div>
                       </div>
 
                       <div className="flex items-center gap-6 text-sm">

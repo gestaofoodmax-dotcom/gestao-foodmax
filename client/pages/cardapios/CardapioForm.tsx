@@ -644,8 +644,12 @@ export default function CardapioForm({
                       >
                         <div className="flex-1">
                           <div className="font-medium">{item.item_nome}</div>
-                          <div className="text-sm text-gray-600">Categoria: {item.categoria_nome}</div>
-                          <div className="text-sm text-gray-600">Estoque Atual: {item.item_estoque_atual || 0}</div>
+                          <div className="text-sm text-gray-600">
+                            Categoria: {item.categoria_nome}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            Estoque Atual: {item.item_estoque_atual || 0}
+                          </div>
                         </div>
 
                         <div className="flex items-center gap-3">
