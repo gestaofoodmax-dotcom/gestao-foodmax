@@ -8,10 +8,10 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { formatCurrencyBRL } from "@shared/pedidos";
+import { formatCurrencyBRL, getStatusPedidoColor } from "@shared/pedidos";
 import { Pedido } from "@shared/pedidos";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
-import { Info, Utensils, CupSoda, FileText, Calendar, X, Edit } from "lucide-react";
+import { Info, Utensils, CupSoda, FileText, Calendar, X, Edit, ShoppingBag } from "lucide-react";
 
 export default function PedidoView({
   isOpen,
@@ -26,15 +26,19 @@ export default function PedidoView({
 }) {
   const { makeRequest } = useAuthenticatedRequest();
   const [detalhe, setDetalhe] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       if (!pedido) return;
+      setLoading(true);
       try {
         const data = await makeRequest(`/api/pedidos/${pedido.id}`);
         setDetalhe(data);
       } catch {
         setDetalhe(pedido);
+      } finally {
+        setLoading(false);
       }
     };
     if (isOpen) load();
@@ -56,11 +60,21 @@ export default function PedidoView({
           </DialogTitle>
         </DialogHeader>
 
+        {loading && !detalhe && (
+          <div className="space-y-6 animate-pulse">
+            <div className="flex items-start justify-between">
+              <div className="h-8 bg-gray-200 w-48 rounded" />
+              <div className="h-6 bg-gray-200 w-32 rounded" />
+            </div>
+            <div className="h-32 bg-gray-100 rounded" />
+          </div>
+        )}
+
         {detalhe && (
           <div className="space-y-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <Info className="w-6 h-6 text-foodmax-orange" />
+                <ShoppingBag className="w-6 h-6 text-foodmax-orange" />
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
                     {detalhe.codigo}
@@ -69,9 +83,12 @@ export default function PedidoView({
               </div>
 
               <div className="text-right">
-                <Badge className="bg-gray-100 text-gray-800">
+                <Badge className={getStatusPedidoColor(detalhe.status)}>
                   {detalhe.status}
                 </Badge>
+                <p className="text-xs text-gray-500 mt-1">
+                  Cadastrado em {new Date(detalhe.data_cadastro).toLocaleString("pt-BR")}
+                </p>
                 {detalhe.data_hora_finalizado && (
                   <p className="text-xs text-gray-500 mt-1">
                     Finalizado em{" "}
@@ -161,6 +178,9 @@ export default function PedidoView({
                         <div className="font-medium">
                           {e.item_nome || e.item_id}
                         </div>
+                        <div className="text-xs text-gray-500">
+                          {e.categoria_nome || "-"}
+                        </div>
                       </div>
                       <div className="flex items-center gap-6 text-sm">
                         <div className="text-center">
@@ -218,6 +238,12 @@ export default function PedidoView({
                     "pt-BR",
                   )}
                 />
+                <div className="space-y-1">
+                  <div className="text-sm font-medium text-gray-600">Status</div>
+                  <div>
+                    <Badge className={getStatusPedidoColor(detalhe.status)}>{detalhe.status}</Badge>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
