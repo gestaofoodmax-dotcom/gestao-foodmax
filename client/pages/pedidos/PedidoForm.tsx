@@ -540,10 +540,8 @@ export default function PedidoForm({
 
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <ShoppingBag className="w-5 h-5 text-purple-600" />
-              <h3 className="font-semibold text-purple-600">
-                Cardápios e Itens Extra
-              </h3>
+              <Utensils className="w-5 h-5 text-purple-600" />
+              <h3 className="font-semibold text-purple-600">Cardápios</h3>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
