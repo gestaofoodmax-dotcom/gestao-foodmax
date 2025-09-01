@@ -15,6 +15,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toTitleCase } from "@/lib/utils";
 
 export interface SidebarProps {
   open: boolean;
