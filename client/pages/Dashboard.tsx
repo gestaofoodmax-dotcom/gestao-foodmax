@@ -31,6 +31,9 @@ export default function Dashboard() {
   const { makeRequest } = useAuthenticatedRequest();
   const [estabelecimentos, setEstabelecimentos] = useState<Estabelecimento[]>([]);
   const [selectedEst, setSelectedEst] = useState<string>("todos");
+  const [recentPedidos, setRecentPedidos] = useState<any[]>([]);
+  const [recentClientes, setRecentClientes] = useState<any[]>([]);
+  const [cards, setCards] = useState({ pedidosTotal: 0, pedidosCount: 0, entregasTotal: 0, entregasCount: 0, abastecTotal: 0, abastecCount: 0, clientesTotal: 0, clientesAtivos: 0 });
   const displayName = useMemo(() => {
     try {
       const n = localStorage.getItem("fm_user_name");
@@ -44,7 +47,7 @@ export default function Dashboard() {
   }, [isMobile]);
 
   useEffect(() => {
-    const loadEstabs = async () => {
+    const loadData = async () => {
       try {
         const params = new URLSearchParams({ page: "1", limit: "200" });
         const resp = await makeRequest(`/api/estabelecimentos?${params}`);
@@ -54,9 +57,53 @@ export default function Dashboard() {
       } catch {
         setEstabelecimentos([]);
       }
+
+      try {
+        const pedidosResp = await makeRequest(`/api/pedidos?page=1&limit=100`);
+        const pedidos = Array.isArray(pedidosResp?.data) ? pedidosResp.data : [];
+        setRecentPedidos(pedidos);
+      } catch {
+        setRecentPedidos([]);
+      }
+      try {
+        const clientesResp = await makeRequest(`/api/clientes?page=1&limit=100`);
+        const clientes = Array.isArray(clientesResp?.data) ? clientesResp.data : [];
+        setRecentClientes(clientes);
+      } catch {
+        setRecentClientes([]);
+      }
     };
-    loadEstabs();
+    loadData();
   }, [makeRequest]);
+
+  useEffect(() => {
+    // recompute cards when selectedEst or lists change
+    const filtroEst = (arr: any[]) =>
+      selectedEst === "todos" ? arr : arr.filter((x) => String(x.estabelecimento_id) === selectedEst);
+    const now = new Date();
+    const isSameMonth = (d: string) => {
+      const dt = new Date(d);
+      return dt.getMonth() === now.getMonth() && dt.getFullYear() === now.getFullYear();
+    };
+    const pedidosFiltered = filtroEst(recentPedidos);
+    const pedidosFinalizadosMes = pedidosFiltered.filter((p) => p.status === "Finalizado" && isSameMonth(p.data_cadastro));
+    const pedidosTotal = pedidosFinalizadosMes.reduce((sum, p) => sum + (p.valor_total_centavos || 0), 0) / 100;
+    const pedidosCount = pedidosFinalizadosMes.length;
+
+    const clientesFiltered = filtroEst(recentClientes);
+    const clientesAtivos = clientesFiltered.filter((c) => c.ativo).length;
+
+    setCards({
+      pedidosTotal,
+      pedidosCount,
+      entregasTotal: 0,
+      entregasCount: 0,
+      abastecTotal: 0,
+      abastecCount: 0,
+      clientesTotal: clientesFiltered.length,
+      clientesAtivos,
+    });
+  }, [selectedEst, recentPedidos, recentClientes]);
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
@@ -161,8 +208,8 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Pedidos</p>
-                    <p className="text-2xl font-bold text-gray-800">R$ 0,00</p>
-                    <p className="text-xs text-gray-500">0 pedidos</p>
+                    <p className="text-2xl font-bold text-gray-800">R$ {cards.pedidosTotal.toFixed(2)}</p>
+                    <p className="text-xs text-gray-500">{cards.pedidosCount} pedidos</p>
                   </div>
                   <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                     <ShoppingCart className="w-6 h-6 text-green-600" />
@@ -200,8 +247,8 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-600">Clientes</p>
-                    <p className="text-2xl font-bold text-gray-800">0</p>
-                    <p className="text-xs text-gray-500">clientes ativos</p>
+                    <p className="text-2xl font-bold text-gray-800">{cards.clientesTotal}</p>
+                    <p className="text-xs text-gray-500">{cards.clientesAtivos} clientes ativos</p>
                   </div>
                   <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
                     <Users className="w-6 h-6 text-orange-600" />
@@ -223,9 +270,31 @@ export default function Dashboard() {
                     Ver mais →
                   </Link>
                 </div>
-                <div className="text-center py-8 text-gray-500">
-                  Nenhum pedido encontrado
-                </div>
+                {(() => {
+                  const filtro = selectedEst === "todos" ? recentPedidos : recentPedidos.filter((p) => String(p.estabelecimento_id) === selectedEst);
+                  const ordered = [...filtro].sort((a,b)=> (a.data_cadastro < b.data_cadastro ? 1 : -1)).slice(0,5);
+                  if (ordered.length === 0) return (
+                    <div className="text-center py-8 text-gray-500">Nenhum pedido encontrado</div>
+                  );
+                  return (
+                    <div className="space-y-3">
+                      {ordered.map((p) => (
+                        <div key={p.id} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
+                          <div className="flex items-center">
+                            <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                              <span className="text-sm font-medium text-gray-600">{String(p.codigo||"").slice(0,2)}</span>
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-800">{p.codigo}</p>
+                              <p className="text-sm text-gray-500">{new Date(p.data_cadastro).toLocaleString("pt-BR")}</p>
+                            </div>
+                          </div>
+                          <div className="text-sm font-semibold text-gray-800">R$ {(p.valor_total_centavos/100).toFixed(2)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Clientes Recentes */}
@@ -239,43 +308,28 @@ export default function Dashboard() {
                     Ver mais →
                   </Link>
                 </div>
-                <div className="space-y-3">
-                  <div className="flex items-center p-3 hover:bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-sm font-medium text-gray-600">
-                        PS
-                      </span>
+                {(() => {
+                  const filtro = selectedEst === "todos" ? recentClientes : recentClientes.filter((c) => String(c.estabelecimento_id) === selectedEst);
+                  const ordered = [...filtro].sort((a,b)=> (a.data_cadastro < b.data_cadastro ? 1 : -1)).slice(0,5);
+                  if (ordered.length === 0) return (
+                    <div className="text-center py-8 text-gray-500">Nenhum cliente encontrado</div>
+                  );
+                  return (
+                    <div className="space-y-3">
+                      {ordered.map((c) => (
+                        <div key={c.id} className="flex items-center p-3 hover:bg-gray-50 rounded-lg">
+                          <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                            <span className="text-sm font-medium text-gray-600">{String(c.nome||"?").charAt(0).toUpperCase()}</span>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-800">{c.nome}</p>
+                            <p className="text-sm text-gray-500">{c.email || c.telefone || "-"}</p>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Pedro Silva</p>
-                      <p className="text-sm text-gray-500">pedro@pedro.com</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center p-3 hover:bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-sm font-medium text-gray-600">
-                        R
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Ricardo</p>
-                      <p className="text-sm text-gray-500">123123123</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center p-3 hover:bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-sm font-medium text-gray-600">
-                        B
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800">Bruna</p>
-                      <p className="text-sm text-gray-500">bruna@bruna.com</p>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
