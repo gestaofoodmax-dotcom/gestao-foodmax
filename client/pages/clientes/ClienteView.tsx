@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Cliente } from "@shared/clientes";
 import { formatEndereco, formatTelefone } from "@shared/clientes";
-import { Phone, MapPin, Info, Edit, X, User, Calendar } from "lucide-react";
+import { Phone, MapPin, FileText, Edit, X, User, Calendar } from "lucide-react";
 
 interface ClienteViewProps {
   isOpen: boolean;
@@ -99,7 +99,7 @@ export function ClienteView({
 
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-4">
-              <Info className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-blue-600" />
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
