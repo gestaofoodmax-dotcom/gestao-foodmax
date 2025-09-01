@@ -763,7 +763,7 @@ export default function PedidoForm({
                         </div>
                         <div className="flex items-center gap-2">
                           <div className="flex flex-col gap-1">
-                            <Label className="text-xs">Qtd</Label>
+                            <Label className="text-xs">Quantidade</Label>
                             <Input
                               type="number"
                               min="1"
