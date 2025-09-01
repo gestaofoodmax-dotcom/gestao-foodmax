@@ -59,7 +59,6 @@ import {
   Save,
   Link as LinkIcon,
   AlertCircle,
-  Info,
   Utensils,
   CupSoda,
   DollarSign,
@@ -329,7 +328,9 @@ export default function PedidoForm({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h[90vh] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{pedido ? "Editar Pedido" : "Novo Pedido"}</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl font-normal">
+            {pedido ? "Editar Pedido" : "Novo Pedido"}
+          </DialogTitle>
         </DialogHeader>
 
         {!hasPrerequisites && (
@@ -381,7 +382,7 @@ export default function PedidoForm({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <Info className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-blue-600" />
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -745,8 +746,8 @@ export default function PedidoForm({
             {selectedCategoriaIds.length > 0 &&
               filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                  Atenção: existem itens desta categoria com estoque baixo (&lt;
-                  3).
+                  Aten��ão: existem itens desta categoria com estoque baixo
+                  (&lt; 3).
                 </div>
               )}
 
@@ -770,6 +771,7 @@ export default function PedidoForm({
                           {item.nome}
                         </div>
                         <div className="text-xs text-gray-600">
+                          Categoria:{" "}
                           {categorias.find((c) => c.id === item.categoria_id)
                             ?.nome || "-"}
                         </div>
@@ -902,7 +904,7 @@ export default function PedidoForm({
               rows={3}
               {...register("observacao")}
               className="foodmax-input resize-none"
-              placeholder="Observações..."
+              placeholder="Observaç��es..."
             />
             <div className="mt-4">
               <Label>Data/Hora Finalizado</Label>

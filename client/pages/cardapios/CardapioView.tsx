@@ -201,8 +201,8 @@ export default function CardapioView({
           {/* Informações Básicas */}
           <div className="bg-white p-4 rounded-lg border">
             <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <Info className="w-5 h-5 text-blue-600" />
-              <span className="text-blue-600">Informações Básicas</span>
+              <FileText className="w-5 h-5 text-blue-600" />
+              <span className="text-blue-600">Dados Básicos</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <DataField label="Nome" value={cardapio.nome} />
@@ -226,7 +226,7 @@ export default function CardapioView({
           ) : cardapioDetalhado?.itens && cardapioDetalhado.itens.length > 0 ? (
             <div className="border rounded-lg p-4">
               <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-purple-600" />
+                <Utensils className="w-5 h-5 text-purple-600" />
                 <span className="text-purple-600">
                   Itens do Cardápio ({cardapioDetalhado.itens.length})
                 </span>
@@ -246,10 +246,7 @@ export default function CardapioView({
                       <div className="flex-1">
                         <div className="font-medium">{item.item_nome}</div>
                         <div className="text-sm text-gray-600">
-                          Categoria: {item.categoria_nome}
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          Estoque Atual: {item.item_estoque_atual ?? "N/A"}
+                          {item.categoria_nome}
                         </div>
                       </div>
 
@@ -318,7 +315,7 @@ export default function CardapioView({
           <div className="bg-white rounded-lg p-4 border">
             <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-green-600" />
-              <span className="text-green-600">Cálculo</span>
+              <span className="text-green-600">Preço</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <DataField

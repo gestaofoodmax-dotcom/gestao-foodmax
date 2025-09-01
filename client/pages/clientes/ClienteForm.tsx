@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { DDISelect } from "@/components/ddi-select";
-import { Info, MapPin, Phone, Save, X, AlertTriangle } from "lucide-react";
+import { FileText, MapPin, Phone, Save, X, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
@@ -267,7 +267,7 @@ export function ClienteForm({
         >
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
-              <Info className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-blue-600" />
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
 

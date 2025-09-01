@@ -4,7 +4,7 @@ import {
   Menu,
   Home,
   Users,
-  ShoppingCart,
+  ShoppingBag,
   BarChart3,
   Settings,
   LogOut,
@@ -114,7 +114,7 @@ function EstabelecimentosModule() {
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
     { icon: Utensils, label: "Cardápios", route: "/cardapios" },
-    { icon: ShoppingCart, label: "Pedidos", route: "/pedidos" },
+    { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {
@@ -660,7 +660,7 @@ function EstabelecimentosModule() {
         success: true,
         message: "Nenhum novo registro para importar",
         imported: 0,
-        errors: ["Registros duplicados ou já existentes foram ignorados"],
+        errors: ["Registros duplicados ou j�� existentes foram ignorados"],
       } as any;
     }
 

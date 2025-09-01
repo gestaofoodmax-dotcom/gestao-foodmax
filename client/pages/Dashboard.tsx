@@ -4,6 +4,7 @@ import {
   Menu,
   Home,
   Users,
+  ShoppingBag,
   ShoppingCart,
   BarChart3,
   Settings,
@@ -43,7 +44,7 @@ export default function Dashboard() {
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
     { icon: Utensils, label: "Cardápios", route: "/cardapios" },
-    { icon: ShoppingCart, label: "Pedidos", route: "/pedidos" },
+    { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
   ];
 
   const renderMenuItem = (item: any, index: number) => {

@@ -16,7 +16,7 @@ import {
   Download,
   Tag,
   Utensils,
-  ShoppingCart,
+  ShoppingBag,
 } from "lucide-react";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
@@ -110,7 +110,7 @@ export default function ItensModule() {
     { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
     { icon: List, label: "Itens", route: "/itens" },
     { icon: Utensils, label: "Cardápios", route: "/cardapios" },
-    { icon: ShoppingCart, label: "Pedidos", route: "/pedidos" },
+    { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
   ];
   const renderMenuItem = (item: any, index: number) => {
     const isActive = location.pathname === item.route;
@@ -738,7 +738,6 @@ export default function ItensModule() {
                       <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                     )}
                   </button>
-                  <span className="w-px h-5 bg-gray-200" />
 
                   <button
                     className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
