@@ -1,141 +1,27 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  Menu,
-  Home,
-  Users,
-  ShoppingBag,
-  ShoppingCart,
-  BarChart3,
-  Settings,
-  LogOut,
-  AlertTriangle,
-  List,
-  Truck,
-  Package,
-  User,
-  Store,
-  CreditCard,
-  FileText,
-  ClipboardList,
-  Utensils,
-} from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Menu, Users, ShoppingCart, AlertTriangle, Truck, Package } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Dashboard() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { user } = useAuth();
 
-  const menuItems = [
-    { icon: Home, label: "Dashboard", route: "/dashboard" },
-    { icon: Store, label: "Estabelecimentos", route: "/estabelecimentos" },
-    { icon: Users, label: "Clientes", route: "/clientes" },
-    { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
-    { icon: List, label: "Itens", route: "/itens" },
-    { icon: Utensils, label: "Cardápios", route: "/cardapios" },
-    { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
-  ];
-
-  const renderMenuItem = (item: any, index: number) => {
-    const isActive = location.pathname === item.route;
-    return (
-      <Link
-        key={index}
-        to={item.route}
-        className={`w-full flex items-center px-4 py-2 text-left transition-colors ${
-          isActive
-            ? "bg-orange-50 text-foodmax-orange border-r-4 border-foodmax-orange"
-            : "text-gray-700 hover:bg-gray-100"
-        }`}
-      >
-        <item.icon className="w-4 h-4" />
-        {sidebarOpen && <span className="ml-3 text-sm">{item.label}</span>}
-      </Link>
-    );
-  };
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
-      {/* Sidebar */}
-      <div
-        className={`${sidebarOpen ? "w-64" : "w-16"} bg-white shadow-lg transition-all duration-300 flex flex-col h-full`}
-      >
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto sidebar-scroll">
-          {/* Logo */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-foodmax-red rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">F</span>
-                </div>
-                {sidebarOpen && (
-                  <div className="ml-3">
-                    <h1 className="font-bold text-lg text-gray-800">FoodMax</h1>
-                  </div>
-                )}
-              </div>
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 rounded-lg hover:bg-gray-100"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Principal section */}
-          {sidebarOpen && (
-            <div className="px-4 py-2">
-              <span className="text-xs text-gray-500 uppercase tracking-wide">
-                PRINCIPAL
-              </span>
-            </div>
-          )}
-
-          <nav className="mt-2 pb-4">
-            {menuItems.map((item, index) => renderMenuItem(item, index))}
-          </nav>
-        </div>
-
-        {/* Fixed footer */}
-        <div className="bg-white border-t border-gray-200 flex-shrink-0">
-          <div className="flex items-center px-4 py-4">
-            <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-              <span className="text-xs font-medium text-gray-600">A</span>
-            </div>
-            {sidebarOpen && (
-              <div className="ml-3 flex-1 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-800">Ana</p>
-                  <p className="text-xs text-gray-500">Administrador</p>
-                </div>
-                <button
-                  onClick={() => {
-                    logout();
-                    navigate("/login");
-                  }}
-                  className="flex items-center gap-1 text-sm text-gray-700 hover:text-foodmax-orange"
-                  title="Sair"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+      <Sidebar open={sidebarOpen} onToggle={(next) => setSidebarOpen(typeof next === 'boolean' ? next : !sidebarOpen)} />
 
       {/* Main content */}
       <div className="flex-1 flex flex-col">
@@ -143,7 +29,16 @@ export default function Dashboard() {
         <header className="bg-foodmax-gray-bg px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <h2 className="text-xl font-semibold text-gray-800">Olá, Ana</h2>
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="md:hidden p-2 mr-3 rounded-lg border bg-white"
+                aria-label="Abrir menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+              <h2 className="text-xl font-semibold text-gray-800">
+                Olá, {user?.email ? user.email.split("@")[0] : "Usuário"}
+              </h2>
             </div>
 
             <div className="flex items-center">
