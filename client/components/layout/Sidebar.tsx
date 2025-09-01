@@ -79,11 +79,11 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
   const displayName = useMemo(() => {
     try {
       const stored = localStorage.getItem("fm_user_name");
-      if (stored && stored.trim()) return stored.trim();
+      if (stored && stored.trim()) return toTitleCase(stored.trim());
     } catch {}
     const email = user?.email || "";
     const base = email.split("@")[0] || "Usuário";
-    return base.charAt(0).toUpperCase() + base.slice(1);
+    return toTitleCase(base);
   }, [user?.email]);
 
   // Wrapper styles: fixed column on desktop; overlay on mobile when open
