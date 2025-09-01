@@ -683,27 +683,25 @@ export default function PedidoForm({
                           <CommandGroup>
                             {filteredExtras.map((item) => {
                               const isLow = (item.estoque_atual || 0) < 3;
+                              const isOut = (item.estoque_atual || 0) === 0;
+                              const isAdded = selectedExtras.some((e) => e.item_id === item.id);
                               return (
                                 <CommandItem
                                   key={item.id}
-                                  onSelect={() => {
-                                    setSelectedExtras((prev) => {
-                                      const existing = prev.find(
-                                        (e) => e.item_id === item.id,
-                                      );
-                                      if (existing) return prev;
-                                      return [
-                                        ...prev,
-                                        {
-                                          item_id: item.id,
-                                          categoria_id: item.categoria_id,
-                                          quantidade: 1,
-                                          valor_unitario_centavos:
-                                            item.preco_centavos,
-                                        },
-                                      ];
-                                    });
-                                  }}
+                                  onSelect={() =>
+                                    !isAdded && !isOut &&
+                                    setSelectedExtras((prev) => [
+                                      ...prev,
+                                      {
+                                        item_id: item.id,
+                                        categoria_id: item.categoria_id,
+                                        quantidade: 1,
+                                        valor_unitario_centavos: item.preco_centavos,
+                                      },
+                                    ])
+                                  }
+                                  disabled={isAdded || isOut}
+                                  className={cn(isAdded || isOut ? "opacity-50" : "")}
                                 >
                                   <div className="flex items-center justify-between w-full">
                                     <div className="flex items-center gap-2">
@@ -711,8 +709,12 @@ export default function PedidoForm({
                                         <AlertCircle className="w-4 h-4 text-yellow-600" />
                                       )}
                                       <span>{item.nome}</span>
+                                      {isAdded && <Badge variant="secondary">Já adicionado</Badge>}
+                                      {isOut && (
+                                        <Badge className="bg-red-50 text-red-700 border-red-200">Sem estoque</Badge>
+                                      )}
                                     </div>
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-sm text-gray-500">
                                       Estoque: {item.estoque_atual ?? 0}
                                     </span>
                                   </div>
