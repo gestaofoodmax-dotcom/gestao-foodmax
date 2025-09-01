@@ -64,6 +64,7 @@ import {
   CupSoda,
   DollarSign,
   FileText,
+  Minus,
 } from "lucide-react";
 import {
   AlertDialog,
