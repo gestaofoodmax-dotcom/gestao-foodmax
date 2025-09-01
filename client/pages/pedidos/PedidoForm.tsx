@@ -746,7 +746,7 @@ export default function PedidoForm({
             {selectedCategoriaIds.length > 0 &&
               filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                  Atenção: existem itens desta categoria com estoque baixo (&lt;
+                  Aten��ão: existem itens desta categoria com estoque baixo (&lt;
                   3).
                 </div>
               )}
@@ -771,8 +771,7 @@ export default function PedidoForm({
                           {item.nome}
                         </div>
                         <div className="text-xs text-gray-600">
-                          {categorias.find((c) => c.id === item.categoria_id)
-                            ?.nome || "-"}
+                          Categoria: {categorias.find((c) => c.id === item.categoria_id)?.nome || "-"}
                         </div>
                         <div className="text-xs text-gray-600">
                           Estoque Atual: {item.estoque_atual ?? 0}
