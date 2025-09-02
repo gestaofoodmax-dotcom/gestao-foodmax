@@ -165,7 +165,7 @@ export const createCardapio: RequestHandler = async (req, res) => {
       (sum, item) => sum + item.quantidade,
       0,
     );
-    const preco_itens_centavos = parsed.itens.reduce(
+    const preco_itens = parsed.itens.reduce(
       (sum, item) => sum + item.quantidade * item.valor_unitario,
       0,
     );
@@ -178,7 +178,7 @@ export const createCardapio: RequestHandler = async (req, res) => {
         nome: parsed.nome,
         tipo_cardapio: parsed.tipo_cardapio,
         quantidade_total,
-        preco_itens_centavos,
+        preco_itens,
         margem_lucro_percentual: parsed.margem_lucro_percentual,
         preco_total: parsed.preco_total,
         descricao: parsed.descricao,
@@ -248,12 +248,12 @@ export const updateCardapio: RequestHandler = async (req, res) => {
         (sum, item) => sum + item.quantidade,
         0,
       );
-      const preco_itens_centavos = parsed.itens.reduce(
+      const preco_itens = parsed.itens.reduce(
         (sum, item) => sum + item.quantidade * item.valor_unitario,
         0,
       );
       updateData.quantidade_total = quantidade_total;
-      updateData.preco_itens_centavos = preco_itens_centavos;
+      updateData.preco_itens = preco_itens;
     }
 
     // Update cardapio
@@ -488,7 +488,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
 
       if (!cardapiosMap.has(key)) {
         const preco_total = parseCentavos(r.preco_total);
-        const preco_itens_centavos = parseCentavos(r.preco_itens);
+        const preco_itens = parseCentavos(r.preco_itens);
         const quantidade_total =
           typeof r.quantidade_total === "string"
             ? Number(r.quantidade_total) || 0
@@ -503,7 +503,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
           nome: r.nome,
           tipo_cardapio: r.tipo_cardapio,
           quantidade_total,
-          preco_itens_centavos,
+          preco_itens,
           margem_lucro_percentual,
           preco_total,
           descricao: r.descricao || "",
@@ -540,7 +540,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
             nome: cardapioData.nome,
             tipo_cardapio: cardapioData.tipo_cardapio,
             quantidade_total: cardapioData.quantidade_total,
-            preco_itens_centavos: cardapioData.preco_itens_centavos,
+            preco_itens: cardapioData.preco_itens,
             margem_lucro_percentual: cardapioData.margem_lucro_percentual,
             preco_total: cardapioData.preco_total,
             descricao: cardapioData.descricao,
