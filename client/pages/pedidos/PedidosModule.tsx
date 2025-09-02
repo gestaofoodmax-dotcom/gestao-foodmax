@@ -811,11 +811,13 @@ export default function PedidosModule() {
         valid.push(novo);
       }
 
+      console.log(`Processed ${records.length} records, ${valid.length} valid records found`);
+
       if (valid.length === 0) {
         return {
-          success: true,
+          success: false,
           imported: 0,
-          message: "Nenhum registro válido encontrado",
+          message: `Nenhum registro válido encontrado. Processados ${records.length} registros.`,
         } as any;
       }
 
