@@ -932,6 +932,12 @@ export default function PedidosModule() {
         novo.cardapios = cardapios;
         novo.itens_extras = itensExtras;
 
+        console.log(`🎯 Final novo object for record ${i + 1}:`, {
+          codigo: novo.codigo,
+          data_hora_finalizado: novo.data_hora_finalizado,
+          status: novo.status
+        });
+
         valid.push(novo);
       }
 
@@ -1264,7 +1270,7 @@ export default function PedidosModule() {
             "data atualizacao": "data_atualizacao",
             cardápios: "cardapios",
             cardapios: "cardapios",
-            card��pio: "cardapios",
+            cardápio: "cardapios",
             cardapio: "cardapios",
             "itens extras nome": "itens_extras_nome",
             "itens extras categoria": "itens_extras_categoria",
