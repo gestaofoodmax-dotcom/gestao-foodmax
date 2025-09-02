@@ -40,6 +40,9 @@ export default function PedidoView({
   useEffect(() => {
     const load = async () => {
       if (!pedido) return;
+      try {
+        localStorage.removeItem("fm_pedidos");
+      } catch {}
       setLoading(true);
       try {
         const data = await makeRequest(`/api/pedidos/${pedido.id}`);
@@ -62,7 +65,10 @@ export default function PedidoView({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[85vw] h-[90vh] max-w-none overflow-y-auto">
+      <DialogContent
+        className="w-[85vw] h-[90vh] max-w-none overflow-y-auto"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
             Visualizar Pedido
@@ -70,12 +76,21 @@ export default function PedidoView({
         </DialogHeader>
 
         {loading && !detalhe && (
-          <div className="space-y-6 animate-pulse">
+          <div className="space-y-6">
             <div className="flex items-start justify-between">
-              <div className="h-8 bg-gray-200 w-48 rounded" />
-              <div className="h-6 bg-gray-200 w-32 rounded" />
+              <div className="h-8 bg-gray-200 w-48 rounded animate-pulse" />
+              <div className="h-6 bg-gray-200 w-32 rounded animate-pulse" />
             </div>
-            <div className="h-32 bg-gray-100 rounded" />
+            <div className="h-32 bg-gray-100 rounded animate-pulse" />
+
+            <div className="border rounded-lg p-6 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-foodmax-orange"></div>
+              <p className="mt-2 text-gray-600">Carregando cardápios...</p>
+            </div>
+            <div className="border rounded-lg p-6 text-center">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-foodmax-orange"></div>
+              <p className="mt-2 text-gray-600">Carregando itens extras...</p>
+            </div>
           </div>
         )}
 

@@ -59,7 +59,10 @@ export function AlertDialogComponent({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent className="sm:max-w-md">
+      <AlertDialogContent
+        className="sm:max-w-md"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-3">
             {getIcon()}

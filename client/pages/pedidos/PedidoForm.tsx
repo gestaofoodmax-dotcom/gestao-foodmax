@@ -246,8 +246,31 @@ export default function PedidoForm({
         data_hora_finalizado: pedido.data_hora_finalizado,
       });
       setValorTotalMask(formatInputCurrency(pedido.valor_total));
+
+      // Load detailed relations for edit (cardápios e itens extras)
+      (async () => {
+        try {
+          const det = await makeRequest(`/api/pedidos/${pedido.id}`);
+          if (det?.cardapios) {
+            const ids = det.cardapios.map((c: any) => c.cardapio_id);
+            setSelectedCardapios(Array.from(new Set(ids)));
+          }
+          if (det?.itens_extras) {
+            const exts = det.itens_extras.map((e: any) => ({
+              item_id: e.item_id,
+              categoria_id: e.categoria_id,
+              quantidade: e.quantidade,
+              valor_unitario: e.valor_unitario,
+            }));
+            setSelectedExtras(exts);
+            setSelectedCategoriaIds(
+              Array.from(new Set(exts.map((e: any) => e.categoria_id))),
+            );
+          }
+        } catch {}
+      })();
     }
-  }, [pedido, reset]);
+  }, [pedido, reset, makeRequest]);
 
   const filteredExtras = useMemo(() => {
     if (!selectedCategoriaIds || selectedCategoriaIds.length === 0)
@@ -326,7 +349,10 @@ export default function PedidoForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h[90vh] max-h-[90vh] overflow-y-auto">
+      <DialogContent
+        className="max-w-4xl max-h[90vh] max-h-[90vh] overflow-y-auto"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-normal">
             {pedido ? "Editar Pedido" : "Novo Pedido"}
@@ -901,7 +927,7 @@ export default function PedidoForm({
               rows={3}
               {...register("observacao")}
               className="foodmax-input resize-none"
-              placeholder="Observaç��es..."
+              placeholder="Observação do pedido..."
             />
             <div className="mt-4">
               <Label>Data/Hora Finalizado</Label>

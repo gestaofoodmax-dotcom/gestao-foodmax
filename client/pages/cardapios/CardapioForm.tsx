@@ -400,7 +400,10 @@ export default function CardapioForm({
   return (
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent
+          className="max-w-4xl max-h-[90vh] overflow-y-auto"
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl font-normal">
               {cardapio ? "Editar Cardápio" : "Novo Cardápio"}
@@ -824,7 +827,7 @@ export default function CardapioForm({
       </Dialog>
 
       <AlertDialog open={showStockAlert} onOpenChange={setShowStockAlert}>
-        <AlertDialogContent>
+        <AlertDialogContent onInteractOutside={(e) => e.preventDefault()}>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-yellow-600" />

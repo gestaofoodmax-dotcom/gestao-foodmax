@@ -502,3 +502,290 @@ export const finalizarPedido: RequestHandler = async (req, res) => {
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
+
+export const importPedidos: RequestHandler = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+
+    const RecordsSchema = z.object({
+      records: z.array(
+        z.object({
+          estabelecimento_nome: z.string().min(1),
+          cliente_nome: z.string().optional(),
+          codigo: z.string().optional(),
+          tipo_pedido: TipoPedidoEnum,
+          valor_total: z.union([z.number(), z.string()]).optional(),
+          status: StatusPedidoEnum.optional(),
+          data_hora_finalizado: z.string().optional(),
+          observacao: z.string().optional(),
+          cardapio_nome: z.string().optional(),
+          cardapio_preco_total: z.union([z.number(), z.string()]).optional(),
+          // Old extras naming (backward compat)
+          extra_item_nome: z.string().optional(),
+          extra_item_categoria: z.string().optional(),
+          extra_item_quantidade: z.union([z.number(), z.string()]).optional(),
+          extra_item_valor_unitario: z
+            .union([z.number(), z.string()])
+            .optional(),
+          // New extras naming
+          itens_extras_nome: z.string().optional(),
+          itens_extras_categoria: z.string().optional(),
+          itens_extras_quantidade: z.union([z.number(), z.string()]).optional(),
+          itens_extras_valor_unitario: z
+            .union([z.number(), z.string()])
+            .optional(),
+        }),
+      ),
+    });
+
+    let records: any[] = [];
+    try {
+      const parsed = RecordsSchema.parse(req.body);
+      records = parsed.records;
+    } catch (e) {
+      records = Array.isArray(req.body?.records) ? req.body.records : [];
+    }
+
+    const supabase = getSupabaseServiceClient();
+
+    const parseCentavos = (val: any): number => {
+      if (val === undefined || val === null || val === "") return 0;
+      if (typeof val === "number")
+        return Number.isInteger(val) ? val : Math.round(val * 100);
+      const s = String(val).trim();
+      const clean = s
+        .replace(/[^0-9,.-]/g, "")
+        .replace(/\.(?=\d{3}(,|$))/g, "");
+      const dot = clean.replace(",", ".");
+      const n = Number(dot);
+      if (!isNaN(n)) return Math.round(n * 100);
+      const digits = s.replace(/\D/g, "");
+      return digits ? parseInt(digits, 10) : 0;
+    };
+
+    const groups = new Map<string, any[]>();
+    for (const r of records) {
+      const codigo = (r.codigo && String(r.codigo).trim()) || generateCodigo();
+      if (!groups.has(codigo)) groups.set(codigo, []);
+      groups.get(codigo)!.push(r);
+    }
+
+    let imported = 0;
+    for (const [codigo, rows] of groups.entries()) {
+      try {
+        const first = rows[0];
+        const estNome = String(first.estabelecimento_nome).trim();
+        // Resolve estabelecimento
+        const { data: est } = await supabase
+          .from("estabelecimentos")
+          .select("id")
+          .eq("nome", estNome)
+          .eq("id_usuario", userId)
+          .single();
+        if (!est) continue; // cannot import without estabelecimento
+
+        // Skip if pedido with same codigo exists
+        const { data: existing } = await supabase
+          .from("pedidos")
+          .select("id")
+          .eq("codigo", codigo)
+          .eq("id_usuario", userId)
+          .maybeSingle();
+        if (existing) continue;
+
+        // Resolve cliente
+        let cliente_id: number | null = null;
+        const cliNome = String(first.cliente_nome || "").trim();
+        if (cliNome) {
+          const { data: cli } = await supabase
+            .from("clientes")
+            .select("id")
+            .eq("nome", cliNome)
+            .eq("id_usuario", userId)
+            .eq("estabelecimento_id", est.id)
+            .maybeSingle();
+          cliente_id = cli?.id ?? null;
+        }
+
+        const tipo = first.tipo_pedido as z.infer<typeof TipoPedidoEnum>;
+        const status =
+          (first.status as z.infer<typeof StatusPedidoEnum>) || "Pendente";
+        const valor_total = parseCentavos(first.valor_total);
+        const data_hora_finalizado = first.data_hora_finalizado
+          ? new Date(first.data_hora_finalizado).toISOString()
+          : null;
+        const observacao = first.observacao || null;
+
+        const { data: pedido, error: pedErr } = await supabase
+          .from("pedidos")
+          .insert({
+            id_usuario: userId,
+            estabelecimento_id: est.id,
+            cliente_id,
+            tipo_pedido: tipo,
+            codigo,
+            observacao,
+            status,
+            valor_total,
+            data_hora_finalizado,
+          })
+          .select()
+          .single();
+        if (pedErr || !pedido) continue;
+
+        // Collect related cardapios
+        const cardapioEntries: { cardapio_id: number; preco_total: number }[] =
+          [];
+        for (const r of rows) {
+          const nome = String(r.cardapio_nome || "").trim();
+          if (!nome) continue;
+          let cardapio_id: number | null = null;
+          const { data: existingCardapio } = await supabase
+            .from("cardapios")
+            .select("id")
+            .eq("nome", nome)
+            .eq("id_usuario", userId)
+            .maybeSingle();
+          if (existingCardapio) {
+            cardapio_id = existingCardapio.id;
+          } else {
+            const { data: novoCard } = await supabase
+              .from("cardapios")
+              .insert({
+                id_usuario: userId,
+                nome,
+                tipo_cardapio: "Outro",
+                quantidade_total: 0,
+                preco_itens: 0,
+                margem_lucro_percentual: 0,
+                preco_total: parseCentavos(r.cardapio_preco_total),
+                descricao: "",
+                ativo: true,
+              })
+              .select("id")
+              .single();
+            cardapio_id = novoCard?.id ?? null;
+          }
+          if (cardapio_id) {
+            cardapioEntries.push({
+              cardapio_id,
+              preco_total: parseCentavos(r.cardapio_preco_total),
+            });
+          }
+        }
+        if (cardapioEntries.length > 0) {
+          await supabase.from("pedidos_cardapios").insert(
+            cardapioEntries.map((c) => ({
+              pedido_id: pedido.id,
+              cardapio_id: c.cardapio_id,
+              preco_total: c.preco_total,
+            })),
+          );
+        }
+
+        // Collect extras
+        const extraEntries: {
+          item_id: number;
+          categoria_id: number;
+          quantidade: number;
+          valor_unitario: number;
+        }[] = [];
+        for (const r of rows) {
+          const itemNome = String(
+            r.itens_extras_nome || r.extra_item_nome || "",
+          ).trim();
+          if (!itemNome) continue;
+          const catNome =
+            String(
+              r.itens_extras_categoria || r.extra_item_categoria || "",
+            ).trim() || "Sem Categoria";
+
+          // Resolve categoria
+          let categoria_id: number | null = null;
+          const { data: cat } = await supabase
+            .from("itens_categorias")
+            .select("id")
+            .eq("nome", catNome)
+            .eq("id_usuario", userId)
+            .maybeSingle();
+          if (cat) {
+            categoria_id = cat.id;
+          } else {
+            const { data: novaCat } = await supabase
+              .from("itens_categorias")
+              .insert({ id_usuario: userId, nome: catNome, ativo: true })
+              .select("id")
+              .single();
+            categoria_id = novaCat?.id ?? null;
+          }
+          if (!categoria_id) continue;
+
+          // Resolve item
+          let item_id: number | null = null;
+          const { data: item } = await supabase
+            .from("itens")
+            .select("id")
+            .eq("nome", itemNome)
+            .eq("id_usuario", userId)
+            .maybeSingle();
+          if (item) {
+            item_id = item.id;
+          } else {
+            const { data: novoItem } = await supabase
+              .from("itens")
+              .insert({
+                id_usuario: userId,
+                categoria_id,
+                nome: itemNome,
+                preco: parseCentavos(r.extra_item_valor_unitario),
+                custo_pago: 0,
+                unidade_medida: "un",
+                peso_gramas: null,
+                estoque_atual: 0,
+                ativo: true,
+              })
+              .select("id")
+              .single();
+            item_id = novoItem?.id ?? null;
+          }
+          if (!item_id) continue;
+
+          const quantidade =
+            Number(r.itens_extras_quantidade ?? r.extra_item_quantidade) || 1;
+          const valor_unitario = parseCentavos(
+            r.itens_extras_valor_unitario ?? r.extra_item_valor_unitario,
+          );
+          extraEntries.push({
+            item_id,
+            categoria_id,
+            quantidade,
+            valor_unitario,
+          });
+        }
+
+        if (extraEntries.length > 0) {
+          try {
+            await supabase
+              .from("pedidos_itens_extras")
+              .insert(
+                extraEntries.map((e) => ({ pedido_id: pedido.id, ...e })),
+              );
+          } catch (e) {
+            // Ignore stock validation errors for import (skip extras)
+          }
+        }
+
+        imported++;
+      } catch (e) {
+        // skip this group
+      }
+    }
+
+    res.json({ success: true, imported });
+  } catch (error) {
+    console.error("Error importing pedidos:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
