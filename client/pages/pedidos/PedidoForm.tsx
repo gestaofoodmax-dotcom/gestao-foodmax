@@ -163,7 +163,7 @@ export default function PedidoForm({
 
   const generateCodigo = () => {
     const part = () => Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `${part()}-${part()}`;
+    return `${part()}${part()}`;
   };
 
   useEffect(() => {
