@@ -522,23 +522,44 @@ export default function PedidosModule() {
           : [];
 
         // Consolidar cardápios em uma única string
-        const cardapiosInfo = cardapios.length > 0
-          ? cardapios.map(c => `${c.cardapio_nome || 'N/A'} (R$ ${((c.preco_total || 0) / 100).toFixed(2)})`).join('; ')
-          : '';
+        const cardapiosInfo =
+          cardapios.length > 0
+            ? cardapios
+                .map(
+                  (c) =>
+                    `${c.cardapio_nome || "N/A"} (R$ ${((c.preco_total || 0) / 100).toFixed(2)})`,
+                )
+                .join("; ")
+            : "";
 
         // Consolidar itens extras em strings separadas
-        const extrasNomes = extras.length > 0
-          ? extras.map(e => e.item_nome || '').filter(n => n).join('; ')
-          : '';
-        const extrasCategorias = extras.length > 0
-          ? extras.map(e => e.categoria_nome || '').filter(n => n).join('; ')
-          : '';
-        const extrasQuantidades = extras.length > 0
-          ? extras.map(e => e.quantidade ?? '').filter(n => n !== '').join('; ')
-          : '';
-        const extrasValores = extras.length > 0
-          ? extras.map(e => `R$ ${((e.valor_unitario || 0) / 100).toFixed(2)}`).join('; ')
-          : '';
+        const extrasNomes =
+          extras.length > 0
+            ? extras
+                .map((e) => e.item_nome || "")
+                .filter((n) => n)
+                .join("; ")
+            : "";
+        const extrasCategorias =
+          extras.length > 0
+            ? extras
+                .map((e) => e.categoria_nome || "")
+                .filter((n) => n)
+                .join("; ")
+            : "";
+        const extrasQuantidades =
+          extras.length > 0
+            ? extras
+                .map((e) => e.quantidade ?? "")
+                .filter((n) => n !== "")
+                .join("; ")
+            : "";
+        const extrasValores =
+          extras.length > 0
+            ? extras
+                .map((e) => `R$ ${((e.valor_unitario || 0) / 100).toFixed(2)}`)
+                .join("; ")
+            : "";
 
         // Uma única linha por pedido com dados consolidados
         exportRows.push({
@@ -647,12 +668,14 @@ export default function PedidosModule() {
         if (r.cardapios) {
           const cardapiosText = String(r.cardapios).trim();
           if (cardapiosText) {
-            const cardapioItems = cardapiosText.split(';').map(item => item.trim());
+            const cardapioItems = cardapiosText
+              .split(";")
+              .map((item) => item.trim());
             for (const item of cardapioItems) {
               const match = item.match(/^(.+)\s\(R\$\s([0-9,\.]+)\)$/);
               if (match) {
                 const nome = match[1].trim();
-                const preco = parseFloat(match[2].replace(',', '.'));
+                const preco = parseFloat(match[2].replace(",", "."));
                 cardapios.push({
                   cardapio_nome: nome,
                   preco_total: Math.round(preco * 100), // converter para centavos
@@ -664,18 +687,36 @@ export default function PedidosModule() {
 
         // Processar itens extras consolidados
         const itensExtras: any[] = [];
-        const extrasNomes = String(r.itens_extras_nome || '').split(';').map(n => n.trim()).filter(n => n);
-        const extrasCategorias = String(r.itens_extras_categoria || '').split(';').map(c => c.trim()).filter(c => c);
-        const extrasQuantidades = String(r.itens_extras_quantidade || '').split(';').map(q => q.trim()).filter(q => q);
-        const extrasValores = String(r.itens_extras_valor_unitario || '').split(';').map(v => v.trim()).filter(v => v);
+        const extrasNomes = String(r.itens_extras_nome || "")
+          .split(";")
+          .map((n) => n.trim())
+          .filter((n) => n);
+        const extrasCategorias = String(r.itens_extras_categoria || "")
+          .split(";")
+          .map((c) => c.trim())
+          .filter((c) => c);
+        const extrasQuantidades = String(r.itens_extras_quantidade || "")
+          .split(";")
+          .map((q) => q.trim())
+          .filter((q) => q);
+        const extrasValores = String(r.itens_extras_valor_unitario || "")
+          .split(";")
+          .map((v) => v.trim())
+          .filter((v) => v);
 
-        const maxExtras = Math.max(extrasNomes.length, extrasCategorias.length, extrasQuantidades.length, extrasValores.length);
+        const maxExtras = Math.max(
+          extrasNomes.length,
+          extrasCategorias.length,
+          extrasQuantidades.length,
+          extrasValores.length,
+        );
         for (let i = 0; i < maxExtras; i++) {
-          const nome = extrasNomes[i] || '';
-          const categoria = extrasCategorias[i] || '';
+          const nome = extrasNomes[i] || "";
+          const categoria = extrasCategorias[i] || "";
           const quantidade = parseInt(extrasQuantidades[i]) || 1;
-          const valorStr = extrasValores[i] || '0';
-          const valor = parseFloat(valorStr.replace('R$', '').replace(',', '.')) || 0;
+          const valorStr = extrasValores[i] || "0";
+          const valor =
+            parseFloat(valorStr.replace("R$", "").replace(",", ".")) || 0;
 
           if (nome) {
             itensExtras.push({
@@ -717,7 +758,7 @@ export default function PedidosModule() {
       } catch (e) {
         // Fallback local - salvar pelo menos os dados básicos dos pedidos
         const existing = readLocalPedidos();
-        const pedidosBasicos = valid.map(v => {
+        const pedidosBasicos = valid.map((v) => {
           const { cardapios, itens_extras, ...pedidoBasico } = v;
           return pedidoBasico;
         });
@@ -951,9 +992,18 @@ export default function PedidosModule() {
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "cardapios", label: "Cardápios (Nome (R$ Preço); ...)" },
-          { key: "itens_extras_nome", label: "Itens Extras Nome (separados por ;)" },
-          { key: "itens_extras_categoria", label: "Itens Extras Categoria (separados por ;)" },
-          { key: "itens_extras_quantidade", label: "Itens Extras Quantidade (separados por ;)" },
+          {
+            key: "itens_extras_nome",
+            label: "Itens Extras Nome (separados por ;)",
+          },
+          {
+            key: "itens_extras_categoria",
+            label: "Itens Extras Categoria (separados por ;)",
+          },
+          {
+            key: "itens_extras_quantidade",
+            label: "Itens Extras Quantidade (separados por ;)",
+          },
           {
             key: "itens_extras_valor_unitario",
             label: "Itens Extras Valor Unitario (separados por ;)",
@@ -983,8 +1033,8 @@ export default function PedidosModule() {
             // Cardápios consolidados
             cardápios: "cardapios",
             cardapios: "cardapios",
-            "cardápio": "cardapios",
-            "cardapio": "cardapios",
+            cardápio: "cardapios",
+            cardapio: "cardapios",
             // Campos antigos individuais ainda suportados
             "cardápio nome": "cardapio_nome",
             "cardapio nome": "cardapio_nome",

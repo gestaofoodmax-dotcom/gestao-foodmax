@@ -579,7 +579,10 @@ export const importPedidosFull: RequestHandler = async (req, res) => {
 
         // Processar cardápios consolidados
         if (record.cardapios && Array.isArray(record.cardapios)) {
-          const cardapioEntries: { cardapio_id: number; preco_total: number }[] = [];
+          const cardapioEntries: {
+            cardapio_id: number;
+            preco_total: number;
+          }[] = [];
 
           for (const cardapio of record.cardapios) {
             let cardapio_id: number | null = null;
