@@ -1051,8 +1051,36 @@ export default function PedidosModule() {
           },
         ]}
         mapHeader={(h) => {
-          const n = h.trim().toLowerCase();
-          const map: Record<string, string> = {
+          const original = h.trim();
+          const n = original.toLowerCase();
+
+          // Exact mapping for CSV headers (case-sensitive match first)
+          const exactMap: Record<string, string> = {
+            // Exact CSV headers from your file
+            "Estabelecimento": "estabelecimento_nome",
+            "Cliente": "cliente_nome",
+            "Código": "codigo",
+            "Tipo de Pedido": "tipo_pedido",
+            "Valor Total": "valor_total",
+            "Status": "status",
+            "Data/Hora Finalizado": "data_hora_finalizado",
+            "Observação": "observacao",
+            "Data Cadastro": "data_cadastro",
+            "Data Atualização": "data_atualizacao",
+            "Cardápios": "cardapios",
+            "Itens Extras Nome": "itens_extras_nome",
+            "Itens Extras Categoria": "itens_extras_categoria",
+            "Itens Extras Quantidade": "itens_extras_quantidade",
+            "Itens Extras Valor Unitario": "itens_extras_valor_unitario",
+          };
+
+          // Check exact match first
+          if (exactMap[original]) {
+            return exactMap[original];
+          }
+
+          // Fallback to lowercase mapping
+          const lowerMap: Record<string, string> = {
             estabelecimento: "estabelecimento_nome",
             "estabelecimento nome": "estabelecimento_nome",
             cliente: "cliente_nome",
@@ -1071,19 +1099,18 @@ export default function PedidosModule() {
             "data cadastro": "data_cadastro",
             "data atualização": "data_atualizacao",
             "data atualizacao": "data_atualizacao",
-            // Cardápios consolidados
             cardápios: "cardapios",
             cardapios: "cardapios",
             cardápio: "cardapios",
             cardapio: "cardapios",
-            // Itens extras consolidados - exact match with CSV headers
             "itens extras nome": "itens_extras_nome",
             "itens extras categoria": "itens_extras_categoria",
             "itens extras quantidade": "itens_extras_quantidade",
             "itens extras valor unitario": "itens_extras_valor_unitario",
             "itens extras valor unitário": "itens_extras_valor_unitario",
           };
-          return map[n] || n.replace(/\s+/g, "_");
+
+          return lowerMap[n] || n.replace(/\s+/g, "_");
         }}
         validateRecord={(r) => {
           const errors: string[] = [];
