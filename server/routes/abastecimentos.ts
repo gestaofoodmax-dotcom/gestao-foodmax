@@ -2,7 +2,12 @@ import { RequestHandler } from "express";
 import { z } from "zod";
 import { getSupabaseServiceClient } from "../supabase";
 
-const StatusAbastecimentoEnum = z.enum(["Pendente", "Enviado", "Recebido", "Cancelado"]);
+const StatusAbastecimentoEnum = z.enum([
+  "Pendente",
+  "Enviado",
+  "Recebido",
+  "Cancelado",
+]);
 
 const AbastecimentoSchema = z.object({
   estabelecimento_id: z.number().int().positive(),
@@ -15,12 +20,14 @@ const AbastecimentoSchema = z.object({
   observacao: z.string().nullable().optional(),
   status: StatusAbastecimentoEnum.optional().default("Pendente"),
   email_enviado: z.boolean().optional().default(false),
-  itens: z.array(
-    z.object({
-      item_id: z.number().int().positive(),
-      quantidade: z.number().int().positive(),
-    }),
-  ).min(1),
+  itens: z
+    .array(
+      z.object({
+        item_id: z.number().int().positive(),
+        quantidade: z.number().int().positive(),
+      }),
+    )
+    .min(1),
   endereco: z.object({
     cep: z.string().nullable().optional(),
     endereco: z.string().min(1),
@@ -59,7 +66,10 @@ export const listAbastecimentos: RequestHandler = async (req, res) => {
       query = query.or(`observacao.ilike.%${search}%`);
     }
 
-    if (status && ["Pendente", "Enviado", "Recebido", "Cancelado"].includes(status)) {
+    if (
+      status &&
+      ["Pendente", "Enviado", "Recebido", "Cancelado"].includes(status)
+    ) {
       query = query.eq("status", status);
     }
 
@@ -95,11 +105,11 @@ export const listAbastecimentos: RequestHandler = async (req, res) => {
         .eq("abastecimento_id", a.id);
       qtde_itens = itemsCount || 0;
 
-      result.push({ 
-        ...a, 
-        estabelecimento_nome, 
+      result.push({
+        ...a,
+        estabelecimento_nome,
         categoria_nome,
-        qtde_itens
+        qtde_itens,
       });
     }
 
@@ -150,7 +160,10 @@ export const getAbastecimento: RequestHandler = async (req, res) => {
 
     // Load fornecedores names
     let fornecedores_nomes: string[] = [];
-    if (Array.isArray(abastecimento.fornecedores_ids) && abastecimento.fornecedores_ids.length > 0) {
+    if (
+      Array.isArray(abastecimento.fornecedores_ids) &&
+      abastecimento.fornecedores_ids.length > 0
+    ) {
       const { data: fornecedores } = await supabase
         .from("fornecedores")
         .select("id, nome")
@@ -216,7 +229,10 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
     const parsed = AbastecimentoSchema.parse(req.body);
 
     // Calculate quantidade_total
-    const quantidade_total = parsed.itens.reduce((sum, item) => sum + item.quantidade, 0);
+    const quantidade_total = parsed.itens.reduce(
+      (sum, item) => sum + item.quantidade,
+      0,
+    );
 
     const { data: abastecimento, error } = await supabase
       .from("abastecimentos")
@@ -293,10 +309,13 @@ export const updateAbastecimento: RequestHandler = async (req, res) => {
       return res.status(404).json({ error: "Abastecimento não encontrado" });
 
     const { itens: _i, endereco: _e, ...abastecimentoUpdate } = parsed as any;
-    
+
     // Calculate quantidade_total if itens are provided
     if (parsed.itens) {
-      abastecimentoUpdate.quantidade_total = parsed.itens.reduce((sum, item) => sum + item.quantidade, 0);
+      abastecimentoUpdate.quantidade_total = parsed.itens.reduce(
+        (sum, item) => sum + item.quantidade,
+        0,
+      );
     }
 
     const { data: abastecimento, error } = await supabase
@@ -309,22 +328,26 @@ export const updateAbastecimento: RequestHandler = async (req, res) => {
     if (error) throw error;
 
     if (parsed.itens) {
-      await supabase.from("abastecimentos_itens").delete().eq("abastecimento_id", id);
+      await supabase
+        .from("abastecimentos_itens")
+        .delete()
+        .eq("abastecimento_id", id);
       if (parsed.itens.length > 0) {
-        await supabase
-          .from("abastecimentos_itens")
-          .insert(
-            parsed.itens.map((item) => ({ 
-              abastecimento_id: parseInt(id), 
-              item_id: item.item_id,
-              quantidade: item.quantidade,
-            })),
-          );
+        await supabase.from("abastecimentos_itens").insert(
+          parsed.itens.map((item) => ({
+            abastecimento_id: parseInt(id),
+            item_id: item.item_id,
+            quantidade: item.quantidade,
+          })),
+        );
       }
     }
 
     if (parsed.endereco) {
-      await supabase.from("abastecimentos_enderecos").delete().eq("abastecimento_id", id);
+      await supabase
+        .from("abastecimentos_enderecos")
+        .delete()
+        .eq("abastecimento_id", id);
       await supabase.from("abastecimentos_enderecos").insert({
         abastecimento_id: parseInt(id),
         cep: parsed.endereco.cep || null,
@@ -435,7 +458,7 @@ export const enviarEmail: RequestHandler = async (req, res) => {
     const userId = getUserId(req);
     if (!userId)
       return res.status(401).json({ error: "Usuário não autenticado" });
-    
+
     const supabase = getSupabaseServiceClient();
     const { id } = req.params;
 
@@ -447,7 +470,9 @@ export const enviarEmail: RequestHandler = async (req, res) => {
       .single();
 
     if (!user || (user.role === "user" && !user.data_pagamento)) {
-      return res.status(403).json({ error: "Essa ação só funciona no plano pago" });
+      return res
+        .status(403)
+        .json({ error: "Essa ação só funciona no plano pago" });
     }
 
     const { destinatarios, assunto, mensagem } = req.body;

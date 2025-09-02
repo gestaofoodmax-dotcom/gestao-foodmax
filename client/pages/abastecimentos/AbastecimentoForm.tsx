@@ -78,7 +78,9 @@ const schema = z.object({
   estabelecimento_id: z.number({
     required_error: "Estabelecimento é obrigatório",
   }),
-  fornecedores_ids: z.array(z.number()).min(1, "Pelo menos um fornecedor é obrigatório"),
+  fornecedores_ids: z
+    .array(z.number())
+    .min(1, "Pelo menos um fornecedor é obrigatório"),
   categoria_id: z.number({
     required_error: "Categoria é obrigatória",
   }),
@@ -87,7 +89,9 @@ const schema = z.object({
   email: z.string().email("Email inválido").nullable().optional(),
   data_hora_recebido: z.string().nullable().optional(),
   observacao: z.string().optional(),
-  status: z.enum(["Pendente", "Enviado", "Recebido", "Cancelado"]).default("Pendente"),
+  status: z
+    .enum(["Pendente", "Enviado", "Recebido", "Cancelado"])
+    .default("Pendente"),
   email_enviado: z.boolean().default(false),
   cep: z.string().nullable().optional(),
   endereco: z.string().min(1, "Endereço é obrigatório"),
@@ -113,13 +117,19 @@ export default function AbastecimentoForm({
 }) {
   const { makeRequest } = useAuthenticatedRequest();
 
-  const [estabelecimentos, setEstabelecimentos] = useState<Estabelecimento[]>([]);
+  const [estabelecimentos, setEstabelecimentos] = useState<Estabelecimento[]>(
+    [],
+  );
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [categorias, setCategorias] = useState<ItemCategoria[]>([]);
   const [itens, setItens] = useState<Item[]>([]);
 
-  const [selectedFornecedoresIds, setSelectedFornecedoresIds] = useState<number[]>([]);
-  const [selectedCategoriaId, setSelectedCategoriaId] = useState<number | null>(null);
+  const [selectedFornecedoresIds, setSelectedFornecedoresIds] = useState<
+    number[]
+  >([]);
+  const [selectedCategoriaId, setSelectedCategoriaId] = useState<number | null>(
+    null,
+  );
   const [selectedItens, setSelectedItens] = useState<
     {
       item_id: number;
@@ -142,7 +152,7 @@ export default function AbastecimentoForm({
     reset,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { 
+    defaultValues: {
       status: "Pendente" as StatusAbastecimento,
       ddi: "+55",
       pais: "Brasil",
@@ -183,7 +193,9 @@ export default function AbastecimentoForm({
 
   const loadData = async () => {
     try {
-      const estResp = await makeRequest("/api/estabelecimentos?page=1&limit=1000");
+      const estResp = await makeRequest(
+        "/api/estabelecimentos?page=1&limit=1000",
+      );
       if (estResp?.data) {
         const ordered = estResp.data.sort(
           (a: Estabelecimento, b: Estabelecimento) =>
@@ -197,7 +209,7 @@ export default function AbastecimentoForm({
           await loadEstabelecimentoContacts(lastActive.id);
         }
       }
-      
+
       const fornResp = await makeRequest("/api/fornecedores?page=1&limit=1000");
       if (fornResp?.data) {
         const ordered = fornResp.data.sort((a: Fornecedor, b: Fornecedor) =>
@@ -205,15 +217,17 @@ export default function AbastecimentoForm({
         );
         setFornecedores(ordered);
       }
-      
-      const catResp = await makeRequest("/api/itens-categorias?page=1&limit=1000");
+
+      const catResp = await makeRequest(
+        "/api/itens-categorias?page=1&limit=1000",
+      );
       if (catResp?.data)
         setCategorias(
           catResp.data.sort((a: ItemCategoria, b: ItemCategoria) =>
             a.nome.localeCompare(b.nome),
           ),
         );
-        
+
       const itensResp = await makeRequest("/api/itens?page=1&limit=1000");
       if (itensResp?.data)
         setItens(
@@ -226,7 +240,9 @@ export default function AbastecimentoForm({
 
   const loadEstabelecimentoContacts = async (estabelecimentoId: number) => {
     try {
-      const { data: est } = await makeRequest(`/api/estabelecimentos/${estabelecimentoId}`);
+      const { data: est } = await makeRequest(
+        `/api/estabelecimentos/${estabelecimentoId}`,
+      );
       if (est?.contato) {
         setValue("telefone", est.contato.telefone || "");
         setValue("ddi", est.contato.ddi || "+55");
@@ -240,15 +256,23 @@ export default function AbastecimentoForm({
   };
 
   const handleEstabelecimentoChange = async (newEstId: number) => {
-    if (watchedValues.estabelecimento_id && watchedValues.estabelecimento_id !== newEstId) {
+    if (
+      watchedValues.estabelecimento_id &&
+      watchedValues.estabelecimento_id !== newEstId
+    ) {
       // Show confirmation alert
       setShowEstabelecimentoAlert({
         open: true,
-        message: "Alterar o estabelecimento irá sobrescrever os dados de contato. Deseja continuar?",
+        message:
+          "Alterar o estabelecimento irá sobrescrever os dados de contato. Deseja continuar?",
         onConfirm: async () => {
           setValue("estabelecimento_id", newEstId);
           await loadEstabelecimentoContacts(newEstId);
-          setShowEstabelecimentoAlert({ open: false, message: "", onConfirm: () => {} });
+          setShowEstabelecimentoAlert({
+            open: false,
+            message: "",
+            onConfirm: () => {},
+          });
         },
       });
     } else {
@@ -282,7 +306,9 @@ export default function AbastecimentoForm({
       // Load detailed relations for edit
       (async () => {
         try {
-          const det = await makeRequest(`/api/abastecimentos/${abastecimento.id}`);
+          const det = await makeRequest(
+            `/api/abastecimentos/${abastecimento.id}`,
+          );
           if (det?.itens) {
             const itensData = det.itens.map((i: any) => ({
               item_id: i.item_id,
@@ -323,7 +349,7 @@ export default function AbastecimentoForm({
 
     if (!selectedCategoriaId) {
       toast({
-        title: "Erro de validação", 
+        title: "Erro de validação",
         description: "Selecione uma Categoria",
         variant: "destructive",
       });
@@ -363,10 +389,10 @@ export default function AbastecimentoForm({
     onSave(payload);
   };
 
-  const hasPrerequisites = 
-    estabelecimentos.length > 0 && 
-    fornecedores.length > 0 && 
-    categorias.length > 0 && 
+  const hasPrerequisites =
+    estabelecimentos.length > 0 &&
+    fornecedores.length > 0 &&
+    categorias.length > 0 &&
     itens.length > 0;
 
   return (
@@ -389,12 +415,14 @@ export default function AbastecimentoForm({
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-yellow-600" />
                   <div className="text-sm text-yellow-800">
-                    Antes de cadastrar, é necessário ter pelo menos um Estabelecimento.{" "}
+                    Antes de cadastrar, é necessário ter pelo menos um
+                    Estabelecimento.{" "}
                     <button
                       onClick={() => window.open("/estabelecimentos", "_blank")}
                       className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
                     >
-                      <LinkIcon className="w-3 h-3" /> (ir para módulo Estabelecimentos)
+                      <LinkIcon className="w-3 h-3" /> (ir para módulo
+                      Estabelecimentos)
                     </button>
                   </div>
                 </div>
@@ -405,12 +433,14 @@ export default function AbastecimentoForm({
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-yellow-600" />
                   <div className="text-sm text-yellow-800">
-                    Antes de cadastrar, é necessário ter pelo menos um Fornecedor.{" "}
+                    Antes de cadastrar, é necessário ter pelo menos um
+                    Fornecedor.{" "}
                     <button
                       onClick={() => window.open("/fornecedores", "_blank")}
                       className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
                     >
-                      <LinkIcon className="w-3 h-3" /> (ir para módulo Fornecedores)
+                      <LinkIcon className="w-3 h-3" /> (ir para módulo
+                      Fornecedores)
                     </button>
                   </div>
                 </div>
@@ -421,7 +451,8 @@ export default function AbastecimentoForm({
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-5 h-5 text-yellow-600" />
                   <div className="text-sm text-yellow-800">
-                    Antes de cadastrar, é necessário ter pelo menos uma Categoria.{" "}
+                    Antes de cadastrar, é necessário ter pelo menos uma
+                    Categoria.{" "}
                     <button
                       onClick={() => window.open("/itens", "_blank")}
                       className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
@@ -456,7 +487,8 @@ export default function AbastecimentoForm({
           <div className="flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-blue-600" />
             <div className="text-sm text-blue-800">
-              <strong>Atenção:</strong> Cada compra só é possível cadastrar para 1 categoria.
+              <strong>Atenção:</strong> Cada compra só é possível cadastrar para
+              1 categoria.
             </div>
           </div>
         </div>
@@ -489,7 +521,9 @@ export default function AbastecimentoForm({
                   <PopoverContent className="w-full p-0">
                     <Command>
                       <CommandInput placeholder="Filtrar estabelecimento..." />
-                      <CommandEmpty>Nenhum estabelecimento encontrado.</CommandEmpty>
+                      <CommandEmpty>
+                        Nenhum estabelecimento encontrado.
+                      </CommandEmpty>
                       <CommandList>
                         <CommandGroup>
                           {estabelecimentos.map((e) => (
@@ -592,7 +626,9 @@ export default function AbastecimentoForm({
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <CupSoda className="w-5 h-5 text-purple-600" />
-              <h3 className="font-semibold text-purple-600">Categoria e Itens</h3>
+              <h3 className="font-semibold text-purple-600">
+                Categoria e Itens
+              </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -605,7 +641,8 @@ export default function AbastecimentoForm({
                       className="w-full justify-between foodmax-input"
                     >
                       {selectedCategoriaId
-                        ? categorias.find((c) => c.id === selectedCategoriaId)?.nome
+                        ? categorias.find((c) => c.id === selectedCategoriaId)
+                            ?.nome
                         : "Selecione Categoria"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -728,11 +765,15 @@ export default function AbastecimentoForm({
               <div className="border-t pt-4">
                 <div className="flex items-center gap-2 mb-3">
                   <ShoppingBag className="w-5 h-5 text-orange-600" />
-                  <h4 className="font-semibold text-orange-600">Itens do Abastecimento</h4>
+                  <h4 className="font-semibold text-orange-600">
+                    Itens do Abastecimento
+                  </h4>
                 </div>
                 <div className="space-y-2">
                   {selectedItens.map((selectedItem) => {
-                    const item = itens.find((i) => i.id === selectedItem.item_id);
+                    const item = itens.find(
+                      (i) => i.id === selectedItem.item_id,
+                    );
                     if (!item) return null;
                     return (
                       <div
@@ -774,7 +815,9 @@ export default function AbastecimentoForm({
                             size="sm"
                             onClick={() =>
                               setSelectedItens((prev) =>
-                                prev.filter((p) => p.item_id !== selectedItem.item_id),
+                                prev.filter(
+                                  (p) => p.item_id !== selectedItem.item_id,
+                                ),
                               )
                             }
                             className="h-8 w-8 p-0 border-red-200 hover:bg-red-50"
@@ -987,7 +1030,7 @@ export default function AbastecimentoForm({
 
       <AlertDialog
         open={showEstabelecimentoAlert.open}
-        onOpenChange={(open) => 
+        onOpenChange={(open) =>
           setShowEstabelecimentoAlert((s) => ({ ...s, open }))
         }
       >
@@ -1000,8 +1043,12 @@ export default function AbastecimentoForm({
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel
-              onClick={() => 
-                setShowEstabelecimentoAlert({ open: false, message: "", onConfirm: () => {} })
+              onClick={() =>
+                setShowEstabelecimentoAlert({
+                  open: false,
+                  message: "",
+                  onConfirm: () => {},
+                })
               }
             >
               Cancelar

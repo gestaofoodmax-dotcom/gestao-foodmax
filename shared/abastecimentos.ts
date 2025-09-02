@@ -1,4 +1,8 @@
-export type StatusAbastecimento = "Pendente" | "Enviado" | "Recebido" | "Cancelado";
+export type StatusAbastecimento =
+  | "Pendente"
+  | "Enviado"
+  | "Recebido"
+  | "Cancelado";
 
 export interface Abastecimento {
   id: number;
@@ -74,10 +78,11 @@ export interface CreateAbastecimentoRequest {
   };
 }
 
-export interface UpdateAbastecimentoRequest extends Partial<CreateAbastecimentoRequest> {}
+export interface UpdateAbastecimentoRequest
+  extends Partial<CreateAbastecimentoRequest> {}
 
 export interface AbastecimentosListResponse {
-  data: (Abastecimento & { 
+  data: (Abastecimento & {
     estabelecimento_nome?: string;
     categoria_nome?: string;
     qtde_itens?: number;
@@ -92,7 +97,7 @@ export interface AbastecimentosListResponse {
 
 export const STATUS_ABASTECIMENTO: StatusAbastecimento[] = [
   "Pendente",
-  "Enviado", 
+  "Enviado",
   "Recebido",
   "Cancelado",
 ];

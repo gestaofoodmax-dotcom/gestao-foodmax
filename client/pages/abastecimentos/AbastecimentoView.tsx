@@ -204,28 +204,37 @@ export default function AbastecimentoView({
             </div>
 
             {/* Fornecedores */}
-            {detalhe?.fornecedores_nomes && detalhe.fornecedores_nomes.length > 0 && (
-              <div className="border rounded-lg p-4">
-                <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <Truck className="w-5 h-5 text-green-600" />
-                  <span className="text-green-600">Fornecedores</span>
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {detalhe.fornecedores_nomes.map((nome: string, index: number) => (
-                    <Badge key={index} variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      {nome}
-                    </Badge>
-                  ))}
+            {detalhe?.fornecedores_nomes &&
+              detalhe.fornecedores_nomes.length > 0 && (
+                <div className="border rounded-lg p-4">
+                  <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+                    <Truck className="w-5 h-5 text-green-600" />
+                    <span className="text-green-600">Fornecedores</span>
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {detalhe.fornecedores_nomes.map(
+                      (nome: string, index: number) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="bg-green-50 text-green-700 border-green-200"
+                        >
+                          {nome}
+                        </Badge>
+                      ),
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Itens do Abastecimento */}
             {detalhe?.itens && detalhe.itens.length > 0 && (
               <div className="border rounded-lg p-4">
                 <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
                   <CupSoda className="w-5 h-5 text-purple-600" />
-                  <span className="text-purple-600">Itens do Abastecimento</span>
+                  <span className="text-purple-600">
+                    Itens do Abastecimento
+                  </span>
                 </h3>
                 <div className="space-y-2">
                   {detalhe.itens.map((item: any) => (
@@ -264,10 +273,7 @@ export default function AbastecimentoView({
                   label="Telefone"
                   value={`${detalhe.ddi || ""} ${detalhe.telefone || ""}`}
                 />
-                <DataField
-                  label="Email"
-                  value={detalhe.email || "-"}
-                />
+                <DataField label="Email" value={detalhe.email || "-"} />
                 <DataField
                   label="Email Enviado"
                   value={detalhe.email_enviado ? "Sim" : "Não"}
@@ -283,10 +289,7 @@ export default function AbastecimentoView({
                   <span className="text-red-600">Endereço</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  <DataField
-                    label="CEP"
-                    value={detalhe.endereco.cep || "-"}
-                  />
+                  <DataField label="CEP" value={detalhe.endereco.cep || "-"} />
                   <DataField
                     label="Endereço"
                     value={detalhe.endereco.endereco || "-"}
@@ -295,10 +298,7 @@ export default function AbastecimentoView({
                     label="Cidade"
                     value={detalhe.endereco.cidade || "-"}
                   />
-                  <DataField
-                    label="UF"
-                    value={detalhe.endereco.uf || "-"}
-                  />
+                  <DataField label="UF" value={detalhe.endereco.uf || "-"} />
                   <DataField
                     label="País"
                     value={detalhe.endereco.pais || "-"}
@@ -345,10 +345,7 @@ export default function AbastecimentoView({
                   label="Data/Hora Recebido"
                   value={formatDateTimeBR(detalhe.data_hora_recebido)}
                 />
-                <DataField 
-                  label="Status" 
-                  value={detalhe.status} 
-                />
+                <DataField label="Status" value={detalhe.status} />
               </div>
             </div>
           </div>

@@ -59,7 +59,9 @@ export default function AbastecimentosModule() {
     "Recebido",
     "Cancelado",
   ];
-  const [activeTab, setActiveTab] = useState<StatusAbastecimento | "Todos">("Todos");
+  const [activeTab, setActiveTab] = useState<StatusAbastecimento | "Todos">(
+    "Todos",
+  );
 
   type TabState = { search: string; page: number };
   const [tabState, setTabState] = useState<Record<string, TabState>>({
@@ -99,9 +101,9 @@ export default function AbastecimentosModule() {
   const [estabelecimentosMap, setEstabelecimentosMap] = useState<
     Map<number, string>
   >(new Map());
-  const [categoriasMap, setCategoriasMap] = useState<
-    Map<number, string>
-  >(new Map());
+  const [categoriasMap, setCategoriasMap] = useState<Map<number, string>>(
+    new Map(),
+  );
   const [mapLoaded, setMapLoaded] = useState(false);
 
   const LOCAL_ABASTECIMENTOS = "fm_abastecimentos";
@@ -245,7 +247,12 @@ export default function AbastecimentosModule() {
   );
 
   const enrichWithNomes = (list: Abastecimento[]) => {
-    if (!estabelecimentosMap || estabelecimentosMap.size === 0 || !categoriasMap || categoriasMap.size === 0)
+    if (
+      !estabelecimentosMap ||
+      estabelecimentosMap.size === 0 ||
+      !categoriasMap ||
+      categoriasMap.size === 0
+    )
       return list as any;
     return list.map((a: any) => ({
       ...a,
@@ -264,7 +271,7 @@ export default function AbastecimentosModule() {
     try {
       const [estResp, catResp] = await Promise.all([
         makeRequest(`/api/estabelecimentos?page=1&limit=1000`),
-        makeRequest(`/api/itens-categorias?page=1&limit=1000`)
+        makeRequest(`/api/itens-categorias?page=1&limit=1000`),
       ]);
 
       const estMap = new Map<number, string>();
@@ -345,7 +352,10 @@ export default function AbastecimentosModule() {
           .filter(
             (a) =>
               !currentSearch ||
-              (a.observacao && a.observacao.toLowerCase().includes(currentSearch.toLowerCase())),
+              (a.observacao &&
+                a.observacao
+                  .toLowerCase()
+                  .includes(currentSearch.toLowerCase())),
           );
         setAbastecimentos(enrichWithNomes(filtered) as any);
       }
@@ -353,7 +363,14 @@ export default function AbastecimentosModule() {
       setLoading(false);
       setInitialLoadComplete(true);
     }
-  }, [currentPage, currentSearch, activeTab, makeRequest, estabelecimentosMap, categoriasMap]);
+  }, [
+    currentPage,
+    currentSearch,
+    activeTab,
+    makeRequest,
+    estabelecimentosMap,
+    categoriasMap,
+  ]);
 
   useEffect(() => {
     try {
@@ -380,7 +397,8 @@ export default function AbastecimentosModule() {
 
   const [showForm, setShowForm] = useState(false);
   const [showView, setShowView] = useState(false);
-  const [currentAbastecimento, setCurrentAbastecimento] = useState<Abastecimento | null>(null);
+  const [currentAbastecimento, setCurrentAbastecimento] =
+    useState<Abastecimento | null>(null);
   const [formLoading, setFormLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showBulkDelete, setShowBulkDelete] = useState(false);
@@ -476,7 +494,10 @@ export default function AbastecimentosModule() {
           data_atualizacao: now,
         } as any;
         list.unshift(novo);
-        toast({ title: "Abastecimento criado", description: "Abastecimento criado" });
+        toast({
+          title: "Abastecimento criado",
+          description: "Abastecimento criado",
+        });
       }
       writeLocalAbastecimentos(list);
       setAbastecimentos(enrichWithNomes(list) as any);
@@ -489,7 +510,9 @@ export default function AbastecimentosModule() {
 
   const handleMarcarRecebido = async (a: Abastecimento) => {
     try {
-      await makeRequest(`/api/abastecimentos/${a.id}/recebido`, { method: "PATCH" });
+      await makeRequest(`/api/abastecimentos/${a.id}/recebido`, {
+        method: "PATCH",
+      });
       toast({
         title: "Abastecimento recebido",
         description: "Status alterado para Recebido",
@@ -515,7 +538,7 @@ export default function AbastecimentosModule() {
   const handleEnviarEmail = async (a: Abastecimento) => {
     const userRole = getUserRole();
     const hasPaymentPlan = hasPayment();
-    
+
     if (userRole === "user" && !hasPaymentPlan) {
       toast({
         title: "Ação bloqueada",
@@ -569,7 +592,9 @@ export default function AbastecimentosModule() {
       await refreshAfterMutation();
       setShowDeleteAlert(false);
     } catch (error: any) {
-      const list = readLocalAbastecimentos().filter((e) => e.id !== currentAbastecimento.id);
+      const list = readLocalAbastecimentos().filter(
+        (e) => e.id !== currentAbastecimento.id,
+      );
       writeLocalAbastecimentos(list);
       await refreshAfterMutation();
       toast({
@@ -618,7 +643,9 @@ export default function AbastecimentosModule() {
           telefone: abastecimento.telefone || "",
           ddi: abastecimento.ddi || "",
           email: abastecimento.email || "",
-          data_hora_recebido: formatDateTimeBR(abastecimento.data_hora_recebido),
+          data_hora_recebido: formatDateTimeBR(
+            abastecimento.data_hora_recebido,
+          ),
           observacao: abastecimento.observacao || "",
           status: abastecimento.status,
           email_enviado: abastecimento.email_enviado ? "Sim" : "Não",
@@ -767,7 +794,8 @@ export default function AbastecimentosModule() {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      const data = await getAbastecimentosWithRelationsForExport();
+                      const data =
+                        await getAbastecimentosWithRelationsForExport();
                       setExportData(data);
                       setShowExport(true);
                     }}
@@ -796,7 +824,9 @@ export default function AbastecimentosModule() {
               searchTerm={currentSearch}
               currentPage={currentPage}
               pageSize={pageSize}
-              totalRecords={totalCounts[activeTab] || filteredAbastecimentos.length}
+              totalRecords={
+                totalCounts[activeTab] || filteredAbastecimentos.length
+              }
               onPageChange={handlePageChange}
               showActions={false}
             />
