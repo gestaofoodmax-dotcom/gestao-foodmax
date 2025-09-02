@@ -483,6 +483,103 @@ export default function PedidosModule() {
     }
   };
 
+  const getPedidosWithRelationsForExport = async () => {
+    const all = await getAllPedidosForExport();
+    const pedidosToExport =
+      selectedIds.length > 0
+        ? all.filter((p: any) => selectedIds.includes(p.id))
+        : all;
+
+    const exportRows: any[] = [];
+
+    for (const p of pedidosToExport) {
+      try {
+        const det = await makeRequest(`/api/pedidos/${p.id}`);
+        const pedido = det || p;
+        const base = {
+          estabelecimento_nome: pedido.estabelecimento_nome || p.estabelecimento_nome || "",
+          cliente_nome: pedido.cliente_nome || "",
+          codigo: pedido.codigo,
+          tipo_pedido: pedido.tipo_pedido,
+          valor_total: ((pedido.valor_total || 0) / 100).toFixed(2),
+          status: pedido.status,
+          data_hora_finalizado: pedido.data_hora_finalizado || "",
+          data_cadastro: pedido.data_cadastro || "",
+          data_atualizacao: pedido.data_atualizacao || "",
+          observacao: pedido.observacao || "",
+        };
+
+        const cardapios: any[] = Array.isArray(pedido.cardapios)
+          ? pedido.cardapios
+          : [];
+        const extras: any[] = Array.isArray(pedido.itens_extras)
+          ? pedido.itens_extras
+          : [];
+
+        if (cardapios.length > 0) {
+          for (const c of cardapios) {
+            exportRows.push({
+              ...base,
+              cardapio_nome: c.cardapio_nome || "",
+              cardapio_preco_total: ((c.preco_total || 0) / 100).toFixed(2),
+              extra_item_nome: "",
+              extra_item_categoria: "",
+              extra_item_quantidade: "",
+              extra_item_valor_unitario: "",
+            });
+          }
+        }
+
+        if (extras.length > 0) {
+          for (const e of extras) {
+            exportRows.push({
+              ...base,
+              cardapio_nome: "",
+              cardapio_preco_total: "",
+              extra_item_nome: e.item_nome || "",
+              extra_item_categoria: e.categoria_nome || "",
+              extra_item_quantidade: e.quantidade ?? "",
+              extra_item_valor_unitario: ((e.valor_unitario || 0) / 100).toFixed(2),
+            });
+          }
+        }
+
+        if (cardapios.length === 0 && extras.length === 0) {
+          exportRows.push({
+            ...base,
+            cardapio_nome: "",
+            cardapio_preco_total: "",
+            extra_item_nome: "",
+            extra_item_categoria: "",
+            extra_item_quantidade: "",
+            extra_item_valor_unitario: "",
+          });
+        }
+      } catch {
+        exportRows.push({
+          estabelecimento_nome: p.estabelecimento_nome || "",
+          cliente_nome: "",
+          codigo: p.codigo,
+          tipo_pedido: p.tipo_pedido,
+          valor_total: ((p.valor_total || 0) / 100).toFixed(2),
+          status: p.status,
+          data_hora_finalizado: p.data_hora_finalizado || "",
+          data_cadastro: p.data_cadastro || "",
+          data_atualizacao: p.data_atualizacao || "",
+          observacao: p.observacao || "",
+          cardapio_nome: "",
+          cardapio_preco_total: "",
+          extra_item_nome: "",
+          extra_item_categoria: "",
+          extra_item_quantidade: "",
+          extra_item_valor_unitario: "",
+        });
+      }
+    }
+
+    return exportRows;
+  };
+
   const handleImportPedidos = async (records: any[]) => {
     try {
       const estMap = estabelecimentosMap;
@@ -668,7 +765,7 @@ export default function PedidosModule() {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      const data = await getAllPedidosForExport();
+                      const data = await getPedidosWithRelationsForExport();
                       setExportData(data);
                       setShowExport(true);
                     }}
@@ -737,13 +834,21 @@ export default function PedidosModule() {
         moduleName="Pedidos"
         columns={[
           { key: "estabelecimento_nome", label: "Estabelecimento" },
+          { key: "cliente_nome", label: "Cliente" },
           { key: "codigo", label: "Código" },
           { key: "tipo_pedido", label: "Tipo de Pedido" },
-          { key: "valor_total", label: "Valor Total (centavos)" },
+          { key: "valor_total", label: "Valor Total" },
           { key: "status", label: "Status" },
           { key: "data_hora_finalizado", label: "Data/Hora Finalizado" },
+          { key: "observacao", label: "Observação" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
+          { key: "cardapio_nome", label: "Cardápio" },
+          { key: "cardapio_preco_total", label: "Cardápio Preço Total" },
+          { key: "extra_item_nome", label: "Item Extra" },
+          { key: "extra_item_categoria", label: "Categoria do Extra" },
+          { key: "extra_item_quantidade", label: "Qtde Extra" },
+          { key: "extra_item_valor_unitario", label: "Valor Unitário Extra" },
         ]}
       />
 
@@ -754,24 +859,28 @@ export default function PedidosModule() {
         userRole={getUserRole()}
         hasPayment={hasPayment()}
         columns={[
-          {
-            key: "estabelecimento_nome",
-            label: "Estabelecimento",
-            required: true,
-          },
-          { key: "codigo", label: "Código", required: false },
+          { key: "estabelecimento_nome", label: "Estabelecimento", required: true },
+          { key: "cliente_nome", label: "Cliente" },
+          { key: "codigo", label: "Código" },
           { key: "tipo_pedido", label: "Tipo de Pedido", required: true },
           { key: "valor_total", label: "Valor Total" },
-          { key: "valor_total", label: "Valor Total (centavos)" },
           { key: "status", label: "Status" },
           { key: "data_hora_finalizado", label: "Data/Hora Finalizado" },
           { key: "observacao", label: "Observação" },
+          { key: "cardapio_nome", label: "Cardápio" },
+          { key: "cardapio_preco_total", label: "Cardápio Preço Total" },
+          { key: "extra_item_nome", label: "Item Extra" },
+          { key: "extra_item_categoria", label: "Categoria do Extra" },
+          { key: "extra_item_quantidade", label: "Qtde Extra" },
+          { key: "extra_item_valor_unitario", label: "Valor Unitário Extra" },
         ]}
         mapHeader={(h) => {
           const n = h.trim().toLowerCase();
           const map: Record<string, string> = {
             estabelecimento: "estabelecimento_nome",
             "estabelecimento nome": "estabelecimento_nome",
+            cliente: "cliente_nome",
+            "cliente nome": "cliente_nome",
             código: "codigo",
             codigo: "codigo",
             tipo: "tipo_pedido",
@@ -783,13 +892,29 @@ export default function PedidosModule() {
             observação: "observacao",
             observacao: "observacao",
             "data/hora finalizado": "data_hora_finalizado",
+            cardápio: "cardapio_nome",
+            cardapio: "cardapio_nome",
+            "cardápio nome": "cardapio_nome",
+            "cardapio nome": "cardapio_nome",
+            "cardápio preço total": "cardapio_preco_total",
+            "cardapio preco total": "cardapio_preco_total",
+            "item extra": "extra_item_nome",
+            item: "extra_item_nome",
+            "item nome": "extra_item_nome",
+            categoria: "extra_item_categoria",
+            "item categoria": "extra_item_categoria",
+            quantidade: "extra_item_quantidade",
+            qtde: "extra_item_quantidade",
+            "quantidade do item": "extra_item_quantidade",
+            "valor unitário": "extra_item_valor_unitario",
+            "valor unitario": "extra_item_valor_unitario",
+            "item valor unitario": "extra_item_valor_unitario",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
         validateRecord={(r) => {
           const errors: string[] = [];
-          if (!r.estabelecimento_nome && !r.estabelecimento_id)
-            errors.push("Estabelecimento é obrigatório");
+          if (!r.estabelecimento_nome) errors.push("Estabelecimento é obrigatório");
           const tipo = String(r.tipo_pedido || "").trim();
           if (!tipo) errors.push("Tipo de Pedido é obrigatório");
           else if (!TIPOS_PEDIDO.includes(tipo as any))
@@ -797,9 +922,28 @@ export default function PedidosModule() {
           const status = String(r.status || "Pendente").trim();
           if (status && !STATUS_PEDIDO.includes(status as any))
             errors.push(`Status inválido: '${status}'`);
+          // Validate quantities and values if provided
+          if (r.extra_item_quantidade && isNaN(Number(r.extra_item_quantidade)))
+            errors.push("Quantidade do item extra inválida");
           return errors;
         }}
-        onImport={handleImportPedidos}
+        onImport={async (records) => {
+          try {
+            const response = await makeRequest(`/api/pedidos/import`, {
+              method: "POST",
+              body: JSON.stringify({ records }),
+            });
+            await Promise.all([loadPedidos(), loadCounts()]);
+            return {
+              success: true,
+              imported: response?.imported ?? 0,
+              message: `${response?.imported ?? 0} pedido(s) importado(s) com sucesso`,
+            } as any;
+          } catch (e) {
+            const result = await handleImportPedidos(records);
+            return result as any;
+          }
+        }}
       />
 
       <DeleteAlert
