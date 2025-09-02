@@ -536,6 +536,29 @@ export default function PedidosModule() {
 
     const exportRows: any[] = [];
 
+    const formatDateTimeBR = (iso: string | null | undefined) => {
+      if (!iso) return "";
+      const date = new Date(iso);
+      const parts = new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).formatToParts(date);
+      const get = (type: string) => parts.find((p) => p.type === type)?.value || "";
+      const dd = get("day");
+      const mm = get("month");
+      const yyyy = get("year");
+      const hh = get("hour");
+      const mi = get("minute");
+      const ss = get("second");
+      return `${dd}/${mm}/${yyyy} ${hh}:${mi}:${ss}`;
+    };
+
     for (const p of pedidosToExport) {
       try {
         const det = await makeRequest(`/api/pedidos/${p.id}`);
@@ -581,12 +604,7 @@ export default function PedidosModule() {
           tipo_pedido: pedido.tipo_pedido,
           valor_total: ((pedido.valor_total || 0) / 100).toFixed(2),
           status: pedido.status,
-          data_hora_finalizado: (() => {
-            if (!pedido.data_hora_finalizado) return "";
-            const d = new Date(pedido.data_hora_finalizado);
-            const pad = (n: number) => String(n).padStart(2, "0");
-            return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-          })(),
+          data_hora_finalizado: formatDateTimeBR(pedido.data_hora_finalizado),
           observacao: pedido.observacao || "",
           data_cadastro: pedido.data_cadastro || "",
           data_atualizacao: pedido.data_atualizacao || "",
@@ -602,12 +620,7 @@ export default function PedidosModule() {
           tipo_pedido: p.tipo_pedido,
           valor_total: ((p.valor_total || 0) / 100).toFixed(2),
           status: p.status,
-          data_hora_finalizado: (() => {
-            if (!p.data_hora_finalizado) return "";
-            const d = new Date(p.data_hora_finalizado);
-            const pad = (n: number) => String(n).padStart(2, "0");
-            return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-          })(),
+          data_hora_finalizado: formatDateTimeBR(p.data_hora_finalizado),
           observacao: p.observacao || "",
           data_cadastro: p.data_cadastro || "",
           data_atualizacao: p.data_atualizacao || "",
