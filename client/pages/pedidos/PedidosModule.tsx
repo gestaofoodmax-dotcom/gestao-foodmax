@@ -740,12 +740,38 @@ export default function PedidosModule() {
           }
         }
 
-        // Parse dates correctly
+        // Parse dates correctly - handles both date and datetime formats
         const parseDate = (dateStr: string) => {
           if (!dateStr) return null;
           try {
-            // Handle DD/MM/YYYY format
-            if (dateStr.includes("/")) {
+            // Handle DD/MM/YYYY, HH:MM:SS format (from CSV export)
+            if (dateStr.includes("/") && dateStr.includes(",")) {
+              // Split on comma to separate date and time: "02/09/2025, 01:07:27"
+              const [datePart, timePart] = dateStr.split(",").map(s => s.trim());
+              const [day, month, year] = datePart.split("/");
+
+              if (timePart) {
+                // Parse time component
+                const [hours, minutes, seconds] = timePart.split(":");
+                return new Date(
+                  parseInt(year),
+                  parseInt(month) - 1,
+                  parseInt(day),
+                  parseInt(hours || "0"),
+                  parseInt(minutes || "0"),
+                  parseInt(seconds || "0")
+                ).toISOString();
+              } else {
+                // No time component, just date
+                return new Date(
+                  parseInt(year),
+                  parseInt(month) - 1,
+                  parseInt(day)
+                ).toISOString();
+              }
+            }
+            // Handle DD/MM/YYYY format (date only)
+            else if (dateStr.includes("/")) {
               const [day, month, year] = dateStr.split("/");
               return new Date(
                 parseInt(year),
@@ -753,7 +779,7 @@ export default function PedidosModule() {
                 parseInt(day),
               ).toISOString();
             }
-            // Handle other formats
+            // Handle other formats (ISO strings, etc.)
             return new Date(dateStr).toISOString();
           } catch {
             return null;
