@@ -13,7 +13,7 @@ const CardapioSchema = z.object({
     "Outro",
   ]),
   margem_lucro_percentual: z.number().min(0),
-  preco_total_centavos: z.number().int().nonnegative(),
+  preco_total: z.number().int().nonnegative(),
   descricao: z.string().optional(),
   ativo: z.boolean().default(true),
   itens: z.array(
@@ -180,7 +180,7 @@ export const createCardapio: RequestHandler = async (req, res) => {
         quantidade_total,
         preco_itens_centavos,
         margem_lucro_percentual: parsed.margem_lucro_percentual,
-        preco_total_centavos: parsed.preco_total_centavos,
+        preco_total: parsed.preco_total,
         descricao: parsed.descricao,
         ativo: parsed.ativo,
       })
@@ -487,7 +487,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
       const key = `${r.nome}_${r.tipo_cardapio}`;
 
       if (!cardapiosMap.has(key)) {
-        const preco_total_centavos = parseCentavos(r.preco_total);
+        const preco_total = parseCentavos(r.preco_total);
         const preco_itens_centavos = parseCentavos(r.preco_itens);
         const quantidade_total =
           typeof r.quantidade_total === "string"
@@ -505,7 +505,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
           quantidade_total,
           preco_itens_centavos,
           margem_lucro_percentual,
-          preco_total_centavos,
+          preco_total,
           descricao: r.descricao || "",
           ativo: r.status ? toBool(r.status) : true,
           itens: [],
@@ -542,7 +542,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
             quantidade_total: cardapioData.quantidade_total,
             preco_itens_centavos: cardapioData.preco_itens_centavos,
             margem_lucro_percentual: cardapioData.margem_lucro_percentual,
-            preco_total_centavos: cardapioData.preco_total_centavos,
+            preco_total: cardapioData.preco_total,
             descricao: cardapioData.descricao,
             ativo: cardapioData.ativo,
           })
