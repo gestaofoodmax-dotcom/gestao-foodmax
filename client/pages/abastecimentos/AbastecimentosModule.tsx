@@ -440,22 +440,33 @@ export default function AbastecimentosModule() {
   };
 
   const handleSave = async (data: any) => {
+    console.log("HandleSave called with data:", data);
     setFormLoading(true);
     try {
       if (isEditing && currentAbastecimento) {
-        await makeRequest(`/api/abastecimentos/${currentAbastecimento.id}`, {
+        console.log("Updating abastecimento:", currentAbastecimento.id);
+        const response = await makeRequest(`/api/abastecimentos/${currentAbastecimento.id}`, {
           method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify(data),
         });
+        console.log("Update response:", response);
         toast({
           title: "Abastecimento atualizado",
           description: "Abastecimento atualizado com sucesso",
         });
       } else {
-        await makeRequest(`/api/abastecimentos`, {
+        console.log("Creating new abastecimento");
+        const response = await makeRequest(`/api/abastecimentos`, {
           method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
           body: JSON.stringify(data),
         });
+        console.log("Create response:", response);
         toast({
           title: "Abastecimento criado",
           description: "Abastecimento criado com sucesso",
@@ -465,6 +476,7 @@ export default function AbastecimentosModule() {
       await refreshAfterMutation();
       setShowForm(false);
     } catch (error: any) {
+      console.error("Save error:", error);
       const list = readLocalAbastecimentos();
       const now = new Date().toISOString();
       if (isEditing && currentAbastecimento) {
