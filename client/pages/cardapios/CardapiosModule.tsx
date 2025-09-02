@@ -129,7 +129,7 @@ export default function CardapiosModule() {
       { key: "nome", label: "Nome", sortable: true },
       { key: "qtde_itens", label: "Qtde Itens", sortable: true },
       {
-        key: "preco_total_centavos",
+        key: "preco_total",
         label: "Preço Total",
         sortable: true,
         render: (v: number) => formatCurrencyBRL(v),
@@ -351,7 +351,7 @@ export default function CardapiosModule() {
           quantidade_total,
           preco_itens_centavos: data.preco_itens_centavos || 0,
           margem_lucro_percentual: data.margem_lucro_percentual,
-          preco_total_centavos: data.preco_total_centavos,
+          preco_total: data.preco_total,
           descricao: data.descricao,
           ativo: data.ativo ?? true,
           data_cadastro: now,
@@ -505,7 +505,7 @@ export default function CardapiosModule() {
               quantidade_total: cardapio.quantidade_total,
               preco_itens: (cardapio.preco_itens_centavos / 100).toFixed(2),
               margem_lucro: cardapio.margem_lucro_percentual,
-              preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
+              preco_total: (cardapio.preco_total / 100).toFixed(2),
               descricao: cardapio.descricao || "",
               ativo: cardapio.ativo ? "Ativo" : "Inativo",
               data_cadastro: formatDateForExport(cardapio.data_cadastro),
@@ -525,7 +525,7 @@ export default function CardapiosModule() {
             quantidade_total: cardapio.quantidade_total,
             preco_itens: (cardapio.preco_itens_centavos / 100).toFixed(2),
             margem_lucro: cardapio.margem_lucro_percentual,
-            preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
+            preco_total: (cardapio.preco_total / 100).toFixed(2),
             descricao: cardapio.descricao || "",
             ativo: cardapio.ativo ? "Ativo" : "Inativo",
             data_cadastro: formatDateForExport(cardapio.data_cadastro),
@@ -543,7 +543,7 @@ export default function CardapiosModule() {
           quantidade_total: cardapio.quantidade_total,
           preco_itens: (cardapio.preco_itens_centavos / 100).toFixed(2),
           margem_lucro: cardapio.margem_lucro_percentual,
-          preco_total: (cardapio.preco_total_centavos / 100).toFixed(2),
+          preco_total: (cardapio.preco_total / 100).toFixed(2),
           descricao: cardapio.descricao || "",
           ativo: cardapio.ativo ? "Ativo" : "Inativo",
           data_cadastro: formatDateForExport(cardapio.data_cadastro),
@@ -840,7 +840,7 @@ export default function CardapiosModule() {
                   preco_itens_centavos: 0,
                   margem_lucro_percentual:
                     Number(String(r.margem_lucro || 0).replace(",", ".")) || 0,
-                  preco_total_centavos: 0,
+                  preco_total: 0,
                   descricao: r.descricao || "",
                   ativo:
                     String(r.ativo || r.status || "Ativo").toLowerCase() ===
