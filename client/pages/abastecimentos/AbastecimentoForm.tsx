@@ -512,68 +512,57 @@ export default function AbastecimentoForm({
               <Building className="w-5 h-5 text-blue-600" />
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Estabelecimento *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className="w-full justify-between foodmax-input"
-                    >
-                      {watchedValues.estabelecimento_id
-                        ? estabelecimentos.find(
-                            (e) => e.id === watchedValues.estabelecimento_id,
-                          )?.nome
-                        : "Selecione"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Filtrar estabelecimento..." />
-                      <CommandEmpty>
-                        Nenhum estabelecimento encontrado.
-                      </CommandEmpty>
-                      <CommandList>
-                        <CommandGroup>
-                          {estabelecimentos.map((e) => (
-                            <CommandItem
-                              key={e.id}
-                              onSelect={() => handleEstabelecimentoChange(e.id)}
-                            >
-                              <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  watchedValues.estabelecimento_id === e.id
-                                    ? "opacity-100"
-                                    : "opacity-0",
-                                )}
-                              />
-                              {e.nome}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                {errors.estabelecimento_id && (
-                  <span className="text-sm text-red-600">
-                    {errors.estabelecimento_id.message as any}
-                  </span>
-                )}
-              </div>
-
-              <div>
-                <Label>Quantidade Total</Label>
-                <Input
-                  value={quantidadeTotal}
-                  readOnly
-                  className="foodmax-input bg-gray-50"
-                />
-              </div>
+            <div>
+              <Label>Estabelecimento *</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    className="w-full justify-between foodmax-input"
+                  >
+                    {watchedValues.estabelecimento_id
+                      ? estabelecimentos.find(
+                          (e) => e.id === watchedValues.estabelecimento_id,
+                        )?.nome
+                      : "Selecione"}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0">
+                  <Command>
+                    <CommandInput placeholder="Filtrar estabelecimento..." />
+                    <CommandEmpty>
+                      Nenhum estabelecimento encontrado.
+                    </CommandEmpty>
+                    <CommandList>
+                      <CommandGroup>
+                        {estabelecimentos.map((e) => (
+                          <CommandItem
+                            key={e.id}
+                            onSelect={() => handleEstabelecimentoChange(e.id)}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                watchedValues.estabelecimento_id === e.id
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {e.nome}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+              {errors.estabelecimento_id && (
+                <span className="text-sm text-red-600">
+                  {errors.estabelecimento_id.message as any}
+                </span>
+              )}
             </div>
           </div>
 
@@ -637,8 +626,8 @@ export default function AbastecimentoForm({
           {/* Itens do Abastecimento */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <Package className="w-5 h-5 text-purple-600" />
-              <h3 className="font-semibold text-purple-600">
+              <Package className="w-5 h-5 text-yellow-600" />
+              <h3 className="font-semibold text-yellow-600">
                 Itens do Abastecimento
               </h3>
             </div>
@@ -837,6 +826,16 @@ export default function AbastecimentoForm({
                 </div>
               </div>
             )}
+
+            {/* Quantidade Total moved here */}
+            <div className="pt-4">
+              <Label>Quantidade Total</Label>
+              <Input
+                value={quantidadeTotal}
+                readOnly
+                className="foodmax-input bg-gray-50 w-48"
+              />
+            </div>
           </div>
 
           {/* Contato */}
@@ -859,6 +858,10 @@ export default function AbastecimentoForm({
                     placeholder="DDD + número telefone"
                     className="foodmax-input flex-1"
                     maxLength={15}
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      target.value = target.value.replace(/[^0-9]/g, '');
+                    }}
                   />
                 </div>
                 {errors.telefone && (
@@ -888,8 +891,8 @@ export default function AbastecimentoForm({
           {/* Endereço */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-5 h-5 text-red-600" />
-              <h3 className="font-semibold text-red-600">Endereço</h3>
+              <MapPin className="w-5 h-5 text-purple-600" />
+              <h3 className="font-semibold text-purple-600">Endereço</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -914,32 +917,34 @@ export default function AbastecimentoForm({
                   </span>
                 )}
               </div>
-              <div>
-                <Label>Cidade *</Label>
-                <Input
-                  id="cidade"
-                  {...register("cidade")}
-                  className="foodmax-input"
-                />
-                {errors.cidade && (
-                  <span className="text-sm text-red-600">
-                    {errors.cidade.message}
-                  </span>
-                )}
-              </div>
-              <div>
-                <Label>UF *</Label>
-                <Input
-                  id="uf"
-                  {...register("uf")}
-                  className="foodmax-input"
-                  maxLength={2}
-                />
-                {errors.uf && (
-                  <span className="text-sm text-red-600">
-                    {errors.uf.message}
-                  </span>
-                )}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2">
+                  <Label>Cidade *</Label>
+                  <Input
+                    id="cidade"
+                    {...register("cidade")}
+                    className="foodmax-input"
+                  />
+                  {errors.cidade && (
+                    <span className="text-sm text-red-600">
+                      {errors.cidade.message}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <Label>UF *</Label>
+                  <Input
+                    id="uf"
+                    {...register("uf")}
+                    className="foodmax-input"
+                    maxLength={2}
+                  />
+                  {errors.uf && (
+                    <span className="text-sm text-red-600">
+                      {errors.uf.message}
+                    </span>
+                  )}
+                </div>
               </div>
               <div>
                 <Label>País *</Label>
@@ -958,11 +963,11 @@ export default function AbastecimentoForm({
             </div>
           </div>
 
-          {/* Outros Dados */}
+          {/* Observação */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-5 h-5 text-gray-600" />
-              <h3 className="font-semibold text-gray-600">Outros Dados</h3>
+              <FileText className="w-5 h-5 text-red-600" />
+              <h3 className="font-semibold text-red-600">Observação</h3>
             </div>
             <div>
               <Label>Observação</Label>
