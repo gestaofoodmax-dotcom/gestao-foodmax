@@ -40,7 +40,9 @@ export default function PedidoView({
   useEffect(() => {
     const load = async () => {
       if (!pedido) return;
-      try { localStorage.removeItem("fm_pedidos"); } catch {}
+      try {
+        localStorage.removeItem("fm_pedidos");
+      } catch {}
       setLoading(true);
       try {
         const data = await makeRequest(`/api/pedidos/${pedido.id}`);

@@ -526,12 +526,16 @@ export const importPedidos: RequestHandler = async (req, res) => {
           extra_item_nome: z.string().optional(),
           extra_item_categoria: z.string().optional(),
           extra_item_quantidade: z.union([z.number(), z.string()]).optional(),
-          extra_item_valor_unitario: z.union([z.number(), z.string()]).optional(),
+          extra_item_valor_unitario: z
+            .union([z.number(), z.string()])
+            .optional(),
           // New extras naming
           itens_extras_nome: z.string().optional(),
           itens_extras_categoria: z.string().optional(),
           itens_extras_quantidade: z.union([z.number(), z.string()]).optional(),
-          itens_extras_valor_unitario: z.union([z.number(), z.string()]).optional(),
+          itens_extras_valor_unitario: z
+            .union([z.number(), z.string()])
+            .optional(),
         }),
       ),
     });
@@ -548,9 +552,12 @@ export const importPedidos: RequestHandler = async (req, res) => {
 
     const parseCentavos = (val: any): number => {
       if (val === undefined || val === null || val === "") return 0;
-      if (typeof val === "number") return Number.isInteger(val) ? val : Math.round(val * 100);
+      if (typeof val === "number")
+        return Number.isInteger(val) ? val : Math.round(val * 100);
       const s = String(val).trim();
-      const clean = s.replace(/[^0-9,.-]/g, "").replace(/\.(?=\d{3}(,|$))/g, "");
+      const clean = s
+        .replace(/[^0-9,.-]/g, "")
+        .replace(/\.(?=\d{3}(,|$))/g, "");
       const dot = clean.replace(",", ".");
       const n = Number(dot);
       if (!isNaN(n)) return Math.round(n * 100);
@@ -603,7 +610,8 @@ export const importPedidos: RequestHandler = async (req, res) => {
         }
 
         const tipo = first.tipo_pedido as z.infer<typeof TipoPedidoEnum>;
-        const status = (first.status as z.infer<typeof StatusPedidoEnum>) || "Pendente";
+        const status =
+          (first.status as z.infer<typeof StatusPedidoEnum>) || "Pendente";
         const valor_total = parseCentavos(first.valor_total);
         const data_hora_finalizado = first.data_hora_finalizado
           ? new Date(first.data_hora_finalizado).toISOString()
@@ -628,7 +636,8 @@ export const importPedidos: RequestHandler = async (req, res) => {
         if (pedErr || !pedido) continue;
 
         // Collect related cardapios
-        const cardapioEntries: { cardapio_id: number; preco_total: number }[] = [];
+        const cardapioEntries: { cardapio_id: number; preco_total: number }[] =
+          [];
         for (const r of rows) {
           const nome = String(r.cardapio_nome || "").trim();
           if (!nome) continue;
@@ -684,9 +693,14 @@ export const importPedidos: RequestHandler = async (req, res) => {
           valor_unitario: number;
         }[] = [];
         for (const r of rows) {
-          const itemNome = String(r.itens_extras_nome || r.extra_item_nome || "").trim();
+          const itemNome = String(
+            r.itens_extras_nome || r.extra_item_nome || "",
+          ).trim();
           if (!itemNome) continue;
-          const catNome = String(r.itens_extras_categoria || r.extra_item_categoria || "").trim() || "Sem Categoria";
+          const catNome =
+            String(
+              r.itens_extras_categoria || r.extra_item_categoria || "",
+            ).trim() || "Sem Categoria";
 
           // Resolve categoria
           let categoria_id: number | null = null;
@@ -738,7 +752,8 @@ export const importPedidos: RequestHandler = async (req, res) => {
           }
           if (!item_id) continue;
 
-          const quantidade = Number(r.itens_extras_quantidade ?? r.extra_item_quantidade) || 1;
+          const quantidade =
+            Number(r.itens_extras_quantidade ?? r.extra_item_quantidade) || 1;
           const valor_unitario = parseCentavos(
             r.itens_extras_valor_unitario ?? r.extra_item_valor_unitario,
           );
@@ -752,9 +767,11 @@ export const importPedidos: RequestHandler = async (req, res) => {
 
         if (extraEntries.length > 0) {
           try {
-            await supabase.from("pedidos_itens_extras").insert(
-              extraEntries.map((e) => ({ pedido_id: pedido.id, ...e })),
-            );
+            await supabase
+              .from("pedidos_itens_extras")
+              .insert(
+                extraEntries.map((e) => ({ pedido_id: pedido.id, ...e })),
+              );
           } catch (e) {
             // Ignore stock validation errors for import (skip extras)
           }

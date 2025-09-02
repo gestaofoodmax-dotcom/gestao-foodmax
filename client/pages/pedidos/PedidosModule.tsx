@@ -306,7 +306,9 @@ export default function PedidosModule() {
   }, [currentPage, currentSearch, activeTab, makeRequest, estabelecimentosMap]);
 
   useEffect(() => {
-    try { localStorage.removeItem(LOCAL_PEDIDOS); } catch {}
+    try {
+      localStorage.removeItem(LOCAL_PEDIDOS);
+    } catch {}
     loadEstabelecimentosMap();
     loadCounts();
   }, [loadEstabelecimentosMap, loadCounts]);
@@ -456,14 +458,18 @@ export default function PedidosModule() {
         title: "Pedido excluído",
         description: "Pedido excluído com sucesso",
       });
-      try { localStorage.removeItem(LOCAL_PEDIDOS); } catch {}
+      try {
+        localStorage.removeItem(LOCAL_PEDIDOS);
+      } catch {}
       setSelectedIds([]);
       await refreshAfterMutation();
       setShowDeleteAlert(false);
     } catch (error: any) {
       const list = readLocalPedidos().filter((e) => e.id !== currentPedido.id);
       writeLocalPedidos(list);
-      try { localStorage.removeItem(LOCAL_PEDIDOS); } catch {}
+      try {
+        localStorage.removeItem(LOCAL_PEDIDOS);
+      } catch {}
       setPedidos(enrichWithEstabelecimentoNome(list) as any);
       toast({
         title: "Pedido excluído",
@@ -506,7 +512,8 @@ export default function PedidosModule() {
         const det = await makeRequest(`/api/pedidos/${p.id}`);
         const pedido = det || p;
         const base = {
-          estabelecimento_nome: pedido.estabelecimento_nome || p.estabelecimento_nome || "",
+          estabelecimento_nome:
+            pedido.estabelecimento_nome || p.estabelecimento_nome || "",
           cliente_nome: pedido.cliente_nome || "",
           codigo: pedido.codigo,
           tipo_pedido: pedido.tipo_pedido,
@@ -542,27 +549,29 @@ export default function PedidosModule() {
         if (extras.length > 0) {
           for (const e of extras) {
             exportRows.push({
-          ...base,
-          cardapio_nome: "",
-          cardapio_preco_total: "",
-          itens_extras_nome: e.item_nome || "",
-          itens_extras_categoria: e.categoria_nome || "",
-          itens_extras_quantidade: e.quantidade ?? "",
-          itens_extras_valor_unitario: ((e.valor_unitario || 0) / 100).toFixed(2),
-        });
+              ...base,
+              cardapio_nome: "",
+              cardapio_preco_total: "",
+              itens_extras_nome: e.item_nome || "",
+              itens_extras_categoria: e.categoria_nome || "",
+              itens_extras_quantidade: e.quantidade ?? "",
+              itens_extras_valor_unitario: (
+                (e.valor_unitario || 0) / 100
+              ).toFixed(2),
+            });
           }
         }
 
         if (cardapios.length === 0 && extras.length === 0) {
           exportRows.push({
-          ...base,
-          cardapio_nome: "",
-          cardapio_preco_total: "",
-          itens_extras_nome: "",
-          itens_extras_categoria: "",
-          itens_extras_quantidade: "",
-          itens_extras_valor_unitario: "",
-        });
+            ...base,
+            cardapio_nome: "",
+            cardapio_preco_total: "",
+            itens_extras_nome: "",
+            itens_extras_categoria: "",
+            itens_extras_quantidade: "",
+            itens_extras_valor_unitario: "",
+          });
         }
       } catch {
         exportRows.push({
@@ -857,7 +866,10 @@ export default function PedidosModule() {
           { key: "itens_extras_nome", label: "Itens Extras Nome" },
           { key: "itens_extras_categoria", label: "Itens Extras Categoria" },
           { key: "itens_extras_quantidade", label: "Itens Extras Quantidade" },
-          { key: "itens_extras_valor_unitario", label: "Itens Extras Valor Unitario" },
+          {
+            key: "itens_extras_valor_unitario",
+            label: "Itens Extras Valor Unitario",
+          },
         ]}
       />
 
@@ -868,7 +880,11 @@ export default function PedidosModule() {
         userRole={getUserRole()}
         hasPayment={hasPayment()}
         columns={[
-          { key: "estabelecimento_nome", label: "Estabelecimento", required: true },
+          {
+            key: "estabelecimento_nome",
+            label: "Estabelecimento",
+            required: true,
+          },
           { key: "cliente_nome", label: "Cliente" },
           { key: "codigo", label: "Código" },
           { key: "tipo_pedido", label: "Tipo de Pedido", required: true },
@@ -881,7 +897,10 @@ export default function PedidosModule() {
           { key: "itens_extras_nome", label: "Itens Extras Nome" },
           { key: "itens_extras_categoria", label: "Itens Extras Categoria" },
           { key: "itens_extras_quantidade", label: "Itens Extras Quantidade" },
-          { key: "itens_extras_valor_unitario", label: "Itens Extras Valor Unitario" },
+          {
+            key: "itens_extras_valor_unitario",
+            label: "Itens Extras Valor Unitario",
+          },
         ]}
         mapHeader={(h) => {
           const n = h.trim().toLowerCase();
@@ -929,7 +948,8 @@ export default function PedidosModule() {
         }}
         validateRecord={(r) => {
           const errors: string[] = [];
-          if (!r.estabelecimento_nome) errors.push("Estabelecimento é obrigatório");
+          if (!r.estabelecimento_nome)
+            errors.push("Estabelecimento é obrigatório");
           const tipo = String(r.tipo_pedido || "").trim();
           if (!tipo) errors.push("Tipo de Pedido é obrigatório");
           else if (!TIPOS_PEDIDO.includes(tipo as any))
@@ -937,7 +957,10 @@ export default function PedidosModule() {
           const status = String(r.status || "Pendente").trim();
           if (status && !STATUS_PEDIDO.includes(status as any))
             errors.push(`Status inválido: '${status}'`);
-          if (r.itens_extras_quantidade && isNaN(Number(r.itens_extras_quantidade)))
+          if (
+            r.itens_extras_quantidade &&
+            isNaN(Number(r.itens_extras_quantidade))
+          )
             errors.push("Quantidade do item extra inválida");
           return errors;
         }}
@@ -981,7 +1004,9 @@ export default function PedidosModule() {
               title: "Pedidos excluídos",
               description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
             });
-            try { localStorage.removeItem(LOCAL_PEDIDOS); } catch {}
+            try {
+              localStorage.removeItem(LOCAL_PEDIDOS);
+            } catch {}
             await refreshAfterMutation();
             setSelectedIds([]);
             setShowBulkDelete(false);

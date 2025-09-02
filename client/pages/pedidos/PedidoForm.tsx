@@ -264,7 +264,7 @@ export default function PedidoForm({
             }));
             setSelectedExtras(exts);
             setSelectedCategoriaIds(
-              Array.from(new Set(exts.map((e: any) => e.categoria_id)))
+              Array.from(new Set(exts.map((e: any) => e.categoria_id))),
             );
           }
         } catch {}
