@@ -84,7 +84,7 @@ const schema = z.object({
       required_error: "Margem de lucro é obrigatória",
     })
     .min(0, "Margem deve ser maior ou igual a 0"),
-  preco_total_centavos: z
+  preco_total: z
     .number({
       required_error: "Preço total é obrigatório",
     })
@@ -168,7 +168,7 @@ export default function CardapioForm({
         nome: "",
         tipo_cardapio: undefined as any,
         margem_lucro_percentual: 0,
-        preco_total_centavos: 0,
+        preco_total: 0,
         descricao: "",
         ativo: true,
       });
@@ -213,7 +213,7 @@ export default function CardapioForm({
         nome: cardapio.nome,
         tipo_cardapio: cardapio.tipo_cardapio,
         margem_lucro_percentual: cardapio.margem_lucro_percentual,
-        preco_total_centavos: cardapio.preco_total_centavos,
+        preco_total: cardapio.preco_total,
         descricao: cardapio.descricao || "",
         ativo: cardapio.ativo,
       });
@@ -224,7 +224,7 @@ export default function CardapioForm({
         nome: "",
         tipo_cardapio: undefined,
         margem_lucro_percentual: 0,
-        preco_total_centavos: 0,
+        preco_total: 0,
         descricao: "",
         ativo: true,
       });
@@ -283,14 +283,14 @@ export default function CardapioForm({
 
   // Update form values when calculations change
   useEffect(() => {
-    setValue("preco_total_centavos", precoTotal);
+    setValue("preco_total", precoTotal);
   }, [precoTotal, setValue]);
 
   useEffect(() => {
     setPrecoTotalMask(
-      formatInputCurrency(watchedValues.preco_total_centavos || 0),
+      formatInputCurrency(watchedValues.preco_total || 0),
     );
-  }, [watchedValues.preco_total_centavos]);
+  }, [watchedValues.preco_total]);
 
   // Low-stock toast on category selection disabled per requirements
 
@@ -757,25 +757,25 @@ export default function CardapioForm({
                 </div>
 
                 <div>
-                  <Label htmlFor="preco_total_centavos">
+                  <Label htmlFor="preco_total">
                     Preço Total (R$) *
                   </Label>
                   <Input
-                    id="preco_total_centavos"
+                    id="preco_total"
                     value={precoTotalMask}
                     onChange={(e) => {
                       const cents = parseCurrencyToCentavos(e.target.value);
                       setPrecoTotalMask(
                         e.target.value === "" ? "" : formatInputCurrency(cents),
                       );
-                      setValue("preco_total_centavos", cents);
+                      setValue("preco_total", cents);
                     }}
                     className="foodmax-input"
                     placeholder="R$ 0,00"
                   />
-                  {errors.preco_total_centavos && (
+                  {errors.preco_total && (
                     <span className="text-sm text-red-600">
-                      {errors.preco_total_centavos.message}
+                      {errors.preco_total.message}
                     </span>
                   )}
                 </div>
