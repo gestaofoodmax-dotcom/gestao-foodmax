@@ -771,8 +771,8 @@ export default function PedidoForm({
             {selectedCategoriaIds.length > 0 &&
               filteredExtras.some((i) => (i.estoque_atual || 0) < 3) && (
                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">
-                  Aten��ão: existem itens desta categoria com estoque baixo
-                  (&lt; 3).
+                  Atenção: existem itens desta categoria com estoque baixo (
+                  {"<"} 3).
                 </div>
               )}
 
