@@ -753,24 +753,16 @@ export default function PedidosModule() {
         const parseDate = (dateStr: string) => {
           if (!dateStr) return null;
 
-          console.log(`🔍 Parsing date: "${dateStr}"`);
-
           try {
             // Handle DD/MM/YYYY, HH:MM:SS format (from CSV export)
             if (dateStr.includes("/") && dateStr.includes(",")) {
-              console.log(`📅 Detected datetime format: "${dateStr}"`);
-
               // Split on comma to separate date and time: "02/09/2025, 01:07:27"
               const [datePart, timePart] = dateStr.split(",").map(s => s.trim());
               const [day, month, year] = datePart.split("/");
 
-              console.log(`📅 Date part: "${datePart}" -> day:${day}, month:${month}, year:${year}`);
-              console.log(`⏰ Time part: "${timePart}"`);
-
               if (timePart) {
                 // Parse time component
                 const [hours, minutes, seconds] = timePart.split(":");
-                console.log(`⏰ Time components -> hours:${hours}, minutes:${minutes}, seconds:${seconds}`);
 
                 // Use UTC to prevent timezone conversion issues
                 const parsedDate = new Date(Date.UTC(
@@ -783,7 +775,7 @@ export default function PedidosModule() {
                 ));
 
                 const isoString = parsedDate.toISOString();
-                console.log(`✅ Final parsed datetime (UTC): "${isoString}"`);
+                console.log(`✅ Parsed datetime "${dateStr}" -> "${isoString}"`);
                 return isoString;
               } else {
                 // No time component, just date - use UTC
@@ -793,13 +785,11 @@ export default function PedidosModule() {
                   parseInt(day)
                 ));
                 const isoString = parsedDate.toISOString();
-                console.log(`✅ Final parsed date (UTC): "${isoString}"`);
                 return isoString;
               }
             }
             // Handle DD/MM/YYYY format (date only)
             else if (dateStr.includes("/")) {
-              console.log(`📅 Detected date-only format: "${dateStr}"`);
               const [day, month, year] = dateStr.split("/");
               const parsedDate = new Date(Date.UTC(
                 parseInt(year),
@@ -807,14 +797,11 @@ export default function PedidosModule() {
                 parseInt(day),
               ));
               const isoString = parsedDate.toISOString();
-              console.log(`✅ Final parsed date (UTC): "${isoString}"`);
               return isoString;
             }
             // Handle other formats (ISO strings, etc.)
-            console.log(`🔄 Using fallback parsing for: "${dateStr}"`);
             const fallbackDate = new Date(dateStr);
             const isoString = fallbackDate.toISOString();
-            console.log(`✅ Fallback parsed: "${isoString}"`);
             return isoString;
           } catch (error) {
             console.error(`❌ Error parsing date "${dateStr}":`, error);
@@ -1277,7 +1264,7 @@ export default function PedidosModule() {
             "data atualizacao": "data_atualizacao",
             cardápios: "cardapios",
             cardapios: "cardapios",
-            cardápio: "cardapios",
+            card��pio: "cardapios",
             cardapio: "cardapios",
             "itens extras nome": "itens_extras_nome",
             "itens extras categoria": "itens_extras_categoria",
