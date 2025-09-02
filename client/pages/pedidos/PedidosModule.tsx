@@ -792,13 +792,13 @@ export default function PedidosModule() {
             else if (dateStr.includes("/")) {
               console.log(`📅 Detected date-only format: "${dateStr}"`);
               const [day, month, year] = dateStr.split("/");
-              const parsedDate = new Date(
+              const parsedDate = new Date(Date.UTC(
                 parseInt(year),
                 parseInt(month) - 1,
                 parseInt(day),
-              );
+              ));
               const isoString = parsedDate.toISOString();
-              console.log(`✅ Final parsed date: "${isoString}"`);
+              console.log(`✅ Final parsed date (UTC): "${isoString}"`);
               return isoString;
             }
             // Handle other formats (ISO strings, etc.)
