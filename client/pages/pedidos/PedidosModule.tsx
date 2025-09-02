@@ -1251,13 +1251,7 @@ export default function PedidosModule() {
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "cardapios", label: "Cardápios" },
-          { key: "itens_extras_nome", label: "Itens Extras Nome" },
-          { key: "itens_extras_categoria", label: "Itens Extras Categoria" },
-          { key: "itens_extras_quantidade", label: "Itens Extras Quantidade" },
-          {
-            key: "itens_extras_valor_unitario",
-            label: "Itens Extras Valor Unitario",
-          },
+          { key: "itens_extras", label: "Itens Extras" },
         ]}
       />
 
