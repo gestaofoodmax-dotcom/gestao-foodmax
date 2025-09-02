@@ -125,11 +125,15 @@ export const getPedido: RequestHandler = async (req, res) => {
       .eq("id", pedido.estabelecimento_id)
       .single();
 
-    const { data: cli } = await supabase
-      .from("clientes")
-      .select("nome")
-      .eq("id", pedido.cliente_id)
-      .single();
+    let cli: any = null;
+    if (pedido.cliente_id != null) {
+      const cliResp = await supabase
+        .from("clientes")
+        .select("nome")
+        .eq("id", pedido.cliente_id)
+        .maybeSingle();
+      cli = cliResp.data || null;
+    }
 
     const { data: cardapios } = await supabase
       .from("pedidos_cardapios")
