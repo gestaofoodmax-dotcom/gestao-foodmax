@@ -24,7 +24,7 @@ const PedidoSchema = z.object({
       item_id: z.number().int().positive(),
       categoria_id: z.number().int().positive(),
       quantidade: z.number().int().positive(),
-      valor_unitario_centavos: z.number().int().nonnegative(),
+      valor_unitario: z.number().int().nonnegative(),
     }),
   ),
   data_hora_finalizado: z.string().nullable().optional(),
@@ -275,7 +275,7 @@ export const createPedido: RequestHandler = async (req, res) => {
           item_id: e.item_id,
           categoria_id: e.categoria_id,
           quantidade: e.quantidade,
-          valor_unitario_centavos: e.valor_unitario_centavos,
+          valor_unitario: e.valor_unitario,
         })),
       );
     }
