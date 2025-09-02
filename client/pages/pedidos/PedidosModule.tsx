@@ -550,7 +550,8 @@ export default function PedidosModule() {
         second: "2-digit",
         hour12: false,
       }).formatToParts(date);
-      const get = (type: string) => parts.find((p) => p.type === type)?.value || "";
+      const get = (type: string) =>
+        parts.find((p) => p.type === type)?.value || "";
       const dd = get("day");
       const mm = get("month");
       const yyyy = get("year");
@@ -589,7 +590,10 @@ export default function PedidosModule() {
             ? extras
                 .map((e) => {
                   const preco = ((e.valor_unitario || 0) / 100).toFixed(2);
-                  const qty = typeof e.quantidade === "number" ? e.quantidade : Number(e.quantidade || 0) || 0;
+                  const qty =
+                    typeof e.quantidade === "number"
+                      ? e.quantidade
+                      : Number(e.quantidade || 0) || 0;
                   return `${e.item_nome || ""} - ${e.categoria_nome || ""} - ${qty} - R$ ${preco}`.trim();
                 })
                 .filter((s) => s && s !== " -  - 0 - R$ 0.00")
@@ -771,9 +775,15 @@ export default function PedidosModule() {
 
           try {
             // Handle DD/MM/YYYY HH:MM:SS or with comma
-            if (dateStr.includes("/") && (dateStr.includes(",") || dateStr.includes(" "))) {
+            if (
+              dateStr.includes("/") &&
+              (dateStr.includes(",") || dateStr.includes(" "))
+            ) {
               // Split on comma or space to separate date and time
-              const sepIndex = dateStr.indexOf(",") >= 0 ? dateStr.indexOf(",") : dateStr.indexOf(" ");
+              const sepIndex =
+                dateStr.indexOf(",") >= 0
+                  ? dateStr.indexOf(",")
+                  : dateStr.indexOf(" ");
               const datePart = dateStr.slice(0, sepIndex).trim();
               const timePart = dateStr.slice(sepIndex + 1).trim();
               const [day, month, year] = datePart.split("/");
@@ -982,7 +992,12 @@ export default function PedidosModule() {
             const parts = item.split("-").map((s) => s.trim());
             if (parts.length >= 2) {
               const nome = parts[0];
-              const precoStr = parts.slice(1).join("-").replace(/R\$/g, "").replace(/\s/g, "").replace(",", ".");
+              const precoStr = parts
+                .slice(1)
+                .join("-")
+                .replace(/R\$/g, "")
+                .replace(/\s/g, "")
+                .replace(",", ".");
               const preco = parseFloat(precoStr);
               if (!isNaN(preco)) {
                 cardapios.push({
@@ -996,7 +1011,9 @@ export default function PedidosModule() {
 
         // Process consolidated extras from single field ("Nome - Categoria - Quantidade - R$ Valor; ...")
         const itensExtras: any[] = [];
-        const extrasText = String(r.itens_extras || r["itens extras"] || "").trim();
+        const extrasText = String(
+          r.itens_extras || r["itens extras"] || "",
+        ).trim();
         if (extrasText) {
           const groups = extrasText
             .split(";")
@@ -1008,7 +1025,12 @@ export default function PedidosModule() {
               const nome = parts[0];
               const categoria = parts[1];
               const quantidade = parseInt(parts[2]) || 1;
-              const valorStr = parts.slice(3).join("-").replace(/R\$/g, "").replace(/\s/g, "").replace(",", ".");
+              const valorStr = parts
+                .slice(3)
+                .join("-")
+                .replace(/R\$/g, "")
+                .replace(/\s/g, "")
+                .replace(",", ".");
               const valor = parseFloat(valorStr) || 0;
               if (nome) {
                 itensExtras.push({
@@ -1293,7 +1315,8 @@ export default function PedidosModule() {
           { key: "cardapios", label: "Cardápios (Nome - R$ Preço; ...)" },
           {
             key: "itens_extras",
-            label: "Itens Extras (Nome - Categoria - Quantidade - R$ Valor; ...)",
+            label:
+              "Itens Extras (Nome - Categoria - Quantidade - R$ Valor; ...)",
           },
         ]}
         mapHeader={(h) => {

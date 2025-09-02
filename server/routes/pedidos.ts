@@ -174,7 +174,10 @@ export const getPedido: RequestHandler = async (req, res) => {
       );
 
       const [{ data: itens }, { data: cats }] = await Promise.all([
-        supabase.from("itens").select("id, nome, estoque_atual").in("id", itemIds),
+        supabase
+          .from("itens")
+          .select("id, nome, estoque_atual")
+          .in("id", itemIds),
         supabase.from("itens_categorias").select("id, nome").in("id", catIds),
       ]);
 
@@ -222,9 +225,12 @@ export const createPedido: RequestHandler = async (req, res) => {
             item_id: Number(e.item_id),
             categoria_id: Number(e.categoria_id),
             quantidade: Math.max(1, Number(e.quantidade) || 1),
-            valor_unitario: Math.max(0, Math.round(Number(e.valor_unitario) || 0)),
+            valor_unitario: Math.max(
+              0,
+              Math.round(Number(e.valor_unitario) || 0),
+            ),
           }))
-        : [] as any[];
+        : ([] as any[]);
 
     // If cardapio price not supplied, load it
     const cardapiosData = [] as {
@@ -313,9 +319,12 @@ export const updatePedido: RequestHandler = async (req, res) => {
             item_id: Number(e.item_id),
             categoria_id: Number(e.categoria_id),
             quantidade: Math.max(1, Number(e.quantidade) || 1),
-            valor_unitario: Math.max(0, Math.round(Number(e.valor_unitario) || 0)),
+            valor_unitario: Math.max(
+              0,
+              Math.round(Number(e.valor_unitario) || 0),
+            ),
           }))
-        : [] as any[];
+        : ([] as any[]);
 
     // ensure exists and belongs to user
     const { data: existing } = await supabase
@@ -379,7 +388,10 @@ export const updatePedido: RequestHandler = async (req, res) => {
           .from("pedidos_itens_extras")
           .insert(extrasToSave.map((e) => ({ pedido_id: parseInt(id), ...e })));
         if (extrasErr) {
-          console.error("[pedidos] erro ao inserir itens_extras (update):", extrasErr);
+          console.error(
+            "[pedidos] erro ao inserir itens_extras (update):",
+            extrasErr,
+          );
         }
       }
     }
