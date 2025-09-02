@@ -165,6 +165,7 @@ export function createServer() {
   app.delete("/api/pedidos/:id", deletePedido);
   app.post("/api/pedidos/bulk-delete", bulkDeletePedidos);
   app.patch("/api/pedidos/:id/finalizar", finalizarPedido);
+  app.post("/api/pedidos/import", importPedidos as any);
 
   return app;
 }
