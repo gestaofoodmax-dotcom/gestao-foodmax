@@ -1240,7 +1240,7 @@ export default function PedidosModule() {
             "Valor Total": "valor_total",
             Status: "status",
             "Data/Hora Finalizado": "data_hora_finalizado",
-            "Observa��ão": "observacao",
+            "Observação": "observacao",
             "Data Cadastro": "data_cadastro",
             "Data Atualização": "data_atualizacao",
             Cardápios: "cardapios",
