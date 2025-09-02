@@ -207,8 +207,20 @@ export function DataGrid({
     }
 
     // Format dates
+    if (column.key.includes("data_hora") && value) {
+      const d = new Date(value);
+      const date = d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      const time = d.toLocaleTimeString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      return `${date}, ${time}`;
+    }
     if (column.key.includes("data_") && value) {
-      return new Date(value).toLocaleDateString("pt-BR");
+      return new Date(value).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
     }
 
     // Format boolean as badge
