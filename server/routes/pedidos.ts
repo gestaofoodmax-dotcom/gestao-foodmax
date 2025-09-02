@@ -135,32 +135,68 @@ export const getPedido: RequestHandler = async (req, res) => {
       cli = cliResp.data || null;
     }
 
-    const { data: cardapios } = await supabase
+    // Carregar cardápios relacionados sem nested select para evitar erros
+    const { data: cardapiosRows } = await supabase
       .from("pedidos_cardapios")
-      .select("*, cardapios:cardapio_id(nome, preco_total)")
+      .select("*")
       .eq("pedido_id", id);
 
-    const { data: extras } = await supabase
+    let cardapiosDetalhados: any[] = [];
+    if (Array.isArray(cardapiosRows) && cardapiosRows.length > 0) {
+      const ids = Array.from(
+        new Set(cardapiosRows.map((c: any) => c.cardapio_id).filter(Boolean)),
+      );
+      const { data: cards } = await supabase
+        .from("cardapios")
+        .select("id, nome, preco_total")
+        .in("id", ids);
+      const map = new Map<number, any>();
+      (cards || []).forEach((c: any) => map.set(c.id, c));
+      cardapiosDetalhados = (cardapiosRows || []).map((c: any) => ({
+        ...c,
+        cardapio_nome: map.get(c.cardapio_id)?.nome,
+      }));
+    }
+
+    // Carregar itens extras relacionados (e nomes) sem nested select
+    const { data: extrasRows } = await supabase
       .from("pedidos_itens_extras")
-      .select(
-        "*, itens:item_id(nome, estoque_atual), itens_categorias:categoria_id(nome)",
-      )
+      .select("*")
       .eq("pedido_id", id);
+
+    let extrasDetalhados: any[] = [];
+    if (Array.isArray(extrasRows) && extrasRows.length > 0) {
+      const itemIds = Array.from(
+        new Set(extrasRows.map((e: any) => e.item_id).filter(Boolean)),
+      );
+      const catIds = Array.from(
+        new Set(extrasRows.map((e: any) => e.categoria_id).filter(Boolean)),
+      );
+
+      const [{ data: itens }, { data: cats }] = await Promise.all([
+        supabase.from("itens").select("id, nome, estoque_atual").in("id", itemIds),
+        supabase.from("itens_categorias").select("id, nome").in("id", catIds),
+      ]);
+
+      const itensMap = new Map<number, any>();
+      (itens || []).forEach((i: any) => itensMap.set(i.id, i));
+      const catsMap = new Map<number, any>();
+      (cats || []).forEach((c: any) => catsMap.set(c.id, c));
+
+      extrasDetalhados = (extrasRows || []).map((e: any) => ({
+        ...e,
+        item_nome: itensMap.get(e.item_id)?.nome,
+        estoque_atual: itensMap.get(e.item_id)?.estoque_atual,
+        categoria_nome: catsMap.get(e.categoria_id)?.nome,
+      }));
+    }
 
     res.json({
       ...pedido,
       estabelecimento_nome: est?.nome,
       cliente_nome: cli?.nome || null,
-      cardapios: (cardapios || []).map((c: any) => ({
-        ...c,
-        cardapio_nome: c.cardapios?.nome,
-      })),
-      itens_extras: (extras || []).map((e: any) => ({
-        ...e,
-        item_nome: e.itens?.nome,
-        estoque_atual: e.itens?.estoque_atual,
-        categoria_nome: e.itens_categorias?.nome,
-      })),
+      cardapios: cardapiosDetalhados,
+      itens_extras: extrasDetalhados,
     });
   } catch (error) {
     console.error("Error getting pedido:", error);
