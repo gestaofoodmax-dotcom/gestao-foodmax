@@ -72,7 +72,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { DdiSelect } from "@/components/ddi-select";
+import { DDISelect } from "@/components/ddi-select";
 
 const schema = z.object({
   estabelecimento_id: z.number({
@@ -800,9 +800,9 @@ export default function AbastecimentoForm({
               <div>
                 <Label>Telefone *</Label>
                 <div className="flex gap-2">
-                  <DdiSelect
+                  <DDISelect
                     value={watchedValues.ddi}
-                    onValueChange={(value) => setValue("ddi", value)}
+                    onChange={(value) => setValue("ddi", value)}
                   />
                   <Input
                     id="telefone"
