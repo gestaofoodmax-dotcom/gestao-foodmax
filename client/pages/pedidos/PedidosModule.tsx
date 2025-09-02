@@ -385,7 +385,7 @@ export default function PedidosModule() {
           list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
         toast({
           title: "Pedido atualizado",
-          description: "Pedido atualizado (local)",
+          description: "Pedido atualizado",
         });
       } else {
         const novo: Pedido = {
@@ -403,7 +403,7 @@ export default function PedidosModule() {
           data_atualizacao: now,
         } as any;
         list.unshift(novo);
-        toast({ title: "Pedido criado", description: "Pedido criado (local)" });
+        toast({ title: "Pedido criado", description: "Pedido criado" });
       }
       writeLocalPedidos(list);
       setPedidos(enrichWithEstabelecimentoNome(list) as any);
@@ -432,7 +432,7 @@ export default function PedidosModule() {
         setPedidos(enrichWithEstabelecimentoNome(list) as any);
         toast({
           title: "Pedido finalizado",
-          description: "Status alterado (local)",
+          description: "Status alterado",
         });
         await loadCounts();
       }
@@ -458,7 +458,7 @@ export default function PedidosModule() {
       setPedidos(enrichWithEstabelecimentoNome(list) as any);
       toast({
         title: "Pedido excluído",
-        description: "Pedido excluído (local)",
+        description: "Pedido excluído",
       });
       setSelectedIds([]);
       await loadCounts();
@@ -533,27 +533,27 @@ export default function PedidosModule() {
         if (extras.length > 0) {
           for (const e of extras) {
             exportRows.push({
-              ...base,
-              cardapio_nome: "",
-              cardapio_preco_total: "",
-              extra_item_nome: e.item_nome || "",
-              extra_item_categoria: e.categoria_nome || "",
-              extra_item_quantidade: e.quantidade ?? "",
-              extra_item_valor_unitario: ((e.valor_unitario || 0) / 100).toFixed(2),
-            });
+          ...base,
+          cardapio_nome: "",
+          cardapio_preco_total: "",
+          itens_extras_nome: e.item_nome || "",
+          itens_extras_categoria: e.categoria_nome || "",
+          itens_extras_quantidade: e.quantidade ?? "",
+          itens_extras_valor_unitario: ((e.valor_unitario || 0) / 100).toFixed(2),
+        });
           }
         }
 
         if (cardapios.length === 0 && extras.length === 0) {
           exportRows.push({
-            ...base,
-            cardapio_nome: "",
-            cardapio_preco_total: "",
-            extra_item_nome: "",
-            extra_item_categoria: "",
-            extra_item_quantidade: "",
-            extra_item_valor_unitario: "",
-          });
+          ...base,
+          cardapio_nome: "",
+          cardapio_preco_total: "",
+          itens_extras_nome: "",
+          itens_extras_categoria: "",
+          itens_extras_quantidade: "",
+          itens_extras_valor_unitario: "",
+        });
         }
       } catch {
         exportRows.push({
@@ -569,10 +569,10 @@ export default function PedidosModule() {
           observacao: p.observacao || "",
           cardapio_nome: "",
           cardapio_preco_total: "",
-          extra_item_nome: "",
-          extra_item_categoria: "",
-          extra_item_quantidade: "",
-          extra_item_valor_unitario: "",
+          itens_extras_nome: "",
+          itens_extras_categoria: "",
+          itens_extras_quantidade: "",
+          itens_extras_valor_unitario: "",
         });
       }
     }
@@ -845,10 +845,10 @@ export default function PedidosModule() {
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "cardapio_nome", label: "Cardápio" },
           { key: "cardapio_preco_total", label: "Cardápio Preço Total" },
-          { key: "extra_item_nome", label: "Item Extra" },
-          { key: "extra_item_categoria", label: "Categoria do Extra" },
-          { key: "extra_item_quantidade", label: "Qtde Extra" },
-          { key: "extra_item_valor_unitario", label: "Valor Unitário Extra" },
+          { key: "itens_extras_nome", label: "Itens Extras Nome" },
+          { key: "itens_extras_categoria", label: "Itens Extras Categoria" },
+          { key: "itens_extras_quantidade", label: "Itens Extras Quantidade" },
+          { key: "itens_extras_valor_unitario", label: "Itens Extras Valor Unitario" },
         ]}
       />
 
@@ -869,10 +869,10 @@ export default function PedidosModule() {
           { key: "observacao", label: "Observação" },
           { key: "cardapio_nome", label: "Cardápio" },
           { key: "cardapio_preco_total", label: "Cardápio Preço Total" },
-          { key: "extra_item_nome", label: "Item Extra" },
-          { key: "extra_item_categoria", label: "Categoria do Extra" },
-          { key: "extra_item_quantidade", label: "Qtde Extra" },
-          { key: "extra_item_valor_unitario", label: "Valor Unitário Extra" },
+          { key: "itens_extras_nome", label: "Itens Extras Nome" },
+          { key: "itens_extras_categoria", label: "Itens Extras Categoria" },
+          { key: "itens_extras_quantidade", label: "Itens Extras Quantidade" },
+          { key: "itens_extras_valor_unitario", label: "Itens Extras Valor Unitario" },
         ]}
         mapHeader={(h) => {
           const n = h.trim().toLowerCase();
@@ -898,17 +898,23 @@ export default function PedidosModule() {
             "cardapio nome": "cardapio_nome",
             "cardápio preço total": "cardapio_preco_total",
             "cardapio preco total": "cardapio_preco_total",
-            "item extra": "extra_item_nome",
-            item: "extra_item_nome",
-            "item nome": "extra_item_nome",
-            categoria: "extra_item_categoria",
-            "item categoria": "extra_item_categoria",
-            quantidade: "extra_item_quantidade",
-            qtde: "extra_item_quantidade",
-            "quantidade do item": "extra_item_quantidade",
-            "valor unitário": "extra_item_valor_unitario",
-            "valor unitario": "extra_item_valor_unitario",
-            "item valor unitario": "extra_item_valor_unitario",
+            // Old extras headers mapping to new keys
+            "item extra": "itens_extras_nome",
+            item: "itens_extras_nome",
+            "item nome": "itens_extras_nome",
+            categoria: "itens_extras_categoria",
+            "item categoria": "itens_extras_categoria",
+            quantidade: "itens_extras_quantidade",
+            qtde: "itens_extras_quantidade",
+            "quantidade do item": "itens_extras_quantidade",
+            "valor unitário": "itens_extras_valor_unitario",
+            "valor unitario": "itens_extras_valor_unitario",
+            "item valor unitario": "itens_extras_valor_unitario",
+            // New exact headers
+            "itens extras nome": "itens_extras_nome",
+            "itens extras categoria": "itens_extras_categoria",
+            "itens extras quantidade": "itens_extras_quantidade",
+            "itens extras valor unitario": "itens_extras_valor_unitario",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
@@ -922,8 +928,7 @@ export default function PedidosModule() {
           const status = String(r.status || "Pendente").trim();
           if (status && !STATUS_PEDIDO.includes(status as any))
             errors.push(`Status inválido: '${status}'`);
-          // Validate quantities and values if provided
-          if (r.extra_item_quantidade && isNaN(Number(r.extra_item_quantidade)))
+          if (r.itens_extras_quantidade && isNaN(Number(r.itens_extras_quantidade)))
             errors.push("Quantidade do item extra inválida");
           return errors;
         }}
