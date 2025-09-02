@@ -357,6 +357,17 @@ export default function PedidosModule() {
   };
 
   const refreshAfterMutation = async () => {
+    // Limpar todos os caches relevantes
+    try {
+      localStorage.removeItem(LOCAL_PEDIDOS);
+      localStorage.removeItem("fm_pedidos_cache");
+      localStorage.removeItem("fm_grid_cache");
+    } catch {}
+
+    // Limpar seleção
+    setSelectedIds([]);
+
+    // Recarregar dados
     await Promise.all([loadPedidos(), loadCounts()]);
   };
 
@@ -458,25 +469,16 @@ export default function PedidosModule() {
         title: "Pedido excluído",
         description: "Pedido excluído com sucesso",
       });
-      try {
-        localStorage.removeItem(LOCAL_PEDIDOS);
-      } catch {}
-      setSelectedIds([]);
       await refreshAfterMutation();
       setShowDeleteAlert(false);
     } catch (error: any) {
       const list = readLocalPedidos().filter((e) => e.id !== currentPedido.id);
       writeLocalPedidos(list);
-      try {
-        localStorage.removeItem(LOCAL_PEDIDOS);
-      } catch {}
-      setPedidos(enrichWithEstabelecimentoNome(list) as any);
+      await refreshAfterMutation();
       toast({
         title: "Pedido excluído",
         description: "Pedido excluído com sucesso",
       });
-      setSelectedIds([]);
-      await loadCounts();
       setShowDeleteAlert(false);
     }
   };
@@ -511,19 +513,6 @@ export default function PedidosModule() {
       try {
         const det = await makeRequest(`/api/pedidos/${p.id}`);
         const pedido = det || p;
-        const base = {
-          estabelecimento_nome:
-            pedido.estabelecimento_nome || p.estabelecimento_nome || "",
-          cliente_nome: pedido.cliente_nome || "",
-          codigo: pedido.codigo,
-          tipo_pedido: pedido.tipo_pedido,
-          valor_total: ((pedido.valor_total || 0) / 100).toFixed(2),
-          status: pedido.status,
-          data_hora_finalizado: pedido.data_hora_finalizado || "",
-          data_cadastro: pedido.data_cadastro || "",
-          data_atualizacao: pedido.data_atualizacao || "",
-          observacao: pedido.observacao || "",
-        };
 
         const cardapios: any[] = Array.isArray(pedido.cardapios)
           ? pedido.cardapios
@@ -532,48 +521,46 @@ export default function PedidosModule() {
           ? pedido.itens_extras
           : [];
 
-        if (cardapios.length > 0) {
-          for (const c of cardapios) {
-            exportRows.push({
-              ...base,
-              cardapio_nome: c.cardapio_nome || "",
-              cardapio_preco_total: ((c.preco_total || 0) / 100).toFixed(2),
-              extra_item_nome: "",
-              extra_item_categoria: "",
-              extra_item_quantidade: "",
-              extra_item_valor_unitario: "",
-            });
-          }
-        }
+        // Consolidar cardápios em uma única string
+        const cardapiosInfo = cardapios.length > 0
+          ? cardapios.map(c => `${c.cardapio_nome || 'N/A'} (R$ ${((c.preco_total || 0) / 100).toFixed(2)})`).join('; ')
+          : '';
 
-        if (extras.length > 0) {
-          for (const e of extras) {
-            exportRows.push({
-              ...base,
-              cardapio_nome: "",
-              cardapio_preco_total: "",
-              itens_extras_nome: e.item_nome || "",
-              itens_extras_categoria: e.categoria_nome || "",
-              itens_extras_quantidade: e.quantidade ?? "",
-              itens_extras_valor_unitario: (
-                (e.valor_unitario || 0) / 100
-              ).toFixed(2),
-            });
-          }
-        }
+        // Consolidar itens extras em strings separadas
+        const extrasNomes = extras.length > 0
+          ? extras.map(e => e.item_nome || '').filter(n => n).join('; ')
+          : '';
+        const extrasCategorias = extras.length > 0
+          ? extras.map(e => e.categoria_nome || '').filter(n => n).join('; ')
+          : '';
+        const extrasQuantidades = extras.length > 0
+          ? extras.map(e => e.quantidade ?? '').filter(n => n !== '').join('; ')
+          : '';
+        const extrasValores = extras.length > 0
+          ? extras.map(e => `R$ ${((e.valor_unitario || 0) / 100).toFixed(2)}`).join('; ')
+          : '';
 
-        if (cardapios.length === 0 && extras.length === 0) {
-          exportRows.push({
-            ...base,
-            cardapio_nome: "",
-            cardapio_preco_total: "",
-            itens_extras_nome: "",
-            itens_extras_categoria: "",
-            itens_extras_quantidade: "",
-            itens_extras_valor_unitario: "",
-          });
-        }
+        // Uma única linha por pedido com dados consolidados
+        exportRows.push({
+          estabelecimento_nome:
+            pedido.estabelecimento_nome || p.estabelecimento_nome || "",
+          cliente_nome: pedido.cliente_nome || "",
+          codigo: pedido.codigo,
+          tipo_pedido: pedido.tipo_pedido,
+          valor_total: ((pedido.valor_total || 0) / 100).toFixed(2),
+          status: pedido.status,
+          data_hora_finalizado: pedido.data_hora_finalizado || "",
+          observacao: pedido.observacao || "",
+          data_cadastro: pedido.data_cadastro || "",
+          data_atualizacao: pedido.data_atualizacao || "",
+          cardapios: cardapiosInfo,
+          itens_extras_nome: extrasNomes,
+          itens_extras_categoria: extrasCategorias,
+          itens_extras_quantidade: extrasQuantidades,
+          itens_extras_valor_unitario: extrasValores,
+        });
       } catch {
+        // Fallback para dados básicos sem detalhamento
         exportRows.push({
           estabelecimento_nome: p.estabelecimento_nome || "",
           cliente_nome: "",
@@ -582,11 +569,10 @@ export default function PedidosModule() {
           valor_total: ((p.valor_total || 0) / 100).toFixed(2),
           status: p.status,
           data_hora_finalizado: p.data_hora_finalizado || "",
+          observacao: p.observacao || "",
           data_cadastro: p.data_cadastro || "",
           data_atualizacao: p.data_atualizacao || "",
-          observacao: p.observacao || "",
-          cardapio_nome: "",
-          cardapio_preco_total: "",
+          cardapios: "",
           itens_extras_nome: "",
           itens_extras_categoria: "",
           itens_extras_quantidade: "",
@@ -861,8 +847,7 @@ export default function PedidosModule() {
           { key: "observacao", label: "Observação" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
-          { key: "cardapio_nome", label: "Cardápio" },
-          { key: "cardapio_preco_total", label: "Cardápio Preço Total" },
+          { key: "cardapios", label: "Cardápios" },
           { key: "itens_extras_nome", label: "Itens Extras Nome" },
           { key: "itens_extras_categoria", label: "Itens Extras Categoria" },
           { key: "itens_extras_quantidade", label: "Itens Extras Quantidade" },
@@ -1004,24 +989,18 @@ export default function PedidosModule() {
               title: "Pedidos excluídos",
               description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
             });
-            try {
-              localStorage.removeItem(LOCAL_PEDIDOS);
-            } catch {}
             await refreshAfterMutation();
-            setSelectedIds([]);
             setShowBulkDelete(false);
           } catch (error: any) {
             const list = readLocalPedidos().filter(
               (e) => !selectedIds.includes(e.id),
             );
             writeLocalPedidos(list);
-            setPedidos(enrichWithEstabelecimentoNome(list) as any);
             toast({
               title: "Exclusão concluída localmente",
               description: `${selectedIds.length} registro(s) removido(s)`,
             });
-            setSelectedIds([]);
-            await loadCounts();
+            await refreshAfterMutation();
             setShowBulkDelete(false);
           }
         }}
