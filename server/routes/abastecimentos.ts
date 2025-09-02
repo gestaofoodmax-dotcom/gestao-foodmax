@@ -221,70 +221,104 @@ export const getAbastecimento: RequestHandler = async (req, res) => {
 
 export const createAbastecimento: RequestHandler = async (req, res) => {
   try {
+    console.log("=== CreateAbastecimento START ===");
+    console.log("Request body:", JSON.stringify(req.body, null, 2));
+
     const userId = getUserId(req);
+    console.log("User ID:", userId);
     if (!userId)
       return res.status(401).json({ error: "Usuário não autenticado" });
-    const supabase = getSupabaseServiceClient();
 
+    const supabase = getSupabaseServiceClient();
+    console.log("Supabase client obtained");
+
+    console.log("Parsing request body with schema...");
     const parsed = AbastecimentoSchema.parse(req.body);
+    console.log("Parsed data:", JSON.stringify(parsed, null, 2));
 
     // Calculate quantidade_total
     const quantidade_total = parsed.itens.reduce(
       (sum, item) => sum + item.quantidade,
       0,
     );
+    console.log("Calculated quantidade_total:", quantidade_total);
+
+    const abastecimentoData = {
+      id_usuario: userId,
+      estabelecimento_id: parsed.estabelecimento_id,
+      fornecedores_ids: parsed.fornecedores_ids,
+      categoria_id: parsed.categoria_id,
+      quantidade_total,
+      telefone: parsed.telefone,
+      ddi: parsed.ddi,
+      email: parsed.email || null,
+      data_hora_recebido: parsed.data_hora_recebido || null,
+      observacao: parsed.observacao || null,
+      status: parsed.status || "Pendente",
+      email_enviado: parsed.email_enviado || false,
+    };
+    console.log("Abastecimento data to insert:", JSON.stringify(abastecimentoData, null, 2));
 
     const { data: abastecimento, error } = await supabase
       .from("abastecimentos")
-      .insert({
-        id_usuario: userId,
-        estabelecimento_id: parsed.estabelecimento_id,
-        fornecedores_ids: parsed.fornecedores_ids,
-        categoria_id: parsed.categoria_id,
-        quantidade_total,
-        telefone: parsed.telefone,
-        ddi: parsed.ddi,
-        email: parsed.email || null,
-        data_hora_recebido: parsed.data_hora_recebido || null,
-        observacao: parsed.observacao || null,
-        status: parsed.status || "Pendente",
-        email_enviado: parsed.email_enviado || false,
-      })
+      .insert(abastecimentoData)
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase error inserting abastecimento:", error);
+      throw error;
+    }
+    console.log("Abastecimento inserted successfully:", abastecimento);
 
     // Insert itens
     if (parsed.itens.length > 0) {
-      await supabase.from("abastecimentos_itens").insert(
-        parsed.itens.map((item) => ({
-          abastecimento_id: abastecimento.id,
-          item_id: item.item_id,
-          quantidade: item.quantidade,
-        })),
-      );
+      const itensData = parsed.itens.map((item) => ({
+        abastecimento_id: abastecimento.id,
+        item_id: item.item_id,
+        quantidade: item.quantidade,
+      }));
+      console.log("Inserting itens:", JSON.stringify(itensData, null, 2));
+
+      const { error: itensError } = await supabase.from("abastecimentos_itens").insert(itensData);
+      if (itensError) {
+        console.error("Error inserting itens:", itensError);
+        throw itensError;
+      }
+      console.log("Itens inserted successfully");
     }
 
     // Insert endereco
-    await supabase.from("abastecimentos_enderecos").insert({
+    const enderecoData = {
       abastecimento_id: abastecimento.id,
       cep: parsed.endereco.cep || null,
       endereco: parsed.endereco.endereco,
       cidade: parsed.endereco.cidade,
       uf: parsed.endereco.uf,
       pais: parsed.endereco.pais,
-    });
+    };
+    console.log("Inserting endereco:", JSON.stringify(enderecoData, null, 2));
 
+    const { error: enderecoError } = await supabase.from("abastecimentos_enderecos").insert(enderecoData);
+    if (enderecoError) {
+      console.error("Error inserting endereco:", enderecoError);
+      throw enderecoError;
+    }
+    console.log("Endereco inserted successfully");
+
+    console.log("=== CreateAbastecimento SUCCESS ===");
     res.status(201).json(abastecimento);
   } catch (error: any) {
+    console.error("=== CreateAbastecimento ERROR ===");
     console.error("Error creating abastecimento:", error);
     if (error.name === "ZodError") {
+      console.error("Zod validation errors:", error.errors);
       return res
         .status(400)
         .json({ error: "Dados inválidos", details: error.errors });
     }
-    res.status(500).json({ error: "Erro interno do servidor" });
+    console.error("Full error object:", JSON.stringify(error, null, 2));
+    res.status(500).json({ error: "Erro interno do servidor", details: error.message });
   }
 };
 
@@ -410,7 +444,7 @@ export const bulkDeleteAbastecimentos: RequestHandler = async (req, res) => {
 
     const { ids }: { ids: number[] } = req.body;
     if (!Array.isArray(ids) || ids.length === 0)
-      return res.status(400).json({ error: "IDs inv��lidos" });
+      return res.status(400).json({ error: "IDs inválidos" });
 
     const { error } = await supabase
       .from("abastecimentos")
