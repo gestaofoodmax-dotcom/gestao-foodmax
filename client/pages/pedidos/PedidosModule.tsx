@@ -1112,22 +1112,37 @@ export default function PedidosModule() {
 
           return lowerMap[n] || n.replace(/\s+/g, "_");
         }}
-        validateRecord={(r) => {
+        validateRecord={(r, index) => {
           const errors: string[] = [];
-          if (!r.estabelecimento_nome)
+
+          console.log(`Validating record ${index + 1}:`, r);
+
+          // Check estabelecimento
+          if (!r.estabelecimento_nome && !r.estabelecimento) {
             errors.push("Estabelecimento é obrigatório");
+          }
+
+          // Check tipo_pedido
           const tipo = String(r.tipo_pedido || "").trim();
-          if (!tipo) errors.push("Tipo de Pedido é obrigatório");
-          else if (!TIPOS_PEDIDO.includes(tipo as any))
-            errors.push(`Tipo inválido: '${tipo}'`);
+          if (!tipo) {
+            errors.push("Tipo de Pedido é obrigatório");
+          } else if (!TIPOS_PEDIDO.includes(tipo as any)) {
+            errors.push(`Tipo inválido: '${tipo}'. Valores aceitos: ${TIPOS_PEDIDO.join(", ")}`);
+          }
+
+          // Check status (optional, defaults to Pendente)
           const status = String(r.status || "Pendente").trim();
-          if (status && !STATUS_PEDIDO.includes(status as any))
-            errors.push(`Status inválido: '${status}'`);
-          if (
-            r.itens_extras_quantidade &&
-            isNaN(Number(r.itens_extras_quantidade))
-          )
-            errors.push("Quantidade do item extra inválida");
+          if (status && !STATUS_PEDIDO.includes(status as any)) {
+            errors.push(`Status inválido: '${status}'. Valores aceitos: ${STATUS_PEDIDO.join(", ")}`);
+          }
+
+          // Check valor_total
+          const valorStr = String(r.valor_total || "").trim();
+          if (valorStr && isNaN(parseFloat(valorStr.replace(/[R$\s,]/g, "").replace(",", ".")))) {
+            errors.push("Valor Total inválido");
+          }
+
+          console.log(`Record ${index + 1} validation errors:`, errors);
           return errors;
         }}
         onImport={async (records) => {
