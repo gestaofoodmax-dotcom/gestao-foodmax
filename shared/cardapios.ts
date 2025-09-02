@@ -6,7 +6,7 @@ export interface Cardapio {
   quantidade_total: number;
   preco_itens: number;
   margem_lucro_percentual: number;
-  preco_total_centavos: number;
+  preco_total: number;
   descricao?: string;
   ativo: boolean;
   data_cadastro: string;
@@ -52,7 +52,7 @@ export interface CreateCardapioRequest {
   nome: string;
   tipo_cardapio: TipoCardapio;
   margem_lucro_percentual: number;
-  preco_total_centavos: number;
+  preco_total: number;
   descricao?: string;
   ativo?: boolean;
   itens: {
