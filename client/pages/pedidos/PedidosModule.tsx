@@ -753,6 +753,13 @@ export default function PedidosModule() {
         const parseDate = (dateStr: string) => {
           if (!dateStr) return null;
 
+          // Skip time-only values (HH:MM:SS format without date)
+          const timeOnlyPattern = /^\d{1,2}:\d{2}:\d{2}$/;
+          if (timeOnlyPattern.test(dateStr.trim())) {
+            console.log(`⏰ Skipping time-only value: "${dateStr}"`);
+            return null;
+          }
+
           try {
             // Handle DD/MM/YYYY, HH:MM:SS format (from CSV export)
             if (dateStr.includes("/") && dateStr.includes(",")) {
@@ -760,30 +767,60 @@ export default function PedidosModule() {
               const [datePart, timePart] = dateStr.split(",").map(s => s.trim());
               const [day, month, year] = datePart.split("/");
 
+              // Validate date components
+              const dayNum = parseInt(day);
+              const monthNum = parseInt(month);
+              const yearNum = parseInt(year);
+
+              if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum) ||
+                  dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12 || yearNum < 1900) {
+                console.log(`❌ Invalid date components in "${dateStr}"`);
+                return null;
+              }
+
               if (timePart) {
                 // Parse time component
                 const [hours, minutes, seconds] = timePart.split(":");
+                const hoursNum = parseInt(hours || "0");
+                const minutesNum = parseInt(minutes || "0");
+                const secondsNum = parseInt(seconds || "0");
+
+                // Validate time components
+                if (isNaN(hoursNum) || isNaN(minutesNum) || isNaN(secondsNum) ||
+                    hoursNum < 0 || hoursNum > 23 || minutesNum < 0 || minutesNum > 59 || secondsNum < 0 || secondsNum > 59) {
+                  console.log(`❌ Invalid time components in "${dateStr}"`);
+                  return null;
+                }
 
                 // Use UTC to prevent timezone conversion issues
                 const parsedDate = new Date(Date.UTC(
-                  parseInt(year),
-                  parseInt(month) - 1,
-                  parseInt(day),
-                  parseInt(hours || "0"),
-                  parseInt(minutes || "0"),
-                  parseInt(seconds || "0")
+                  yearNum,
+                  monthNum - 1,
+                  dayNum,
+                  hoursNum,
+                  minutesNum,
+                  secondsNum
                 ));
+
+                // Validate the created date
+                if (isNaN(parsedDate.getTime())) {
+                  console.log(`❌ Invalid date created from "${dateStr}"`);
+                  return null;
+                }
 
                 const isoString = parsedDate.toISOString();
                 console.log(`✅ Parsed datetime "${dateStr}" -> "${isoString}"`);
                 return isoString;
               } else {
                 // No time component, just date - use UTC
-                const parsedDate = new Date(Date.UTC(
-                  parseInt(year),
-                  parseInt(month) - 1,
-                  parseInt(day)
-                ));
+                const parsedDate = new Date(Date.UTC(yearNum, monthNum - 1, dayNum));
+
+                // Validate the created date
+                if (isNaN(parsedDate.getTime())) {
+                  console.log(`❌ Invalid date created from "${dateStr}"`);
+                  return null;
+                }
+
                 const isoString = parsedDate.toISOString();
                 return isoString;
               }
@@ -791,16 +828,37 @@ export default function PedidosModule() {
             // Handle DD/MM/YYYY format (date only)
             else if (dateStr.includes("/")) {
               const [day, month, year] = dateStr.split("/");
-              const parsedDate = new Date(Date.UTC(
-                parseInt(year),
-                parseInt(month) - 1,
-                parseInt(day),
-              ));
+              const dayNum = parseInt(day);
+              const monthNum = parseInt(month);
+              const yearNum = parseInt(year);
+
+              // Validate date components
+              if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum) ||
+                  dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12 || yearNum < 1900) {
+                console.log(`❌ Invalid date components in "${dateStr}"`);
+                return null;
+              }
+
+              const parsedDate = new Date(Date.UTC(yearNum, monthNum - 1, dayNum));
+
+              // Validate the created date
+              if (isNaN(parsedDate.getTime())) {
+                console.log(`❌ Invalid date created from "${dateStr}"`);
+                return null;
+              }
+
               const isoString = parsedDate.toISOString();
               return isoString;
             }
             // Handle other formats (ISO strings, etc.)
             const fallbackDate = new Date(dateStr);
+
+            // Validate the created date
+            if (isNaN(fallbackDate.getTime())) {
+              console.log(`❌ Invalid date from fallback parsing: "${dateStr}"`);
+              return null;
+            }
+
             const isoString = fallbackDate.toISOString();
             return isoString;
           } catch (error) {
