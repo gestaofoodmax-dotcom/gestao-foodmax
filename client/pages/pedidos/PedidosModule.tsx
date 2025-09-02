@@ -649,7 +649,15 @@ export default function PedidosModule() {
 
         if (!estId) {
           console.log(`Skipping record ${i + 1}: No establishment found for "${nomeEst}"`);
-          continue;
+          // Try to create establishment locally if missing
+          if (nomeEst) {
+            const newEstId = Date.now() + Math.floor(Math.random() * 1000);
+            estMap.set(newEstId, nomeEst);
+            estId = newEstId;
+            console.log(`Created temporary establishment: ${nomeEst} with ID ${estId}`);
+          } else {
+            continue;
+          }
         }
 
         // Validate tipo_pedido
