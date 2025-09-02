@@ -1276,22 +1276,10 @@ export default function PedidosModule() {
           { key: "observacao", label: "Observação" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
-          { key: "cardapios", label: "Cardápios (Nome (R$ Preço); ...)" },
+          { key: "cardapios", label: "Cardápios (Nome - R$ Preço; ...)" },
           {
-            key: "itens_extras_nome",
-            label: "Itens Extras Nome (separados por ;)",
-          },
-          {
-            key: "itens_extras_categoria",
-            label: "Itens Extras Categoria (separados por ;)",
-          },
-          {
-            key: "itens_extras_quantidade",
-            label: "Itens Extras Quantidade (separados por ;)",
-          },
-          {
-            key: "itens_extras_valor_unitario",
-            label: "Itens Extras Valor Unitario (separados por ;)",
+            key: "itens_extras",
+            label: "Itens Extras (Nome - Categoria - Quantidade - R$ Valor; ...)",
           },
         ]}
         mapHeader={(h) => {
