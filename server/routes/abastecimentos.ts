@@ -223,6 +223,7 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
   try {
     console.log("=== CreateAbastecimento START ===");
     console.log("Request body:", JSON.stringify(req.body, null, 2));
+    console.log("Request headers:", JSON.stringify(req.headers, null, 2));
 
     const userId = getUserId(req);
     console.log("User ID:", userId);
@@ -231,6 +232,29 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
 
     const supabase = getSupabaseServiceClient();
     console.log("Supabase client obtained");
+
+    // Test database connectivity
+    console.log("Testing database connectivity...");
+    const { data: testQuery, error: testError } = await supabase
+      .from("usuarios")
+      .select("id")
+      .eq("id", userId)
+      .single();
+
+    if (testError) {
+      console.error("Database connectivity test failed:", testError);
+      return res.status(500).json({
+        error: "Erro de conexão com o banco de dados",
+        details: testError.message
+      });
+    }
+
+    if (!testQuery) {
+      console.error("User not found in database:", userId);
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    console.log("Database connectivity test passed");
 
     console.log("Parsing request body with schema...");
     const parsed = AbastecimentoSchema.parse(req.body);
