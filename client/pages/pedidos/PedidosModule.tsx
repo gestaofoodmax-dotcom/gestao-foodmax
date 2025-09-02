@@ -743,45 +743,71 @@ export default function PedidosModule() {
         // Parse dates correctly - handles both date and datetime formats
         const parseDate = (dateStr: string) => {
           if (!dateStr) return null;
+
+          console.log(`🔍 Parsing date: "${dateStr}"`);
+
           try {
             // Handle DD/MM/YYYY, HH:MM:SS format (from CSV export)
             if (dateStr.includes("/") && dateStr.includes(",")) {
+              console.log(`📅 Detected datetime format: "${dateStr}"`);
+
               // Split on comma to separate date and time: "02/09/2025, 01:07:27"
               const [datePart, timePart] = dateStr.split(",").map(s => s.trim());
               const [day, month, year] = datePart.split("/");
 
+              console.log(`📅 Date part: "${datePart}" -> day:${day}, month:${month}, year:${year}`);
+              console.log(`⏰ Time part: "${timePart}"`);
+
               if (timePart) {
                 // Parse time component
                 const [hours, minutes, seconds] = timePart.split(":");
-                return new Date(
+                console.log(`⏰ Time components -> hours:${hours}, minutes:${minutes}, seconds:${seconds}`);
+
+                const parsedDate = new Date(
                   parseInt(year),
                   parseInt(month) - 1,
                   parseInt(day),
                   parseInt(hours || "0"),
                   parseInt(minutes || "0"),
                   parseInt(seconds || "0")
-                ).toISOString();
+                );
+
+                const isoString = parsedDate.toISOString();
+                console.log(`✅ Final parsed datetime: "${isoString}"`);
+                return isoString;
               } else {
                 // No time component, just date
-                return new Date(
+                const parsedDate = new Date(
                   parseInt(year),
                   parseInt(month) - 1,
                   parseInt(day)
-                ).toISOString();
+                );
+                const isoString = parsedDate.toISOString();
+                console.log(`✅ Final parsed date: "${isoString}"`);
+                return isoString;
               }
             }
             // Handle DD/MM/YYYY format (date only)
             else if (dateStr.includes("/")) {
+              console.log(`📅 Detected date-only format: "${dateStr}"`);
               const [day, month, year] = dateStr.split("/");
-              return new Date(
+              const parsedDate = new Date(
                 parseInt(year),
                 parseInt(month) - 1,
                 parseInt(day),
-              ).toISOString();
+              );
+              const isoString = parsedDate.toISOString();
+              console.log(`✅ Final parsed date: "${isoString}"`);
+              return isoString;
             }
             // Handle other formats (ISO strings, etc.)
-            return new Date(dateStr).toISOString();
-          } catch {
+            console.log(`🔄 Using fallback parsing for: "${dateStr}"`);
+            const fallbackDate = new Date(dateStr);
+            const isoString = fallbackDate.toISOString();
+            console.log(`✅ Fallback parsed: "${isoString}"`);
+            return isoString;
+          } catch (error) {
+            console.error(`❌ Error parsing date "${dateStr}":`, error);
             return null;
           }
         };
