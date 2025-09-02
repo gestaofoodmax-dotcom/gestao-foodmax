@@ -147,7 +147,7 @@ export default function PedidoView({
                 <p className="text-xs text-gray-500 mt-1">
                   Cadastrado em{" "}
                   {new Date(detalhe.data_cadastro).toLocaleString("pt-BR", {
-                    timeZone: "America/Sao_Paulo",
+                    timeZone: "UTC",
                   })}
                 </p>
               </div>
@@ -281,14 +281,14 @@ export default function PedidoView({
                   label="Data de Cadastro"
                   value={new Date(detalhe.data_cadastro).toLocaleString(
                     "pt-BR",
-                    { timeZone: "America/Sao_Paulo" },
+                    { timeZone: "UTC" },
                   )}
                 />
                 <DataField
-                  label="Última Atualização"
+                  label="��ltima Atualização"
                   value={new Date(detalhe.data_atualizacao).toLocaleString(
                     "pt-BR",
-                    { timeZone: "America/Sao_Paulo" },
+                    { timeZone: "UTC" },
                   )}
                 />
                 <DataField
@@ -297,7 +297,7 @@ export default function PedidoView({
                     detalhe.data_hora_finalizado
                       ? new Date(detalhe.data_hora_finalizado).toLocaleString(
                           "pt-BR",
-                          { timeZone: "America/Sao_Paulo" },
+                          { timeZone: "UTC" },
                         )
                       : "-"
                   }
