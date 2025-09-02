@@ -32,7 +32,7 @@ export interface PedidoItemExtra {
   item_id: number;
   categoria_id: number;
   quantidade: number;
-  valor_unitario_centavos: number;
+  valor_unitario: number;
   data_cadastro: string;
   data_atualizacao: string;
 }
@@ -61,7 +61,7 @@ export interface CreatePedidoRequest {
     item_id: number;
     categoria_id: number;
     quantidade: number;
-    valor_unitario_centavos: number;
+    valor_unitario: number;
   }[];
   data_hora_finalizado?: string | null;
 }
