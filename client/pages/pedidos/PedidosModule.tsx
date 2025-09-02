@@ -176,10 +176,19 @@ export default function PedidosModule() {
               variant="ghost"
               size="sm"
               onClick={() => handleFinalize(r)}
-              className="h-8 w-8 p-0 rounded-full border bg-green-50 hover:bg-green-100 border-green-200"
-              title="Finalizar"
+              disabled={r.status === "Finalizado" || !!r.data_hora_finalizado}
+              className={`h-8 w-8 p-0 rounded-full border ${
+                r.status === "Finalizado" || !!r.data_hora_finalizado
+                  ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50"
+                  : "bg-green-50 hover:bg-green-100 border-green-200"
+              }`}
+              title={r.status === "Finalizado" || !!r.data_hora_finalizado ? "Já finalizado" : "Finalizar"}
             >
-              <CheckCircle2 className="w-4 h-4 text-green-700" />
+              <CheckCircle2 className={`w-4 h-4 ${
+                r.status === "Finalizado" || !!r.data_hora_finalizado
+                  ? "text-gray-400"
+                  : "text-green-700"
+              }`} />
             </Button>
             <Button
               variant="ghost"
@@ -824,11 +833,19 @@ export default function PedidosModule() {
           tipo_pedido: tipo,
           valor_total: valor_centavos,
           data_hora_finalizado: (() => {
-            const rawValue = r["data_hora_finalizado"] || r["data/hora finalizado"] || "";
-            console.log(`🎯 Processing data_hora_finalizado for record:`, r);
-            console.log(`🎯 Raw value: "${rawValue}"`);
+            // Check all possible field names for data_hora_finalizado
+            const rawValue = r["data_hora_finalizado"] || r["Data/Hora Finalizado"] || r["data/hora finalizado"] || "";
+            console.log(`🎯 Processing data_hora_finalizado for record ${i + 1}:`);
+            console.log(`🎯 Available keys in record:`, Object.keys(r));
+            console.log(`🎯 Raw value from '${Object.keys(r).find(k => k.toLowerCase().includes('data') && k.toLowerCase().includes('hora')) || 'data_hora_finalizado'}': "${rawValue}"`);
+
+            if (!rawValue) {
+              console.log(`🎯 No data_hora_finalizado value found - will be null`);
+              return null;
+            }
+
             const parsed = parseDate(rawValue);
-            console.log(`🎯 Parsed result: "${parsed}"`);
+            console.log(`🎯 Final parsed result: "${parsed}"`);
             return parsed;
           })(),
           observacao: String(r.observacao || r.observação || "").trim() || null,
