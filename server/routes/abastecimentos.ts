@@ -15,9 +15,9 @@ const AbastecimentoSchema = z.object({
   categoria_id: z.number().int().positive(),
   telefone: z.string().min(1),
   ddi: z.string().min(1),
-  email: z.string().email().nullable().optional(),
-  data_hora_recebido: z.string().nullable().optional(),
-  observacao: z.string().nullable().optional(),
+  email: z.string().email().or(z.literal("")).nullable().optional().transform(val => val === "" ? null : val),
+  data_hora_recebido: z.string().nullable().optional().transform(val => val === "" ? null : val),
+  observacao: z.string().nullable().optional().transform(val => val === "" ? null : val),
   status: StatusAbastecimentoEnum.optional().default("Pendente"),
   email_enviado: z.boolean().optional().default(false),
   itens: z
@@ -29,7 +29,7 @@ const AbastecimentoSchema = z.object({
     )
     .min(1),
   endereco: z.object({
-    cep: z.string().nullable().optional(),
+    cep: z.string().nullable().optional().transform(val => val === "" ? null : val),
     endereco: z.string().min(1),
     cidade: z.string().min(1),
     uf: z.string().length(2),
@@ -410,7 +410,7 @@ export const bulkDeleteAbastecimentos: RequestHandler = async (req, res) => {
 
     const { ids }: { ids: number[] } = req.body;
     if (!Array.isArray(ids) || ids.length === 0)
-      return res.status(400).json({ error: "IDs inválidos" });
+      return res.status(400).json({ error: "IDs inv��lidos" });
 
     const { error } = await supabase
       .from("abastecimentos")
