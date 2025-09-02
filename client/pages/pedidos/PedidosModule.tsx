@@ -637,8 +637,9 @@ export default function PedidosModule() {
           // If no exact match, try partial match
           if (!estId) {
             estId = Array.from(estMap.entries()).find(
-              ([, nome]) => nome.toLowerCase().includes(nomeEst.toLowerCase()) ||
-                           nomeEst.toLowerCase().includes(nome.toLowerCase())
+              ([, nome]) =>
+                nome.toLowerCase().includes(nomeEst.toLowerCase()) ||
+                nomeEst.toLowerCase().includes(nome.toLowerCase()),
             )?.[0];
           }
         } else {
@@ -648,13 +649,17 @@ export default function PedidosModule() {
         console.log(`Found establishment ID: ${estId}`);
 
         if (!estId) {
-          console.log(`Skipping record ${i + 1}: No establishment found for "${nomeEst}"`);
+          console.log(
+            `Skipping record ${i + 1}: No establishment found for "${nomeEst}"`,
+          );
           // Try to create establishment locally if missing
           if (nomeEst) {
             const newEstId = Date.now() + Math.floor(Math.random() * 1000);
             estMap.set(newEstId, nomeEst);
             estId = newEstId;
-            console.log(`Created temporary establishment: ${nomeEst} with ID ${estId}`);
+            console.log(
+              `Created temporary establishment: ${nomeEst} with ID ${estId}`,
+            );
           } else {
             continue;
           }
@@ -677,22 +682,28 @@ export default function PedidosModule() {
         let valor_centavos = 0;
         if (valorStr) {
           // If contains comma as decimal separator (Brazilian format)
-          if (valorStr.includes(',') && !valorStr.includes('.')) {
-            valor_centavos = Math.round(parseFloat(valorStr.replace(',', '.')) * 100);
+          if (valorStr.includes(",") && !valorStr.includes(".")) {
+            valor_centavos = Math.round(
+              parseFloat(valorStr.replace(",", ".")) * 100,
+            );
           }
           // If contains both comma and dot (thousands separator)
-          else if (valorStr.includes(',') && valorStr.includes('.')) {
-            valor_centavos = Math.round(parseFloat(valorStr.replace(/\./g, '').replace(',', '.')) * 100);
+          else if (valorStr.includes(",") && valorStr.includes(".")) {
+            valor_centavos = Math.round(
+              parseFloat(valorStr.replace(/\./g, "").replace(",", ".")) * 100,
+            );
           }
           // If only dots (could be thousands separator or decimal)
-          else if (valorStr.includes('.')) {
-            const parts = valorStr.split('.');
+          else if (valorStr.includes(".")) {
+            const parts = valorStr.split(".");
             if (parts.length === 2 && parts[1].length <= 2) {
               // Decimal separator
               valor_centavos = Math.round(parseFloat(valorStr) * 100);
             } else {
               // Thousands separator
-              valor_centavos = Math.round(parseFloat(valorStr.replace(/\./g, '')) * 100);
+              valor_centavos = Math.round(
+                parseFloat(valorStr.replace(/\./g, "")) * 100,
+              );
             }
           }
           // No separators
@@ -706,9 +717,13 @@ export default function PedidosModule() {
           if (!dateStr) return null;
           try {
             // Handle DD/MM/YYYY format
-            if (dateStr.includes('/')) {
-              const [day, month, year] = dateStr.split('/');
-              return new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).toISOString();
+            if (dateStr.includes("/")) {
+              const [day, month, year] = dateStr.split("/");
+              return new Date(
+                parseInt(year),
+                parseInt(month) - 1,
+                parseInt(day),
+              ).toISOString();
             }
             // Handle other formats
             return new Date(dateStr).toISOString();
@@ -727,11 +742,14 @@ export default function PedidosModule() {
             `${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
           tipo_pedido: tipo,
           valor_total: valor_centavos,
-          data_hora_finalizado: parseDate(r["data_hora_finalizado"] || r["data/hora finalizado"] || ""),
+          data_hora_finalizado: parseDate(
+            r["data_hora_finalizado"] || r["data/hora finalizado"] || "",
+          ),
           observacao: String(r.observacao || r.observação || "").trim() || null,
           status: status,
           data_cadastro: parseDate(r.data_cadastro || "") || now,
-          data_atualizacao: parseDate(r.data_atualizacao || r["data atualização"] || "") || now,
+          data_atualizacao:
+            parseDate(r.data_atualizacao || r["data atualização"] || "") || now,
         };
         novo.estabelecimento_nome = estMap.get(estId);
 
@@ -739,13 +757,16 @@ export default function PedidosModule() {
         const cardapios: any[] = [];
         const cardapiosText = String(r.cardapios || r.cardápios || "").trim();
         if (cardapiosText) {
-          const cardapioItems = cardapiosText.split(';').map(item => item.trim()).filter(item => item);
+          const cardapioItems = cardapiosText
+            .split(";")
+            .map((item) => item.trim())
+            .filter((item) => item);
           for (const item of cardapioItems) {
             // Match pattern: Name (R$ XX.XX)
             const match = item.match(/^(.+?)\s*\(\s*R\$\s*([0-9,\.]+)\s*\)$/i);
             if (match) {
               const nome = match[1].trim();
-              const precoStr = match[2].replace(',', '.');
+              const precoStr = match[2].replace(",", ".");
               const preco = parseFloat(precoStr);
               cardapios.push({
                 cardapio_nome: nome,
@@ -757,19 +778,29 @@ export default function PedidosModule() {
 
         // Process consolidated extras (separated by ;)
         const itensExtras: any[] = [];
-        const extrasNomes = String(r["itens extras nome"] || r.itens_extras_nome || "")
+        const extrasNomes = String(
+          r["itens extras nome"] || r.itens_extras_nome || "",
+        )
           .split(";")
           .map((n) => n.trim())
           .filter((n) => n);
-        const extrasCategorias = String(r["itens extras categoria"] || r.itens_extras_categoria || "")
+        const extrasCategorias = String(
+          r["itens extras categoria"] || r.itens_extras_categoria || "",
+        )
           .split(";")
           .map((c) => c.trim())
           .filter((c) => c);
-        const extrasQuantidades = String(r["itens extras quantidade"] || r.itens_extras_quantidade || "")
+        const extrasQuantidades = String(
+          r["itens extras quantidade"] || r.itens_extras_quantidade || "",
+        )
           .split(";")
           .map((q) => q.trim())
           .filter((q) => q);
-        const extrasValores = String(r["itens extras valor unitario"] || r.itens_extras_valor_unitario || "")
+        const extrasValores = String(
+          r["itens extras valor unitario"] ||
+            r.itens_extras_valor_unitario ||
+            "",
+        )
           .split(";")
           .map((v) => v.trim())
           .filter((v) => v);
@@ -790,7 +821,10 @@ export default function PedidosModule() {
           // Parse value (R$ XX.XX format)
           let valor = 0;
           if (valorStr) {
-            const cleanValue = valorStr.replace(/R\$/g, "").replace(/\s/g, "").replace(",", ".");
+            const cleanValue = valorStr
+              .replace(/R\$/g, "")
+              .replace(/\s/g, "")
+              .replace(",", ".");
             valor = parseFloat(cleanValue) || 0;
           }
 
@@ -811,7 +845,9 @@ export default function PedidosModule() {
         valid.push(novo);
       }
 
-      console.log(`Processed ${records.length} records, ${valid.length} valid records found`);
+      console.log(
+        `Processed ${records.length} records, ${valid.length} valid records found`,
+      );
 
       if (valid.length === 0) {
         return {
@@ -1094,17 +1130,17 @@ export default function PedidosModule() {
           // Exact mapping for CSV headers (case-sensitive match first)
           const exactMap: Record<string, string> = {
             // Exact CSV headers from your file
-            "Estabelecimento": "estabelecimento_nome",
-            "Cliente": "cliente_nome",
-            "Código": "codigo",
+            Estabelecimento: "estabelecimento_nome",
+            Cliente: "cliente_nome",
+            Código: "codigo",
             "Tipo de Pedido": "tipo_pedido",
             "Valor Total": "valor_total",
-            "Status": "status",
+            Status: "status",
             "Data/Hora Finalizado": "data_hora_finalizado",
             "Observa��ão": "observacao",
             "Data Cadastro": "data_cadastro",
             "Data Atualização": "data_atualizacao",
-            "Cardápios": "cardapios",
+            Cardápios: "cardapios",
             "Itens Extras Nome": "itens_extras_nome",
             "Itens Extras Categoria": "itens_extras_categoria",
             "Itens Extras Quantidade": "itens_extras_quantidade",
@@ -1164,18 +1200,27 @@ export default function PedidosModule() {
           if (!tipo) {
             errors.push("Tipo de Pedido é obrigatório");
           } else if (!TIPOS_PEDIDO.includes(tipo as any)) {
-            errors.push(`Tipo inválido: '${tipo}'. Valores aceitos: ${TIPOS_PEDIDO.join(", ")}`);
+            errors.push(
+              `Tipo inválido: '${tipo}'. Valores aceitos: ${TIPOS_PEDIDO.join(", ")}`,
+            );
           }
 
           // Check status (optional, defaults to Pendente)
           const status = String(r.status || "Pendente").trim();
           if (status && !STATUS_PEDIDO.includes(status as any)) {
-            errors.push(`Status inválido: '${status}'. Valores aceitos: ${STATUS_PEDIDO.join(", ")}`);
+            errors.push(
+              `Status inválido: '${status}'. Valores aceitos: ${STATUS_PEDIDO.join(", ")}`,
+            );
           }
 
           // Check valor_total
           const valorStr = String(r.valor_total || "").trim();
-          if (valorStr && isNaN(parseFloat(valorStr.replace(/[R$\s,]/g, "").replace(",", ".")))) {
+          if (
+            valorStr &&
+            isNaN(
+              parseFloat(valorStr.replace(/[R$\s,]/g, "").replace(",", ".")),
+            )
+          ) {
             errors.push("Valor Total inválido");
           }
 
@@ -1183,7 +1228,11 @@ export default function PedidosModule() {
           return errors;
         }}
         onImport={async (records) => {
-          console.log("ImportModal onImport called with", records.length, "records");
+          console.log(
+            "ImportModal onImport called with",
+            records.length,
+            "records",
+          );
 
           // Always use our enhanced handleImportPedidos function
           const result = await handleImportPedidos(records);
