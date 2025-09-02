@@ -878,11 +878,11 @@ export default function PedidosModule() {
           tipo_pedido: tipo,
           valor_total: valor_centavos,
           data_hora_finalizado: (() => {
-            // Check all possible field names for data_hora_finalizado
+            // Check specific field names for data_hora_finalizado only
             const rawValue = r["data_hora_finalizado"] || r["Data/Hora Finalizado"] || r["data/hora finalizado"] || "";
             console.log(`🎯 Processing data_hora_finalizado for record ${i + 1}:`);
             console.log(`🎯 Available keys in record:`, Object.keys(r));
-            console.log(`🎯 Raw value from '${Object.keys(r).find(k => k.toLowerCase().includes('data') && k.toLowerCase().includes('hora')) || 'data_hora_finalizado'}': "${rawValue}"`);
+            console.log(`🎯 Raw data_hora_finalizado value: "${rawValue}"`);
 
             if (!rawValue) {
               console.log(`🎯 No data_hora_finalizado value found - will be null`);
