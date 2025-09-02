@@ -15,9 +15,23 @@ const AbastecimentoSchema = z.object({
   categoria_id: z.number().int().positive(),
   telefone: z.string().min(1),
   ddi: z.string().min(1),
-  email: z.string().email().or(z.literal("")).nullable().optional().transform(val => val === "" ? null : val),
-  data_hora_recebido: z.string().nullable().optional().transform(val => val === "" ? null : val),
-  observacao: z.string().nullable().optional().transform(val => val === "" ? null : val),
+  email: z
+    .string()
+    .email()
+    .or(z.literal(""))
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
+  data_hora_recebido: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
+  observacao: z
+    .string()
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
   status: StatusAbastecimentoEnum.optional().default("Pendente"),
   email_enviado: z.boolean().optional().default(false),
   itens: z
@@ -29,7 +43,11 @@ const AbastecimentoSchema = z.object({
     )
     .min(1),
   endereco: z.object({
-    cep: z.string().nullable().optional().transform(val => val === "" ? null : val),
+    cep: z
+      .string()
+      .nullable()
+      .optional()
+      .transform((val) => (val === "" ? null : val)),
     endereco: z.string().min(1),
     cidade: z.string().min(1),
     uf: z.string().length(2),
@@ -69,7 +87,7 @@ export const testDatabaseConnection: RequestHandler = async (req, res) => {
       console.error("User query error:", userError);
       return res.status(500).json({
         error: "Database query failed",
-        details: userError.message
+        details: userError.message,
       });
     }
 
@@ -100,7 +118,7 @@ export const testDatabaseConnection: RequestHandler = async (req, res) => {
       estabelecimentos: estabelecimentosCount,
       fornecedores: fornecedoresCount,
       categorias: categoriasCount,
-      itens: itensCount
+      itens: itensCount,
     });
 
     res.json({
@@ -117,14 +135,13 @@ export const testDatabaseConnection: RequestHandler = async (req, res) => {
         fornecedores: fornError?.message,
         categorias: catError?.message,
         itens: itensError?.message,
-      }
+      },
     });
-
   } catch (error: any) {
     console.error("Database test error:", error);
     res.status(500).json({
       error: "Database test failed",
-      details: error.message
+      details: error.message,
     });
   }
 };
@@ -330,7 +347,7 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
       console.error("Database connectivity test failed:", testError);
       return res.status(500).json({
         error: "Erro de conexão com o banco de dados",
-        details: testError.message
+        details: testError.message,
       });
     }
 
@@ -366,7 +383,10 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
       status: parsed.status || "Pendente",
       email_enviado: parsed.email_enviado || false,
     };
-    console.log("Abastecimento data to insert:", JSON.stringify(abastecimentoData, null, 2));
+    console.log(
+      "Abastecimento data to insert:",
+      JSON.stringify(abastecimentoData, null, 2),
+    );
 
     const { data: abastecimento, error } = await supabase
       .from("abastecimentos")
@@ -389,7 +409,9 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
       }));
       console.log("Inserting itens:", JSON.stringify(itensData, null, 2));
 
-      const { error: itensError } = await supabase.from("abastecimentos_itens").insert(itensData);
+      const { error: itensError } = await supabase
+        .from("abastecimentos_itens")
+        .insert(itensData);
       if (itensError) {
         console.error("Error inserting itens:", itensError);
         throw itensError;
@@ -408,7 +430,9 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
     };
     console.log("Inserting endereco:", JSON.stringify(enderecoData, null, 2));
 
-    const { error: enderecoError } = await supabase.from("abastecimentos_enderecos").insert(enderecoData);
+    const { error: enderecoError } = await supabase
+      .from("abastecimentos_enderecos")
+      .insert(enderecoData);
     if (enderecoError) {
       console.error("Error inserting endereco:", enderecoError);
       throw enderecoError;
@@ -427,7 +451,9 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
         .json({ error: "Dados inválidos", details: error.errors });
     }
     console.error("Full error object:", JSON.stringify(error, null, 2));
-    res.status(500).json({ error: "Erro interno do servidor", details: error.message });
+    res
+      .status(500)
+      .json({ error: "Erro interno do servidor", details: error.message });
   }
 };
 

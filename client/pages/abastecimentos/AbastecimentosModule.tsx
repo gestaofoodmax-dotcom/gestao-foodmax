@@ -445,13 +445,16 @@ export default function AbastecimentosModule() {
     try {
       if (isEditing && currentAbastecimento) {
         console.log("Updating abastecimento:", currentAbastecimento.id);
-        const response = await makeRequest(`/api/abastecimentos/${currentAbastecimento.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
+        const response = await makeRequest(
+          `/api/abastecimentos/${currentAbastecimento.id}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(data),
           },
-          body: JSON.stringify(data),
-        });
+        );
         console.log("Update response:", response);
         toast({
           title: "Abastecimento atualizado",

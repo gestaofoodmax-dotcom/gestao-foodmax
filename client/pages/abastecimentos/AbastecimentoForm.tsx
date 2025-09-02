@@ -263,10 +263,16 @@ export default function AbastecimentoForm({
         if (response.endereco) {
           console.log("Loading address data:", response.endereco);
           setValue("cep", response.endereco.cep || "", { shouldDirty: true });
-          setValue("endereco", response.endereco.endereco || "", { shouldDirty: true });
-          setValue("cidade", response.endereco.cidade || "", { shouldDirty: true });
+          setValue("endereco", response.endereco.endereco || "", {
+            shouldDirty: true,
+          });
+          setValue("cidade", response.endereco.cidade || "", {
+            shouldDirty: true,
+          });
           setValue("uf", response.endereco.uf || "", { shouldDirty: true });
-          setValue("pais", response.endereco.pais || "Brasil", { shouldDirty: true });
+          setValue("pais", response.endereco.pais || "Brasil", {
+            shouldDirty: true,
+          });
         } else {
           // Clear address fields if no address data
           setValue("cep", "", { shouldDirty: true });
@@ -453,7 +459,7 @@ export default function AbastecimentoForm({
       observacao: data.observacao?.trim() || null,
       status: (data.status as StatusAbastecimento) || "Pendente",
       email_enviado: Boolean(data.email_enviado),
-      itens: selectedItens.map(item => ({
+      itens: selectedItens.map((item) => ({
         item_id: Number(item.item_id),
         quantidade: Number(item.quantidade),
       })),
@@ -927,7 +933,7 @@ export default function AbastecimentoForm({
                     maxLength={15}
                     onInput={(e) => {
                       const target = e.target as HTMLInputElement;
-                      target.value = target.value.replace(/[^0-9]/g, '');
+                      target.value = target.value.replace(/[^0-9]/g, "");
                     }}
                   />
                 </div>

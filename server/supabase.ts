@@ -7,7 +7,10 @@ export function getSupabaseServiceClient() {
   console.log("Supabase Environment Check:");
   console.log("SUPABASE_URL exists:", !!url);
   console.log("SUPABASE_SERVICE_ROLE_KEY exists:", !!serviceKey);
-  console.log("SUPABASE_URL value:", url ? `${url.substring(0, 30)}...` : "NOT SET");
+  console.log(
+    "SUPABASE_URL value:",
+    url ? `${url.substring(0, 30)}...` : "NOT SET",
+  );
 
   if (!url || !serviceKey) {
     console.error("Missing Supabase environment variables");
