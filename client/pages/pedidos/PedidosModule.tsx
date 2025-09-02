@@ -572,7 +572,9 @@ export default function PedidosModule() {
           tipo_pedido: pedido.tipo_pedido,
           valor_total: ((pedido.valor_total || 0) / 100).toFixed(2),
           status: pedido.status,
-          data_hora_finalizado: pedido.data_hora_finalizado || "",
+          data_hora_finalizado: pedido.data_hora_finalizado
+            ? new Date(pedido.data_hora_finalizado).toLocaleString("pt-BR")
+            : "",
           observacao: pedido.observacao || "",
           data_cadastro: pedido.data_cadastro || "",
           data_atualizacao: pedido.data_atualizacao || "",
@@ -591,7 +593,9 @@ export default function PedidosModule() {
           tipo_pedido: p.tipo_pedido,
           valor_total: ((p.valor_total || 0) / 100).toFixed(2),
           status: p.status,
-          data_hora_finalizado: p.data_hora_finalizado || "",
+          data_hora_finalizado: p.data_hora_finalizado
+            ? new Date(p.data_hora_finalizado).toLocaleString("pt-BR")
+            : "",
           observacao: p.observacao || "",
           data_cadastro: p.data_cadastro || "",
           data_atualizacao: p.data_atualizacao || "",
