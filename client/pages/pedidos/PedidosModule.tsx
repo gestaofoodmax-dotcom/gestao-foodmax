@@ -79,7 +79,7 @@ export default function PedidosModule() {
     setTabState((s) => ({ ...s, [activeTab]: { ...s[activeTab], page } }));
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [totalCounts, setTotalCounts] = useState<Record<string, number>>({
     Todos: 0,
