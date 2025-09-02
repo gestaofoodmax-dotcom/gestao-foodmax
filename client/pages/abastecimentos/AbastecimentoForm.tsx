@@ -123,6 +123,7 @@ export default function AbastecimentoForm({
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [categorias, setCategorias] = useState<ItemCategoria[]>([]);
   const [itens, setItens] = useState<Item[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   const [selectedFornecedoresIds, setSelectedFornecedoresIds] = useState<
     number[]
@@ -235,7 +236,11 @@ export default function AbastecimentoForm({
             a.nome.localeCompare(b.nome),
           ),
         );
-    } catch {}
+
+      setDataLoaded(true);
+    } catch {
+      setDataLoaded(true);
+    }
   };
 
   const loadEstabelecimentoContacts = async (estabelecimentoId: number) => {
@@ -243,14 +248,19 @@ export default function AbastecimentoForm({
       const { data: est } = await makeRequest(
         `/api/estabelecimentos/${estabelecimentoId}`,
       );
-      if (est?.contato) {
-        setValue("telefone", est.contato.telefone || "");
-        setValue("ddi", est.contato.ddi || "+55");
-        setValue("cep", est.contato.cep || "");
-        setValue("endereco", est.contato.endereco || "");
-        setValue("cidade", est.contato.cidade || "");
-        setValue("uf", est.contato.uf || "");
-        setValue("pais", est.contato.pais || "Brasil");
+      if (est) {
+        // Load contact data from main establishment table
+        setValue("telefone", est.telefone || "");
+        setValue("ddi", est.ddi || "+55");
+
+        // Load address data from related endereco table
+        if (est.endereco) {
+          setValue("cep", est.endereco.cep || "");
+          setValue("endereco", est.endereco.endereco || "");
+          setValue("cidade", est.endereco.cidade || "");
+          setValue("uf", est.endereco.uf || "");
+          setValue("pais", est.endereco.pais || "Brasil");
+        }
       }
     } catch {}
   };
@@ -390,6 +400,7 @@ export default function AbastecimentoForm({
   };
 
   const hasPrerequisites =
+    dataLoaded &&
     estabelecimentos.length > 0 &&
     fornecedores.length > 0 &&
     categorias.length > 0 &&
@@ -408,7 +419,7 @@ export default function AbastecimentoForm({
         </DialogHeader>
 
         {/* Warnings for missing prerequisites */}
-        {!hasPrerequisites && (
+        {dataLoaded && !hasPrerequisites && (
           <div className="mb-4 space-y-2">
             {estabelecimentos.length === 0 && (
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
