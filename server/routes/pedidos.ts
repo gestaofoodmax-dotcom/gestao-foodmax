@@ -329,7 +329,8 @@ export const updatePedido: RequestHandler = async (req, res) => {
 
     // Itens extras no update: aceitar payload e sobrescrever sem bloquear por estoque/categoria
 
-    const updateData: any = { ...parsed };
+    const { cardapios: _c, itens_extras: _e, ...pedidoUpdate } = parsed as any;
+    const updateData: any = { ...pedidoUpdate };
 
     const { data: pedido, error } = await supabase
       .from("pedidos")
