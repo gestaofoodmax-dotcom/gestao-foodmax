@@ -80,6 +80,7 @@ export default function PedidosModule() {
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [totalCounts, setTotalCounts] = useState<Record<string, number>>({
     Todos: 0,
@@ -302,6 +303,7 @@ export default function PedidosModule() {
       }
     } finally {
       setLoading(false);
+      setInitialLoadComplete(true);
     }
   }, [currentPage, currentSearch, activeTab, makeRequest, estabelecimentosMap]);
 
@@ -612,6 +614,7 @@ export default function PedidosModule() {
       const valid: any[] = [];
 
       for (const r of records) {
+        // Map estabelecimento - check both estabelecimento and estabelecimento_nome
         const nomeEst = String(
           r.estabelecimento_nome || r.estabelecimento || "",
         ).trim();
@@ -622,84 +625,116 @@ export default function PedidosModule() {
           : Number(r.estabelecimento_id || r.id_estabelecimento || 0);
         if (!estId) continue;
 
-        const tipo = String(r.tipo_pedido || "").trim() as any;
+        // Validate tipo_pedido
+        const tipo = String(r.tipo_pedido || r.tipo || "").trim() as any;
         if (!TIPOS_PEDIDO.includes(tipo)) continue;
+
+        // Validate status
         const status = String(r.status || "Pendente").trim() as any;
         if (!STATUS_PEDIDO.includes(status)) continue;
 
-        const valor = Number(
-          String(r.valor_total || 0)
-            .toString()
-            .replace(/R\$/g, "")
-            .replace(/\./g, "")
-            .replace(/,/g, "."),
-        );
-        const valor_centavos = Number.isFinite(valor)
-          ? Math.round(
-              String(r.valor_total).includes(",") ||
-                String(r.valor_total).includes(".")
-                ? valor * 100
-                : Number(r.valor_total || valor),
-            )
-          : 0;
+        // Parse valor_total - handle currency format from CSV
+        const valorStr = String(r.valor_total || 0)
+          .replace(/R\$/g, "")
+          .replace(/\s/g, "")
+          .trim();
+
+        let valor_centavos = 0;
+        if (valorStr) {
+          // If contains comma as decimal separator (Brazilian format)
+          if (valorStr.includes(',') && !valorStr.includes('.')) {
+            valor_centavos = Math.round(parseFloat(valorStr.replace(',', '.')) * 100);
+          }
+          // If contains both comma and dot (thousands separator)
+          else if (valorStr.includes(',') && valorStr.includes('.')) {
+            valor_centavos = Math.round(parseFloat(valorStr.replace(/\./g, '').replace(',', '.')) * 100);
+          }
+          // If only dots (could be thousands separator or decimal)
+          else if (valorStr.includes('.')) {
+            const parts = valorStr.split('.');
+            if (parts.length === 2 && parts[1].length <= 2) {
+              // Decimal separator
+              valor_centavos = Math.round(parseFloat(valorStr) * 100);
+            } else {
+              // Thousands separator
+              valor_centavos = Math.round(parseFloat(valorStr.replace(/\./g, '')) * 100);
+            }
+          }
+          // No separators
+          else {
+            valor_centavos = Math.round(parseFloat(valorStr) * 100);
+          }
+        }
+
+        // Parse dates correctly
+        const parseDate = (dateStr: string) => {
+          if (!dateStr) return null;
+          try {
+            // Handle DD/MM/YYYY format
+            if (dateStr.includes('/')) {
+              const [day, month, year] = dateStr.split('/');
+              return new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).toISOString();
+            }
+            // Handle other formats
+            return new Date(dateStr).toISOString();
+          } catch {
+            return null;
+          }
+        };
 
         const novo: any = {
           id: Date.now() + Math.floor(Math.random() * 1000),
           id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
           estabelecimento_id: estId,
-          cliente_id: null,
+          cliente_id: null, // Will be handled if cliente mapping is needed
           codigo:
             String(r.codigo || "").trim() ||
             `${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
           tipo_pedido: tipo,
           valor_total: valor_centavos,
-          data_hora_finalizado: r.data_hora_finalizado
-            ? new Date(r.data_hora_finalizado).toISOString()
-            : null,
-          observacao: r.observacao || null,
+          data_hora_finalizado: parseDate(r["data_hora_finalizado"] || r["data/hora finalizado"] || ""),
+          observacao: String(r.observacao || r.observação || "").trim() || null,
           status: status,
-          data_cadastro: now,
-          data_atualizacao: now,
+          data_cadastro: parseDate(r.data_cadastro || "") || now,
+          data_atualizacao: parseDate(r.data_atualizacao || r["data atualização"] || "") || now,
         };
         novo.estabelecimento_nome = estMap.get(estId);
 
-        // Processar cardápios consolidados
+        // Process consolidated cardápios (Menu01 (R$ 69.30); Menu02 (R$ 42.00))
         const cardapios: any[] = [];
-        if (r.cardapios) {
-          const cardapiosText = String(r.cardapios).trim();
-          if (cardapiosText) {
-            const cardapioItems = cardapiosText
-              .split(";")
-              .map((item) => item.trim());
-            for (const item of cardapioItems) {
-              const match = item.match(/^(.+)\s\(R\$\s([0-9,\.]+)\)$/);
-              if (match) {
-                const nome = match[1].trim();
-                const preco = parseFloat(match[2].replace(",", "."));
-                cardapios.push({
-                  cardapio_nome: nome,
-                  preco_total: Math.round(preco * 100), // converter para centavos
-                });
-              }
+        const cardapiosText = String(r.cardapios || r.cardápios || "").trim();
+        if (cardapiosText) {
+          const cardapioItems = cardapiosText.split(';').map(item => item.trim()).filter(item => item);
+          for (const item of cardapioItems) {
+            // Match pattern: Name (R$ XX.XX)
+            const match = item.match(/^(.+?)\s*\(\s*R\$\s*([0-9,\.]+)\s*\)$/i);
+            if (match) {
+              const nome = match[1].trim();
+              const precoStr = match[2].replace(',', '.');
+              const preco = parseFloat(precoStr);
+              cardapios.push({
+                cardapio_nome: nome,
+                preco_total: Math.round(preco * 100), // convert to cents
+              });
             }
           }
         }
 
-        // Processar itens extras consolidados
+        // Process consolidated extras (separated by ;)
         const itensExtras: any[] = [];
-        const extrasNomes = String(r.itens_extras_nome || "")
+        const extrasNomes = String(r["itens extras nome"] || r.itens_extras_nome || "")
           .split(";")
           .map((n) => n.trim())
           .filter((n) => n);
-        const extrasCategorias = String(r.itens_extras_categoria || "")
+        const extrasCategorias = String(r["itens extras categoria"] || r.itens_extras_categoria || "")
           .split(";")
           .map((c) => c.trim())
           .filter((c) => c);
-        const extrasQuantidades = String(r.itens_extras_quantidade || "")
+        const extrasQuantidades = String(r["itens extras quantidade"] || r.itens_extras_quantidade || "")
           .split(";")
           .map((q) => q.trim())
           .filter((q) => q);
-        const extrasValores = String(r.itens_extras_valor_unitario || "")
+        const extrasValores = String(r["itens extras valor unitario"] || r.itens_extras_valor_unitario || "")
           .split(";")
           .map((v) => v.trim())
           .filter((v) => v);
@@ -710,25 +745,31 @@ export default function PedidosModule() {
           extrasQuantidades.length,
           extrasValores.length,
         );
+
         for (let i = 0; i < maxExtras; i++) {
           const nome = extrasNomes[i] || "";
           const categoria = extrasCategorias[i] || "";
           const quantidade = parseInt(extrasQuantidades[i]) || 1;
           const valorStr = extrasValores[i] || "0";
-          const valor =
-            parseFloat(valorStr.replace("R$", "").replace(",", ".")) || 0;
+
+          // Parse value (R$ XX.XX format)
+          let valor = 0;
+          if (valorStr) {
+            const cleanValue = valorStr.replace(/R\$/g, "").replace(/\s/g, "").replace(",", ".");
+            valor = parseFloat(cleanValue) || 0;
+          }
 
           if (nome) {
             itensExtras.push({
               item_nome: nome,
               categoria_nome: categoria,
               quantidade: quantidade,
-              valor_unitario: Math.round(valor * 100), // converter para centavos
+              valor_unitario: Math.round(valor * 100), // convert to cents
             });
           }
         }
 
-        // Adicionar as relações ao objeto do pedido
+        // Add relations to the order object
         novo.cardapios = cardapios;
         novo.itens_extras = itensExtras;
 
@@ -739,11 +780,11 @@ export default function PedidosModule() {
         return {
           success: true,
           imported: 0,
-          message: "Nenhum registro válido",
+          message: "Nenhum registro válido encontrado",
         } as any;
       }
 
-      // Tentar enviar para o servidor com as relações
+      // Try to send to server with relations
       try {
         const response = await makeRequest(`/api/pedidos/import-full`, {
           method: "POST",
@@ -753,10 +794,10 @@ export default function PedidosModule() {
         return {
           success: true,
           imported: response?.imported ?? valid.length,
-          message: `${response?.imported ?? valid.length} pedido(s) importado(s) com relações`,
+          message: `${response?.imported ?? valid.length} pedido(s) importado(s) com todas as relações`,
         } as any;
       } catch (e) {
-        // Fallback local - salvar pelo menos os dados básicos dos pedidos
+        // Local fallback - save at least basic order data
         const existing = readLocalPedidos();
         const pedidosBasicos = valid.map((v) => {
           const { cardapios, itens_extras, ...pedidoBasico } = v;
@@ -769,7 +810,7 @@ export default function PedidosModule() {
         return {
           success: true,
           imported: valid.length,
-          message: `${valid.length} pedido(s) importado(s) (local, sem relações)`,
+          message: `${valid.length} pedido(s) importado(s) localmente (dados básicos)`,
         } as any;
       }
     } catch (e) {
@@ -903,7 +944,7 @@ export default function PedidosModule() {
             <DataGrid
               columns={gridColumns}
               data={filteredPedidos}
-              loading={loading}
+              loading={loading || !initialLoadComplete}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
               searchTerm={currentSearch}
@@ -1035,29 +1076,12 @@ export default function PedidosModule() {
             cardapios: "cardapios",
             cardápio: "cardapios",
             cardapio: "cardapios",
-            // Campos antigos individuais ainda suportados
-            "cardápio nome": "cardapio_nome",
-            "cardapio nome": "cardapio_nome",
-            "cardápio preço total": "cardapio_preco_total",
-            "cardapio preco total": "cardapio_preco_total",
-            // Itens extras consolidados
+            // Itens extras consolidados - exact match with CSV headers
             "itens extras nome": "itens_extras_nome",
             "itens extras categoria": "itens_extras_categoria",
             "itens extras quantidade": "itens_extras_quantidade",
             "itens extras valor unitario": "itens_extras_valor_unitario",
             "itens extras valor unitário": "itens_extras_valor_unitario",
-            // Campos antigos individuais ainda suportados
-            "item extra": "itens_extras_nome",
-            item: "itens_extras_nome",
-            "item nome": "itens_extras_nome",
-            categoria: "itens_extras_categoria",
-            "item categoria": "itens_extras_categoria",
-            quantidade: "itens_extras_quantidade",
-            qtde: "itens_extras_quantidade",
-            "quantidade do item": "itens_extras_quantidade",
-            "valor unitário": "itens_extras_valor_unitario",
-            "valor unitario": "itens_extras_valor_unitario",
-            "item valor unitario": "itens_extras_valor_unitario",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
