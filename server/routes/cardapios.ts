@@ -20,7 +20,7 @@ const CardapioSchema = z.object({
     z.object({
       item_id: z.number(),
       quantidade: z.number().int().positive(),
-      valor_unitario_centavos: z.number().int().nonnegative(),
+      valor_unitario: z.number().int().nonnegative(),
     }),
   ),
 });
@@ -139,7 +139,7 @@ export const getCardapio: RequestHandler = async (req, res) => {
         item_nome: item.itens?.nome || "",
         categoria_nome: item.itens?.itens_categorias?.nome || "",
         quantidade: item.quantidade,
-        valor_unitario_centavos: item.valor_unitario_centavos,
+        valor_unitario: item.valor_unitario,
         item_estoque_atual: item.itens?.estoque_atual,
       })),
     };
@@ -166,7 +166,7 @@ export const createCardapio: RequestHandler = async (req, res) => {
       0,
     );
     const preco_itens_centavos = parsed.itens.reduce(
-      (sum, item) => sum + item.quantidade * item.valor_unitario_centavos,
+      (sum, item) => sum + item.quantidade * item.valor_unitario,
       0,
     );
 
@@ -195,7 +195,7 @@ export const createCardapio: RequestHandler = async (req, res) => {
         cardapio_id: cardapio.id,
         item_id: item.item_id,
         quantidade: item.quantidade,
-        valor_unitario_centavos: item.valor_unitario_centavos,
+        valor_unitario: item.valor_unitario,
       }));
 
       const { error: itensError } = await supabase
@@ -249,7 +249,7 @@ export const updateCardapio: RequestHandler = async (req, res) => {
         0,
       );
       const preco_itens_centavos = parsed.itens.reduce(
-        (sum, item) => sum + item.quantidade * item.valor_unitario_centavos,
+        (sum, item) => sum + item.quantidade * item.valor_unitario,
         0,
       );
       updateData.quantidade_total = quantidade_total;
@@ -278,7 +278,7 @@ export const updateCardapio: RequestHandler = async (req, res) => {
           cardapio_id: parseInt(id),
           item_id: item.item_id,
           quantidade: item.quantidade,
-          valor_unitario_centavos: item.valor_unitario_centavos,
+          valor_unitario: item.valor_unitario,
         }));
 
         const { error: itensError } = await supabase
@@ -520,7 +520,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
             typeof r.item_quantidade === "string"
               ? Number(r.item_quantidade) || 1
               : r.item_quantidade || 1,
-          valor_unitario_centavos: parseCentavos(r.item_valor_unitario),
+          valor_unitario: parseCentavos(r.item_valor_unitario),
         });
       }
     }
@@ -593,7 +593,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
                       unidade_medida: "un",
                       estoque_atual: 0,
                       estoque_minimo: 0,
-                      custo_unitario_centavos: itemData.valor_unitario_centavos,
+                      custo_unitario_centavos: itemData.valor_unitario,
                       ativo: true,
                     })
                     .select("id")
@@ -621,7 +621,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
                     cardapio_id: cardapio.id,
                     item_id: item_id,
                     quantidade: itemData.quantidade,
-                    valor_unitario_centavos: itemData.valor_unitario_centavos,
+                    valor_unitario: itemData.valor_unitario,
                   });
 
                 if (itemRelationError) {
