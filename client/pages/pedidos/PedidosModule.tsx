@@ -751,6 +751,7 @@ export default function PedidosModule() {
 
         // Parse dates correctly - handles both date and datetime formats
         const parseDate = (dateStr: string) => {
+          console.log(`🔍 parseDate called with: "${dateStr}" (type: ${typeof dateStr})`);
           if (!dateStr) return null;
 
           // Skip time-only values (HH:MM:SS format without date)
