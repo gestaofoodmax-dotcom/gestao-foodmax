@@ -21,7 +21,7 @@ export interface PedidoCardapio {
   id: number;
   pedido_id: number;
   cardapio_id: number;
-  preco_total_centavos: number;
+  preco_total: number;
   data_cadastro: string;
   data_atualizacao: string;
 }
@@ -56,7 +56,7 @@ export interface CreatePedidoRequest {
   observacao?: string | null;
   status?: StatusPedido; // default Pendente
   valor_total: number; // calculated client-side but editable
-  cardapios: { cardapio_id: number; preco_total_centavos?: number }[]; // preco can be filled by server
+  cardapios: { cardapio_id: number; preco_total?: number }[]; // preco can be filled by server
   itens_extras: {
     item_id: number;
     categoria_id: number;
