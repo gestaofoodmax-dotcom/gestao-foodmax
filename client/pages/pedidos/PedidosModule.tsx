@@ -895,9 +895,18 @@ export default function PedidosModule() {
           })(),
           observacao: String(r.observacao || r.observação || "").trim() || null,
           status: status,
-          data_cadastro: parseDate(r.data_cadastro || "") || now,
-          data_atualizacao:
-            parseDate(r.data_atualizacao || r["data atualização"] || "") || now,
+          data_cadastro: (() => {
+            const rawValue = r.data_cadastro || r["Data Cadastro"] || "";
+            console.log(`📅 data_cadastro raw value: "${rawValue}"`);
+            const parsed = parseDate(rawValue);
+            return parsed || now;
+          })(),
+          data_atualizacao: (() => {
+            const rawValue = r.data_atualizacao || r["Data Atualização"] || r["data atualização"] || "";
+            console.log(`📅 data_atualizacao raw value: "${rawValue}"`);
+            const parsed = parseDate(rawValue);
+            return parsed || now;
+          })(),
         };
         novo.estabelecimento_nome = estMap.get(estId);
 
