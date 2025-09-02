@@ -124,7 +124,7 @@ export default function PedidoForm({
       item_id: number;
       categoria_id: number;
       quantidade: number;
-      valor_unitario_centavos: number;
+      valor_unitario: number;
     }[]
   >([]);
   const [stockAlert, setStockAlert] = useState<{
@@ -257,7 +257,7 @@ export default function PedidoForm({
 
   const valorExtras = useMemo(() => {
     return selectedExtras.reduce(
-      (sum, e) => sum + e.quantidade * e.valor_unitario_centavos,
+      (sum, e) => sum + e.quantidade * e.valor_unitario,
       0,
     );
   }, [selectedExtras]);
@@ -701,7 +701,7 @@ export default function PedidoForm({
                                       item_id: item.id,
                                       categoria_id: item.categoria_id,
                                       quantidade: 1,
-                                      valor_unitario_centavos:
+                                      valor_unitario:
                                         item.preco_centavos,
                                     },
                                   ])
@@ -756,7 +756,7 @@ export default function PedidoForm({
                 {selectedExtras.map((ex) => {
                   const item = itens.find((i) => i.id === ex.item_id);
                   if (!item) return null;
-                  const total = ex.quantidade * ex.valor_unitario_centavos;
+                  const total = ex.quantidade * ex.valor_unitario;
                   const isZero = (item.estoque_atual || 0) === 0;
                   return (
                     <div
@@ -821,7 +821,7 @@ export default function PedidoForm({
                             type="number"
                             min="0"
                             step="0.01"
-                            value={(ex.valor_unitario_centavos / 100).toFixed(
+                            value={(ex.valor_unitario / 100).toFixed(
                               2,
                             )}
                             onChange={(e) =>
@@ -830,7 +830,7 @@ export default function PedidoForm({
                                   p.item_id === ex.item_id
                                     ? {
                                         ...p,
-                                        valor_unitario_centavos: Math.round(
+                                        valor_unitario: Math.round(
                                           parseFloat(e.target.value || "0") *
                                             100,
                                         ),
