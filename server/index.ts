@@ -86,6 +86,7 @@ import {
   marcarRecebido,
   enviarEmail,
   importAbastecimentos,
+  testDatabaseConnection,
 } from "./routes/abastecimentos";
 
 export function createServer() {
