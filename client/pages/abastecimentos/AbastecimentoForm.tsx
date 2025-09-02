@@ -364,6 +364,11 @@ export default function AbastecimentoForm({
   }, [selectedItens]);
 
   const onSubmit = (data: FormData) => {
+    console.log("Form submission started with data:", data);
+    console.log("Selected fornecedores:", selectedFornecedoresIds);
+    console.log("Selected categoria:", selectedCategoriaId);
+    console.log("Selected itens:", selectedItens);
+
     if (selectedFornecedoresIds.length === 0) {
       toast({
         title: "Erro de validação",
@@ -391,27 +396,55 @@ export default function AbastecimentoForm({
       return;
     }
 
+    if (!data.estabelecimento_id) {
+      toast({
+        title: "Erro de validação",
+        description: "Selecione um Estabelecimento",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data.telefone) {
+      toast({
+        title: "Erro de validação",
+        description: "Telefone é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data.endereco || !data.cidade || !data.uf) {
+      toast({
+        title: "Erro de validação",
+        description: "Endereço, Cidade e UF são obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const payload: CreateAbastecimentoRequest = {
       estabelecimento_id: data.estabelecimento_id,
       fornecedores_ids: selectedFornecedoresIds,
       categoria_id: selectedCategoriaId,
       telefone: data.telefone,
-      ddi: data.ddi,
+      ddi: data.ddi || "+55",
       email: data.email || null,
       data_hora_recebido: data.data_hora_recebido || null,
       observacao: data.observacao || null,
-      status: data.status as StatusAbastecimento,
-      email_enviado: data.email_enviado,
+      status: (data.status as StatusAbastecimento) || "Pendente",
+      email_enviado: data.email_enviado || false,
       itens: selectedItens,
       endereco: {
         cep: data.cep || null,
         endereco: data.endereco,
         cidade: data.cidade,
         uf: data.uf,
-        pais: data.pais,
+        pais: data.pais || "Brasil",
       },
     };
 
+    console.log("Final payload being sent:", payload);
     onSave(payload);
   };
 
@@ -1058,7 +1091,7 @@ export default function AbastecimentoForm({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar altera��ão</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar alteração</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="text-sm text-gray-700">
             {showEstabelecimentoAlert.message}
