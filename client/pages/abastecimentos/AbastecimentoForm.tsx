@@ -62,6 +62,7 @@ import {
   FileText,
   Minus,
   ShoppingBag,
+  Package,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -633,12 +634,12 @@ export default function AbastecimentoForm({
             </div>
           </div>
 
-          {/* Categoria e Itens */}
+          {/* Itens do Abastecimento */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <CupSoda className="w-5 h-5 text-purple-600" />
+              <Package className="w-5 h-5 text-purple-600" />
               <h3 className="font-semibold text-purple-600">
-                Categoria e Itens
+                Itens do Abastecimento
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
