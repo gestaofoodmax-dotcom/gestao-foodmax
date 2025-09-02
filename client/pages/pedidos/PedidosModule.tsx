@@ -1101,7 +1101,7 @@ export default function PedidosModule() {
             "Valor Total": "valor_total",
             "Status": "status",
             "Data/Hora Finalizado": "data_hora_finalizado",
-            "Observação": "observacao",
+            "Observa��ão": "observacao",
             "Data Cadastro": "data_cadastro",
             "Data Atualização": "data_atualizacao",
             "Cardápios": "cardapios",
@@ -1183,21 +1183,12 @@ export default function PedidosModule() {
           return errors;
         }}
         onImport={async (records) => {
-          try {
-            const response = await makeRequest(`/api/pedidos/import`, {
-              method: "POST",
-              body: JSON.stringify({ records }),
-            });
-            await Promise.all([loadPedidos(), loadCounts()]);
-            return {
-              success: true,
-              imported: response?.imported ?? 0,
-              message: `${response?.imported ?? 0} pedido(s) importado(s) com sucesso`,
-            } as any;
-          } catch (e) {
-            const result = await handleImportPedidos(records);
-            return result as any;
-          }
+          console.log("ImportModal onImport called with", records.length, "records");
+
+          // Always use our enhanced handleImportPedidos function
+          const result = await handleImportPedidos(records);
+          console.log("Import result:", result);
+          return result as any;
         }}
       />
 
