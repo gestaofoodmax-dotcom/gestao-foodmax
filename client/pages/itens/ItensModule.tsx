@@ -121,7 +121,7 @@ export default function ItensModule() {
         render: (v: number) => formatCurrencyBRL(v),
       },
       {
-        key: "custo_pago_centavos",
+        key: "custo_pago",
         label: "Custo Pago",
         sortable: true,
         render: (v: number) => formatCurrencyBRL(v),
@@ -441,7 +441,7 @@ export default function ItensModule() {
           categoria_id: data.categoria_id,
           nome: data.nome,
           preco: data.preco,
-          custo_pago_centavos: data.custo_pago_centavos,
+          custo_pago: data.custo_pago,
           unidade_medida: data.unidade_medida,
           peso_gramas: data.peso_gramas,
           estoque_atual: data.estoque_atual,
@@ -883,7 +883,7 @@ export default function ItensModule() {
                 categoria_nome:
                   categorias.find((c) => c.id === i.categoria_id)?.nome || "",
                 preco: (i.preco / 100).toFixed(2),
-                custo_pago: (i.custo_pago_centavos / 100).toFixed(2),
+                custo_pago: (i.custo_pago / 100).toFixed(2),
                 estoque_atual: i.estoque_atual ?? 0,
                 unidade_medida: i.unidade_medida,
                 peso_gramas: i.peso_gramas ?? "",
@@ -1040,8 +1040,8 @@ export default function ItensModule() {
                     nome: r.nome,
                     categoria_id,
                     preco: parseCentavos(r.preco ?? r.preco),
-                    custo_pago_centavos: parseCentavos(
-                      r.custo_pago_centavos ?? r.custo ?? r.custo_pago,
+                    custo_pago: parseCentavos(
+                      r.custo_pago ?? r.custo ?? r.custo_pago,
                     ),
                     unidade_medida: String(r.unidade_medida || "Unidade"),
                     peso_gramas:
@@ -1074,8 +1074,8 @@ export default function ItensModule() {
                     categoria_id,
                     nome: r.nome,
                     preco: parseCentavos(r.preco ?? r.preco),
-                    custo_pago_centavos: parseCentavos(
-                      r.custo_pago_centavos ?? r.custo ?? r.custo_pago,
+                    custo_pago: parseCentavos(
+                      r.custo_pago ?? r.custo ?? r.custo_pago,
                     ),
                     unidade_medida: String(r.unidade_medida || "Unidade"),
                     peso_gramas:
