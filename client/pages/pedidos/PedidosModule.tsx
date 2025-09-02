@@ -131,7 +131,7 @@ export default function PedidosModule() {
         ),
       },
       {
-        key: "valor_total_centavos",
+        key: "valor_total",
         label: "Valor Total",
         sortable: true,
         render: (v: number) => formatCurrencyBRL(v),
@@ -395,7 +395,7 @@ export default function PedidosModule() {
           cliente_id: data.cliente_id ?? null,
           codigo: data.codigo,
           tipo_pedido: data.tipo_pedido,
-          valor_total_centavos: data.valor_total_centavos,
+          valor_total: data.valor_total,
           data_hora_finalizado: data.data_hora_finalizado ?? null,
           observacao: data.observacao || null,
           status: data.status || "Pendente",
@@ -505,7 +505,7 @@ export default function PedidosModule() {
         if (!STATUS_PEDIDO.includes(status)) continue;
 
         const valor = Number(
-          String(r.valor_total || r.valor_total_centavos || 0)
+          String(r.valor_total || r.valor_total || 0)
             .toString()
             .replace(/\./g, "")
             .replace(/,/g, "."),
@@ -515,7 +515,7 @@ export default function PedidosModule() {
               String(r.valor_total).includes(",") ||
                 String(r.valor_total).includes(".")
                 ? valor * 100
-                : Number(r.valor_total_centavos || valor),
+                : Number(r.valor_total || valor),
             )
           : 0;
 
@@ -528,7 +528,7 @@ export default function PedidosModule() {
             String(r.codigo || "").trim() ||
             `${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
           tipo_pedido: tipo,
-          valor_total_centavos: valor_centavos,
+          valor_total: valor_centavos,
           data_hora_finalizado: r.data_hora_finalizado
             ? new Date(r.data_hora_finalizado).toISOString()
             : null,
@@ -739,7 +739,7 @@ export default function PedidosModule() {
           { key: "estabelecimento_nome", label: "Estabelecimento" },
           { key: "codigo", label: "Código" },
           { key: "tipo_pedido", label: "Tipo de Pedido" },
-          { key: "valor_total_centavos", label: "Valor Total (centavos)" },
+          { key: "valor_total", label: "Valor Total (centavos)" },
           { key: "status", label: "Status" },
           { key: "data_hora_finalizado", label: "Data/Hora Finalizado" },
           { key: "data_cadastro", label: "Data Cadastro" },
@@ -762,7 +762,7 @@ export default function PedidosModule() {
           { key: "codigo", label: "Código", required: false },
           { key: "tipo_pedido", label: "Tipo de Pedido", required: true },
           { key: "valor_total", label: "Valor Total" },
-          { key: "valor_total_centavos", label: "Valor Total (centavos)" },
+          { key: "valor_total", label: "Valor Total (centavos)" },
           { key: "status", label: "Status" },
           { key: "data_hora_finalizado", label: "Data/Hora Finalizado" },
           { key: "observacao", label: "Observação" },
@@ -778,7 +778,7 @@ export default function PedidosModule() {
             "tipo de pedido": "tipo_pedido",
             valor: "valor_total",
             "valor total": "valor_total",
-            "valor total (centavos)": "valor_total_centavos",
+            "valor total (centavos)": "valor_total",
             status: "status",
             observação: "observacao",
             observacao: "observacao",
