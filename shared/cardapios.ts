@@ -4,7 +4,7 @@ export interface Cardapio {
   nome: string;
   tipo_cardapio: TipoCardapio;
   quantidade_total: number;
-  preco_itens_centavos: number;
+  preco_itens: number;
   margem_lucro_percentual: number;
   preco_total_centavos: number;
   descricao?: string;
