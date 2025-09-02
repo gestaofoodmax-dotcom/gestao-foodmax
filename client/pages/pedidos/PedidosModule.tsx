@@ -145,6 +145,7 @@ export default function PedidosModule() {
         render: (v: string | null) =>
           v
             ? new Date(v).toLocaleString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
                 year: "numeric",
                 month: "2-digit",
                 day: "2-digit",
