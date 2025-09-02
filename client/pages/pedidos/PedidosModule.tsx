@@ -96,6 +96,7 @@ export default function PedidosModule() {
   const [estabelecimentosMap, setEstabelecimentosMap] = useState<
     Map<number, string>
   >(new Map());
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   const LOCAL_PEDIDOS = "fm_pedidos";
   const readLocalPedidos = (): Pedido[] => {
@@ -232,7 +233,10 @@ export default function PedidosModule() {
         } catch {}
       }
       setEstabelecimentosMap(map);
-    } catch {}
+      setMapLoaded(true);
+    } catch {
+      setMapLoaded(true);
+    }
   }, [makeRequest]);
 
   const loadCounts = useCallback(async () => {
@@ -302,13 +306,16 @@ export default function PedidosModule() {
   }, [currentPage, currentSearch, activeTab, makeRequest, estabelecimentosMap]);
 
   useEffect(() => {
+    try { localStorage.removeItem(LOCAL_PEDIDOS); } catch {}
     loadEstabelecimentosMap();
     loadCounts();
   }, [loadEstabelecimentosMap, loadCounts]);
 
   useEffect(() => {
+    if (!mapLoaded) return;
     loadPedidos();
-  }, [loadPedidos]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapLoaded, currentPage, currentSearch, activeTab]);
 
   useEffect(() => {
     setSelectedIds([]);
@@ -456,10 +463,11 @@ export default function PedidosModule() {
     } catch (error: any) {
       const list = readLocalPedidos().filter((e) => e.id !== currentPedido.id);
       writeLocalPedidos(list);
+      try { localStorage.removeItem(LOCAL_PEDIDOS); } catch {}
       setPedidos(enrichWithEstabelecimentoNome(list) as any);
       toast({
         title: "Pedido excluído",
-        description: "Pedido excluído",
+        description: "Pedido excluído com sucesso",
       });
       setSelectedIds([]);
       await loadCounts();
