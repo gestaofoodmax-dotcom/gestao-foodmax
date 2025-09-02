@@ -168,7 +168,7 @@ export const createPedido: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
     if (!userId)
-      return res.status(401).json({ error: "Usuário n��o autenticado" });
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const supabase = getSupabaseServiceClient();
 
     const parsed = PedidoSchema.parse(req.body);
@@ -522,10 +522,16 @@ export const importPedidos: RequestHandler = async (req, res) => {
           observacao: z.string().optional(),
           cardapio_nome: z.string().optional(),
           cardapio_preco_total: z.union([z.number(), z.string()]).optional(),
+          // Old extras naming (backward compat)
           extra_item_nome: z.string().optional(),
           extra_item_categoria: z.string().optional(),
           extra_item_quantidade: z.union([z.number(), z.string()]).optional(),
           extra_item_valor_unitario: z.union([z.number(), z.string()]).optional(),
+          // New extras naming
+          itens_extras_nome: z.string().optional(),
+          itens_extras_categoria: z.string().optional(),
+          itens_extras_quantidade: z.union([z.number(), z.string()]).optional(),
+          itens_extras_valor_unitario: z.union([z.number(), z.string()]).optional(),
         }),
       ),
     });
@@ -678,9 +684,9 @@ export const importPedidos: RequestHandler = async (req, res) => {
           valor_unitario: number;
         }[] = [];
         for (const r of rows) {
-          const itemNome = String(r.extra_item_nome || "").trim();
+          const itemNome = String(r.itens_extras_nome || r.extra_item_nome || "").trim();
           if (!itemNome) continue;
-          const catNome = String(r.extra_item_categoria || "").trim() || "Sem Categoria";
+          const catNome = String(r.itens_extras_categoria || r.extra_item_categoria || "").trim() || "Sem Categoria";
 
           // Resolve categoria
           let categoria_id: number | null = null;
@@ -732,8 +738,10 @@ export const importPedidos: RequestHandler = async (req, res) => {
           }
           if (!item_id) continue;
 
-          const quantidade = Number(r.extra_item_quantidade) || 1;
-          const valor_unitario = parseCentavos(r.extra_item_valor_unitario);
+          const quantidade = Number(r.itens_extras_quantidade ?? r.extra_item_quantidade) || 1;
+          const valor_unitario = parseCentavos(
+            r.itens_extras_valor_unitario ?? r.extra_item_valor_unitario,
+          );
           extraEntries.push({
             item_id,
             categoria_id,
