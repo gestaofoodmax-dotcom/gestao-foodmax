@@ -265,7 +265,7 @@ export default function PedidoForm({
   const valorCardapios = useMemo(() => {
     return selectedCardapios.reduce((sum, cid) => {
       const c = cardapios.find((x) => x.id === cid);
-      return sum + (c?.preco_total_centavos || 0);
+      return sum + (c?.preco_total || 0);
     }, 0);
   }, [selectedCardapios, cardapios]);
 
@@ -589,7 +589,7 @@ export default function PedidoForm({
                               />
                               <span className="flex-1">{c.nome}</span>
                               <Badge variant="secondary">
-                                {formatCurrencyBRL(c.preco_total_centavos)}
+                                {formatCurrencyBRL(c.preco_total)}
                               </Badge>
                             </CommandItem>
                           ))}
