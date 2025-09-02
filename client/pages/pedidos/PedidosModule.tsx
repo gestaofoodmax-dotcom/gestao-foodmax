@@ -1300,10 +1300,7 @@ export default function PedidosModule() {
             "Data Cadastro": "data_cadastro",
             "Data Atualização": "data_atualizacao",
             Cardápios: "cardapios",
-            "Itens Extras Nome": "itens_extras_nome",
-            "Itens Extras Categoria": "itens_extras_categoria",
-            "Itens Extras Quantidade": "itens_extras_quantidade",
-            "Itens Extras Valor Unitario": "itens_extras_valor_unitario",
+            "Itens Extras": "itens_extras",
           };
 
           // Check exact match first
