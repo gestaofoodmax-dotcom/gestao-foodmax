@@ -191,8 +191,8 @@ create table if not exists public.itens (
   id_usuario bigint not null references public.usuarios(id) on delete cascade,
   categoria_id bigint not null references public.itens_categorias(id) on delete restrict,
   nome text not null,
-  preco_centavos integer not null check (preco_centavos >= 0),
-  custo_pago_centavos integer not null check (custo_pago_centavos >= 0),
+  preco integer not null check (preco >= 0),
+  custo_pago integer not null check (custo_pago >= 0),
   unidade_medida text not null,
   peso_gramas integer,
   estoque_atual integer,
@@ -207,16 +207,16 @@ create trigger itens_set_updated_at
 before update on public.itens
 for each row execute function public.set_updated_at();
 
--- Cardápios (novo módulo)
+-- Cardápios (novo m��dulo)
 create table if not exists public.cardapios (
   id bigserial primary key,
   id_usuario bigint not null references public.usuarios(id) on delete cascade,
   nome text not null,
   tipo_cardapio text not null check (tipo_cardapio in ('Café', 'Almoço', 'Janta', 'Lanche', 'Bebida', 'Outro')),
   quantidade_total integer not null default 0,
-  preco_itens_centavos integer not null default 0 check (preco_itens_centavos >= 0),
+  preco_itens integer not null default 0 check (preco_itens >= 0),
   margem_lucro_percentual numeric(5,2) not null default 0 check (margem_lucro_percentual >= 0),
-  preco_total_centavos integer not null default 0 check (preco_total_centavos >= 0),
+  preco_total integer not null default 0 check (preco_total >= 0),
   descricao text,
   ativo boolean not null default true,
   data_cadastro timestamp with time zone not null default now(),
@@ -235,7 +235,7 @@ create table if not exists public.cardapios_itens (
   cardapio_id bigint not null references public.cardapios(id) on delete cascade,
   item_id bigint not null references public.itens(id) on delete restrict,
   quantidade integer not null default 1 check (quantidade > 0),
-  valor_unitario_centavos integer not null default 0 check (valor_unitario_centavos >= 0),
+  valor_unitario integer not null default 0 check (valor_unitario >= 0),
   data_cadastro timestamp with time zone not null default now(),
   data_atualizacao timestamp with time zone not null default now()
 );
@@ -332,7 +332,7 @@ CREATE TABLE IF NOT EXISTS pedidos (
   codigo TEXT NOT NULL UNIQUE,
   observacao TEXT NULL,
   status status_pedido_enum NOT NULL DEFAULT 'Pendente',
-  valor_total_centavos INTEGER NOT NULL DEFAULT 0,
+  valor_total INTEGER NOT NULL DEFAULT 0,
   data_hora_finalizado TIMESTAMPTZ NULL,
   data_cadastro TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   data_atualizacao TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -354,7 +354,7 @@ CREATE TABLE IF NOT EXISTS pedidos_cardapios (
   id SERIAL PRIMARY KEY,
   pedido_id INTEGER NOT NULL REFERENCES pedidos(id) ON DELETE CASCADE,
   cardapio_id INTEGER NOT NULL REFERENCES cardapios(id) ON DELETE RESTRICT,
-  preco_total_centavos INTEGER NOT NULL DEFAULT 0,
+  preco_total INTEGER NOT NULL DEFAULT 0,
   data_cadastro TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   data_atualizacao TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -374,7 +374,7 @@ CREATE TABLE IF NOT EXISTS pedidos_itens_extras (
   item_id INTEGER NOT NULL REFERENCES itens(id) ON DELETE RESTRICT,
   categoria_id INTEGER NOT NULL REFERENCES itens_categorias(id) ON DELETE RESTRICT,
   quantidade INTEGER NOT NULL CHECK (quantidade > 0),
-  valor_unitario_centavos INTEGER NOT NULL DEFAULT 0,
+  valor_unitario INTEGER NOT NULL DEFAULT 0,
   data_cadastro TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   data_atualizacao TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

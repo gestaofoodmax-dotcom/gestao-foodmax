@@ -147,13 +147,13 @@ export default function PedidoView({
                         </div>
                         <div className="text-center">
                           <div className="font-medium">
-                            {formatCurrencyBRL(c.preco_total_centavos)}
+                            {formatCurrencyBRL(c.preco_total)}
                           </div>
                           <div className="text-gray-500">Unit.</div>
                         </div>
                         <div className="text-center">
                           <div className="font-medium text-green-600">
-                            {formatCurrencyBRL(c.preco_total_centavos)}
+                            {formatCurrencyBRL(c.preco_total)}
                           </div>
                           <div className="text-gray-500">Total</div>
                         </div>
@@ -191,15 +191,13 @@ export default function PedidoView({
                         </div>
                         <div className="text-center">
                           <div className="font-medium">
-                            {formatCurrencyBRL(e.valor_unitario_centavos)}
+                            {formatCurrencyBRL(e.valor_unitario)}
                           </div>
                           <div className="text-gray-500">Unit.</div>
                         </div>
                         <div className="text-center">
                           <div className="font-medium text-green-600">
-                            {formatCurrencyBRL(
-                              e.valor_unitario_centavos * e.quantidade,
-                            )}
+                            {formatCurrencyBRL(e.valor_unitario * e.quantidade)}
                           </div>
                           <div className="text-gray-500">Total</div>
                         </div>

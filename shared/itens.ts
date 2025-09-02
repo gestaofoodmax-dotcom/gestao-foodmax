@@ -15,8 +15,8 @@ export interface Item {
   id_usuario: number;
   categoria_id: number;
   nome: string;
-  preco_centavos: number; // store in centavos
-  custo_pago_centavos: number; // store in centavos
+  preco: number; // store in centavos
+  custo_pago: number; // store in centavos
   unidade_medida:
     | "Grama"
     | "Quilograma"
@@ -40,8 +40,8 @@ export interface Item {
 export interface CreateItemRequest {
   categoria_id: number;
   nome: string;
-  preco_centavos: number;
-  custo_pago_centavos: number;
+  preco: number;
+  custo_pago: number;
   unidade_medida: Item["unidade_medida"];
   peso_gramas?: number;
   estoque_atual?: number;
