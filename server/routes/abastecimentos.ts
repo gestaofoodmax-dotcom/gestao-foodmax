@@ -44,6 +44,91 @@ const getUserId = (req: any): number | null => {
   return userId ? parseInt(userId as string) : null;
 };
 
+// Test endpoint for database connectivity
+export const testDatabaseConnection: RequestHandler = async (req, res) => {
+  try {
+    console.log("=== Database Connection Test ===");
+    const userId = getUserId(req);
+    console.log("User ID from header:", userId);
+
+    if (!userId) {
+      return res.status(401).json({ error: "x-user-id header missing" });
+    }
+
+    const supabase = getSupabaseServiceClient();
+    console.log("Supabase client created");
+
+    // Test basic query
+    const { data: user, error: userError } = await supabase
+      .from("usuarios")
+      .select("id, email, role")
+      .eq("id", userId)
+      .single();
+
+    if (userError) {
+      console.error("User query error:", userError);
+      return res.status(500).json({
+        error: "Database query failed",
+        details: userError.message
+      });
+    }
+
+    console.log("User found:", user);
+
+    // Test related tables
+    const { count: estabelecimentosCount, error: estError } = await supabase
+      .from("estabelecimentos")
+      .select("id", { count: "exact", head: true })
+      .eq("id_usuario", userId);
+
+    const { count: fornecedoresCount, error: fornError } = await supabase
+      .from("fornecedores")
+      .select("id", { count: "exact", head: true })
+      .eq("id_usuario", userId);
+
+    const { count: categoriasCount, error: catError } = await supabase
+      .from("itens_categorias")
+      .select("id", { count: "exact", head: true })
+      .eq("id_usuario", userId);
+
+    const { count: itensCount, error: itensError } = await supabase
+      .from("itens")
+      .select("id", { count: "exact", head: true })
+      .eq("id_usuario", userId);
+
+    console.log("Counts:", {
+      estabelecimentos: estabelecimentosCount,
+      fornecedores: fornecedoresCount,
+      categorias: categoriasCount,
+      itens: itensCount
+    });
+
+    res.json({
+      success: true,
+      user,
+      counts: {
+        estabelecimentos: estabelecimentosCount || 0,
+        fornecedores: fornecedoresCount || 0,
+        categorias: categoriasCount || 0,
+        itens: itensCount || 0,
+      },
+      errors: {
+        estabelecimentos: estError?.message,
+        fornecedores: fornError?.message,
+        categorias: catError?.message,
+        itens: itensError?.message,
+      }
+    });
+
+  } catch (error: any) {
+    console.error("Database test error:", error);
+    res.status(500).json({
+      error: "Database test failed",
+      details: error.message
+    });
+  }
+};
+
 export const listAbastecimentos: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
