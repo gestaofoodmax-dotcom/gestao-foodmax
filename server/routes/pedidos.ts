@@ -12,7 +12,7 @@ const PedidoSchema = z.object({
   codigo: z.string().optional(),
   observacao: z.string().nullable().optional(),
   status: StatusPedidoEnum.optional().default("Pendente"),
-  valor_total_centavos: z.number().int().nonnegative(),
+  valor_total: z.number().int().nonnegative(),
   cardapios: z.array(
     z.object({
       cardapio_id: z.number().int().positive(),
@@ -250,7 +250,7 @@ export const createPedido: RequestHandler = async (req, res) => {
         codigo,
         observacao: parsed.observacao || null,
         status: parsed.status || "Pendente",
-        valor_total_centavos: parsed.valor_total_centavos,
+        valor_total: parsed.valor_total,
         data_hora_finalizado: parsed.data_hora_finalizado ?? null,
       })
       .select()
