@@ -449,6 +449,7 @@ export default function PedidosModule() {
         title: "Pedido excluído",
         description: "Pedido excluído com sucesso",
       });
+      try { localStorage.removeItem(LOCAL_PEDIDOS); } catch {}
       setSelectedIds([]);
       await refreshAfterMutation();
       setShowDeleteAlert(false);
@@ -972,6 +973,7 @@ export default function PedidosModule() {
               title: "Pedidos excluídos",
               description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
             });
+            try { localStorage.removeItem(LOCAL_PEDIDOS); } catch {}
             await refreshAfterMutation();
             setSelectedIds([]);
             setShowBulkDelete(false);
