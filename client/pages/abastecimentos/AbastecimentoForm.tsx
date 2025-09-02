@@ -964,48 +964,6 @@ export default function AbastecimentoForm({
               <FileText className="w-5 h-5 text-gray-600" />
               <h3 className="font-semibold text-gray-600">Outros Dados</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Data/Hora Recebido</Label>
-                <Input
-                  type="datetime-local"
-                  value={
-                    watchedValues.data_hora_recebido
-                      ? new Date(watchedValues.data_hora_recebido)
-                          .toISOString()
-                          .slice(0, 16)
-                      : ""
-                  }
-                  onChange={(e) =>
-                    setValue(
-                      "data_hora_recebido",
-                      e.target.value
-                        ? new Date(e.target.value).toISOString()
-                        : null,
-                    )
-                  }
-                  className="foodmax-input"
-                />
-              </div>
-              <div>
-                <Label>Status</Label>
-                <Select
-                  value={watchedValues.status}
-                  onValueChange={(v) => setValue("status", v as any)}
-                >
-                  <SelectTrigger className="foodmax-input">
-                    <SelectValue placeholder="Selecione o status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_ABASTECIMENTO.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             <div>
               <Label>Observação</Label>
               <Textarea
@@ -1014,6 +972,50 @@ export default function AbastecimentoForm({
                 className="foodmax-input resize-none"
                 placeholder="Observação do abastecimento..."
               />
+            </div>
+            <div>
+              <Label>Data/Hora Recebido</Label>
+              <Input
+                type="datetime-local"
+                value={
+                  watchedValues.data_hora_recebido
+                    ? new Date(watchedValues.data_hora_recebido)
+                        .toISOString()
+                        .slice(0, 16)
+                    : ""
+                }
+                onChange={(e) =>
+                  setValue(
+                    "data_hora_recebido",
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
+                  )
+                }
+                className="foodmax-input"
+              />
+            </div>
+          </div>
+
+          {/* Status */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="w-60">
+              <Label>Status</Label>
+              <Select
+                value={watchedValues.status}
+                onValueChange={(v) => setValue("status", v as any)}
+              >
+                <SelectTrigger className="foodmax-input">
+                  <SelectValue placeholder="Selecione o status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_ABASTECIMENTO.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </form>
