@@ -115,6 +115,26 @@ export default function PedidosModule() {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
 
+  const formatDateTimeBR = (value: string | null | undefined) => {
+    if (!value) return "-";
+    try {
+      const d = new Date(value);
+      const date = d.toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+      });
+      const time = d.toLocaleTimeString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      return `${date}, ${time}`;
+    } catch {
+      return "-";
+    }
+  };
+
   const gridColumns = useMemo(
     () => [
       {
@@ -142,19 +162,7 @@ export default function PedidosModule() {
         key: "data_hora_finalizado",
         label: "Data/Hora Finalizado",
         sortable: true,
-        render: (v: string | null) =>
-          v
-            ? new Date(v).toLocaleString("pt-BR", {
-                timeZone: "America/Sao_Paulo",
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: false,
-              })
-            : "-",
+        render: (v: string | null) => formatDateTimeBR(v),
       },
       {
         key: "status",
@@ -168,7 +176,10 @@ export default function PedidosModule() {
         key: "data_cadastro",
         label: "Data Cadastro",
         sortable: true,
-        render: (v: string) => new Date(v).toLocaleDateString("pt-BR"),
+        render: (v: string) =>
+          new Date(v).toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          }),
       },
       {
         key: "acoes",
