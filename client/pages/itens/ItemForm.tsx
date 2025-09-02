@@ -50,7 +50,7 @@ import { cn } from "@/lib/utils";
 const schema = z.object({
   categoria_id: z.number({ invalid_type_error: "Categoria é obrigatória" }),
   nome: z.string().min(1, "Nome é obrigatório"),
-  preco_centavos: z.number().min(0, "Preço deve ser maior ou igual a 0"),
+  preco: z.number().min(0, "Preço deve ser maior ou igual a 0"),
   custo_pago_centavos: z
     .number()
     .min(0, "Custo Pago deve ser maior ou igual a 0"),
@@ -106,7 +106,7 @@ export default function ItemForm({
     defaultValues: {
       categoria_id: undefined as unknown as number,
       nome: "",
-      preco_centavos: 0,
+      preco: 0,
       custo_pago_centavos: 0,
       unidade_medida: "Unidade",
       peso_gramas: undefined,
@@ -124,7 +124,7 @@ export default function ItemForm({
         reset({
           categoria_id: item.categoria_id,
           nome: item.nome,
-          preco_centavos: item.preco_centavos,
+          preco: item.preco,
           custo_pago_centavos: item.custo_pago_centavos,
           unidade_medida: item.unidade_medida,
           peso_gramas: item.peso_gramas,
@@ -135,7 +135,7 @@ export default function ItemForm({
         reset({
           categoria_id: watchedCategoriaId as any,
           nome: "",
-          preco_centavos: 0,
+          preco: 0,
           custo_pago_centavos: 0,
           unidade_medida: "Unidade",
           peso_gramas: undefined,
@@ -160,7 +160,7 @@ export default function ItemForm({
 
   useEffect(() => {
     if (item) {
-      setPrecoMask(formatInputCurrency(item.preco_centavos));
+      setPrecoMask(formatInputCurrency(item.preco));
       setCustoMask(formatInputCurrency(item.custo_pago_centavos));
     } else {
       setPrecoMask("");
@@ -172,7 +172,7 @@ export default function ItemForm({
     const labelsMap: Record<string, string> = {
       categoria_id: "Categoria",
       nome: "Nome",
-      preco_centavos: "Preço",
+      preco: "Preço",
       custo_pago_centavos: "Custo Pago",
     };
     const labels = Object.keys(formErrors).map((k) => labelsMap[k] || k);
@@ -367,12 +367,12 @@ export default function ItemForm({
                     setPrecoMask(
                       e.target.value === "" ? "" : formatInputCurrency(cents),
                     );
-                    setValue("preco_centavos", cents);
+                    setValue("preco", cents);
                   }}
                   placeholder=""
                   className={cn(
                     "foodmax-input",
-                    errors.preco_centavos ? "border-red-500" : "",
+                    errors.preco ? "border-red-500" : "",
                   )}
                 />
               </div>
