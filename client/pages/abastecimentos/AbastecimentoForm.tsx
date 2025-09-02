@@ -247,24 +247,38 @@ export default function AbastecimentoForm({
 
   const loadEstabelecimentoContacts = async (estabelecimentoId: number) => {
     try {
-      const { data: est } = await makeRequest(
+      console.log("Loading establishment data for ID:", estabelecimentoId);
+      const response = await makeRequest(
         `/api/estabelecimentos/${estabelecimentoId}`,
       );
-      if (est) {
+      console.log("Establishment response:", response);
+
+      if (response) {
         // Load contact data from main establishment table
-        setValue("telefone", est.telefone || "");
-        setValue("ddi", est.ddi || "+55");
+        setValue("telefone", response.telefone || "", { shouldDirty: true });
+        setValue("ddi", response.ddi || "+55", { shouldDirty: true });
+        setValue("email", response.email || "", { shouldDirty: true });
 
         // Load address data from related endereco table
-        if (est.endereco) {
-          setValue("cep", est.endereco.cep || "");
-          setValue("endereco", est.endereco.endereco || "");
-          setValue("cidade", est.endereco.cidade || "");
-          setValue("uf", est.endereco.uf || "");
-          setValue("pais", est.endereco.pais || "Brasil");
+        if (response.endereco) {
+          console.log("Loading address data:", response.endereco);
+          setValue("cep", response.endereco.cep || "", { shouldDirty: true });
+          setValue("endereco", response.endereco.endereco || "", { shouldDirty: true });
+          setValue("cidade", response.endereco.cidade || "", { shouldDirty: true });
+          setValue("uf", response.endereco.uf || "", { shouldDirty: true });
+          setValue("pais", response.endereco.pais || "Brasil", { shouldDirty: true });
+        } else {
+          // Clear address fields if no address data
+          setValue("cep", "", { shouldDirty: true });
+          setValue("endereco", "", { shouldDirty: true });
+          setValue("cidade", "", { shouldDirty: true });
+          setValue("uf", "", { shouldDirty: true });
+          setValue("pais", "Brasil", { shouldDirty: true });
         }
       }
-    } catch {}
+    } catch (error) {
+      console.error("Error loading establishment data:", error);
+    }
   };
 
   const handleEstabelecimentoChange = async (newEstId: number) => {
@@ -1044,7 +1058,7 @@ export default function AbastecimentoForm({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar alteração</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar altera��ão</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="text-sm text-gray-700">
             {showEstabelecimentoAlert.message}
