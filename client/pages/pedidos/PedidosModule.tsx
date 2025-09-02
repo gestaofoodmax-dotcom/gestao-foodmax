@@ -613,17 +613,44 @@ export default function PedidosModule() {
       const now = new Date().toISOString();
       const valid: any[] = [];
 
-      for (const r of records) {
+      console.log("Processing", records.length, "records for import");
+      console.log("Available establishments:", Array.from(estMap.entries()));
+
+      for (let i = 0; i < records.length; i++) {
+        const r = records[i];
+        console.log(`Processing record ${i + 1}:`, r);
+
         // Map estabelecimento - check both estabelecimento and estabelecimento_nome
         const nomeEst = String(
           r.estabelecimento_nome || r.estabelecimento || "",
         ).trim();
-        const estId = nomeEst
-          ? Array.from(estMap.entries()).find(
-              ([, nome]) => nome.toLowerCase() === nomeEst.toLowerCase(),
-            )?.[0]
-          : Number(r.estabelecimento_id || r.id_estabelecimento || 0);
-        if (!estId) continue;
+
+        console.log(`Looking for establishment: "${nomeEst}"`);
+
+        let estId = null;
+        if (nomeEst) {
+          // Try exact match first
+          estId = Array.from(estMap.entries()).find(
+            ([, nome]) => nome.toLowerCase() === nomeEst.toLowerCase(),
+          )?.[0];
+
+          // If no exact match, try partial match
+          if (!estId) {
+            estId = Array.from(estMap.entries()).find(
+              ([, nome]) => nome.toLowerCase().includes(nomeEst.toLowerCase()) ||
+                           nomeEst.toLowerCase().includes(nome.toLowerCase())
+            )?.[0];
+          }
+        } else {
+          estId = Number(r.estabelecimento_id || r.id_estabelecimento || 0);
+        }
+
+        console.log(`Found establishment ID: ${estId}`);
+
+        if (!estId) {
+          console.log(`Skipping record ${i + 1}: No establishment found for "${nomeEst}"`);
+          continue;
+        }
 
         // Validate tipo_pedido
         const tipo = String(r.tipo_pedido || r.tipo || "").trim() as any;
