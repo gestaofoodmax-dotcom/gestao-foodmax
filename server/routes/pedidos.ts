@@ -180,6 +180,15 @@ export const createPedido: RequestHandler = async (req, res) => {
       parsed.codigo && parsed.codigo.trim() ? parsed.codigo : generateCodigo();
 
     // Itens extras: salvar conforme informado, sem bloquear por estoque/categoria
+    const sanitizeExtras = (arr: any[] | undefined) =>
+      Array.isArray(arr)
+        ? arr.map((e) => ({
+            item_id: Number(e.item_id),
+            categoria_id: Number(e.categoria_id),
+            quantidade: Math.max(1, Number(e.quantidade) || 1),
+            valor_unitario: Math.max(0, Math.round(Number(e.valor_unitario) || 0)),
+          }))
+        : [] as any[];
 
     // If cardapio price not supplied, load it
     const cardapiosData = [] as {
@@ -230,16 +239,14 @@ export const createPedido: RequestHandler = async (req, res) => {
       );
     }
 
-    if (parsed.itens_extras.length > 0) {
-      await supabase.from("pedidos_itens_extras").insert(
-        parsed.itens_extras.map((e) => ({
-          pedido_id: pedido.id,
-          item_id: e.item_id,
-          categoria_id: e.categoria_id,
-          quantidade: e.quantidade,
-          valor_unitario: e.valor_unitario,
-        })),
-      );
+    const extrasToSave = sanitizeExtras(parsed.itens_extras);
+    if (extrasToSave.length > 0) {
+      const { error: extrasErr } = await supabase
+        .from("pedidos_itens_extras")
+        .insert(extrasToSave.map((e) => ({ pedido_id: pedido.id, ...e })));
+      if (extrasErr) {
+        console.error("[pedidos] erro ao inserir itens_extras:", extrasErr);
+      }
     }
 
     res.status(201).json(pedido);
@@ -263,6 +270,16 @@ export const updatePedido: RequestHandler = async (req, res) => {
     const { id } = req.params;
 
     const parsed = UpdatePedidoSchema.parse(req.body);
+
+    const sanitizeExtras = (arr: any[] | undefined) =>
+      Array.isArray(arr)
+        ? arr.map((e) => ({
+            item_id: Number(e.item_id),
+            categoria_id: Number(e.categoria_id),
+            quantidade: Math.max(1, Number(e.quantidade) || 1),
+            valor_unitario: Math.max(0, Math.round(Number(e.valor_unitario) || 0)),
+          }))
+        : [] as any[];
 
     // ensure exists and belongs to user
     const { data: existing } = await supabase
@@ -319,12 +336,14 @@ export const updatePedido: RequestHandler = async (req, res) => {
 
     if (parsed.itens_extras) {
       await supabase.from("pedidos_itens_extras").delete().eq("pedido_id", id);
-      if (parsed.itens_extras.length > 0) {
-        await supabase
+      const extrasToSave = sanitizeExtras(parsed.itens_extras);
+      if (extrasToSave.length > 0) {
+        const { error: extrasErr } = await supabase
           .from("pedidos_itens_extras")
-          .insert(
-            parsed.itens_extras.map((e) => ({ pedido_id: parseInt(id), ...e })),
-          );
+          .insert(extrasToSave.map((e) => ({ pedido_id: parseInt(id), ...e })));
+        if (extrasErr) {
+          console.error("[pedidos] erro ao inserir itens_extras (update):", extrasErr);
+        }
       }
     }
 
