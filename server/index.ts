@@ -182,6 +182,9 @@ export function createServer() {
   app.post("/api/pedidos/import", importPedidos as any);
   app.post("/api/pedidos/import-full", importPedidosFull);
 
+  // Database test route
+  app.get("/api/test-database", testDatabaseConnection);
+
   // Abastecimentos routes
   app.get("/api/abastecimentos", listAbastecimentos);
   app.get("/api/abastecimentos/:id", getAbastecimento);
