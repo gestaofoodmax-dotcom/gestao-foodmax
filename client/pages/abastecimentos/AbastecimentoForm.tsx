@@ -772,15 +772,9 @@ export default function AbastecimentoForm({
               </div>
             </div>
 
-            {/* Shopping Cart - Itens do Abastecimento */}
+            {/* Shopping Cart */}
             {selectedItens.length > 0 && (
-              <div className="border-t pt-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <ShoppingBag className="w-5 h-5 text-orange-600" />
-                  <h4 className="font-semibold text-orange-600">
-                    Itens do Abastecimento
-                  </h4>
-                </div>
+              <div className="pt-4">
                 <div className="space-y-2">
                   {selectedItens.map((selectedItem) => {
                     const item = itens.find(
