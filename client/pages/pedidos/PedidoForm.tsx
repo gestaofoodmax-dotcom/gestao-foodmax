@@ -84,7 +84,7 @@ const schema = z.object({
   }),
   codigo: z.string().min(1, "Código é obrigatório"),
   cliente_id: z.number().nullable().optional(),
-  valor_total_centavos: z.number().min(0, "Valor obrigatório"),
+  valor_total: z.number().min(0, "Valor obrigatório"),
   observacao: z.string().optional(),
   status: z.enum(["Pendente", "Finalizado", "Cancelado"]).default("Pendente"),
   data_hora_finalizado: z.string().nullable().optional(),
@@ -173,7 +173,7 @@ export default function PedidoForm({
         tipo_pedido: undefined as any,
         codigo: generateCodigo(),
         cliente_id: null,
-        valor_total_centavos: 0,
+        valor_total: 0,
         observacao: "",
         status: "Pendente",
         data_hora_finalizado: null,
@@ -240,12 +240,12 @@ export default function PedidoForm({
         tipo_pedido: pedido.tipo_pedido,
         codigo: pedido.codigo,
         cliente_id: pedido.cliente_id ?? null,
-        valor_total_centavos: pedido.valor_total_centavos,
+        valor_total: pedido.valor_total,
         observacao: pedido.observacao || "",
         status: pedido.status,
         data_hora_finalizado: pedido.data_hora_finalizado,
       });
-      setValorTotalMask(formatInputCurrency(pedido.valor_total_centavos));
+      setValorTotalMask(formatInputCurrency(pedido.valor_total));
     }
   }, [pedido, reset]);
 
@@ -271,7 +271,7 @@ export default function PedidoForm({
 
   useEffect(() => {
     const total = valorCardapios + valorExtras;
-    setValue("valor_total_centavos", total);
+    setValue("valor_total", total);
     setValorTotalMask(formatInputCurrency(total));
   }, [valorCardapios, valorExtras, setValue]);
 
@@ -312,7 +312,7 @@ export default function PedidoForm({
       codigo: data.codigo,
       observacao: data.observacao || "",
       status: data.status as StatusPedido,
-      valor_total_centavos: data.valor_total_centavos,
+      valor_total: data.valor_total,
       data_hora_finalizado: data.data_hora_finalizado ?? null,
       cardapios: selectedCardapios.map((id) => ({ cardapio_id: id })),
       itens_extras: selectedExtras,
@@ -884,14 +884,14 @@ export default function PedidoForm({
                     setValorTotalMask(
                       e.target.value === "" ? "" : formatInputCurrency(cents),
                     );
-                    setValue("valor_total_centavos", cents);
+                    setValue("valor_total", cents);
                   }}
                   className="foodmax-input"
                   placeholder="R$ 0,00"
                 />
-                {errors.valor_total_centavos && (
+                {errors.valor_total && (
                   <span className="text-sm text-red-600">
-                    {errors.valor_total_centavos.message}
+                    {errors.valor_total.message}
                   </span>
                 )}
               </div>
