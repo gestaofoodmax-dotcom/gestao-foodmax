@@ -1332,11 +1332,10 @@ export default function PedidosModule() {
             cardapios: "cardapios",
             cardápio: "cardapios",
             cardapio: "cardapios",
-            "itens extras nome": "itens_extras_nome",
-            "itens extras categoria": "itens_extras_categoria",
-            "itens extras quantidade": "itens_extras_quantidade",
-            "itens extras valor unitario": "itens_extras_valor_unitario",
-            "itens extras valor unitário": "itens_extras_valor_unitario",
+            "itens extras": "itens_extras",
+            "itens-extras": "itens_extras",
+            extras: "itens_extras",
+            "extras itens": "itens_extras",
           };
 
           return lowerMap[n] || n.replace(/\s+/g, "_");
