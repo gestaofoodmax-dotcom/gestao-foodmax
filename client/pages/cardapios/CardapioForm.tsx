@@ -319,7 +319,7 @@ export default function CardapioForm({
       item_nome: item.nome,
       categoria_nome: categoria?.nome || "",
       quantidade: 1,
-      valor_unitario: item.preco_centavos,
+      valor_unitario: item.preco,
       item_estoque_atual: item.estoque_atual,
     };
 
