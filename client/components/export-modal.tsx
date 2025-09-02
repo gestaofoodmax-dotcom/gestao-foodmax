@@ -63,7 +63,11 @@ export function ExportModal({
     if (value === null || value === undefined) return "";
 
     // For data_hora_finalizado, preserve the pre-formatted value if it's already a string with time
-    if (fieldName === "data_hora_finalizado" && typeof value === "string" && value.includes(",")) {
+    if (
+      fieldName === "data_hora_finalizado" &&
+      typeof value === "string" &&
+      value.includes(",")
+    ) {
       return value; // Already formatted with date and time
     }
 
@@ -81,13 +85,13 @@ export function ExportModal({
           // For data_hora_finalizado, include time
           if (fieldName === "data_hora_finalizado") {
             return date.toLocaleString("pt-BR", {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit',
-              hour12: false
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
             });
           } else {
             // For other date fields, just date

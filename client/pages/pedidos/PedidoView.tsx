@@ -55,10 +55,12 @@ export default function PedidoView({
       try {
         // Use Promise with timeout for faster loading
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("timeout")), 5000)
+          setTimeout(() => reject(new Error("timeout")), 5000),
         );
 
-        const dataPromise = makeRequest(`/api/pedidos/${pedido.id}?_t=${Date.now()}`);
+        const dataPromise = makeRequest(
+          `/api/pedidos/${pedido.id}?_t=${Date.now()}`,
+        );
 
         const data = await Promise.race([dataPromise, timeoutPromise]);
         setDetalhe(data);

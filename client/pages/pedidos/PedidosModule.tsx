@@ -143,15 +143,17 @@ export default function PedidosModule() {
         label: "Data/Hora Finalizado",
         sortable: true,
         render: (v: string | null) =>
-          v ? new Date(v).toLocaleString("pt-BR", {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            hour12: false
-          }) : "-",
+          v
+            ? new Date(v).toLocaleString("pt-BR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
+              })
+            : "-",
       },
       {
         key: "status",
@@ -182,13 +184,19 @@ export default function PedidosModule() {
                   ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50"
                   : "bg-green-50 hover:bg-green-100 border-green-200"
               }`}
-              title={r.status === "Finalizado" || !!r.data_hora_finalizado ? "Já finalizado" : "Finalizar"}
-            >
-              <CheckCircle2 className={`w-4 h-4 ${
+              title={
                 r.status === "Finalizado" || !!r.data_hora_finalizado
-                  ? "text-gray-400"
-                  : "text-green-700"
-              }`} />
+                  ? "Já finalizado"
+                  : "Finalizar"
+              }
+            >
+              <CheckCircle2
+                className={`w-4 h-4 ${
+                  r.status === "Finalizado" || !!r.data_hora_finalizado
+                    ? "text-gray-400"
+                    : "text-green-700"
+                }`}
+              />
             </Button>
             <Button
               variant="ghost"
@@ -591,13 +599,13 @@ export default function PedidosModule() {
           status: pedido.status,
           data_hora_finalizado: pedido.data_hora_finalizado
             ? new Date(pedido.data_hora_finalizado).toLocaleString("pt-BR", {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
               })
             : "",
           observacao: pedido.observacao || "",
@@ -620,13 +628,13 @@ export default function PedidosModule() {
           status: p.status,
           data_hora_finalizado: p.data_hora_finalizado
             ? new Date(p.data_hora_finalizado).toLocaleString("pt-BR", {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+                hour12: false,
               })
             : "",
           observacao: p.observacao || "",
@@ -659,14 +667,18 @@ export default function PedidosModule() {
 
         // Debug all date-related fields
         console.log(`🔍 CSV Field Values for record ${i + 1}:`);
-        console.log(`  - data_hora_finalizado: "${r.data_hora_finalizado || ''}"`);
-        console.log(`  - Data/Hora Finalizado: "${r["Data/Hora Finalizado"] || ''}"`);
-        console.log(`  - observacao: "${r.observacao || ''}"`);
-        console.log(`  - Observação: "${r["Observação"] || ''}"`);
-        console.log(`  - data_cadastro: "${r.data_cadastro || ''}"`);
-        console.log(`  - Data Cadastro: "${r["Data Cadastro"] || ''}"`);
-        console.log(`  - data_atualizacao: "${r.data_atualizacao || ''}"`);
-        console.log(`  - Data Atualização: "${r["Data Atualização"] || ''}"`);
+        console.log(
+          `  - data_hora_finalizado: "${r.data_hora_finalizado || ""}"`,
+        );
+        console.log(
+          `  - Data/Hora Finalizado: "${r["Data/Hora Finalizado"] || ""}"`,
+        );
+        console.log(`  - observacao: "${r.observacao || ""}"`);
+        console.log(`  - Observação: "${r["Observação"] || ""}"`);
+        console.log(`  - data_cadastro: "${r.data_cadastro || ""}"`);
+        console.log(`  - Data Cadastro: "${r["Data Cadastro"] || ""}"`);
+        console.log(`  - data_atualizacao: "${r.data_atualizacao || ""}"`);
+        console.log(`  - Data Atualização: "${r["Data Atualização"] || ""}"`);
         console.log(`  - All keys:`, Object.keys(r));
 
         // Map estabelecimento - check both estabelecimento and estabelecimento_nome
@@ -763,7 +775,9 @@ export default function PedidosModule() {
 
         // Parse dates correctly - handles both date and datetime formats
         const parseDate = (dateStr: string) => {
-          console.log(`🔍 parseDate called with: "${dateStr}" (type: ${typeof dateStr})`);
+          console.log(
+            `🔍 parseDate called with: "${dateStr}" (type: ${typeof dateStr})`,
+          );
           if (!dateStr) return null;
 
           // Skip time-only values (HH:MM:SS format without date)
@@ -777,7 +791,9 @@ export default function PedidosModule() {
             // Handle DD/MM/YYYY, HH:MM:SS format (from CSV export)
             if (dateStr.includes("/") && dateStr.includes(",")) {
               // Split on comma to separate date and time: "02/09/2025, 01:07:27"
-              const [datePart, timePart] = dateStr.split(",").map(s => s.trim());
+              const [datePart, timePart] = dateStr
+                .split(",")
+                .map((s) => s.trim());
               const [day, month, year] = datePart.split("/");
 
               // Validate date components
@@ -785,8 +801,16 @@ export default function PedidosModule() {
               const monthNum = parseInt(month);
               const yearNum = parseInt(year);
 
-              if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum) ||
-                  dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12 || yearNum < 1900) {
+              if (
+                isNaN(dayNum) ||
+                isNaN(monthNum) ||
+                isNaN(yearNum) ||
+                dayNum < 1 ||
+                dayNum > 31 ||
+                monthNum < 1 ||
+                monthNum > 12 ||
+                yearNum < 1900
+              ) {
                 console.log(`❌ Invalid date components in "${dateStr}"`);
                 return null;
               }
@@ -799,21 +823,32 @@ export default function PedidosModule() {
                 const secondsNum = parseInt(seconds || "0");
 
                 // Validate time components
-                if (isNaN(hoursNum) || isNaN(minutesNum) || isNaN(secondsNum) ||
-                    hoursNum < 0 || hoursNum > 23 || minutesNum < 0 || minutesNum > 59 || secondsNum < 0 || secondsNum > 59) {
+                if (
+                  isNaN(hoursNum) ||
+                  isNaN(minutesNum) ||
+                  isNaN(secondsNum) ||
+                  hoursNum < 0 ||
+                  hoursNum > 23 ||
+                  minutesNum < 0 ||
+                  minutesNum > 59 ||
+                  secondsNum < 0 ||
+                  secondsNum > 59
+                ) {
                   console.log(`❌ Invalid time components in "${dateStr}"`);
                   return null;
                 }
 
                 // Use UTC to prevent timezone conversion issues
-                const parsedDate = new Date(Date.UTC(
-                  yearNum,
-                  monthNum - 1,
-                  dayNum,
-                  hoursNum,
-                  minutesNum,
-                  secondsNum
-                ));
+                const parsedDate = new Date(
+                  Date.UTC(
+                    yearNum,
+                    monthNum - 1,
+                    dayNum,
+                    hoursNum,
+                    minutesNum,
+                    secondsNum,
+                  ),
+                );
 
                 // Validate the created date
                 if (isNaN(parsedDate.getTime())) {
@@ -822,11 +857,15 @@ export default function PedidosModule() {
                 }
 
                 const isoString = parsedDate.toISOString();
-                console.log(`✅ Parsed datetime "${dateStr}" -> "${isoString}"`);
+                console.log(
+                  `✅ Parsed datetime "${dateStr}" -> "${isoString}"`,
+                );
                 return isoString;
               } else {
                 // No time component, just date - use UTC
-                const parsedDate = new Date(Date.UTC(yearNum, monthNum - 1, dayNum));
+                const parsedDate = new Date(
+                  Date.UTC(yearNum, monthNum - 1, dayNum),
+                );
 
                 // Validate the created date
                 if (isNaN(parsedDate.getTime())) {
@@ -846,13 +885,23 @@ export default function PedidosModule() {
               const yearNum = parseInt(year);
 
               // Validate date components
-              if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum) ||
-                  dayNum < 1 || dayNum > 31 || monthNum < 1 || monthNum > 12 || yearNum < 1900) {
+              if (
+                isNaN(dayNum) ||
+                isNaN(monthNum) ||
+                isNaN(yearNum) ||
+                dayNum < 1 ||
+                dayNum > 31 ||
+                monthNum < 1 ||
+                monthNum > 12 ||
+                yearNum < 1900
+              ) {
                 console.log(`❌ Invalid date components in "${dateStr}"`);
                 return null;
               }
 
-              const parsedDate = new Date(Date.UTC(yearNum, monthNum - 1, dayNum));
+              const parsedDate = new Date(
+                Date.UTC(yearNum, monthNum - 1, dayNum),
+              );
 
               // Validate the created date
               if (isNaN(parsedDate.getTime())) {
@@ -868,7 +917,9 @@ export default function PedidosModule() {
 
             // Validate the created date
             if (isNaN(fallbackDate.getTime())) {
-              console.log(`❌ Invalid date from fallback parsing: "${dateStr}"`);
+              console.log(
+                `❌ Invalid date from fallback parsing: "${dateStr}"`,
+              );
               return null;
             }
 
@@ -892,13 +943,21 @@ export default function PedidosModule() {
           valor_total: valor_centavos,
           data_hora_finalizado: (() => {
             // Check specific field names for data_hora_finalizado only
-            const rawValue = r["data_hora_finalizado"] || r["Data/Hora Finalizado"] || r["data/hora finalizado"] || "";
-            console.log(`🎯 Processing data_hora_finalizado for record ${i + 1}:`);
+            const rawValue =
+              r["data_hora_finalizado"] ||
+              r["Data/Hora Finalizado"] ||
+              r["data/hora finalizado"] ||
+              "";
+            console.log(
+              `🎯 Processing data_hora_finalizado for record ${i + 1}:`,
+            );
             console.log(`🎯 Available keys in record:`, Object.keys(r));
             console.log(`🎯 Raw data_hora_finalizado value: "${rawValue}"`);
 
             if (!rawValue) {
-              console.log(`🎯 No data_hora_finalizado value found - will be null`);
+              console.log(
+                `🎯 No data_hora_finalizado value found - will be null`,
+              );
               return null;
             }
 
@@ -915,7 +974,11 @@ export default function PedidosModule() {
             return parsed || now;
           })(),
           data_atualizacao: (() => {
-            const rawValue = r.data_atualizacao || r["Data Atualização"] || r["data atualização"] || "";
+            const rawValue =
+              r.data_atualizacao ||
+              r["Data Atualização"] ||
+              r["data atualização"] ||
+              "";
             console.log(`📅 data_atualizacao raw value: "${rawValue}"`);
             const parsed = parseDate(rawValue);
             return parsed || now;
@@ -1015,7 +1078,7 @@ export default function PedidosModule() {
         console.log(`🎯 Final novo object for record ${i + 1}:`, {
           codigo: novo.codigo,
           data_hora_finalizado: novo.data_hora_finalizado,
-          status: novo.status
+          status: novo.status,
         });
 
         valid.push(novo);
@@ -1313,7 +1376,7 @@ export default function PedidosModule() {
             "Valor Total": "valor_total",
             Status: "status",
             "Data/Hora Finalizado": "data_hora_finalizado",
-            "Observação": "observacao",
+            Observação: "observacao",
             "Data Cadastro": "data_cadastro",
             "Data Atualização": "data_atualizacao",
             Cardápios: "cardapios",
