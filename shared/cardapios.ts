@@ -18,7 +18,7 @@ export interface CardapioItem {
   cardapio_id: number;
   item_id: number;
   quantidade: number;
-  valor_unitario_centavos: number;
+  valor_unitario: number;
   data_cadastro: string;
   data_atualizacao: string;
 }
@@ -58,7 +58,7 @@ export interface CreateCardapioRequest {
   itens: {
     item_id: number;
     quantidade: number;
-    valor_unitario_centavos: number;
+    valor_unitario: number;
   }[];
 }
 
@@ -81,7 +81,7 @@ export interface CardapioDetalhado extends Cardapio {
     item_nome: string;
     categoria_nome: string;
     quantidade: number;
-    valor_unitario_centavos: number;
+    valor_unitario: number;
     item_estoque_atual?: number;
   }[];
 }
