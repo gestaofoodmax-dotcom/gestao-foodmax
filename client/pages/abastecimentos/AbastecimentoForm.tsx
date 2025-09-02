@@ -364,11 +364,13 @@ export default function AbastecimentoForm({
   }, [selectedItens]);
 
   const onSubmit = (data: FormData) => {
-    console.log("Form submission started with data:", data);
+    console.log("=== FORM SUBMISSION START ===");
+    console.log("Form data:", data);
     console.log("Selected fornecedores:", selectedFornecedoresIds);
     console.log("Selected categoria:", selectedCategoriaId);
     console.log("Selected itens:", selectedItens);
 
+    // Basic validation
     if (selectedFornecedoresIds.length === 0) {
       toast({
         title: "Erro de validação",
@@ -405,7 +407,7 @@ export default function AbastecimentoForm({
       return;
     }
 
-    if (!data.telefone) {
+    if (!data.telefone?.trim()) {
       toast({
         title: "Erro de validação",
         description: "Telefone é obrigatório",
@@ -414,7 +416,7 @@ export default function AbastecimentoForm({
       return;
     }
 
-    if (!data.endereco || !data.cidade || !data.uf) {
+    if (!data.endereco?.trim() || !data.cidade?.trim() || !data.uf?.trim()) {
       toast({
         title: "Erro de validação",
         description: "Endereço, Cidade e UF são obrigatórios",
@@ -423,28 +425,49 @@ export default function AbastecimentoForm({
       return;
     }
 
+    // Clean and validate email
+    const cleanEmail = data.email?.trim();
+    const emailToSend = cleanEmail && cleanEmail !== "" ? cleanEmail : null;
+
+    // Validate email if provided
+    if (emailToSend) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(emailToSend)) {
+        toast({
+          title: "Erro de validação",
+          description: "Email inválido",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const payload: CreateAbastecimentoRequest = {
-      estabelecimento_id: data.estabelecimento_id,
+      estabelecimento_id: Number(data.estabelecimento_id),
       fornecedores_ids: selectedFornecedoresIds,
-      categoria_id: selectedCategoriaId,
-      telefone: data.telefone,
-      ddi: data.ddi || "+55",
-      email: data.email || null,
+      categoria_id: Number(selectedCategoriaId),
+      telefone: data.telefone.trim(),
+      ddi: data.ddi?.trim() || "+55",
+      email: emailToSend,
       data_hora_recebido: data.data_hora_recebido || null,
-      observacao: data.observacao || null,
+      observacao: data.observacao?.trim() || null,
       status: (data.status as StatusAbastecimento) || "Pendente",
-      email_enviado: data.email_enviado || false,
-      itens: selectedItens,
+      email_enviado: Boolean(data.email_enviado),
+      itens: selectedItens.map(item => ({
+        item_id: Number(item.item_id),
+        quantidade: Number(item.quantidade),
+      })),
       endereco: {
-        cep: data.cep || null,
-        endereco: data.endereco,
-        cidade: data.cidade,
-        uf: data.uf,
-        pais: data.pais || "Brasil",
+        cep: data.cep?.trim() || null,
+        endereco: data.endereco.trim(),
+        cidade: data.cidade.trim(),
+        uf: data.uf.trim().toUpperCase(),
+        pais: data.pais?.trim() || "Brasil",
       },
     };
 
-    console.log("Final payload being sent:", payload);
+    console.log("=== FINAL PAYLOAD ===");
+    console.log(JSON.stringify(payload, null, 2));
     onSave(payload);
   };
 
