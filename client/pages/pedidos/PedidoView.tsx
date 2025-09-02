@@ -40,20 +40,44 @@ export default function PedidoView({
   useEffect(() => {
     const load = async () => {
       if (!pedido) return;
+
+      // Clear all relevant caches for fresh data
       try {
         localStorage.removeItem("fm_pedidos");
+        localStorage.removeItem("fm_pedidos_cache");
+        localStorage.removeItem("fm_grid_cache");
+        // Clear any component-level cache
+        setDetalhe(null);
       } catch {}
+
       setLoading(true);
+
       try {
-        const data = await makeRequest(`/api/pedidos/${pedido.id}`);
+        // Use Promise with timeout for faster loading
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), 5000)
+        );
+
+        const dataPromise = makeRequest(`/api/pedidos/${pedido.id}?_t=${Date.now()}`);
+
+        const data = await Promise.race([dataPromise, timeoutPromise]);
         setDetalhe(data);
-      } catch {
-        setDetalhe(pedido);
+      } catch (error) {
+        // Fallback to basic pedido data if API fails or times out
+        console.log("Using fallback data for pedido view:", error);
+        setDetalhe({
+          ...pedido,
+          cardapios: [],
+          itens_extras: [],
+        });
       } finally {
         setLoading(false);
       }
     };
-    if (isOpen) load();
+
+    if (isOpen && pedido) {
+      load();
+    }
   }, [isOpen, pedido, makeRequest]);
 
   const DataField = ({ label, value }: { label: string; value: any }) => (
