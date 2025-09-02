@@ -657,6 +657,18 @@ export default function PedidosModule() {
         const r = records[i];
         console.log(`Processing record ${i + 1}:`, r);
 
+        // Debug all date-related fields
+        console.log(`🔍 CSV Field Values for record ${i + 1}:`);
+        console.log(`  - data_hora_finalizado: "${r.data_hora_finalizado || ''}"`);
+        console.log(`  - Data/Hora Finalizado: "${r["Data/Hora Finalizado"] || ''}"`);
+        console.log(`  - observacao: "${r.observacao || ''}"`);
+        console.log(`  - Observação: "${r["Observação"] || ''}"`);
+        console.log(`  - data_cadastro: "${r.data_cadastro || ''}"`);
+        console.log(`  - Data Cadastro: "${r["Data Cadastro"] || ''}"`);
+        console.log(`  - data_atualizacao: "${r.data_atualizacao || ''}"`);
+        console.log(`  - Data Atualização: "${r["Data Atualização"] || ''}"`);
+        console.log(`  - All keys:`, Object.keys(r));
+
         // Map estabelecimento - check both estabelecimento and estabelecimento_nome
         const nomeEst = String(
           r.estabelecimento_nome || r.estabelecimento || "",
