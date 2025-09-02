@@ -76,6 +76,17 @@ import {
   importPedidos,
   importPedidosFull,
 } from "./routes/pedidos";
+import {
+  listAbastecimentos,
+  getAbastecimento,
+  createAbastecimento,
+  updateAbastecimento,
+  deleteAbastecimento,
+  bulkDeleteAbastecimentos,
+  marcarRecebido,
+  enviarEmail,
+  importAbastecimentos,
+} from "./routes/abastecimentos";
 
 export function createServer() {
   const app = express();
@@ -169,6 +180,17 @@ export function createServer() {
   app.patch("/api/pedidos/:id/finalizar", finalizarPedido);
   app.post("/api/pedidos/import", importPedidos as any);
   app.post("/api/pedidos/import-full", importPedidosFull);
+
+  // Abastecimentos routes
+  app.get("/api/abastecimentos", listAbastecimentos);
+  app.get("/api/abastecimentos/:id", getAbastecimento);
+  app.post("/api/abastecimentos", createAbastecimento);
+  app.put("/api/abastecimentos/:id", updateAbastecimento);
+  app.delete("/api/abastecimentos/:id", deleteAbastecimento);
+  app.post("/api/abastecimentos/bulk-delete", bulkDeleteAbastecimentos);
+  app.patch("/api/abastecimentos/:id/recebido", marcarRecebido);
+  app.post("/api/abastecimentos/:id/enviar-email", enviarEmail);
+  app.post("/api/abastecimentos/import", importAbastecimentos);
 
   return app;
 }
