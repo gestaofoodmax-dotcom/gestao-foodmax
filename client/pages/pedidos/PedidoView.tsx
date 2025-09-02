@@ -80,6 +80,14 @@ export default function PedidoView({
     }
   }, [isOpen, pedido, makeRequest]);
 
+  // Cleanup when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setDetalhe(null);
+      setLoading(false);
+    }
+  }, [isOpen]);
+
   const DataField = ({ label, value }: { label: string; value: any }) => (
     <div className="space-y-1">
       <div className="text-sm font-medium text-gray-600">{label}</div>
