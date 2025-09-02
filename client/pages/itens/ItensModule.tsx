@@ -115,7 +115,7 @@ export default function ItensModule() {
       { key: "nome", label: "Nome", sortable: true },
       { key: "categoria_nome", label: "Categoria", sortable: true },
       {
-        key: "preco_centavos",
+        key: "preco",
         label: "Preço",
         sortable: true,
         render: (v: number) => formatCurrencyBRL(v),
@@ -440,7 +440,7 @@ export default function ItensModule() {
           id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
           categoria_id: data.categoria_id,
           nome: data.nome,
-          preco_centavos: data.preco_centavos,
+          preco: data.preco,
           custo_pago_centavos: data.custo_pago_centavos,
           unidade_medida: data.unidade_medida,
           peso_gramas: data.peso_gramas,
@@ -882,7 +882,7 @@ export default function ItensModule() {
                 nome: i.nome,
                 categoria_nome:
                   categorias.find((c) => c.id === i.categoria_id)?.nome || "",
-                preco: (i.preco_centavos / 100).toFixed(2),
+                preco: (i.preco / 100).toFixed(2),
                 custo_pago: (i.custo_pago_centavos / 100).toFixed(2),
                 estoque_atual: i.estoque_atual ?? 0,
                 unidade_medida: i.unidade_medida,
@@ -1039,7 +1039,7 @@ export default function ItensModule() {
                   const payload: any = {
                     nome: r.nome,
                     categoria_id,
-                    preco_centavos: parseCentavos(r.preco_centavos ?? r.preco),
+                    preco: parseCentavos(r.preco ?? r.preco),
                     custo_pago_centavos: parseCentavos(
                       r.custo_pago_centavos ?? r.custo ?? r.custo_pago,
                     ),
@@ -1073,7 +1073,7 @@ export default function ItensModule() {
                     id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
                     categoria_id,
                     nome: r.nome,
-                    preco_centavos: parseCentavos(r.preco_centavos ?? r.preco),
+                    preco: parseCentavos(r.preco ?? r.preco),
                     custo_pago_centavos: parseCentavos(
                       r.custo_pago_centavos ?? r.custo ?? r.custo_pago,
                     ),
