@@ -125,38 +125,81 @@ export const getPedido: RequestHandler = async (req, res) => {
       .eq("id", pedido.estabelecimento_id)
       .single();
 
-    const { data: cli } = await supabase
-      .from("clientes")
-      .select("nome")
-      .eq("id", pedido.cliente_id)
-      .single();
+    let cli: any = null;
+    if (pedido.cliente_id != null) {
+      const cliResp = await supabase
+        .from("clientes")
+        .select("nome")
+        .eq("id", pedido.cliente_id)
+        .maybeSingle();
+      cli = cliResp.data || null;
+    }
 
-    const { data: cardapios } = await supabase
+    // Carregar cardápios relacionados sem nested select para evitar erros
+    const { data: cardapiosRows } = await supabase
       .from("pedidos_cardapios")
-      .select("*, cardapios:cardapio_id(nome, preco_total)")
+      .select("*")
       .eq("pedido_id", id);
 
-    const { data: extras } = await supabase
+    let cardapiosDetalhados: any[] = [];
+    if (Array.isArray(cardapiosRows) && cardapiosRows.length > 0) {
+      const ids = Array.from(
+        new Set(cardapiosRows.map((c: any) => c.cardapio_id).filter(Boolean)),
+      );
+      const { data: cards } = await supabase
+        .from("cardapios")
+        .select("id, nome, preco_total")
+        .in("id", ids);
+      const map = new Map<number, any>();
+      (cards || []).forEach((c: any) => map.set(c.id, c));
+      cardapiosDetalhados = (cardapiosRows || []).map((c: any) => ({
+        ...c,
+        cardapio_nome: map.get(c.cardapio_id)?.nome,
+      }));
+    }
+
+    // Carregar itens extras relacionados (e nomes) sem nested select
+    const { data: extrasRows } = await supabase
       .from("pedidos_itens_extras")
-      .select(
-        "*, itens:item_id(nome, estoque_atual), itens_categorias:categoria_id(nome)",
-      )
+      .select("*")
       .eq("pedido_id", id);
+
+    let extrasDetalhados: any[] = [];
+    if (Array.isArray(extrasRows) && extrasRows.length > 0) {
+      const itemIds = Array.from(
+        new Set(extrasRows.map((e: any) => e.item_id).filter(Boolean)),
+      );
+      const catIds = Array.from(
+        new Set(extrasRows.map((e: any) => e.categoria_id).filter(Boolean)),
+      );
+
+      const [{ data: itens }, { data: cats }] = await Promise.all([
+        supabase
+          .from("itens")
+          .select("id, nome, estoque_atual")
+          .in("id", itemIds),
+        supabase.from("itens_categorias").select("id, nome").in("id", catIds),
+      ]);
+
+      const itensMap = new Map<number, any>();
+      (itens || []).forEach((i: any) => itensMap.set(i.id, i));
+      const catsMap = new Map<number, any>();
+      (cats || []).forEach((c: any) => catsMap.set(c.id, c));
+
+      extrasDetalhados = (extrasRows || []).map((e: any) => ({
+        ...e,
+        item_nome: itensMap.get(e.item_id)?.nome,
+        estoque_atual: itensMap.get(e.item_id)?.estoque_atual,
+        categoria_nome: catsMap.get(e.categoria_id)?.nome,
+      }));
+    }
 
     res.json({
       ...pedido,
       estabelecimento_nome: est?.nome,
       cliente_nome: cli?.nome || null,
-      cardapios: (cardapios || []).map((c: any) => ({
-        ...c,
-        cardapio_nome: c.cardapios?.nome,
-      })),
-      itens_extras: (extras || []).map((e: any) => ({
-        ...e,
-        item_nome: e.itens?.nome,
-        estoque_atual: e.itens?.estoque_atual,
-        categoria_nome: e.itens_categorias?.nome,
-      })),
+      cardapios: cardapiosDetalhados,
+      itens_extras: extrasDetalhados,
     });
   } catch (error) {
     console.error("Error getting pedido:", error);
@@ -175,49 +218,19 @@ export const createPedido: RequestHandler = async (req, res) => {
     const codigo =
       parsed.codigo && parsed.codigo.trim() ? parsed.codigo : generateCodigo();
 
-    // Validate itens_extras stock and categoria
-    if (parsed.itens_extras.length > 0) {
-      const ids = [...new Set(parsed.itens_extras.map((e) => e.item_id))];
-      const { data: itens, error: itensError } = await supabase
-        .from("itens")
-        .select("id, estoque_atual, categoria_id")
-        .in("id", ids);
-      if (itensError) throw itensError;
-      const byId = new Map<
-        number,
-        { estoque_atual: number | null; categoria_id: number }
-      >();
-      (itens || []).forEach((i: any) =>
-        byId.set(i.id, {
-          estoque_atual: i.estoque_atual,
-          categoria_id: i.categoria_id,
-        }),
-      );
-      for (const e of parsed.itens_extras) {
-        const info = byId.get(e.item_id);
-        const estoque = info?.estoque_atual ?? 0;
-        if (!info) {
-          return res.status(400).json({
-            error: `Item inválido (${e.item_id})`,
-          });
-        }
-        if (info.categoria_id !== e.categoria_id) {
-          return res.status(400).json({
-            error: `Categoria do item não confere para o item ${e.item_id}`,
-          });
-        }
-        if (estoque <= 0) {
-          return res.status(400).json({
-            error: `Item sem estoque (${e.item_id}). Ajuste no módulo Itens.`,
-          });
-        }
-        if (e.quantidade > estoque) {
-          return res.status(400).json({
-            error: `Quantidade informada (${e.quantidade}) é maior que o estoque atual (${estoque}) do item ${e.item_id}. Ajuste o estoque no módulo Itens.`,
-          });
-        }
-      }
-    }
+    // Itens extras: salvar conforme informado, sem bloquear por estoque/categoria
+    const sanitizeExtras = (arr: any[] | undefined) =>
+      Array.isArray(arr)
+        ? arr.map((e) => ({
+            item_id: Number(e.item_id),
+            categoria_id: Number(e.categoria_id),
+            quantidade: Math.max(1, Number(e.quantidade) || 1),
+            valor_unitario: Math.max(
+              0,
+              Math.round(Number(e.valor_unitario) || 0),
+            ),
+          }))
+        : ([] as any[]);
 
     // If cardapio price not supplied, load it
     const cardapiosData = [] as {
@@ -268,16 +281,14 @@ export const createPedido: RequestHandler = async (req, res) => {
       );
     }
 
-    if (parsed.itens_extras.length > 0) {
-      await supabase.from("pedidos_itens_extras").insert(
-        parsed.itens_extras.map((e) => ({
-          pedido_id: pedido.id,
-          item_id: e.item_id,
-          categoria_id: e.categoria_id,
-          quantidade: e.quantidade,
-          valor_unitario: e.valor_unitario,
-        })),
-      );
+    const extrasToSave = sanitizeExtras(parsed.itens_extras);
+    if (extrasToSave.length > 0) {
+      const { error: extrasErr } = await supabase
+        .from("pedidos_itens_extras")
+        .insert(extrasToSave.map((e) => ({ pedido_id: pedido.id, ...e })));
+      if (extrasErr) {
+        console.error("[pedidos] erro ao inserir itens_extras:", extrasErr);
+      }
     }
 
     res.status(201).json(pedido);
@@ -302,6 +313,19 @@ export const updatePedido: RequestHandler = async (req, res) => {
 
     const parsed = UpdatePedidoSchema.parse(req.body);
 
+    const sanitizeExtras = (arr: any[] | undefined) =>
+      Array.isArray(arr)
+        ? arr.map((e) => ({
+            item_id: Number(e.item_id),
+            categoria_id: Number(e.categoria_id),
+            quantidade: Math.max(1, Number(e.quantidade) || 1),
+            valor_unitario: Math.max(
+              0,
+              Math.round(Number(e.valor_unitario) || 0),
+            ),
+          }))
+        : ([] as any[]);
+
     // ensure exists and belongs to user
     const { data: existing } = await supabase
       .from("pedidos")
@@ -312,51 +336,10 @@ export const updatePedido: RequestHandler = async (req, res) => {
     if (!existing)
       return res.status(404).json({ error: "Pedido não encontrado" });
 
-    // Validate itens_extras if provided
-    if (parsed.itens_extras && parsed.itens_extras.length > 0) {
-      const ids = [...new Set(parsed.itens_extras.map((e) => e.item_id))];
-      const { data: itens, error: itensError } = await supabase
-        .from("itens")
-        .select("id, estoque_atual, categoria_id")
-        .in("id", ids);
-      if (itensError) throw itensError;
-      const byId = new Map<
-        number,
-        { estoque_atual: number | null; categoria_id: number }
-      >();
-      (itens || []).forEach((i: any) =>
-        byId.set(i.id, {
-          estoque_atual: i.estoque_atual,
-          categoria_id: i.categoria_id,
-        }),
-      );
-      for (const e of parsed.itens_extras) {
-        const info = byId.get(e.item_id);
-        const estoque = info?.estoque_atual ?? 0;
-        if (!info) {
-          return res
-            .status(400)
-            .json({ error: `Item inválido (${e.item_id})` });
-        }
-        if (info.categoria_id !== e.categoria_id) {
-          return res.status(400).json({
-            error: `Categoria do item não confere para o item ${e.item_id}`,
-          });
-        }
-        if (estoque <= 0) {
-          return res.status(400).json({
-            error: `Item sem estoque (${e.item_id}). Ajuste no módulo Itens.`,
-          });
-        }
-        if (e.quantidade > estoque) {
-          return res.status(400).json({
-            error: `Quantidade informada (${e.quantidade}) é maior que o estoque atual (${estoque}) do item ${e.item_id}. Ajuste o estoque no módulo Itens.`,
-          });
-        }
-      }
-    }
+    // Itens extras no update: aceitar payload e sobrescrever sem bloquear por estoque/categoria
 
-    const updateData: any = { ...parsed };
+    const { cardapios: _c, itens_extras: _e, ...pedidoUpdate } = parsed as any;
+    const updateData: any = { ...pedidoUpdate };
 
     const { data: pedido, error } = await supabase
       .from("pedidos")
@@ -399,12 +382,17 @@ export const updatePedido: RequestHandler = async (req, res) => {
 
     if (parsed.itens_extras) {
       await supabase.from("pedidos_itens_extras").delete().eq("pedido_id", id);
-      if (parsed.itens_extras.length > 0) {
-        await supabase
+      const extrasToSave = sanitizeExtras(parsed.itens_extras);
+      if (extrasToSave.length > 0) {
+        const { error: extrasErr } = await supabase
           .from("pedidos_itens_extras")
-          .insert(
-            parsed.itens_extras.map((e) => ({ pedido_id: parseInt(id), ...e })),
+          .insert(extrasToSave.map((e) => ({ pedido_id: parseInt(id), ...e })));
+        if (extrasErr) {
+          console.error(
+            "[pedidos] erro ao inserir itens_extras (update):",
+            extrasErr,
           );
+        }
       }
     }
 

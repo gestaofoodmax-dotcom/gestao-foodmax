@@ -120,7 +120,7 @@ export default function PedidosModule() {
       {
         key: "estabelecimento_nome",
         label: "Estabelecimento",
-        sortable: false,
+        sortable: true,
         render: (v: any, r: any) => r.estabelecimento_nome || "-",
       },
       { key: "codigo", label: "Código", sortable: true },
@@ -145,6 +145,7 @@ export default function PedidosModule() {
         render: (v: string | null) =>
           v
             ? new Date(v).toLocaleString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
                 year: "numeric",
                 month: "2-digit",
                 day: "2-digit",
@@ -536,6 +537,30 @@ export default function PedidosModule() {
 
     const exportRows: any[] = [];
 
+    const formatDateTimeBR = (iso: string | null | undefined) => {
+      if (!iso) return "";
+      const date = new Date(iso);
+      const parts = new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).formatToParts(date);
+      const get = (type: string) =>
+        parts.find((p) => p.type === type)?.value || "";
+      const dd = get("day");
+      const mm = get("month");
+      const yyyy = get("year");
+      const hh = get("hour");
+      const mi = get("minute");
+      const ss = get("second");
+      return `${dd}/${mm}/${yyyy} ${hh}:${mi}:${ss}`;
+    };
+
     for (const p of pedidosToExport) {
       try {
         const det = await makeRequest(`/api/pedidos/${p.id}`);
@@ -548,43 +573,30 @@ export default function PedidosModule() {
           ? pedido.itens_extras
           : [];
 
-        // Consolidar cardápios em uma única string
+        // Consolidar cardápios em uma única string (Nome - R$ XX.XX)
         const cardapiosInfo =
           cardapios.length > 0
             ? cardapios
-                .map(
-                  (c) =>
-                    `${c.cardapio_nome || "N/A"} (R$ ${((c.preco_total || 0) / 100).toFixed(2)})`,
-                )
+                .map((c) => {
+                  const preco = ((c.preco_total || 0) / 100).toFixed(2);
+                  return `${c.cardapio_nome || "N/A"} - R$ ${preco}`;
+                })
                 .join("; ")
             : "";
 
-        // Consolidar itens extras em strings separadas
-        const extrasNomes =
+        // Consolidar itens extras em único campo
+        const extrasStr =
           extras.length > 0
             ? extras
-                .map((e) => e.item_nome || "")
-                .filter((n) => n)
-                .join("; ")
-            : "";
-        const extrasCategorias =
-          extras.length > 0
-            ? extras
-                .map((e) => e.categoria_nome || "")
-                .filter((n) => n)
-                .join("; ")
-            : "";
-        const extrasQuantidades =
-          extras.length > 0
-            ? extras
-                .map((e) => e.quantidade ?? "")
-                .filter((n) => n !== "")
-                .join("; ")
-            : "";
-        const extrasValores =
-          extras.length > 0
-            ? extras
-                .map((e) => `R$ ${((e.valor_unitario || 0) / 100).toFixed(2)}`)
+                .map((e) => {
+                  const preco = ((e.valor_unitario || 0) / 100).toFixed(2);
+                  const qty =
+                    typeof e.quantidade === "number"
+                      ? e.quantidade
+                      : Number(e.quantidade || 0) || 0;
+                  return `${e.item_nome || ""} - ${e.categoria_nome || ""} - ${qty} - R$ ${preco}`.trim();
+                })
+                .filter((s) => s && s !== " -  - 0 - R$ 0.00")
                 .join("; ")
             : "";
 
@@ -597,25 +609,12 @@ export default function PedidosModule() {
           tipo_pedido: pedido.tipo_pedido,
           valor_total: ((pedido.valor_total || 0) / 100).toFixed(2),
           status: pedido.status,
-          data_hora_finalizado: pedido.data_hora_finalizado
-            ? new Date(pedido.data_hora_finalizado).toLocaleString("pt-BR", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: false,
-              })
-            : "",
+          data_hora_finalizado: formatDateTimeBR(pedido.data_hora_finalizado),
           observacao: pedido.observacao || "",
           data_cadastro: pedido.data_cadastro || "",
           data_atualizacao: pedido.data_atualizacao || "",
           cardapios: cardapiosInfo,
-          itens_extras_nome: extrasNomes,
-          itens_extras_categoria: extrasCategorias,
-          itens_extras_quantidade: extrasQuantidades,
-          itens_extras_valor_unitario: extrasValores,
+          itens_extras: extrasStr,
         });
       } catch {
         // Fallback para dados básicos sem detalhamento
@@ -626,25 +625,12 @@ export default function PedidosModule() {
           tipo_pedido: p.tipo_pedido,
           valor_total: ((p.valor_total || 0) / 100).toFixed(2),
           status: p.status,
-          data_hora_finalizado: p.data_hora_finalizado
-            ? new Date(p.data_hora_finalizado).toLocaleString("pt-BR", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-                hour12: false,
-              })
-            : "",
+          data_hora_finalizado: formatDateTimeBR(p.data_hora_finalizado),
           observacao: p.observacao || "",
           data_cadastro: p.data_cadastro || "",
           data_atualizacao: p.data_atualizacao || "",
           cardapios: "",
-          itens_extras_nome: "",
-          itens_extras_categoria: "",
-          itens_extras_quantidade: "",
-          itens_extras_valor_unitario: "",
+          itens_extras: "",
         });
       }
     }
@@ -788,12 +774,18 @@ export default function PedidosModule() {
           }
 
           try {
-            // Handle DD/MM/YYYY, HH:MM:SS format (from CSV export)
-            if (dateStr.includes("/") && dateStr.includes(",")) {
-              // Split on comma to separate date and time: "02/09/2025, 01:07:27"
-              const [datePart, timePart] = dateStr
-                .split(",")
-                .map((s) => s.trim());
+            // Handle DD/MM/YYYY HH:MM:SS or with comma
+            if (
+              dateStr.includes("/") &&
+              (dateStr.includes(",") || dateStr.includes(" "))
+            ) {
+              // Split on comma or space to separate date and time
+              const sepIndex =
+                dateStr.indexOf(",") >= 0
+                  ? dateStr.indexOf(",")
+                  : dateStr.indexOf(" ");
+              const datePart = dateStr.slice(0, sepIndex).trim();
+              const timePart = dateStr.slice(sepIndex + 1).trim();
               const [day, month, year] = datePart.split("/");
 
               // Validate date components
@@ -878,7 +870,7 @@ export default function PedidosModule() {
               }
             }
             // Handle DD/MM/YYYY format (date only)
-            else if (dateStr.includes("/")) {
+            else if (dateStr.includes("/") && !dateStr.includes(":")) {
               const [day, month, year] = dateStr.split("/");
               const dayNum = parseInt(day);
               const monthNum = parseInt(month);
@@ -947,6 +939,7 @@ export default function PedidosModule() {
               r["data_hora_finalizado"] ||
               r["Data/Hora Finalizado"] ||
               r["data/hora finalizado"] ||
+              r["Data Hora Finalizado"] ||
               "";
             console.log(
               `🎯 Processing data_hora_finalizado for record ${i + 1}:`,
@@ -995,79 +988,59 @@ export default function PedidosModule() {
             .map((item) => item.trim())
             .filter((item) => item);
           for (const item of cardapioItems) {
-            // Match pattern: Name (R$ XX.XX)
-            const match = item.match(/^(.+?)\s*\(\s*R\$\s*([0-9,\.]+)\s*\)$/i);
-            if (match) {
-              const nome = match[1].trim();
-              const precoStr = match[2].replace(",", ".");
+            // Expected pattern: Nome - R$ XX.XX
+            const parts = item.split("-").map((s) => s.trim());
+            if (parts.length >= 2) {
+              const nome = parts[0];
+              const precoStr = parts
+                .slice(1)
+                .join("-")
+                .replace(/R\$/g, "")
+                .replace(/\s/g, "")
+                .replace(",", ".");
               const preco = parseFloat(precoStr);
-              cardapios.push({
-                cardapio_nome: nome,
-                preco_total: Math.round(preco * 100), // convert to cents
-              });
+              if (!isNaN(preco)) {
+                cardapios.push({
+                  cardapio_nome: nome,
+                  preco_total: Math.round(preco * 100),
+                });
+              }
             }
           }
         }
 
-        // Process consolidated extras (separated by ;)
+        // Process consolidated extras from single field ("Nome - Categoria - Quantidade - R$ Valor; ...")
         const itensExtras: any[] = [];
-        const extrasNomes = String(
-          r["itens extras nome"] || r.itens_extras_nome || "",
-        )
-          .split(";")
-          .map((n) => n.trim())
-          .filter((n) => n);
-        const extrasCategorias = String(
-          r["itens extras categoria"] || r.itens_extras_categoria || "",
-        )
-          .split(";")
-          .map((c) => c.trim())
-          .filter((c) => c);
-        const extrasQuantidades = String(
-          r["itens extras quantidade"] || r.itens_extras_quantidade || "",
-        )
-          .split(";")
-          .map((q) => q.trim())
-          .filter((q) => q);
-        const extrasValores = String(
-          r["itens extras valor unitario"] ||
-            r.itens_extras_valor_unitario ||
-            "",
-        )
-          .split(";")
-          .map((v) => v.trim())
-          .filter((v) => v);
-
-        const maxExtras = Math.max(
-          extrasNomes.length,
-          extrasCategorias.length,
-          extrasQuantidades.length,
-          extrasValores.length,
-        );
-
-        for (let i = 0; i < maxExtras; i++) {
-          const nome = extrasNomes[i] || "";
-          const categoria = extrasCategorias[i] || "";
-          const quantidade = parseInt(extrasQuantidades[i]) || 1;
-          const valorStr = extrasValores[i] || "0";
-
-          // Parse value (R$ XX.XX format)
-          let valor = 0;
-          if (valorStr) {
-            const cleanValue = valorStr
-              .replace(/R\$/g, "")
-              .replace(/\s/g, "")
-              .replace(",", ".");
-            valor = parseFloat(cleanValue) || 0;
-          }
-
-          if (nome) {
-            itensExtras.push({
-              item_nome: nome,
-              categoria_nome: categoria,
-              quantidade: quantidade,
-              valor_unitario: Math.round(valor * 100), // convert to cents
-            });
+        const extrasText = String(
+          r.itens_extras || r["itens extras"] || "",
+        ).trim();
+        if (extrasText) {
+          const groups = extrasText
+            .split(";")
+            .map((g) => g.trim())
+            .filter((g) => g);
+          for (const g of groups) {
+            const parts = g.split("-").map((s) => s.trim());
+            if (parts.length >= 4) {
+              const nome = parts[0];
+              const categoria = parts[1];
+              const quantidade = parseInt(parts[2]) || 1;
+              const valorStr = parts
+                .slice(3)
+                .join("-")
+                .replace(/R\$/g, "")
+                .replace(/\s/g, "")
+                .replace(",", ".");
+              const valor = parseFloat(valorStr) || 0;
+              if (nome) {
+                itensExtras.push({
+                  item_nome: nome,
+                  categoria_nome: categoria,
+                  quantidade,
+                  valor_unitario: Math.round(valor * 100),
+                });
+              }
+            }
           }
         }
 
@@ -1254,6 +1227,7 @@ export default function PedidosModule() {
             </div>
 
             <DataGrid
+              key={`grid-${activeTab}`}
               columns={gridColumns}
               data={filteredPedidos}
               loading={loading || !initialLoadComplete}
@@ -1262,7 +1236,7 @@ export default function PedidosModule() {
               searchTerm={currentSearch}
               currentPage={currentPage}
               pageSize={pageSize}
-              totalRecords={filteredPedidos.length}
+              totalRecords={totalCounts[activeTab] || filteredPedidos.length}
               onPageChange={handlePageChange}
               showActions={false}
             />
@@ -1313,13 +1287,7 @@ export default function PedidosModule() {
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "cardapios", label: "Cardápios" },
-          { key: "itens_extras_nome", label: "Itens Extras Nome" },
-          { key: "itens_extras_categoria", label: "Itens Extras Categoria" },
-          { key: "itens_extras_quantidade", label: "Itens Extras Quantidade" },
-          {
-            key: "itens_extras_valor_unitario",
-            label: "Itens Extras Valor Unitario",
-          },
+          { key: "itens_extras", label: "Itens Extras" },
         ]}
       />
 
@@ -1344,22 +1312,11 @@ export default function PedidosModule() {
           { key: "observacao", label: "Observação" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
-          { key: "cardapios", label: "Cardápios (Nome (R$ Preço); ...)" },
+          { key: "cardapios", label: "Cardápios (Nome - R$ Preço; ...)" },
           {
-            key: "itens_extras_nome",
-            label: "Itens Extras Nome (separados por ;)",
-          },
-          {
-            key: "itens_extras_categoria",
-            label: "Itens Extras Categoria (separados por ;)",
-          },
-          {
-            key: "itens_extras_quantidade",
-            label: "Itens Extras Quantidade (separados por ;)",
-          },
-          {
-            key: "itens_extras_valor_unitario",
-            label: "Itens Extras Valor Unitario (separados por ;)",
+            key: "itens_extras",
+            label:
+              "Itens Extras (Nome - Categoria - Quantidade - R$ Valor; ...)",
           },
         ]}
         mapHeader={(h) => {
@@ -1380,10 +1337,7 @@ export default function PedidosModule() {
             "Data Cadastro": "data_cadastro",
             "Data Atualização": "data_atualizacao",
             Cardápios: "cardapios",
-            "Itens Extras Nome": "itens_extras_nome",
-            "Itens Extras Categoria": "itens_extras_categoria",
-            "Itens Extras Quantidade": "itens_extras_quantidade",
-            "Itens Extras Valor Unitario": "itens_extras_valor_unitario",
+            "Itens Extras": "itens_extras",
           };
 
           // Check exact match first
@@ -1415,11 +1369,10 @@ export default function PedidosModule() {
             cardapios: "cardapios",
             cardápio: "cardapios",
             cardapio: "cardapios",
-            "itens extras nome": "itens_extras_nome",
-            "itens extras categoria": "itens_extras_categoria",
-            "itens extras quantidade": "itens_extras_quantidade",
-            "itens extras valor unitario": "itens_extras_valor_unitario",
-            "itens extras valor unitário": "itens_extras_valor_unitario",
+            "itens extras": "itens_extras",
+            "itens-extras": "itens_extras",
+            extras: "itens_extras",
+            "extras itens": "itens_extras",
           };
 
           return lowerMap[n] || n.replace(/\s+/g, "_");
