@@ -115,13 +115,13 @@ export default function PedidosModule() {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
 
-  const formatDateTimeBRSP = (value: string | null | undefined) => {
+  const formatDateTimeDBExact = (value: string | null | undefined) => {
     if (!value) return "-";
     try {
       const d = new Date(value);
-      const date = d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      const date = d.toLocaleDateString("pt-BR", { timeZone: "UTC" });
       const time = d.toLocaleTimeString("pt-BR", {
-        timeZone: "America/Sao_Paulo",
+        timeZone: "UTC",
         hour12: false,
         hour: "2-digit",
         minute: "2-digit",
@@ -160,7 +160,7 @@ export default function PedidosModule() {
         key: "data_hora_finalizado",
         label: "Data/Hora Finalizado",
         sortable: true,
-        render: (v: string | null) => formatDateTimeBRSP(v),
+        render: (v: string | null) => formatDateTimeDBExact(v),
       },
       {
         key: "status",
