@@ -763,17 +763,18 @@ export default function PedidosModule() {
                 const [hours, minutes, seconds] = timePart.split(":");
                 console.log(`⏰ Time components -> hours:${hours}, minutes:${minutes}, seconds:${seconds}`);
 
-                const parsedDate = new Date(
+                // Use UTC to prevent timezone conversion issues
+                const parsedDate = new Date(Date.UTC(
                   parseInt(year),
                   parseInt(month) - 1,
                   parseInt(day),
                   parseInt(hours || "0"),
                   parseInt(minutes || "0"),
                   parseInt(seconds || "0")
-                );
+                ));
 
                 const isoString = parsedDate.toISOString();
-                console.log(`✅ Final parsed datetime: "${isoString}"`);
+                console.log(`✅ Final parsed datetime (UTC): "${isoString}"`);
                 return isoString;
               } else {
                 // No time component, just date
@@ -1259,7 +1260,7 @@ export default function PedidosModule() {
             "data atualizacao": "data_atualizacao",
             cardápios: "cardapios",
             cardapios: "cardapios",
-            cardápio: "cardapios",
+            card��pio: "cardapios",
             cardapio: "cardapios",
             "itens extras nome": "itens_extras_nome",
             "itens extras categoria": "itens_extras_categoria",
