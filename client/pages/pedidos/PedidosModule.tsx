@@ -79,7 +79,7 @@ export default function PedidosModule() {
     setTabState((s) => ({ ...s, [activeTab]: { ...s[activeTab], page } }));
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [totalCounts, setTotalCounts] = useState<Record<string, number>>({
     Todos: 0,
@@ -357,6 +357,17 @@ export default function PedidosModule() {
   };
 
   const refreshAfterMutation = async () => {
+    // Limpar todos os caches relevantes
+    try {
+      localStorage.removeItem(LOCAL_PEDIDOS);
+      localStorage.removeItem("fm_pedidos_cache");
+      localStorage.removeItem("fm_grid_cache");
+    } catch {}
+
+    // Limpar seleção
+    setSelectedIds([]);
+
+    // Recarregar dados
     await Promise.all([loadPedidos(), loadCounts()]);
   };
 
@@ -458,25 +469,16 @@ export default function PedidosModule() {
         title: "Pedido excluído",
         description: "Pedido excluído com sucesso",
       });
-      try {
-        localStorage.removeItem(LOCAL_PEDIDOS);
-      } catch {}
-      setSelectedIds([]);
       await refreshAfterMutation();
       setShowDeleteAlert(false);
     } catch (error: any) {
       const list = readLocalPedidos().filter((e) => e.id !== currentPedido.id);
       writeLocalPedidos(list);
-      try {
-        localStorage.removeItem(LOCAL_PEDIDOS);
-      } catch {}
-      setPedidos(enrichWithEstabelecimentoNome(list) as any);
+      await refreshAfterMutation();
       toast({
         title: "Pedido excluído",
         description: "Pedido excluído com sucesso",
       });
-      setSelectedIds([]);
-      await loadCounts();
       setShowDeleteAlert(false);
     }
   };
@@ -511,19 +513,6 @@ export default function PedidosModule() {
       try {
         const det = await makeRequest(`/api/pedidos/${p.id}`);
         const pedido = det || p;
-        const base = {
-          estabelecimento_nome:
-            pedido.estabelecimento_nome || p.estabelecimento_nome || "",
-          cliente_nome: pedido.cliente_nome || "",
-          codigo: pedido.codigo,
-          tipo_pedido: pedido.tipo_pedido,
-          valor_total: ((pedido.valor_total || 0) / 100).toFixed(2),
-          status: pedido.status,
-          data_hora_finalizado: pedido.data_hora_finalizado || "",
-          data_cadastro: pedido.data_cadastro || "",
-          data_atualizacao: pedido.data_atualizacao || "",
-          observacao: pedido.observacao || "",
-        };
 
         const cardapios: any[] = Array.isArray(pedido.cardapios)
           ? pedido.cardapios
@@ -532,48 +521,67 @@ export default function PedidosModule() {
           ? pedido.itens_extras
           : [];
 
-        if (cardapios.length > 0) {
-          for (const c of cardapios) {
-            exportRows.push({
-              ...base,
-              cardapio_nome: c.cardapio_nome || "",
-              cardapio_preco_total: ((c.preco_total || 0) / 100).toFixed(2),
-              extra_item_nome: "",
-              extra_item_categoria: "",
-              extra_item_quantidade: "",
-              extra_item_valor_unitario: "",
-            });
-          }
-        }
+        // Consolidar cardápios em uma única string
+        const cardapiosInfo =
+          cardapios.length > 0
+            ? cardapios
+                .map(
+                  (c) =>
+                    `${c.cardapio_nome || "N/A"} (R$ ${((c.preco_total || 0) / 100).toFixed(2)})`,
+                )
+                .join("; ")
+            : "";
 
-        if (extras.length > 0) {
-          for (const e of extras) {
-            exportRows.push({
-              ...base,
-              cardapio_nome: "",
-              cardapio_preco_total: "",
-              itens_extras_nome: e.item_nome || "",
-              itens_extras_categoria: e.categoria_nome || "",
-              itens_extras_quantidade: e.quantidade ?? "",
-              itens_extras_valor_unitario: (
-                (e.valor_unitario || 0) / 100
-              ).toFixed(2),
-            });
-          }
-        }
+        // Consolidar itens extras em strings separadas
+        const extrasNomes =
+          extras.length > 0
+            ? extras
+                .map((e) => e.item_nome || "")
+                .filter((n) => n)
+                .join("; ")
+            : "";
+        const extrasCategorias =
+          extras.length > 0
+            ? extras
+                .map((e) => e.categoria_nome || "")
+                .filter((n) => n)
+                .join("; ")
+            : "";
+        const extrasQuantidades =
+          extras.length > 0
+            ? extras
+                .map((e) => e.quantidade ?? "")
+                .filter((n) => n !== "")
+                .join("; ")
+            : "";
+        const extrasValores =
+          extras.length > 0
+            ? extras
+                .map((e) => `R$ ${((e.valor_unitario || 0) / 100).toFixed(2)}`)
+                .join("; ")
+            : "";
 
-        if (cardapios.length === 0 && extras.length === 0) {
-          exportRows.push({
-            ...base,
-            cardapio_nome: "",
-            cardapio_preco_total: "",
-            itens_extras_nome: "",
-            itens_extras_categoria: "",
-            itens_extras_quantidade: "",
-            itens_extras_valor_unitario: "",
-          });
-        }
+        // Uma única linha por pedido com dados consolidados
+        exportRows.push({
+          estabelecimento_nome:
+            pedido.estabelecimento_nome || p.estabelecimento_nome || "",
+          cliente_nome: pedido.cliente_nome || "",
+          codigo: pedido.codigo,
+          tipo_pedido: pedido.tipo_pedido,
+          valor_total: ((pedido.valor_total || 0) / 100).toFixed(2),
+          status: pedido.status,
+          data_hora_finalizado: pedido.data_hora_finalizado || "",
+          observacao: pedido.observacao || "",
+          data_cadastro: pedido.data_cadastro || "",
+          data_atualizacao: pedido.data_atualizacao || "",
+          cardapios: cardapiosInfo,
+          itens_extras_nome: extrasNomes,
+          itens_extras_categoria: extrasCategorias,
+          itens_extras_quantidade: extrasQuantidades,
+          itens_extras_valor_unitario: extrasValores,
+        });
       } catch {
+        // Fallback para dados básicos sem detalhamento
         exportRows.push({
           estabelecimento_nome: p.estabelecimento_nome || "",
           cliente_nome: "",
@@ -582,11 +590,10 @@ export default function PedidosModule() {
           valor_total: ((p.valor_total || 0) / 100).toFixed(2),
           status: p.status,
           data_hora_finalizado: p.data_hora_finalizado || "",
+          observacao: p.observacao || "",
           data_cadastro: p.data_cadastro || "",
           data_atualizacao: p.data_atualizacao || "",
-          observacao: p.observacao || "",
-          cardapio_nome: "",
-          cardapio_preco_total: "",
+          cardapios: "",
           itens_extras_nome: "",
           itens_extras_categoria: "",
           itens_extras_quantidade: "",
@@ -602,7 +609,8 @@ export default function PedidosModule() {
     try {
       const estMap = estabelecimentosMap;
       const now = new Date().toISOString();
-      const valid: Pedido[] = [];
+      const valid: any[] = [];
+
       for (const r of records) {
         const nomeEst = String(
           r.estabelecimento_nome || r.estabelecimento || "",
@@ -620,8 +628,9 @@ export default function PedidosModule() {
         if (!STATUS_PEDIDO.includes(status)) continue;
 
         const valor = Number(
-          String(r.valor_total || r.valor_total || 0)
+          String(r.valor_total || 0)
             .toString()
+            .replace(/R\$/g, "")
             .replace(/\./g, "")
             .replace(/,/g, "."),
         );
@@ -634,7 +643,7 @@ export default function PedidosModule() {
             )
           : 0;
 
-        const novo: Pedido = {
+        const novo: any = {
           id: Date.now() + Math.floor(Math.random() * 1000),
           id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
           estabelecimento_id: estId,
@@ -651,8 +660,78 @@ export default function PedidosModule() {
           status: status,
           data_cadastro: now,
           data_atualizacao: now,
-        } as any;
-        (novo as any).estabelecimento_nome = estMap.get(estId);
+        };
+        novo.estabelecimento_nome = estMap.get(estId);
+
+        // Processar cardápios consolidados
+        const cardapios: any[] = [];
+        if (r.cardapios) {
+          const cardapiosText = String(r.cardapios).trim();
+          if (cardapiosText) {
+            const cardapioItems = cardapiosText
+              .split(";")
+              .map((item) => item.trim());
+            for (const item of cardapioItems) {
+              const match = item.match(/^(.+)\s\(R\$\s([0-9,\.]+)\)$/);
+              if (match) {
+                const nome = match[1].trim();
+                const preco = parseFloat(match[2].replace(",", "."));
+                cardapios.push({
+                  cardapio_nome: nome,
+                  preco_total: Math.round(preco * 100), // converter para centavos
+                });
+              }
+            }
+          }
+        }
+
+        // Processar itens extras consolidados
+        const itensExtras: any[] = [];
+        const extrasNomes = String(r.itens_extras_nome || "")
+          .split(";")
+          .map((n) => n.trim())
+          .filter((n) => n);
+        const extrasCategorias = String(r.itens_extras_categoria || "")
+          .split(";")
+          .map((c) => c.trim())
+          .filter((c) => c);
+        const extrasQuantidades = String(r.itens_extras_quantidade || "")
+          .split(";")
+          .map((q) => q.trim())
+          .filter((q) => q);
+        const extrasValores = String(r.itens_extras_valor_unitario || "")
+          .split(";")
+          .map((v) => v.trim())
+          .filter((v) => v);
+
+        const maxExtras = Math.max(
+          extrasNomes.length,
+          extrasCategorias.length,
+          extrasQuantidades.length,
+          extrasValores.length,
+        );
+        for (let i = 0; i < maxExtras; i++) {
+          const nome = extrasNomes[i] || "";
+          const categoria = extrasCategorias[i] || "";
+          const quantidade = parseInt(extrasQuantidades[i]) || 1;
+          const valorStr = extrasValores[i] || "0";
+          const valor =
+            parseFloat(valorStr.replace("R$", "").replace(",", ".")) || 0;
+
+          if (nome) {
+            itensExtras.push({
+              item_nome: nome,
+              categoria_nome: categoria,
+              quantidade: quantidade,
+              valor_unitario: Math.round(valor * 100), // converter para centavos
+            });
+          }
+        }
+
+        // Adicionar as relações ao objeto do pedido
+        novo.cardapios = cardapios;
+        novo.itens_extras = itensExtras;
+
         valid.push(novo);
       }
 
@@ -664,21 +743,40 @@ export default function PedidosModule() {
         } as any;
       }
 
-      const existing = readLocalPedidos();
-      const merged = [...valid, ...existing];
-      writeLocalPedidos(merged);
-      setPedidos(enrichWithEstabelecimentoNome(merged) as any);
-      await loadCounts();
-      return {
-        success: true,
-        imported: valid.length,
-        message: `${valid.length} pedido(s) importado(s) (local)`,
-      } as any;
+      // Tentar enviar para o servidor com as relações
+      try {
+        const response = await makeRequest(`/api/pedidos/import-full`, {
+          method: "POST",
+          body: JSON.stringify({ records: valid }),
+        });
+        await Promise.all([loadPedidos(), loadCounts()]);
+        return {
+          success: true,
+          imported: response?.imported ?? valid.length,
+          message: `${response?.imported ?? valid.length} pedido(s) importado(s) com relações`,
+        } as any;
+      } catch (e) {
+        // Fallback local - salvar pelo menos os dados básicos dos pedidos
+        const existing = readLocalPedidos();
+        const pedidosBasicos = valid.map((v) => {
+          const { cardapios, itens_extras, ...pedidoBasico } = v;
+          return pedidoBasico;
+        });
+        const merged = [...pedidosBasicos, ...existing];
+        writeLocalPedidos(merged);
+        setPedidos(enrichWithEstabelecimentoNome(merged) as any);
+        await loadCounts();
+        return {
+          success: true,
+          imported: valid.length,
+          message: `${valid.length} pedido(s) importado(s) (local, sem relações)`,
+        } as any;
+      }
     } catch (e) {
       return {
         success: false,
         imported: 0,
-        message: "Erro ao importar",
+        message: "Erro ao importar: " + (e as Error).message,
       } as any;
     }
   };
@@ -861,8 +959,7 @@ export default function PedidosModule() {
           { key: "observacao", label: "Observação" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
-          { key: "cardapio_nome", label: "Cardápio" },
-          { key: "cardapio_preco_total", label: "Cardápio Preço Total" },
+          { key: "cardapios", label: "Cardápios" },
           { key: "itens_extras_nome", label: "Itens Extras Nome" },
           { key: "itens_extras_categoria", label: "Itens Extras Categoria" },
           { key: "itens_extras_quantidade", label: "Itens Extras Quantidade" },
@@ -892,14 +989,24 @@ export default function PedidosModule() {
           { key: "status", label: "Status" },
           { key: "data_hora_finalizado", label: "Data/Hora Finalizado" },
           { key: "observacao", label: "Observação" },
-          { key: "cardapio_nome", label: "Cardápio" },
-          { key: "cardapio_preco_total", label: "Cardápio Preço Total" },
-          { key: "itens_extras_nome", label: "Itens Extras Nome" },
-          { key: "itens_extras_categoria", label: "Itens Extras Categoria" },
-          { key: "itens_extras_quantidade", label: "Itens Extras Quantidade" },
+          { key: "data_cadastro", label: "Data Cadastro" },
+          { key: "data_atualizacao", label: "Data Atualização" },
+          { key: "cardapios", label: "Cardápios (Nome (R$ Preço); ...)" },
+          {
+            key: "itens_extras_nome",
+            label: "Itens Extras Nome (separados por ;)",
+          },
+          {
+            key: "itens_extras_categoria",
+            label: "Itens Extras Categoria (separados por ;)",
+          },
+          {
+            key: "itens_extras_quantidade",
+            label: "Itens Extras Quantidade (separados por ;)",
+          },
           {
             key: "itens_extras_valor_unitario",
-            label: "Itens Extras Valor Unitario",
+            label: "Itens Extras Valor Unitario (separados por ;)",
           },
         ]}
         mapHeader={(h) => {
@@ -920,13 +1027,26 @@ export default function PedidosModule() {
             observação: "observacao",
             observacao: "observacao",
             "data/hora finalizado": "data_hora_finalizado",
-            cardápio: "cardapio_nome",
-            cardapio: "cardapio_nome",
+            "data cadastro": "data_cadastro",
+            "data atualização": "data_atualizacao",
+            "data atualizacao": "data_atualizacao",
+            // Cardápios consolidados
+            cardápios: "cardapios",
+            cardapios: "cardapios",
+            cardápio: "cardapios",
+            cardapio: "cardapios",
+            // Campos antigos individuais ainda suportados
             "cardápio nome": "cardapio_nome",
             "cardapio nome": "cardapio_nome",
             "cardápio preço total": "cardapio_preco_total",
             "cardapio preco total": "cardapio_preco_total",
-            // Old extras headers mapping to new keys
+            // Itens extras consolidados
+            "itens extras nome": "itens_extras_nome",
+            "itens extras categoria": "itens_extras_categoria",
+            "itens extras quantidade": "itens_extras_quantidade",
+            "itens extras valor unitario": "itens_extras_valor_unitario",
+            "itens extras valor unitário": "itens_extras_valor_unitario",
+            // Campos antigos individuais ainda suportados
             "item extra": "itens_extras_nome",
             item: "itens_extras_nome",
             "item nome": "itens_extras_nome",
@@ -938,11 +1058,6 @@ export default function PedidosModule() {
             "valor unitário": "itens_extras_valor_unitario",
             "valor unitario": "itens_extras_valor_unitario",
             "item valor unitario": "itens_extras_valor_unitario",
-            // New exact headers
-            "itens extras nome": "itens_extras_nome",
-            "itens extras categoria": "itens_extras_categoria",
-            "itens extras quantidade": "itens_extras_quantidade",
-            "itens extras valor unitario": "itens_extras_valor_unitario",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
@@ -1004,24 +1119,18 @@ export default function PedidosModule() {
               title: "Pedidos excluídos",
               description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
             });
-            try {
-              localStorage.removeItem(LOCAL_PEDIDOS);
-            } catch {}
             await refreshAfterMutation();
-            setSelectedIds([]);
             setShowBulkDelete(false);
           } catch (error: any) {
             const list = readLocalPedidos().filter(
               (e) => !selectedIds.includes(e.id),
             );
             writeLocalPedidos(list);
-            setPedidos(enrichWithEstabelecimentoNome(list) as any);
             toast({
               title: "Exclusão concluída localmente",
               description: `${selectedIds.length} registro(s) removido(s)`,
             });
-            setSelectedIds([]);
-            await loadCounts();
+            await refreshAfterMutation();
             setShowBulkDelete(false);
           }
         }}

@@ -503,6 +503,238 @@ export const finalizarPedido: RequestHandler = async (req, res) => {
   }
 };
 
+export const importPedidosFull: RequestHandler = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+
+    const supabase = getSupabaseServiceClient();
+    const { records } = req.body;
+
+    if (!Array.isArray(records)) {
+      return res.status(400).json({ error: "Records deve ser um array" });
+    }
+
+    let imported = 0;
+
+    for (const record of records) {
+      try {
+        const estNome = String(record.estabelecimento_nome || "").trim();
+        if (!estNome) continue;
+
+        // Resolve estabelecimento
+        const { data: est } = await supabase
+          .from("estabelecimentos")
+          .select("id")
+          .eq("nome", estNome)
+          .eq("id_usuario", userId)
+          .single();
+        if (!est) continue;
+
+        // Verificar se pedido já existe
+        const codigo = record.codigo || generateCodigo();
+        const { data: existing } = await supabase
+          .from("pedidos")
+          .select("id")
+          .eq("codigo", codigo)
+          .eq("id_usuario", userId)
+          .maybeSingle();
+        if (existing) continue;
+
+        // Resolve cliente se fornecido
+        let cliente_id: number | null = null;
+        const cliNome = String(record.cliente_nome || "").trim();
+        if (cliNome) {
+          const { data: cli } = await supabase
+            .from("clientes")
+            .select("id")
+            .eq("nome", cliNome)
+            .eq("id_usuario", userId)
+            .eq("estabelecimento_id", est.id)
+            .maybeSingle();
+          cliente_id = cli?.id ?? null;
+        }
+
+        // Criar o pedido básico
+        const { data: pedido, error: pedErr } = await supabase
+          .from("pedidos")
+          .insert({
+            id_usuario: userId,
+            estabelecimento_id: est.id,
+            cliente_id,
+            tipo_pedido: record.tipo_pedido,
+            codigo,
+            observacao: record.observacao || null,
+            status: record.status || "Pendente",
+            valor_total: record.valor_total,
+            data_hora_finalizado: record.data_hora_finalizado
+              ? new Date(record.data_hora_finalizado).toISOString()
+              : null,
+          })
+          .select()
+          .single();
+
+        if (pedErr || !pedido) continue;
+
+        // Processar cardápios consolidados
+        if (record.cardapios && Array.isArray(record.cardapios)) {
+          const cardapioEntries: {
+            cardapio_id: number;
+            preco_total: number;
+          }[] = [];
+
+          for (const cardapio of record.cardapios) {
+            let cardapio_id: number | null = null;
+            const { data: existingCardapio } = await supabase
+              .from("cardapios")
+              .select("id")
+              .eq("nome", cardapio.cardapio_nome)
+              .eq("id_usuario", userId)
+              .maybeSingle();
+
+            if (existingCardapio) {
+              cardapio_id = existingCardapio.id;
+            } else {
+              // Criar cardápio se não existir
+              const { data: novoCard } = await supabase
+                .from("cardapios")
+                .insert({
+                  id_usuario: userId,
+                  nome: cardapio.cardapio_nome,
+                  tipo_cardapio: "Outro",
+                  quantidade_total: 0,
+                  preco_itens: 0,
+                  margem_lucro_percentual: 0,
+                  preco_total: cardapio.preco_total,
+                  descricao: "",
+                  ativo: true,
+                })
+                .select("id")
+                .single();
+              cardapio_id = novoCard?.id ?? null;
+            }
+
+            if (cardapio_id) {
+              cardapioEntries.push({
+                cardapio_id,
+                preco_total: cardapio.preco_total,
+              });
+            }
+          }
+
+          if (cardapioEntries.length > 0) {
+            await supabase.from("pedidos_cardapios").insert(
+              cardapioEntries.map((c) => ({
+                pedido_id: pedido.id,
+                cardapio_id: c.cardapio_id,
+                preco_total: c.preco_total,
+              })),
+            );
+          }
+        }
+
+        // Processar itens extras consolidados
+        if (record.itens_extras && Array.isArray(record.itens_extras)) {
+          const extraEntries: {
+            item_id: number;
+            categoria_id: number;
+            quantidade: number;
+            valor_unitario: number;
+          }[] = [];
+
+          for (const extra of record.itens_extras) {
+            // Resolver categoria
+            let categoria_id: number | null = null;
+            const catNome = extra.categoria_nome || "Sem Categoria";
+            const { data: cat } = await supabase
+              .from("itens_categorias")
+              .select("id")
+              .eq("nome", catNome)
+              .eq("id_usuario", userId)
+              .maybeSingle();
+
+            if (cat) {
+              categoria_id = cat.id;
+            } else {
+              const { data: novaCat } = await supabase
+                .from("itens_categorias")
+                .insert({ id_usuario: userId, nome: catNome, ativo: true })
+                .select("id")
+                .single();
+              categoria_id = novaCat?.id ?? null;
+            }
+
+            if (!categoria_id) continue;
+
+            // Resolver item
+            let item_id: number | null = null;
+            const { data: item } = await supabase
+              .from("itens")
+              .select("id")
+              .eq("nome", extra.item_nome)
+              .eq("id_usuario", userId)
+              .maybeSingle();
+
+            if (item) {
+              item_id = item.id;
+            } else {
+              // Criar item se não existir
+              const { data: novoItem } = await supabase
+                .from("itens")
+                .insert({
+                  id_usuario: userId,
+                  categoria_id,
+                  nome: extra.item_nome,
+                  preco: extra.valor_unitario,
+                  custo_pago: 0,
+                  unidade_medida: "un",
+                  peso_gramas: null,
+                  estoque_atual: 100, // Estoque padrão para importação
+                  ativo: true,
+                })
+                .select("id")
+                .single();
+              item_id = novoItem?.id ?? null;
+            }
+
+            if (item_id) {
+              extraEntries.push({
+                item_id,
+                categoria_id,
+                quantidade: extra.quantidade,
+                valor_unitario: extra.valor_unitario,
+              });
+            }
+          }
+
+          if (extraEntries.length > 0) {
+            try {
+              await supabase
+                .from("pedidos_itens_extras")
+                .insert(
+                  extraEntries.map((e) => ({ pedido_id: pedido.id, ...e })),
+                );
+            } catch (e) {
+              // Ignorar erros de validação de estoque durante importação
+            }
+          }
+        }
+
+        imported++;
+      } catch (e) {
+        // Pular este registro em caso de erro
+        continue;
+      }
+    }
+
+    res.json({ success: true, imported });
+  } catch (error) {
+    console.error("Error importing pedidos full:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
+
 export const importPedidos: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
