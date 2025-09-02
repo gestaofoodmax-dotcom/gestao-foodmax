@@ -63,6 +63,7 @@ import {
   Minus,
   ShoppingBag,
   Package,
+  Leaf,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -246,24 +247,44 @@ export default function AbastecimentoForm({
 
   const loadEstabelecimentoContacts = async (estabelecimentoId: number) => {
     try {
-      const { data: est } = await makeRequest(
+      console.log("Loading establishment data for ID:", estabelecimentoId);
+      const response = await makeRequest(
         `/api/estabelecimentos/${estabelecimentoId}`,
       );
-      if (est) {
+      console.log("Establishment response:", response);
+
+      if (response) {
         // Load contact data from main establishment table
-        setValue("telefone", est.telefone || "");
-        setValue("ddi", est.ddi || "+55");
+        setValue("telefone", response.telefone || "", { shouldDirty: true });
+        setValue("ddi", response.ddi || "+55", { shouldDirty: true });
+        setValue("email", response.email || "", { shouldDirty: true });
 
         // Load address data from related endereco table
-        if (est.endereco) {
-          setValue("cep", est.endereco.cep || "");
-          setValue("endereco", est.endereco.endereco || "");
-          setValue("cidade", est.endereco.cidade || "");
-          setValue("uf", est.endereco.uf || "");
-          setValue("pais", est.endereco.pais || "Brasil");
+        if (response.endereco) {
+          console.log("Loading address data:", response.endereco);
+          setValue("cep", response.endereco.cep || "", { shouldDirty: true });
+          setValue("endereco", response.endereco.endereco || "", {
+            shouldDirty: true,
+          });
+          setValue("cidade", response.endereco.cidade || "", {
+            shouldDirty: true,
+          });
+          setValue("uf", response.endereco.uf || "", { shouldDirty: true });
+          setValue("pais", response.endereco.pais || "Brasil", {
+            shouldDirty: true,
+          });
+        } else {
+          // Clear address fields if no address data
+          setValue("cep", "", { shouldDirty: true });
+          setValue("endereco", "", { shouldDirty: true });
+          setValue("cidade", "", { shouldDirty: true });
+          setValue("uf", "", { shouldDirty: true });
+          setValue("pais", "Brasil", { shouldDirty: true });
         }
       }
-    } catch {}
+    } catch (error) {
+      console.error("Error loading establishment data:", error);
+    }
   };
 
   const handleEstabelecimentoChange = async (newEstId: number) => {
@@ -349,6 +370,13 @@ export default function AbastecimentoForm({
   }, [selectedItens]);
 
   const onSubmit = (data: FormData) => {
+    console.log("=== FORM SUBMISSION START ===");
+    console.log("Form data:", data);
+    console.log("Selected fornecedores:", selectedFornecedoresIds);
+    console.log("Selected categoria:", selectedCategoriaId);
+    console.log("Selected itens:", selectedItens);
+
+    // Basic validation
     if (selectedFornecedoresIds.length === 0) {
       toast({
         title: "Erro de validação",
@@ -376,27 +404,76 @@ export default function AbastecimentoForm({
       return;
     }
 
+    if (!data.estabelecimento_id) {
+      toast({
+        title: "Erro de validação",
+        description: "Selecione um Estabelecimento",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data.telefone?.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "Telefone é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data.endereco?.trim() || !data.cidade?.trim() || !data.uf?.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "Endereço, Cidade e UF são obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Clean and validate email
+    const cleanEmail = data.email?.trim();
+    const emailToSend = cleanEmail && cleanEmail !== "" ? cleanEmail : null;
+
+    // Validate email if provided
+    if (emailToSend) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(emailToSend)) {
+        toast({
+          title: "Erro de validação",
+          description: "Email inválido",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const payload: CreateAbastecimentoRequest = {
-      estabelecimento_id: data.estabelecimento_id,
+      estabelecimento_id: Number(data.estabelecimento_id),
       fornecedores_ids: selectedFornecedoresIds,
-      categoria_id: selectedCategoriaId,
-      telefone: data.telefone,
-      ddi: data.ddi,
-      email: data.email || null,
+      categoria_id: Number(selectedCategoriaId),
+      telefone: data.telefone.trim(),
+      ddi: data.ddi?.trim() || "+55",
+      email: emailToSend,
       data_hora_recebido: data.data_hora_recebido || null,
-      observacao: data.observacao || null,
-      status: data.status as StatusAbastecimento,
-      email_enviado: data.email_enviado,
-      itens: selectedItens,
+      observacao: data.observacao?.trim() || null,
+      status: (data.status as StatusAbastecimento) || "Pendente",
+      email_enviado: Boolean(data.email_enviado),
+      itens: selectedItens.map((item) => ({
+        item_id: Number(item.item_id),
+        quantidade: Number(item.quantidade),
+      })),
       endereco: {
-        cep: data.cep || null,
-        endereco: data.endereco,
-        cidade: data.cidade,
-        uf: data.uf,
-        pais: data.pais,
+        cep: data.cep?.trim() || null,
+        endereco: data.endereco.trim(),
+        cidade: data.cidade.trim(),
+        uf: data.uf.trim().toUpperCase(),
+        pais: data.pais?.trim() || "Brasil",
       },
     };
 
+    console.log("=== FINAL PAYLOAD ===");
+    console.log(JSON.stringify(payload, null, 2));
     onSave(payload);
   };
 
@@ -509,7 +586,7 @@ export default function AbastecimentoForm({
           {/* Dados Básicos */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <Building className="w-5 h-5 text-blue-600" />
+              <FileText className="w-5 h-5 text-blue-600" />
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -567,78 +644,62 @@ export default function AbastecimentoForm({
               </div>
 
               <div>
-                <Label>Quantidade Total</Label>
-                <Input
-                  value={quantidadeTotal}
-                  readOnly
-                  className="foodmax-input bg-gray-50"
-                />
+                <Label>Fornecedores *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className="w-full justify-between foodmax-input"
+                    >
+                      {selectedFornecedoresIds.length > 0
+                        ? `${selectedFornecedoresIds.length} selecionado(s)`
+                        : "Selecione Fornecedores"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Filtrar fornecedores..." />
+                      <CommandEmpty>Nenhum fornecedor encontrado.</CommandEmpty>
+                      <CommandList>
+                        <CommandGroup>
+                          {fornecedores.map((f) => (
+                            <CommandItem
+                              key={f.id}
+                              onSelect={() =>
+                                setSelectedFornecedoresIds((prev) =>
+                                  prev.includes(f.id)
+                                    ? prev.filter((id) => id !== f.id)
+                                    : [...prev, f.id],
+                                )
+                              }
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 h-4 w-4",
+                                  selectedFornecedoresIds.includes(f.id)
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              {f.nome}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
-            </div>
-          </div>
-
-          {/* Fornecedores */}
-          <div className="space-y-4 bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-2">
-              <Truck className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-green-600">Fornecedores</h3>
-            </div>
-            <div>
-              <Label>Fornecedores *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    className="w-full justify-between foodmax-input"
-                  >
-                    {selectedFornecedoresIds.length > 0
-                      ? `${selectedFornecedoresIds.length} selecionado(s)`
-                      : "Selecione Fornecedores"}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-full p-0">
-                  <Command>
-                    <CommandInput placeholder="Filtrar fornecedores..." />
-                    <CommandEmpty>Nenhum fornecedor encontrado.</CommandEmpty>
-                    <CommandList>
-                      <CommandGroup>
-                        {fornecedores.map((f) => (
-                          <CommandItem
-                            key={f.id}
-                            onSelect={() =>
-                              setSelectedFornecedoresIds((prev) =>
-                                prev.includes(f.id)
-                                  ? prev.filter((id) => id !== f.id)
-                                  : [...prev, f.id],
-                              )
-                            }
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                selectedFornecedoresIds.includes(f.id)
-                                  ? "opacity-100"
-                                  : "opacity-0",
-                              )}
-                            />
-                            {f.nome}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
             </div>
           </div>
 
           {/* Itens do Abastecimento */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <Package className="w-5 h-5 text-purple-600" />
-              <h3 className="font-semibold text-purple-600">
+              <Package className="w-5 h-5 text-yellow-600" />
+              <h3 className="font-semibold text-yellow-600">
                 Itens do Abastecimento
               </h3>
             </div>
@@ -837,6 +898,17 @@ export default function AbastecimentoForm({
                 </div>
               </div>
             )}
+
+            {/* Conditional Horizontal gray line and Quantidade Total */}
+            {selectedItens.length > 0 && (
+              <div className="pt-4">
+                <hr className="border-t border-gray-300 mb-4" />
+                <div className="text-sm text-gray-700">
+                  <span className="font-medium">Quantidade Total: </span>
+                  <span className="font-semibold">{quantidadeTotal}</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Contato */}
@@ -859,6 +931,10 @@ export default function AbastecimentoForm({
                     placeholder="DDD + número telefone"
                     className="foodmax-input flex-1"
                     maxLength={15}
+                    onInput={(e) => {
+                      const target = e.target as HTMLInputElement;
+                      target.value = target.value.replace(/[^0-9]/g, "");
+                    }}
                   />
                 </div>
                 {errors.telefone && (
@@ -888,8 +964,8 @@ export default function AbastecimentoForm({
           {/* Endereço */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-5 h-5 text-red-600" />
-              <h3 className="font-semibold text-red-600">Endereço</h3>
+              <MapPin className="w-5 h-5 text-purple-600" />
+              <h3 className="font-semibold text-purple-600">Endereço</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -914,32 +990,34 @@ export default function AbastecimentoForm({
                   </span>
                 )}
               </div>
-              <div>
-                <Label>Cidade *</Label>
-                <Input
-                  id="cidade"
-                  {...register("cidade")}
-                  className="foodmax-input"
-                />
-                {errors.cidade && (
-                  <span className="text-sm text-red-600">
-                    {errors.cidade.message}
-                  </span>
-                )}
-              </div>
-              <div>
-                <Label>UF *</Label>
-                <Input
-                  id="uf"
-                  {...register("uf")}
-                  className="foodmax-input"
-                  maxLength={2}
-                />
-                {errors.uf && (
-                  <span className="text-sm text-red-600">
-                    {errors.uf.message}
-                  </span>
-                )}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2">
+                  <Label>Cidade *</Label>
+                  <Input
+                    id="cidade"
+                    {...register("cidade")}
+                    className="foodmax-input"
+                  />
+                  {errors.cidade && (
+                    <span className="text-sm text-red-600">
+                      {errors.cidade.message}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  <Label>UF *</Label>
+                  <Input
+                    id="uf"
+                    {...register("uf")}
+                    className="foodmax-input"
+                    maxLength={2}
+                  />
+                  {errors.uf && (
+                    <span className="text-sm text-red-600">
+                      {errors.uf.message}
+                    </span>
+                  )}
+                </div>
               </div>
               <div>
                 <Label>País *</Label>
@@ -958,11 +1036,11 @@ export default function AbastecimentoForm({
             </div>
           </div>
 
-          {/* Outros Dados */}
+          {/* Observação */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <FileText className="w-5 h-5 text-gray-600" />
-              <h3 className="font-semibold text-gray-600">Outros Dados</h3>
+              <FileText className="w-5 h-5 text-red-600" />
+              <h3 className="font-semibold text-red-600">Observação</h3>
             </div>
             <div>
               <Label>Observação</Label>
