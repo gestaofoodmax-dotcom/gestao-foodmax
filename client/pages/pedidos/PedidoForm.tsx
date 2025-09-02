@@ -901,7 +901,7 @@ export default function PedidoForm({
               rows={3}
               {...register("observacao")}
               className="foodmax-input resize-none"
-              placeholder="Observaç��es..."
+              placeholder="Observação do pedido..."
             />
             <div className="mt-4">
               <Label>Data/Hora Finalizado</Label>
