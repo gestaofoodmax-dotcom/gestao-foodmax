@@ -112,7 +112,7 @@ export default function ItemForm({
       peso_gramas: undefined,
       estoque_atual: 0,
       ativo: true,
-    },
+    } as any,
   });
 
   const watchedAtivo = watch("ativo");
