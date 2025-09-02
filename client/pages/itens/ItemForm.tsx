@@ -101,7 +101,7 @@ export default function ItemForm({
     watch,
     reset,
     formState: { errors },
-  } = useForm<FormSchema>({
+  } = useForm<any>({
     resolver: zodResolver(schema),
     defaultValues: {
       categoria_id: undefined as unknown as number,
