@@ -62,17 +62,41 @@ export function ExportModal({
   const formatValue = (value: any, fieldName: string): string => {
     if (value === null || value === undefined) return "";
 
-    // Format dates - BULLETPROOF VERSION
+    // For data_hora_finalizado, preserve the pre-formatted value if it's already a string with time
+    if (fieldName === "data_hora_finalizado" && typeof value === "string" && value.includes(",")) {
+      return value; // Already formatted with date and time
+    }
+
+    // Format dates ONLY if they are ISO strings or Date objects
     if (fieldName.includes("data_") && value) {
       try {
-        // Use current date for ALL date fields to ensure they work
-        const today = new Date();
-        const day = String(today.getDate()).padStart(2, "0");
-        const month = String(today.getMonth() + 1).padStart(2, "0");
-        const year = today.getFullYear();
-        return `${day}/${month}/${year}`;
+        // Check if it's already a formatted string (contains slashes)
+        if (typeof value === "string" && value.includes("/")) {
+          return value; // Already formatted
+        }
+
+        // Try to parse as date and format properly
+        const date = new Date(value);
+        if (!isNaN(date.getTime())) {
+          // For data_hora_finalizado, include time
+          if (fieldName === "data_hora_finalizado") {
+            return date.toLocaleString("pt-BR", {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: false
+            });
+          } else {
+            // For other date fields, just date
+            return date.toLocaleDateString("pt-BR");
+          }
+        }
       } catch {
-        return "22/01/2025"; // Hardcoded fallback date
+        // If parsing fails, return the original value
+        return String(value);
       }
     }
 
