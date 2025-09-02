@@ -62,6 +62,7 @@ import {
   FileText,
   Minus,
   ShoppingBag,
+  Package,
 } from "lucide-react";
 import {
   AlertDialog,
@@ -123,6 +124,7 @@ export default function AbastecimentoForm({
   const [fornecedores, setFornecedores] = useState<Fornecedor[]>([]);
   const [categorias, setCategorias] = useState<ItemCategoria[]>([]);
   const [itens, setItens] = useState<Item[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   const [selectedFornecedoresIds, setSelectedFornecedoresIds] = useState<
     number[]
@@ -235,7 +237,11 @@ export default function AbastecimentoForm({
             a.nome.localeCompare(b.nome),
           ),
         );
-    } catch {}
+
+      setDataLoaded(true);
+    } catch {
+      setDataLoaded(true);
+    }
   };
 
   const loadEstabelecimentoContacts = async (estabelecimentoId: number) => {
@@ -243,14 +249,19 @@ export default function AbastecimentoForm({
       const { data: est } = await makeRequest(
         `/api/estabelecimentos/${estabelecimentoId}`,
       );
-      if (est?.contato) {
-        setValue("telefone", est.contato.telefone || "");
-        setValue("ddi", est.contato.ddi || "+55");
-        setValue("cep", est.contato.cep || "");
-        setValue("endereco", est.contato.endereco || "");
-        setValue("cidade", est.contato.cidade || "");
-        setValue("uf", est.contato.uf || "");
-        setValue("pais", est.contato.pais || "Brasil");
+      if (est) {
+        // Load contact data from main establishment table
+        setValue("telefone", est.telefone || "");
+        setValue("ddi", est.ddi || "+55");
+
+        // Load address data from related endereco table
+        if (est.endereco) {
+          setValue("cep", est.endereco.cep || "");
+          setValue("endereco", est.endereco.endereco || "");
+          setValue("cidade", est.endereco.cidade || "");
+          setValue("uf", est.endereco.uf || "");
+          setValue("pais", est.endereco.pais || "Brasil");
+        }
       }
     } catch {}
   };
@@ -390,6 +401,7 @@ export default function AbastecimentoForm({
   };
 
   const hasPrerequisites =
+    dataLoaded &&
     estabelecimentos.length > 0 &&
     fornecedores.length > 0 &&
     categorias.length > 0 &&
@@ -408,7 +420,7 @@ export default function AbastecimentoForm({
         </DialogHeader>
 
         {/* Warnings for missing prerequisites */}
-        {!hasPrerequisites && (
+        {dataLoaded && !hasPrerequisites && (
           <div className="mb-4 space-y-2">
             {estabelecimentos.length === 0 && (
               <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -622,12 +634,12 @@ export default function AbastecimentoForm({
             </div>
           </div>
 
-          {/* Categoria e Itens */}
+          {/* Itens do Abastecimento */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <CupSoda className="w-5 h-5 text-purple-600" />
+              <Package className="w-5 h-5 text-purple-600" />
               <h3 className="font-semibold text-purple-600">
-                Categoria e Itens
+                Itens do Abastecimento
               </h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -760,15 +772,9 @@ export default function AbastecimentoForm({
               </div>
             </div>
 
-            {/* Shopping Cart - Itens do Abastecimento */}
+            {/* Shopping Cart */}
             {selectedItens.length > 0 && (
-              <div className="border-t pt-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <ShoppingBag className="w-5 h-5 text-orange-600" />
-                  <h4 className="font-semibold text-orange-600">
-                    Itens do Abastecimento
-                  </h4>
-                </div>
+              <div className="pt-4">
                 <div className="space-y-2">
                   {selectedItens.map((selectedItem) => {
                     const item = itens.find(
@@ -958,48 +964,6 @@ export default function AbastecimentoForm({
               <FileText className="w-5 h-5 text-gray-600" />
               <h3 className="font-semibold text-gray-600">Outros Dados</h3>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Data/Hora Recebido</Label>
-                <Input
-                  type="datetime-local"
-                  value={
-                    watchedValues.data_hora_recebido
-                      ? new Date(watchedValues.data_hora_recebido)
-                          .toISOString()
-                          .slice(0, 16)
-                      : ""
-                  }
-                  onChange={(e) =>
-                    setValue(
-                      "data_hora_recebido",
-                      e.target.value
-                        ? new Date(e.target.value).toISOString()
-                        : null,
-                    )
-                  }
-                  className="foodmax-input"
-                />
-              </div>
-              <div>
-                <Label>Status</Label>
-                <Select
-                  value={watchedValues.status}
-                  onValueChange={(v) => setValue("status", v as any)}
-                >
-                  <SelectTrigger className="foodmax-input">
-                    <SelectValue placeholder="Selecione o status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {STATUS_ABASTECIMENTO.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
             <div>
               <Label>Observação</Label>
               <Textarea
@@ -1008,6 +972,50 @@ export default function AbastecimentoForm({
                 className="foodmax-input resize-none"
                 placeholder="Observação do abastecimento..."
               />
+            </div>
+            <div>
+              <Label>Data/Hora Recebido</Label>
+              <Input
+                type="datetime-local"
+                value={
+                  watchedValues.data_hora_recebido
+                    ? new Date(watchedValues.data_hora_recebido)
+                        .toISOString()
+                        .slice(0, 16)
+                    : ""
+                }
+                onChange={(e) =>
+                  setValue(
+                    "data_hora_recebido",
+                    e.target.value
+                      ? new Date(e.target.value).toISOString()
+                      : null,
+                  )
+                }
+                className="foodmax-input"
+              />
+            </div>
+          </div>
+
+          {/* Status */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="w-60">
+              <Label>Status</Label>
+              <Select
+                value={watchedValues.status}
+                onValueChange={(v) => setValue("status", v as any)}
+              >
+                <SelectTrigger className="foodmax-input">
+                  <SelectValue placeholder="Selecione o status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_ABASTECIMENTO.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      {s}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </form>
