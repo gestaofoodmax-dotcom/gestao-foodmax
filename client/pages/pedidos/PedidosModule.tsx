@@ -777,14 +777,14 @@ export default function PedidosModule() {
                 console.log(`✅ Final parsed datetime (UTC): "${isoString}"`);
                 return isoString;
               } else {
-                // No time component, just date
-                const parsedDate = new Date(
+                // No time component, just date - use UTC
+                const parsedDate = new Date(Date.UTC(
                   parseInt(year),
                   parseInt(month) - 1,
                   parseInt(day)
-                );
+                ));
                 const isoString = parsedDate.toISOString();
-                console.log(`✅ Final parsed date: "${isoString}"`);
+                console.log(`✅ Final parsed date (UTC): "${isoString}"`);
                 return isoString;
               }
             }
@@ -1260,7 +1260,7 @@ export default function PedidosModule() {
             "data atualizacao": "data_atualizacao",
             cardápios: "cardapios",
             cardapios: "cardapios",
-            card��pio: "cardapios",
+            cardápio: "cardapios",
             cardapio: "cardapios",
             "itens extras nome": "itens_extras_nome",
             "itens extras categoria": "itens_extras_categoria",
