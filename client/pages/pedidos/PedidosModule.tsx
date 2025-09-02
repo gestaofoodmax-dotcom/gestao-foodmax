@@ -143,7 +143,15 @@ export default function PedidosModule() {
         label: "Data/Hora Finalizado",
         sortable: true,
         render: (v: string | null) =>
-          v ? new Date(v).toLocaleString("pt-BR") : "-",
+          v ? new Date(v).toLocaleString("pt-BR", {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+          }) : "-",
       },
       {
         key: "status",
