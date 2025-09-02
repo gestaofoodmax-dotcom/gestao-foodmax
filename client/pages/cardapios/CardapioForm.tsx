@@ -100,7 +100,7 @@ interface CardapioItem {
   item_nome: string;
   categoria_nome: string;
   quantidade: number;
-  valor_unitario_centavos: number;
+  valor_unitario: number;
   item_estoque_atual?: number;
 }
 
@@ -272,7 +272,7 @@ export default function CardapioForm({
       0,
     );
     const precoItens = cardapioItens.reduce(
-      (sum, item) => sum + item.quantidade * item.valor_unitario_centavos,
+      (sum, item) => sum + item.quantidade * item.valor_unitario,
       0,
     );
     const margem = watchedValues.margem_lucro_percentual || 0;
@@ -319,7 +319,7 @@ export default function CardapioForm({
       item_nome: item.nome,
       categoria_nome: categoria?.nome || "",
       quantidade: 1,
-      valor_unitario_centavos: item.preco_centavos,
+      valor_unitario: item.preco_centavos,
       item_estoque_atual: item.estoque_atual,
     };
 
@@ -350,10 +350,10 @@ export default function CardapioForm({
     );
   };
 
-  const updateItemPrice = (itemId: number, valor_unitario_centavos: number) => {
+  const updateItemPrice = (itemId: number, valor_unitario: number) => {
     setCardapioItens((prev) =>
       prev.map((ci) =>
-        ci.item_id === itemId ? { ...ci, valor_unitario_centavos } : ci,
+        ci.item_id === itemId ? { ...ci, valor_unitario } : ci,
       ),
     );
   };
@@ -635,7 +635,7 @@ export default function CardapioForm({
                   {cardapioItens.map((item) => {
                     const isZeroStock = (item.item_estoque_atual || 0) === 0;
                     const total =
-                      item.quantidade * item.valor_unitario_centavos;
+                      item.quantidade * item.valor_unitario;
 
                     return (
                       <div
@@ -677,7 +677,7 @@ export default function CardapioForm({
                               min="0"
                               step="0.01"
                               value={(
-                                item.valor_unitario_centavos / 100
+                                item.valor_unitario / 100
                               ).toFixed(2)}
                               onChange={(e) =>
                                 updateItemPrice(
