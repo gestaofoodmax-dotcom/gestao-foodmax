@@ -702,7 +702,7 @@ export default function PedidoForm({
                                       categoria_id: item.categoria_id,
                                       quantidade: 1,
                                       valor_unitario:
-                                        item.preco_centavos,
+                                        item.preco,
                                     },
                                   ])
                                 }
