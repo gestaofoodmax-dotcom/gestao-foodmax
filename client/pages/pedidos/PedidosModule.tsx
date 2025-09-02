@@ -822,9 +822,14 @@ export default function PedidosModule() {
             `${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
           tipo_pedido: tipo,
           valor_total: valor_centavos,
-          data_hora_finalizado: parseDate(
-            r["data_hora_finalizado"] || r["data/hora finalizado"] || "",
-          ),
+          data_hora_finalizado: (() => {
+            const rawValue = r["data_hora_finalizado"] || r["data/hora finalizado"] || "";
+            console.log(`🎯 Processing data_hora_finalizado for record:`, r);
+            console.log(`🎯 Raw value: "${rawValue}"`);
+            const parsed = parseDate(rawValue);
+            console.log(`🎯 Parsed result: "${parsed}"`);
+            return parsed;
+          })(),
           observacao: String(r.observacao || r.observação || "").trim() || null,
           status: status,
           data_cadastro: parseDate(r.data_cadastro || "") || now,
