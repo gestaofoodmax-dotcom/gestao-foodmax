@@ -115,6 +115,24 @@ export default function PedidosModule() {
     setSidebarOpen(!isMobile);
   }, [isMobile]);
 
+  const formatDateTimeBRSP = (value: string | null | undefined) => {
+    if (!value) return "-";
+    try {
+      const d = new Date(value);
+      const date = d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      const time = d.toLocaleTimeString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      return `${date}, ${time}`;
+    } catch {
+      return "-";
+    }
+  };
+
   const gridColumns = useMemo(
     () => [
       {
