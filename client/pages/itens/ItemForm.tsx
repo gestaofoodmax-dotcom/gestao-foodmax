@@ -51,7 +51,7 @@ const schema = z.object({
   categoria_id: z.number({ invalid_type_error: "Categoria é obrigatória" }),
   nome: z.string().min(1, "Nome é obrigatório"),
   preco: z.number().min(0, "Preço deve ser maior ou igual a 0"),
-  custo_pago_centavos: z
+  custo_pago: z
     .number()
     .min(0, "Custo Pago deve ser maior ou igual a 0"),
   unidade_medida: z.string().min(1, "Unidade de Medida é obrigatória"),
@@ -107,7 +107,7 @@ export default function ItemForm({
       categoria_id: undefined as unknown as number,
       nome: "",
       preco: 0,
-      custo_pago_centavos: 0,
+      custo_pago: 0,
       unidade_medida: "Unidade",
       peso_gramas: undefined,
       estoque_atual: 0,
@@ -125,7 +125,7 @@ export default function ItemForm({
           categoria_id: item.categoria_id,
           nome: item.nome,
           preco: item.preco,
-          custo_pago_centavos: item.custo_pago_centavos,
+          custo_pago: item.custo_pago,
           unidade_medida: item.unidade_medida,
           peso_gramas: item.peso_gramas,
           estoque_atual: item.estoque_atual,
@@ -136,7 +136,7 @@ export default function ItemForm({
           categoria_id: watchedCategoriaId as any,
           nome: "",
           preco: 0,
-          custo_pago_centavos: 0,
+          custo_pago: 0,
           unidade_medida: "Unidade",
           peso_gramas: undefined,
           estoque_atual: 0,
@@ -161,7 +161,7 @@ export default function ItemForm({
   useEffect(() => {
     if (item) {
       setPrecoMask(formatInputCurrency(item.preco));
-      setCustoMask(formatInputCurrency(item.custo_pago_centavos));
+      setCustoMask(formatInputCurrency(item.custo_pago));
     } else {
       setPrecoMask("");
       setCustoMask("");
@@ -173,7 +173,7 @@ export default function ItemForm({
       categoria_id: "Categoria",
       nome: "Nome",
       preco: "Preço",
-      custo_pago_centavos: "Custo Pago",
+      custo_pago: "Custo Pago",
     };
     const labels = Object.keys(formErrors).map((k) => labelsMap[k] || k);
     if (labels.length > 0) {
@@ -388,12 +388,12 @@ export default function ItemForm({
                     setCustoMask(
                       e.target.value === "" ? "" : formatInputCurrency(cents),
                     );
-                    setValue("custo_pago_centavos", cents);
+                    setValue("custo_pago", cents);
                   }}
                   placeholder=""
                   className={cn(
                     "foodmax-input",
-                    errors.custo_pago_centavos ? "border-red-500" : "",
+                    errors.custo_pago ? "border-red-500" : "",
                   )}
                 />
               </div>
