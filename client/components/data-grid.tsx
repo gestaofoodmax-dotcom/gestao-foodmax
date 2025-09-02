@@ -209,7 +209,9 @@ export function DataGrid({
     // Format dates
     if (column.key.includes("data_hora") && value) {
       const d = new Date(value);
-      const date = d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      const date = d.toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+      });
       const time = d.toLocaleTimeString("pt-BR", {
         timeZone: "America/Sao_Paulo",
         hour12: false,
@@ -220,7 +222,9 @@ export function DataGrid({
       return `${date}, ${time}`;
     }
     if (column.key.includes("data_") && value) {
-      return new Date(value).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      return new Date(value).toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+      });
     }
 
     // Format boolean as badge

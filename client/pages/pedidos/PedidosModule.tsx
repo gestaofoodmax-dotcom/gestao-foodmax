@@ -119,7 +119,9 @@ export default function PedidosModule() {
     if (!value) return "-";
     try {
       const d = new Date(value);
-      const date = d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      const date = d.toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+      });
       const time = d.toLocaleTimeString("pt-BR", {
         timeZone: "America/Sao_Paulo",
         hour12: false,
@@ -174,7 +176,10 @@ export default function PedidosModule() {
         key: "data_cadastro",
         label: "Data Cadastro",
         sortable: true,
-        render: (v: string) => new Date(v).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+        render: (v: string) =>
+          new Date(v).toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          }),
       },
       {
         key: "acoes",
