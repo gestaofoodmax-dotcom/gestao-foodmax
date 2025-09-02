@@ -74,6 +74,7 @@ import {
   bulkDeletePedidos,
   finalizarPedido,
   importPedidos,
+  importPedidosFull,
 } from "./routes/pedidos";
 
 export function createServer() {
