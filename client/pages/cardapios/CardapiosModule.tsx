@@ -512,9 +512,7 @@ export default function CardapiosModule() {
               data_atualizacao: formatDateForExport(cardapio.data_atualizacao),
               item_nome: item.item_nome,
               item_quantidade: item.quantidade,
-              item_valor_unitario: (item.valor_unitario / 100).toFixed(
-                2,
-              ),
+              item_valor_unitario: (item.valor_unitario / 100).toFixed(2),
             });
           }
         } else {

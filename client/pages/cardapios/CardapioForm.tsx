@@ -287,9 +287,7 @@ export default function CardapioForm({
   }, [precoTotal, setValue]);
 
   useEffect(() => {
-    setPrecoTotalMask(
-      formatInputCurrency(watchedValues.preco_total || 0),
-    );
+    setPrecoTotalMask(formatInputCurrency(watchedValues.preco_total || 0));
   }, [watchedValues.preco_total]);
 
   // Low-stock toast on category selection disabled per requirements
@@ -634,8 +632,7 @@ export default function CardapioForm({
                 <div className="space-y-3">
                   {cardapioItens.map((item) => {
                     const isZeroStock = (item.item_estoque_atual || 0) === 0;
-                    const total =
-                      item.quantidade * item.valor_unitario;
+                    const total = item.quantidade * item.valor_unitario;
 
                     return (
                       <div
@@ -676,9 +673,7 @@ export default function CardapioForm({
                               type="number"
                               min="0"
                               step="0.01"
-                              value={(
-                                item.valor_unitario / 100
-                              ).toFixed(2)}
+                              value={(item.valor_unitario / 100).toFixed(2)}
                               onChange={(e) =>
                                 updateItemPrice(
                                   item.item_id,
@@ -757,9 +752,7 @@ export default function CardapioForm({
                 </div>
 
                 <div>
-                  <Label htmlFor="preco_total">
-                    Preço Total (R$) *
-                  </Label>
+                  <Label htmlFor="preco_total">Preço Total (R$) *</Label>
                   <Input
                     id="preco_total"
                     value={precoTotalMask}

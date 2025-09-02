@@ -701,8 +701,7 @@ export default function PedidoForm({
                                       item_id: item.id,
                                       categoria_id: item.categoria_id,
                                       quantidade: 1,
-                                      valor_unitario:
-                                        item.preco,
+                                      valor_unitario: item.preco,
                                     },
                                   ])
                                 }
@@ -821,9 +820,7 @@ export default function PedidoForm({
                             type="number"
                             min="0"
                             step="0.01"
-                            value={(ex.valor_unitario / 100).toFixed(
-                              2,
-                            )}
+                            value={(ex.valor_unitario / 100).toFixed(2)}
                             onChange={(e) =>
                               setSelectedExtras((prev) =>
                                 prev.map((p) =>

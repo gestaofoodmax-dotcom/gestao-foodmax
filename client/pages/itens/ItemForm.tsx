@@ -51,9 +51,7 @@ const schema = z.object({
   categoria_id: z.number({ invalid_type_error: "Categoria é obrigatória" }),
   nome: z.string().min(1, "Nome é obrigatório"),
   preco: z.number().min(0, "Preço deve ser maior ou igual a 0"),
-  custo_pago: z
-    .number()
-    .min(0, "Custo Pago deve ser maior ou igual a 0"),
+  custo_pago: z.number().min(0, "Custo Pago deve ser maior ou igual a 0"),
   unidade_medida: z.string().min(1, "Unidade de Medida é obrigatória"),
   peso_gramas: z.preprocess(
     (v) =>

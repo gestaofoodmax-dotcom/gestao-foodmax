@@ -102,10 +102,7 @@ export default function ItemView({
               <h3 className="font-semibold text-green-600">Preços</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <DataField
-                label="Preço"
-                value={formatCurrencyBRL(item.preco)}
-              />
+              <DataField label="Preço" value={formatCurrencyBRL(item.preco)} />
               <DataField
                 label="Custo Pago"
                 value={formatCurrencyBRL(item.custo_pago)}
