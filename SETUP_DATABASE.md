@@ -23,6 +23,12 @@ Then execute `database/fornecedores.sql` to create the Suppliers module tables:
 - `fornecedores` - Suppliers main table
 - `fornecedores_enderecos` - Suppliers addresses
 
+Then execute `database/abastecimentos.sql` to create the Supply Management module tables:
+
+- `abastecimentos` - Main supply orders table
+- `abastecimentos_itens` - Items in each supply order (shopping cart functionality)
+- `abastecimentos_enderecos` - Delivery addresses for supply orders
+
 ### Step 3: Update Backend with Database Connection
 
 After connecting to Neon, you'll need to update the authentication routes in `server/routes/auth.ts` to:

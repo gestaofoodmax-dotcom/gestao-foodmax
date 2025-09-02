@@ -15,6 +15,7 @@ import FornecedoresModule from "./pages/fornecedores/FornecedoresModule";
 import ItensModule from "./pages/itens/ItensModule";
 import CardapiosModule from "./pages/cardapios/CardapiosModule";
 import PedidosModule from "./pages/pedidos/PedidosModule";
+import AbastecimentosModule from "./pages/abastecimentos/AbastecimentosModule";
 import MinhaConta from "./pages/MinhaConta";
 import PagamentoPlano from "./pages/PagamentoPlano";
 import RenovarPlano from "./pages/RenovarPlano";
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/itens" element={<ItensModule />} />
             <Route path="/cardapios" element={<CardapiosModule />} />
             <Route path="/pedidos" element={<PedidosModule />} />
+            <Route path="/abastecimentos" element={<AbastecimentosModule />} />
             <Route path="/minha-conta" element={<MinhaConta />} />
             <Route path="/PagamentoPlano" element={<PagamentoPlano />} />
             <Route path="/RenovarPlano" element={<RenovarPlano />} />
