@@ -111,7 +111,7 @@ export default function CardapioView({
             item_nome: base.nome || it.item_nome || "",
             categoria_nome: categoriaNome || it.categoria_nome || "",
             quantidade: it.quantidade,
-            valor_unitario_centavos: it.valor_unitario_centavos,
+            valor_unitario: it.valor_unitario,
             item_estoque_atual: base.estoque_atual,
           };
         });
@@ -236,7 +236,7 @@ export default function CardapioView({
                 {cardapioDetalhado.itens.map((item) => {
                   const total =
                     Number(item.quantidade || 0) *
-                    Number(item.valor_unitario_centavos || 0);
+                    Number(item.valor_unitario || 0);
 
                   return (
                     <div
@@ -258,7 +258,7 @@ export default function CardapioView({
 
                         <div className="text-center">
                           <div className="font-medium">
-                            {formatCurrencyBRL(item.valor_unitario_centavos)}
+                            {formatCurrencyBRL(item.valor_unitario)}
                           </div>
                           <div className="text-gray-500">Unit.</div>
                         </div>
@@ -289,13 +289,13 @@ export default function CardapioView({
                   </div>
                   <div>
                     <div className="text-lg font-bold text-blue-600">
-                      {formatCurrencyBRL(cardapio.preco_itens_centavos)}
+                      {formatCurrencyBRL(cardapio.preco_itens)}
                     </div>
                     <div className="text-sm text-gray-600">Custo dos Itens</div>
                   </div>
                   <div>
                     <div className="text-lg font-bold text-green-600">
-                      {formatCurrencyBRL(cardapio.preco_total_centavos)}
+                      {formatCurrencyBRL(cardapio.preco_total)}
                     </div>
                     <div className="text-sm text-gray-600">Preço Final</div>
                   </div>
@@ -320,7 +320,7 @@ export default function CardapioView({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <DataField
                 label="Preço dos Itens"
-                value={formatCurrencyBRL(cardapio.preco_itens_centavos)}
+                value={formatCurrencyBRL(cardapio.preco_itens)}
               />
               <DataField
                 label="Margem de Lucro"
@@ -328,7 +328,7 @@ export default function CardapioView({
               />
               <DataField
                 label="Preço Total"
-                value={formatCurrencyBRL(cardapio.preco_total_centavos)}
+                value={formatCurrencyBRL(cardapio.preco_total)}
                 className="text-lg font-semibold"
               />
             </div>

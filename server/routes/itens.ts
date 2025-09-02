@@ -5,8 +5,8 @@ import { getSupabaseServiceClient } from "../supabase";
 const ItemSchema = z.object({
   categoria_id: z.number(),
   nome: z.string().min(1),
-  preco_centavos: z.number().int().nonnegative(),
-  custo_pago_centavos: z.number().int().nonnegative(),
+  preco: z.number().int().nonnegative(),
+  custo_pago: z.number().int().nonnegative(),
   unidade_medida: z.string().min(1),
   peso_gramas: z.number().int().nonnegative().optional(),
   estoque_atual: z.number().int().nonnegative().optional(),
@@ -330,11 +330,9 @@ export const deleteCategoria: RequestHandler = async (req, res) => {
       .select("id", { count: "exact", head: true })
       .eq("categoria_id", id);
     if ((count || 0) > 0) {
-      return res
-        .status(409)
-        .json({
-          error: "Não é possível excluir Categoria com Itens vinculados",
-        });
+      return res.status(409).json({
+        error: "Não é possível excluir Categoria com Itens vinculados",
+      });
     }
     const { error } = await supabase
       .from("itens_categorias")

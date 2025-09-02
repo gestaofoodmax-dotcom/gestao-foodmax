@@ -13,14 +13,14 @@ const CardapioSchema = z.object({
     "Outro",
   ]),
   margem_lucro_percentual: z.number().min(0),
-  preco_total_centavos: z.number().int().nonnegative(),
+  preco_total: z.number().int().nonnegative(),
   descricao: z.string().optional(),
   ativo: z.boolean().default(true),
   itens: z.array(
     z.object({
       item_id: z.number(),
       quantidade: z.number().int().positive(),
-      valor_unitario_centavos: z.number().int().nonnegative(),
+      valor_unitario: z.number().int().nonnegative(),
     }),
   ),
 });
@@ -139,7 +139,7 @@ export const getCardapio: RequestHandler = async (req, res) => {
         item_nome: item.itens?.nome || "",
         categoria_nome: item.itens?.itens_categorias?.nome || "",
         quantidade: item.quantidade,
-        valor_unitario_centavos: item.valor_unitario_centavos,
+        valor_unitario: item.valor_unitario,
         item_estoque_atual: item.itens?.estoque_atual,
       })),
     };
@@ -165,8 +165,8 @@ export const createCardapio: RequestHandler = async (req, res) => {
       (sum, item) => sum + item.quantidade,
       0,
     );
-    const preco_itens_centavos = parsed.itens.reduce(
-      (sum, item) => sum + item.quantidade * item.valor_unitario_centavos,
+    const preco_itens = parsed.itens.reduce(
+      (sum, item) => sum + item.quantidade * item.valor_unitario,
       0,
     );
 
@@ -178,9 +178,9 @@ export const createCardapio: RequestHandler = async (req, res) => {
         nome: parsed.nome,
         tipo_cardapio: parsed.tipo_cardapio,
         quantidade_total,
-        preco_itens_centavos,
+        preco_itens,
         margem_lucro_percentual: parsed.margem_lucro_percentual,
-        preco_total_centavos: parsed.preco_total_centavos,
+        preco_total: parsed.preco_total,
         descricao: parsed.descricao,
         ativo: parsed.ativo,
       })
@@ -195,7 +195,7 @@ export const createCardapio: RequestHandler = async (req, res) => {
         cardapio_id: cardapio.id,
         item_id: item.item_id,
         quantidade: item.quantidade,
-        valor_unitario_centavos: item.valor_unitario_centavos,
+        valor_unitario: item.valor_unitario,
       }));
 
       const { error: itensError } = await supabase
@@ -248,12 +248,12 @@ export const updateCardapio: RequestHandler = async (req, res) => {
         (sum, item) => sum + item.quantidade,
         0,
       );
-      const preco_itens_centavos = parsed.itens.reduce(
-        (sum, item) => sum + item.quantidade * item.valor_unitario_centavos,
+      const preco_itens = parsed.itens.reduce(
+        (sum, item) => sum + item.quantidade * item.valor_unitario,
         0,
       );
       updateData.quantidade_total = quantidade_total;
-      updateData.preco_itens_centavos = preco_itens_centavos;
+      updateData.preco_itens = preco_itens;
     }
 
     // Update cardapio
@@ -278,7 +278,7 @@ export const updateCardapio: RequestHandler = async (req, res) => {
           cardapio_id: parseInt(id),
           item_id: item.item_id,
           quantidade: item.quantidade,
-          valor_unitario_centavos: item.valor_unitario_centavos,
+          valor_unitario: item.valor_unitario,
         }));
 
         const { error: itensError } = await supabase
@@ -487,8 +487,8 @@ export const importCardapios: RequestHandler = async (req, res) => {
       const key = `${r.nome}_${r.tipo_cardapio}`;
 
       if (!cardapiosMap.has(key)) {
-        const preco_total_centavos = parseCentavos(r.preco_total);
-        const preco_itens_centavos = parseCentavos(r.preco_itens);
+        const preco_total = parseCentavos(r.preco_total);
+        const preco_itens = parseCentavos(r.preco_itens);
         const quantidade_total =
           typeof r.quantidade_total === "string"
             ? Number(r.quantidade_total) || 0
@@ -503,9 +503,9 @@ export const importCardapios: RequestHandler = async (req, res) => {
           nome: r.nome,
           tipo_cardapio: r.tipo_cardapio,
           quantidade_total,
-          preco_itens_centavos,
+          preco_itens,
           margem_lucro_percentual,
-          preco_total_centavos,
+          preco_total,
           descricao: r.descricao || "",
           ativo: r.status ? toBool(r.status) : true,
           itens: [],
@@ -520,7 +520,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
             typeof r.item_quantidade === "string"
               ? Number(r.item_quantidade) || 1
               : r.item_quantidade || 1,
-          valor_unitario_centavos: parseCentavos(r.item_valor_unitario),
+          valor_unitario: parseCentavos(r.item_valor_unitario),
         });
       }
     }
@@ -540,9 +540,9 @@ export const importCardapios: RequestHandler = async (req, res) => {
             nome: cardapioData.nome,
             tipo_cardapio: cardapioData.tipo_cardapio,
             quantidade_total: cardapioData.quantidade_total,
-            preco_itens_centavos: cardapioData.preco_itens_centavos,
+            preco_itens: cardapioData.preco_itens,
             margem_lucro_percentual: cardapioData.margem_lucro_percentual,
-            preco_total_centavos: cardapioData.preco_total_centavos,
+            preco_total: cardapioData.preco_total,
             descricao: cardapioData.descricao,
             ativo: cardapioData.ativo,
           })
@@ -593,7 +593,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
                       unidade_medida: "un",
                       estoque_atual: 0,
                       estoque_minimo: 0,
-                      custo_unitario_centavos: itemData.valor_unitario_centavos,
+                      custo_unitario_centavos: itemData.valor_unitario,
                       ativo: true,
                     })
                     .select("id")
@@ -621,7 +621,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
                     cardapio_id: cardapio.id,
                     item_id: item_id,
                     quantidade: itemData.quantidade,
-                    valor_unitario_centavos: itemData.valor_unitario_centavos,
+                    valor_unitario: itemData.valor_unitario,
                   });
 
                 if (itemRelationError) {

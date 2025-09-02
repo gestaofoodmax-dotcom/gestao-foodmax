@@ -84,7 +84,7 @@ const schema = z.object({
   }),
   codigo: z.string().min(1, "Código é obrigatório"),
   cliente_id: z.number().nullable().optional(),
-  valor_total_centavos: z.number().min(0, "Valor obrigatório"),
+  valor_total: z.number().min(0, "Valor obrigatório"),
   observacao: z.string().optional(),
   status: z.enum(["Pendente", "Finalizado", "Cancelado"]).default("Pendente"),
   data_hora_finalizado: z.string().nullable().optional(),
@@ -124,7 +124,7 @@ export default function PedidoForm({
       item_id: number;
       categoria_id: number;
       quantidade: number;
-      valor_unitario_centavos: number;
+      valor_unitario: number;
     }[]
   >([]);
   const [stockAlert, setStockAlert] = useState<{
@@ -173,7 +173,7 @@ export default function PedidoForm({
         tipo_pedido: undefined as any,
         codigo: generateCodigo(),
         cliente_id: null,
-        valor_total_centavos: 0,
+        valor_total: 0,
         observacao: "",
         status: "Pendente",
         data_hora_finalizado: null,
@@ -240,12 +240,12 @@ export default function PedidoForm({
         tipo_pedido: pedido.tipo_pedido,
         codigo: pedido.codigo,
         cliente_id: pedido.cliente_id ?? null,
-        valor_total_centavos: pedido.valor_total_centavos,
+        valor_total: pedido.valor_total,
         observacao: pedido.observacao || "",
         status: pedido.status,
         data_hora_finalizado: pedido.data_hora_finalizado,
       });
-      setValorTotalMask(formatInputCurrency(pedido.valor_total_centavos));
+      setValorTotalMask(formatInputCurrency(pedido.valor_total));
     }
   }, [pedido, reset]);
 
@@ -257,7 +257,7 @@ export default function PedidoForm({
 
   const valorExtras = useMemo(() => {
     return selectedExtras.reduce(
-      (sum, e) => sum + e.quantidade * e.valor_unitario_centavos,
+      (sum, e) => sum + e.quantidade * e.valor_unitario,
       0,
     );
   }, [selectedExtras]);
@@ -265,13 +265,13 @@ export default function PedidoForm({
   const valorCardapios = useMemo(() => {
     return selectedCardapios.reduce((sum, cid) => {
       const c = cardapios.find((x) => x.id === cid);
-      return sum + (c?.preco_total_centavos || 0);
+      return sum + (c?.preco_total || 0);
     }, 0);
   }, [selectedCardapios, cardapios]);
 
   useEffect(() => {
     const total = valorCardapios + valorExtras;
-    setValue("valor_total_centavos", total);
+    setValue("valor_total", total);
     setValorTotalMask(formatInputCurrency(total));
   }, [valorCardapios, valorExtras, setValue]);
 
@@ -312,7 +312,7 @@ export default function PedidoForm({
       codigo: data.codigo,
       observacao: data.observacao || "",
       status: data.status as StatusPedido,
-      valor_total_centavos: data.valor_total_centavos,
+      valor_total: data.valor_total,
       data_hora_finalizado: data.data_hora_finalizado ?? null,
       cardapios: selectedCardapios.map((id) => ({ cardapio_id: id })),
       itens_extras: selectedExtras,
@@ -589,7 +589,7 @@ export default function PedidoForm({
                               />
                               <span className="flex-1">{c.nome}</span>
                               <Badge variant="secondary">
-                                {formatCurrencyBRL(c.preco_total_centavos)}
+                                {formatCurrencyBRL(c.preco_total)}
                               </Badge>
                             </CommandItem>
                           ))}
@@ -701,8 +701,7 @@ export default function PedidoForm({
                                       item_id: item.id,
                                       categoria_id: item.categoria_id,
                                       quantidade: 1,
-                                      valor_unitario_centavos:
-                                        item.preco_centavos,
+                                      valor_unitario: item.preco,
                                     },
                                   ])
                                 }
@@ -756,7 +755,7 @@ export default function PedidoForm({
                 {selectedExtras.map((ex) => {
                   const item = itens.find((i) => i.id === ex.item_id);
                   if (!item) return null;
-                  const total = ex.quantidade * ex.valor_unitario_centavos;
+                  const total = ex.quantidade * ex.valor_unitario;
                   const isZero = (item.estoque_atual || 0) === 0;
                   return (
                     <div
@@ -821,16 +820,14 @@ export default function PedidoForm({
                             type="number"
                             min="0"
                             step="0.01"
-                            value={(ex.valor_unitario_centavos / 100).toFixed(
-                              2,
-                            )}
+                            value={(ex.valor_unitario / 100).toFixed(2)}
                             onChange={(e) =>
                               setSelectedExtras((prev) =>
                                 prev.map((p) =>
                                   p.item_id === ex.item_id
                                     ? {
                                         ...p,
-                                        valor_unitario_centavos: Math.round(
+                                        valor_unitario: Math.round(
                                           parseFloat(e.target.value || "0") *
                                             100,
                                         ),
@@ -884,14 +881,14 @@ export default function PedidoForm({
                     setValorTotalMask(
                       e.target.value === "" ? "" : formatInputCurrency(cents),
                     );
-                    setValue("valor_total_centavos", cents);
+                    setValue("valor_total", cents);
                   }}
                   className="foodmax-input"
                   placeholder="R$ 0,00"
                 />
-                {errors.valor_total_centavos && (
+                {errors.valor_total && (
                   <span className="text-sm text-red-600">
-                    {errors.valor_total_centavos.message}
+                    {errors.valor_total.message}
                   </span>
                 )}
               </div>

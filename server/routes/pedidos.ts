@@ -12,11 +12,11 @@ const PedidoSchema = z.object({
   codigo: z.string().optional(),
   observacao: z.string().nullable().optional(),
   status: StatusPedidoEnum.optional().default("Pendente"),
-  valor_total_centavos: z.number().int().nonnegative(),
+  valor_total: z.number().int().nonnegative(),
   cardapios: z.array(
     z.object({
       cardapio_id: z.number().int().positive(),
-      preco_total_centavos: z.number().int().nonnegative().optional(),
+      preco_total: z.number().int().nonnegative().optional(),
     }),
   ),
   itens_extras: z.array(
@@ -24,7 +24,7 @@ const PedidoSchema = z.object({
       item_id: z.number().int().positive(),
       categoria_id: z.number().int().positive(),
       quantidade: z.number().int().positive(),
-      valor_unitario_centavos: z.number().int().nonnegative(),
+      valor_unitario: z.number().int().nonnegative(),
     }),
   ),
   data_hora_finalizado: z.string().nullable().optional(),
@@ -133,7 +133,7 @@ export const getPedido: RequestHandler = async (req, res) => {
 
     const { data: cardapios } = await supabase
       .from("pedidos_cardapios")
-      .select("*, cardapios:cardapio_id(nome, preco_total_centavos)")
+      .select("*, cardapios:cardapio_id(nome, preco_total)")
       .eq("pedido_id", id);
 
     const { data: extras } = await supabase
@@ -222,21 +222,21 @@ export const createPedido: RequestHandler = async (req, res) => {
     // If cardapio price not supplied, load it
     const cardapiosData = [] as {
       cardapio_id: number;
-      preco_total_centavos: number;
+      preco_total: number;
     }[];
     for (const c of parsed.cardapios) {
-      let preco = c.preco_total_centavos;
+      let preco = c.preco_total;
       if (typeof preco !== "number") {
         const { data: cd } = await supabase
           .from("cardapios")
-          .select("preco_total_centavos")
+          .select("preco_total")
           .eq("id", c.cardapio_id)
           .single();
-        preco = cd?.preco_total_centavos || 0;
+        preco = cd?.preco_total || 0;
       }
       cardapiosData.push({
         cardapio_id: c.cardapio_id,
-        preco_total_centavos: preco!,
+        preco_total: preco!,
       });
     }
 
@@ -250,7 +250,7 @@ export const createPedido: RequestHandler = async (req, res) => {
         codigo,
         observacao: parsed.observacao || null,
         status: parsed.status || "Pendente",
-        valor_total_centavos: parsed.valor_total_centavos,
+        valor_total: parsed.valor_total,
         data_hora_finalizado: parsed.data_hora_finalizado ?? null,
       })
       .select()
@@ -263,7 +263,7 @@ export const createPedido: RequestHandler = async (req, res) => {
         cardapiosData.map((c) => ({
           pedido_id: pedido.id,
           cardapio_id: c.cardapio_id,
-          preco_total_centavos: c.preco_total_centavos,
+          preco_total: c.preco_total,
         })),
       );
     }
@@ -275,7 +275,7 @@ export const createPedido: RequestHandler = async (req, res) => {
           item_id: e.item_id,
           categoria_id: e.categoria_id,
           quantidade: e.quantidade,
-          valor_unitario_centavos: e.valor_unitario_centavos,
+          valor_unitario: e.valor_unitario,
         })),
       );
     }
@@ -372,21 +372,21 @@ export const updatePedido: RequestHandler = async (req, res) => {
       if (parsed.cardapios.length > 0) {
         const cardapiosData = [] as {
           cardapio_id: number;
-          preco_total_centavos: number;
+          preco_total: number;
         }[];
         for (const c of parsed.cardapios) {
-          let preco = c.preco_total_centavos;
+          let preco = c.preco_total;
           if (typeof preco !== "number") {
             const { data: cd } = await supabase
               .from("cardapios")
-              .select("preco_total_centavos")
+              .select("preco_total")
               .eq("id", c.cardapio_id)
               .single();
-            preco = cd?.preco_total_centavos || 0;
+            preco = cd?.preco_total || 0;
           }
           cardapiosData.push({
             cardapio_id: c.cardapio_id,
-            preco_total_centavos: preco!,
+            preco_total: preco!,
           });
         }
         await supabase

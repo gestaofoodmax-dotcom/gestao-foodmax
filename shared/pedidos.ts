@@ -9,7 +9,7 @@ export interface Pedido {
   cliente_id: number | null;
   codigo: string;
   tipo_pedido: TipoPedido;
-  valor_total_centavos: number;
+  valor_total: number;
   data_hora_finalizado: string | null;
   observacao?: string | null;
   status: StatusPedido;
@@ -21,7 +21,7 @@ export interface PedidoCardapio {
   id: number;
   pedido_id: number;
   cardapio_id: number;
-  preco_total_centavos: number;
+  preco_total: number;
   data_cadastro: string;
   data_atualizacao: string;
 }
@@ -32,7 +32,7 @@ export interface PedidoItemExtra {
   item_id: number;
   categoria_id: number;
   quantidade: number;
-  valor_unitario_centavos: number;
+  valor_unitario: number;
   data_cadastro: string;
   data_atualizacao: string;
 }
@@ -55,13 +55,13 @@ export interface CreatePedidoRequest {
   codigo?: string; // if not provided, server generates
   observacao?: string | null;
   status?: StatusPedido; // default Pendente
-  valor_total_centavos: number; // calculated client-side but editable
-  cardapios: { cardapio_id: number; preco_total_centavos?: number }[]; // preco can be filled by server
+  valor_total: number; // calculated client-side but editable
+  cardapios: { cardapio_id: number; preco_total?: number }[]; // preco can be filled by server
   itens_extras: {
     item_id: number;
     categoria_id: number;
     quantidade: number;
-    valor_unitario_centavos: number;
+    valor_unitario: number;
   }[];
   data_hora_finalizado?: string | null;
 }

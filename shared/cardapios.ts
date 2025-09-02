@@ -4,9 +4,9 @@ export interface Cardapio {
   nome: string;
   tipo_cardapio: TipoCardapio;
   quantidade_total: number;
-  preco_itens_centavos: number;
+  preco_itens: number;
   margem_lucro_percentual: number;
-  preco_total_centavos: number;
+  preco_total: number;
   descricao?: string;
   ativo: boolean;
   data_cadastro: string;
@@ -18,7 +18,7 @@ export interface CardapioItem {
   cardapio_id: number;
   item_id: number;
   quantidade: number;
-  valor_unitario_centavos: number;
+  valor_unitario: number;
   data_cadastro: string;
   data_atualizacao: string;
 }
@@ -52,13 +52,13 @@ export interface CreateCardapioRequest {
   nome: string;
   tipo_cardapio: TipoCardapio;
   margem_lucro_percentual: number;
-  preco_total_centavos: number;
+  preco_total: number;
   descricao?: string;
   ativo?: boolean;
   itens: {
     item_id: number;
     quantidade: number;
-    valor_unitario_centavos: number;
+    valor_unitario: number;
   }[];
 }
 
@@ -81,7 +81,7 @@ export interface CardapioDetalhado extends Cardapio {
     item_nome: string;
     categoria_nome: string;
     quantidade: number;
-    valor_unitario_centavos: number;
+    valor_unitario: number;
     item_estoque_atual?: number;
   }[];
 }
