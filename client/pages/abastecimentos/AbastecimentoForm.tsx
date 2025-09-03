@@ -448,10 +448,59 @@ export default function AbastecimentoForm({
       }
     }
 
+    // Ensure we have the required data
+    const finalEstabelecimentoId = Number(data.estabelecimento_id);
+    const finalFornecedoresIds = selectedFornecedoresIds.length > 0 ? selectedFornecedoresIds : [];
+    const finalCategoriaId = selectedCategoriaId !== null ? Number(selectedCategoriaId) : null;
+    const finalItens = selectedItens.length > 0 ? selectedItens : [];
+
+    console.log("Final data before payload:", {
+      finalEstabelecimentoId,
+      finalFornecedoresIds,
+      finalCategoriaId,
+      finalItens,
+    });
+
+    if (!finalEstabelecimentoId || finalEstabelecimentoId === 0) {
+      toast({
+        title: "Erro de validação",
+        description: "Estabelecimento é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (finalFornecedoresIds.length === 0) {
+      toast({
+        title: "Erro de validação",
+        description: "Selecione pelo menos um Fornecedor",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!finalCategoriaId) {
+      toast({
+        title: "Erro de validação",
+        description: "Selecione uma Categoria",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (finalItens.length === 0) {
+      toast({
+        title: "Erro de validação",
+        description: "Adicione pelo menos um Item",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const payload: CreateAbastecimentoRequest = {
-      estabelecimento_id: Number(data.estabelecimento_id),
-      fornecedores_ids: selectedFornecedoresIds,
-      categoria_id: Number(selectedCategoriaId),
+      estabelecimento_id: finalEstabelecimentoId,
+      fornecedores_ids: finalFornecedoresIds,
+      categoria_id: finalCategoriaId,
       telefone: data.telefone.trim(),
       ddi: data.ddi?.trim() || "+55",
       email: emailToSend,
@@ -459,15 +508,15 @@ export default function AbastecimentoForm({
       observacao: data.observacao?.trim() || null,
       status: (data.status as StatusAbastecimento) || "Pendente",
       email_enviado: Boolean(data.email_enviado),
-      itens: selectedItens.map((item) => ({
+      itens: finalItens.map((item) => ({
         item_id: Number(item.item_id),
         quantidade: Number(item.quantidade),
       })),
       endereco: {
         cep: data.cep?.trim() || null,
-        endereco: data.endereco.trim(),
-        cidade: data.cidade.trim(),
-        uf: data.uf.trim().toUpperCase(),
+        endereco: data.endereco?.trim() || "",
+        cidade: data.cidade?.trim() || "",
+        uf: data.uf?.trim()?.toUpperCase() || "",
         pais: data.pais?.trim() || "Brasil",
       },
     };
