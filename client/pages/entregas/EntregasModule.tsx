@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
 import { DataGrid } from "@/components/data-grid";
 import { toast } from "@/hooks/use-toast";
-import { Download, Edit, Eye, Menu, Plus, Search, Trash2, Truck, CheckCircle2, Timer } from "lucide-react";
+import { Download, Edit, Eye, Menu, Plus, Search, Trash2, Truck, CheckCircle2, Timer, Upload } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
@@ -412,7 +412,7 @@ export default function EntregasModule() {
                     size="sm"
                     onClick={() => setShowImport(true)}
                   >
-                    Importar
+                    <Upload className="w-4 h-4 mr-2" /> Importar
                   </Button>
                   <Button
                     variant="outline"
