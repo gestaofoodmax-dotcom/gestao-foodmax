@@ -132,7 +132,7 @@ export default function AbastecimentosModule() {
       },
       {
         key: "codigo",
-        label: "C��digo",
+        label: "Código",
         sortable: true,
         render: (v: any, r: any) => r.codigo || "-",
       },
@@ -1107,34 +1107,16 @@ export default function AbastecimentosModule() {
 
           const parseDate = (dateStr: string) => {
             if (!dateStr) return null;
-            const s = String(dateStr);
-            // DD/MM/YYYY, with optional time
+            const s = String(dateStr).trim();
+            const re =
+              /^(\d{2})\/(\d{2})\/(\d{4})(?:[ ,]+(\d{2}):(\d{2})(?::(\d{2}))?)?$/;
+            const m = s.match(re);
+            if (m) {
+              const [, dd, mm, yyyy, hh = "00", mi = "00", ss = "00"] =
+                m as any;
+              return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}-03:00`;
+            }
             try {
-              if (s.includes("/") && (s.includes(",") || s.includes(" "))) {
-                const sepIndex =
-                  s.indexOf(",") >= 0 ? s.indexOf(",") : s.indexOf(" ");
-                const datePart = s.slice(0, sepIndex).trim();
-                const timePart = s.slice(sepIndex + 1).trim();
-                const [day, month, year] = datePart.split("/");
-                const [hh = "0", mm = "0", ss = "0"] = timePart.split(":");
-                const d = new Date(
-                  Date.UTC(
-                    parseInt(year),
-                    parseInt(month) - 1,
-                    parseInt(day),
-                    parseInt(hh),
-                    parseInt(mm),
-                    parseInt(ss),
-                  ),
-                );
-                return isNaN(d.getTime()) ? null : d.toISOString();
-              } else if (s.includes("/") && !s.includes(":")) {
-                const [day, month, year] = s.split("/");
-                const d = new Date(
-                  Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)),
-                );
-                return isNaN(d.getTime()) ? null : d.toISOString();
-              }
               const d = new Date(s);
               return isNaN(d.getTime()) ? null : d.toISOString();
             } catch {
