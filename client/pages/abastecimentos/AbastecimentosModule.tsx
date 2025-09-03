@@ -933,7 +933,7 @@ export default function AbastecimentosModule() {
           { key: "ddi", label: "DDI" },
           { key: "email", label: "Email" },
           { key: "data_hora_recebido", label: "Data/Hora Recebido" },
-          { key: "observacao", label: "Observaç��o" },
+          { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
         ]}
