@@ -201,6 +201,10 @@ export default function AbastecimentoView({
                       : "-"
                   }
                 />
+                <DataField
+                  label="Código do Abastecimento"
+                  value={detalhe.codigo || "-"}
+                />
               </div>
             </div>
 
