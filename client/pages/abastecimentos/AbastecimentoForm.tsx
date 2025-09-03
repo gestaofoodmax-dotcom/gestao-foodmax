@@ -370,45 +370,127 @@ export default function AbastecimentoForm({
   }, [selectedItens]);
 
   const onSubmit = (data: FormData) => {
-    console.log("=== FORÇA SALVAMENTO - SEM VALIDAÇÕES ===");
+    console.log("=== FORM SUBMISSION START ===");
     console.log("Form data:", data);
+    console.log("Selected fornecedores:", selectedFornecedoresIds);
+    console.log("Selected categoria:", selectedCategoriaId);
+    console.log("Selected itens:", selectedItens);
 
-    // FORÇA O SALVAMENTO COM DADOS MÍNIMOS - SEM VALIDAÇÕES!
-    const forcePayload: CreateAbastecimentoRequest = {
-      estabelecimento_id: estabelecimentos.length > 0 ? estabelecimentos[0].id : 1,
-      fornecedores_ids: fornecedores.length > 0 ? [fornecedores[0].id] : [1],
-      categoria_id: categorias.length > 0 ? categorias[0].id : 1,
-      telefone: data.telefone?.trim() || "11999999999",
+    // Validação APENAS campos obrigatórios (marcados com *)
+    if (!data.estabelecimento_id) {
+      toast({
+        title: "Erro de validação",
+        description: "Estabelecimento é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (selectedFornecedoresIds.length === 0) {
+      toast({
+        title: "Erro de validação",
+        description: "Selecione pelo menos um Fornecedor",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedCategoriaId) {
+      toast({
+        title: "Erro de validação",
+        description: "Selecione uma Categoria",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data.telefone?.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "Telefone é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data.endereco?.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "Endereço é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data.cidade?.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "Cidade é obrigatória",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data.uf?.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "UF é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!data.pais?.trim()) {
+      toast({
+        title: "Erro de validação",
+        description: "País é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validação de email apenas se preenchido
+    const cleanEmail = data.email?.trim();
+    const emailToSend = cleanEmail && cleanEmail !== "" ? cleanEmail : null;
+    if (emailToSend) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(emailToSend)) {
+        toast({
+          title: "Erro de validação",
+          description: "Email inválido",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const payload: CreateAbastecimentoRequest = {
+      estabelecimento_id: Number(data.estabelecimento_id),
+      fornecedores_ids: selectedFornecedoresIds,
+      categoria_id: Number(selectedCategoriaId),
+      telefone: data.telefone.trim(),
       ddi: data.ddi?.trim() || "+55",
-      email: data.email?.trim() || null,
+      email: emailToSend,
       data_hora_recebido: data.data_hora_recebido || null,
-      observacao: data.observacao?.trim() || "Cadastro forçado pelo sistema",
-      status: "Pendente",
-      email_enviado: false,
-      itens: itens.length > 0 ? [{
-        item_id: itens[0].id,
-        quantidade: 1
-      }] : [{
-        item_id: 1,
-        quantidade: 1
-      }],
+      observacao: data.observacao?.trim() || null,
+      status: (data.status as StatusAbastecimento) || "Pendente",
+      email_enviado: Boolean(data.email_enviado),
+      itens: selectedItens.map((item) => ({
+        item_id: Number(item.item_id),
+        quantidade: Number(item.quantidade),
+      })),
       endereco: {
-        cep: data.cep?.trim() || "00000000",
-        endereco: data.endereco?.trim() || "Endereço padrão",
-        cidade: data.cidade?.trim() || "São Paulo",
-        uf: data.uf?.trim()?.toUpperCase() || "SP",
-        pais: data.pais?.trim() || "Brasil",
+        cep: data.cep?.trim() || null,
+        endereco: data.endereco.trim(),
+        cidade: data.cidade.trim(),
+        uf: data.uf.trim().toUpperCase(),
+        pais: data.pais.trim(),
       },
     };
 
-    console.log("=== PAYLOAD FORÇADO - VAI SALVAR AGORA ===");
-    console.log(JSON.stringify(forcePayload, null, 2));
-
-    // FORÇA O SALVAMENTO SEM QUALQUER VALIDAÇÃO
-    console.log("EXECUTANDO onSave(forcePayload) AGORA...");
-    onSave(forcePayload);
-
-    console.log("onSave foi chamado - processo de salvamento iniciado");
+    console.log("=== FINAL PAYLOAD ===");
+    console.log(JSON.stringify(payload, null, 2));
+    onSave(payload);
   };
 
   const hasPrerequisites =
