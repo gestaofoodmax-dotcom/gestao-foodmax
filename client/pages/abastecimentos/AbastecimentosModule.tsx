@@ -785,7 +785,7 @@ export default function AbastecimentosModule() {
         : "";
       const enderecoStr = end
         ?
-          `Endereço: ` +
+          `Estabelecimento Endereço: ` +
           [end.cep, end.endereco, cityUf, end.pais]
             .filter((x) => typeof x === "string" && x.trim() !== "")
             .join(" - ")
@@ -813,7 +813,7 @@ export default function AbastecimentosModule() {
         data_cadastro: abastecimento.data_cadastro || "",
         data_atualizacao: abastecimento.data_atualizacao || "",
         itens: itensStr,
-        enderecos: enderecoStr,
+        estabelecimento_endereco: enderecoStr,
       } as any;
     };
 
@@ -862,7 +862,7 @@ export default function AbastecimentosModule() {
             data_cadastro: a.data_cadastro || "",
             data_atualizacao: a.data_atualizacao || "",
             itens: "",
-            enderecos: "",
+            estabelecimento_endereco: "",
           } as any;
         }),
       );
@@ -1095,7 +1095,7 @@ export default function AbastecimentosModule() {
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "itens", label: "Itens" },
-          { key: "enderecos", label: "Endereços" },
+          { key: "estabelecimento_endereco", label: "Estabelecimento Endereço" },
         ]}
       />
 
@@ -1273,8 +1273,8 @@ export default function AbastecimentosModule() {
           { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
-          { key: "itens", label: "Itens (Itens: Nome - Unidade - Quantidade; ...)" },
-          { key: "enderecos", label: "Endereços (Endereço: CEP - Endereço - Cidade/UF - País)" },
+          { key: "itens", label: "Itens (Itens: Nome do Item - Unidade de Medida - Quantidade; ...)" },
+          { key: "estabelecimento_endereco", label: "Estabelecimento Endereço (Estabelecimento Endereço: CEP - Endereço - Cidade/UF - País)" },
         ]}
         mapHeader={(h) => {
           const original = h.trim();
@@ -1294,8 +1294,8 @@ export default function AbastecimentosModule() {
             Status: "status",
             "Email Enviado": "email_enviado",
             Itens: "itens",
-            Endereços: "enderecos",
-            "Estabelecimento Endereço": "enderecos",
+            "Estabelecimento Endereço": "estabelecimento_endereco",
+            Endereços: "estabelecimento_endereco",
           };
 
           if (exactMap[original]) {
@@ -1316,10 +1316,10 @@ export default function AbastecimentosModule() {
             status: "status",
             "email enviado": "email_enviado",
             itens: "itens",
-            "estabelecimento endereço": "enderecos",
-            "endereço do estabelecimento": "enderecos",
-            enderecos: "enderecos",
-            "endereços": "enderecos",
+            "estabelecimento endereço": "estabelecimento_endereco",
+            "endereço do estabelecimento": "estabelecimento_endereco",
+            enderecos: "estabelecimento_endereco",
+            "endereços": "estabelecimento_endereco",
           };
 
           return lowerMap[n] || n.replace(/\s+/g, "_");
@@ -1412,9 +1412,9 @@ export default function AbastecimentosModule() {
               : [];
 
             const endRaw = String(
-              (r as any).enderecos || (r as any)["Endereços"] || r.estabelecimento_endereco || r["Estabelecimento Endereço"] || "",
+              (r as any).estabelecimento_endereco || r["Estabelecimento Endereço"] || (r as any).enderecos || (r as any)["Endereços"] || "",
             ).trim();
-            const endText = endRaw.replace(/^endereço\s*:\s*/i, "").trim();
+            const endText = endRaw.replace(/^(estabelecimento\s*)?endereço\s*:\s*/i, "").trim();
             let endereco: {
               cep?: string | null;
               endereco?: string;
