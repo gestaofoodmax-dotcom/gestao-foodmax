@@ -305,7 +305,9 @@ export const getAbastecimento: RequestHandler = async (req, res) => {
           ...i,
           item_nome: base.nome,
           estoque_atual: base.estoque_atual,
-          categoria_nome: base.categoria_id ? catMap.get(base.categoria_id) : undefined,
+          categoria_nome: base.categoria_id
+            ? catMap.get(base.categoria_id)
+            : undefined,
         };
       });
     }

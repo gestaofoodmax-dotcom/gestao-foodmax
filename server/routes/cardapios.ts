@@ -129,9 +129,7 @@ export const getCardapio: RequestHandler = async (req, res) => {
           .from("itens")
           .select("id, nome, estoque_atual, categoria_id")
           .in("id", itemIds),
-        supabase
-          .from("itens_categorias")
-          .select("id, nome"),
+        supabase.from("itens_categorias").select("id, nome"),
       ]);
 
       const itensMap = new Map<number, any>();

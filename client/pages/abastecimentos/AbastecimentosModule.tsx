@@ -829,7 +829,8 @@ export default function AbastecimentosModule() {
                       setExportData(filteredAbastecimentos as any);
                       setShowExport(true);
                       try {
-                        const data = await getAbastecimentosWithRelationsForExport();
+                        const data =
+                          await getAbastecimentosWithRelationsForExport();
                         setExportData(data);
                       } catch {}
                     }}
