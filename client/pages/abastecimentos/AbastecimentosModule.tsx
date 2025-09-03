@@ -112,6 +112,7 @@ export default function AbastecimentosModule() {
     mensagem: "",
   });
   const [emailSending, setEmailSending] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
   const [emailProgress, setEmailProgress] = useState({ total: 0, sent: 0 });
   const [currentEmailAbastecimento, setCurrentEmailAbastecimento] =
     useState<Abastecimento | null>(null);
@@ -610,15 +611,26 @@ export default function AbastecimentosModule() {
     setCurrentEmailAbastecimento(a);
     setEmailForm({ destinatarios: "", assunto: "", mensagem: "" });
     setEmailProgress({ total: 0, sent: 0 });
-    setShowEmailModal(true); // open immediately
+    setEmailLoading(true);
+    setShowEmailModal(true);
+
+    // Clear caches to ensure fresh data
+    try {
+      localStorage.removeItem(LOCAL_ABASTECIMENTOS);
+      localStorage.removeItem("fm_abastecimentos_cache");
+      localStorage.removeItem("fm_grid_cache");
+    } catch {}
 
     try {
+      const ts = Date.now();
       const est = await makeRequest(
-        `/api/estabelecimentos/${a.estabelecimento_id}`,
+        `/api/estabelecimentos/${a.estabelecimento_id}?_t=${ts}`,
       );
       setCurrentEstabelecimento(est || null);
 
-      const fornResp = await makeRequest(`/api/fornecedores?page=1&limit=1000`);
+      const fornResp = await makeRequest(
+        `/api/fornecedores?page=1&limit=1000&_t=${ts}`,
+      );
       const fornecedores = Array.isArray(fornResp?.data) ? fornResp.data : [];
       const fornecedoresSelecionados = fornecedores.filter((f: any) =>
         a.fornecedores_ids.includes(f.id),
@@ -640,7 +652,7 @@ export default function AbastecimentosModule() {
 
       let det: any = null;
       try {
-        det = await makeRequest(`/api/abastecimentos/${a.id}`);
+        det = await makeRequest(`/api/abastecimentos/${a.id}?_t=${ts}`);
       } catch {}
       const itens: any[] = Array.isArray(det?.itens) ? det.itens : [];
       const itensTexto = itens.length
@@ -674,6 +686,8 @@ export default function AbastecimentosModule() {
       setEmailProgress({ total: emailsFornecedores.length, sent: 0 });
     } catch (e) {
       toast({ title: "Erro", description: "Falha ao preparar envio de email" });
+    } finally {
+      setEmailLoading(false);
     }
   };
 
@@ -1097,7 +1111,7 @@ export default function AbastecimentosModule() {
 
       <Dialog
         open={showEmailModal}
-        onOpenChange={(o) => !emailSending && setShowEmailModal(o)}
+        onOpenChange={(o) => !emailSending && !emailLoading && setShowEmailModal(o)}
       >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -1110,70 +1124,77 @@ export default function AbastecimentosModule() {
             </p>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div>
-              <Label>Destinatários</Label>
-              <Input
-                value={emailForm.destinatarios}
-                onChange={(e) =>
-                  setEmailForm((f) => ({ ...f, destinatarios: e.target.value }))
-                }
-                placeholder="email1@dominio.com, email2@dominio.com"
-                className="foodmax-input"
-                disabled={emailSending}
-              />
+          {emailLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-foodmax-orange mr-2"></div>
+              <span className="text-sm text-gray-600">Carregando dados...</span>
             </div>
-            <div>
-              <Label>Assunto do Email</Label>
-              <Input
-                value={emailForm.assunto}
-                onChange={(e) =>
-                  setEmailForm((f) => ({ ...f, assunto: e.target.value }))
-                }
-                className="foodmax-input"
-                disabled={emailSending}
-              />
-            </div>
-            <div>
-              <Label>Mensagem do Email</Label>
-              <Textarea
-                rows={10}
-                value={emailForm.mensagem}
-                onChange={(e) =>
-                  setEmailForm((f) => ({ ...f, mensagem: e.target.value }))
-                }
-                className="foodmax-input"
-                disabled={emailSending}
-              />
-            </div>
-
-            {emailSending && (
+          ) : (
+            <div className="space-y-4">
               <div>
-                <Progress
-                  value={
-                    emailProgress.total
-                      ? (emailProgress.sent / emailProgress.total) * 100
-                      : 0
+                <Label>Destinatários</Label>
+                <Input
+                  value={emailForm.destinatarios}
+                  onChange={(e) =>
+                    setEmailForm((f) => ({ ...f, destinatarios: e.target.value }))
                   }
+                  placeholder="email1@dominio.com, email2@dominio.com"
+                  className="foodmax-input"
+                  disabled={emailSending || emailLoading}
                 />
-                <div className="mt-1 text-xs text-gray-600">
-                  Enviados {emailProgress.sent} de {emailProgress.total}
-                </div>
               </div>
-            )}
-          </div>
+              <div>
+                <Label>Assunto do Email</Label>
+                <Input
+                  value={emailForm.assunto}
+                  onChange={(e) =>
+                    setEmailForm((f) => ({ ...f, assunto: e.target.value }))
+                  }
+                  className="foodmax-input"
+                  disabled={emailSending || emailLoading}
+                />
+              </div>
+              <div>
+                <Label>Mensagem do Email</Label>
+                <Textarea
+                  rows={10}
+                  value={emailForm.mensagem}
+                  onChange={(e) =>
+                    setEmailForm((f) => ({ ...f, mensagem: e.target.value }))
+                  }
+                  className="foodmax-input"
+                  disabled={emailSending || emailLoading}
+                />
+              </div>
+
+              {emailSending && (
+                <div>
+                  <Progress
+                    value={
+                      emailProgress.total
+                        ? (emailProgress.sent / emailProgress.total) * 100
+                        : 0
+                    }
+                  />
+                  <div className="mt-1 text-xs text-gray-600">
+                    Enviados {emailProgress.sent} de {emailProgress.total}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setShowEmailModal(false)}
-              disabled={emailSending}
+              disabled={emailSending || emailLoading}
             >
               Cancelar
             </Button>
             <Button
               className="bg-foodmax-orange text-white hover:bg-orange-600"
-              disabled={emailSending}
+              disabled={emailSending || emailLoading}
               onClick={async () => {
                 if (!currentEmailAbastecimento) return;
                 const userRole = getUserRole();
