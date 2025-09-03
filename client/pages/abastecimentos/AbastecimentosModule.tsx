@@ -1007,6 +1007,7 @@ export default function AbastecimentosModule() {
             Status: "status",
             "Email Enviado": "email_enviado",
             Itens: "itens",
+            "Estabelecimento Endereço": "estabelecimento_endereco",
           };
 
           if (exactMap[original]) {
