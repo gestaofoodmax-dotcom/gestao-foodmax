@@ -246,13 +246,9 @@ export default function AbastecimentoView({
                 </div>
                 <hr className="border-t border-gray-300 mt-4 mb-4" />
                 <div className="text-sm text-gray-700">
-                  <span className="font-medium">Quantidade Total: </span>
+                  <span className="font-medium">Total de Itens: </span>
                   <span className="font-semibold">
-                    {detalhe.itens.reduce(
-                      (total: number, item: any) =>
-                        total + (item.quantidade || 0),
-                      0,
-                    )}
+                    {detalhe.itens.length}
                   </span>
                 </div>
               </div>
