@@ -961,10 +961,12 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           abastecimento_id: number;
           item_id: number;
           quantidade: number;
+          unidade_medida: string;
         }[] = [];
         for (const it of itensInput) {
           const nome = String(it.item_nome || "").trim();
           const quantidade = Math.max(0, Number(it.quantidade) || 0);
+          const unidade_medida = String(it.unidade_medida || "un").trim();
           if (!nome || quantidade <= 0) continue;
 
           // Resolve or create item
@@ -986,7 +988,7 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
                 nome,
                 preco: 0,
                 custo_pago: 0,
-                unidade_medida: "un",
+                unidade_medida: unidade_medida || "un",
                 peso_gramas: null,
                 estoque_atual: 0,
                 ativo: true,
@@ -1000,6 +1002,7 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
               abastecimento_id: abastecimento.id,
               item_id,
               quantidade,
+              unidade_medida: unidade_medida || "un",
             });
           }
         }
