@@ -409,7 +409,12 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
     let abastecimento = insertResult.data;
     let error = insertResult.error;
 
-    if (error && String(error.message || error).toLowerCase().includes("codigo")) {
+    if (
+      error &&
+      String(error.message || error)
+        .toLowerCase()
+        .includes("codigo")
+    ) {
       console.warn("Retrying insert without 'codigo' column (fallback mode)");
       const { codigo, ...fallbackData } = abastecimentoData as any;
       const retry = await supabase
@@ -522,7 +527,12 @@ export const updateAbastecimento: RequestHandler = async (req, res) => {
       .select()
       .single();
 
-    if (updateRes.error && String(updateRes.error.message || "").toLowerCase().includes("codigo")) {
+    if (
+      updateRes.error &&
+      String(updateRes.error.message || "")
+        .toLowerCase()
+        .includes("codigo")
+    ) {
       console.warn("Retrying update without 'codigo' column (fallback mode)");
       const { codigo, ...fallbackUpdate } = abastecimentoUpdate as any;
       updateRes = await supabase

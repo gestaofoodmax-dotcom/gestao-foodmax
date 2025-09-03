@@ -40,9 +40,21 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
   useEffect(() => {
     // Collapse groups when sidebar closed to save space
     if (!open) {
-      setGroupsOpen((prev) => ({ ...prev, gestao: false, operacoes: false, compra: false, venda: false }));
+      setGroupsOpen((prev) => ({
+        ...prev,
+        gestao: false,
+        operacoes: false,
+        compra: false,
+        venda: false,
+      }));
     } else {
-      setGroupsOpen((prev) => ({ ...prev, gestao: true, operacoes: true, compra: true, venda: true }));
+      setGroupsOpen((prev) => ({
+        ...prev,
+        gestao: true,
+        operacoes: true,
+        compra: true,
+        venda: true,
+      }));
     }
   }, [open]);
 
@@ -84,9 +96,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
       {
         key: "venda",
         label: "Venda",
-        items: [
-          { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
-        ],
+        items: [{ icon: ShoppingBag, label: "Pedidos", route: "/pedidos" }],
       },
     ],
     [],
