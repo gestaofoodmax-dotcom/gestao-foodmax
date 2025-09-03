@@ -881,6 +881,9 @@ export default function AbastecimentoForm({
                     </Command>
                   </PopoverContent>
                 </Popover>
+                {validationErrors.itens && (
+                  <span className="text-sm text-red-600">{validationErrors.itens}</span>
+                )}
               </div>
             </div>
 
@@ -1188,7 +1191,7 @@ export default function AbastecimentoForm({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar alteraç����o</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar alteraç��o</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="text-sm text-gray-700">
             {showEstabelecimentoAlert.message}
