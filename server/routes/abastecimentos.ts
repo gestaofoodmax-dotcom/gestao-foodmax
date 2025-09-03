@@ -806,6 +806,8 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
     const { records } = req.body as {
       records: Array<{
         estabelecimento_nome: string;
+        fornecedores_nomes?: string[];
+        fornecedores?: string;
         categoria_nome?: string;
         telefone?: string;
         ddi?: string;
@@ -815,6 +817,8 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         status?: string;
         email_enviado?: boolean;
         itens?: { item_nome: string; quantidade: number }[];
+        endereco?: { cep?: string | null; endereco?: string; cidade?: string; uf?: string; pais?: string } | null;
+        estabelecimento_endereco?: string;
       }>;
     };
 
