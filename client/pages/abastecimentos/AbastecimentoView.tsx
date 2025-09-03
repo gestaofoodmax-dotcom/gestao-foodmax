@@ -185,7 +185,7 @@ export default function AbastecimentoView({
                 <FileText className="w-5 h-5 text-blue-600" />
                 <span className="text-blue-600">Dados Básicos</span>
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DataField
                   label="Estabelecimento"
                   value={
@@ -230,9 +230,6 @@ export default function AbastecimentoView({
                         <div className="text-xs text-gray-500">
                           {item.categoria_nome || "Categoria não informada"}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          Estoque Atual: {item.estoque_atual ?? 0}
-                        </div>
                       </div>
                       <div className="flex items-center gap-6 text-sm">
                         <div className="text-center">
@@ -263,7 +260,7 @@ export default function AbastecimentoView({
                 <Phone className="w-5 h-5 text-green-600" />
                 <span className="text-green-600">Contato</span>
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DataField
                   label="Telefone"
                   value={`${detalhe.ddi || ""} ${detalhe.telefone || ""}`}
@@ -283,7 +280,7 @@ export default function AbastecimentoView({
                   <MapPin className="w-5 h-5 text-purple-600" />
                   <span className="text-purple-600">Endereço</span>
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <DataField label="CEP" value={detalhe.endereco.cep || "-"} />
                   <DataField
                     label="Endereço"
