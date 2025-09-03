@@ -990,6 +990,7 @@ export default function AbastecimentosModule() {
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
           { key: "itens", label: "Itens (Nome - Quantidade; ...)" },
+          { key: "estabelecimento_endereco", label: "Estabelecimento Endereço (CEP - Endereço - Cidade - UF - País)" },
         ]}
         mapHeader={(h) => {
           const original = h.trim();
