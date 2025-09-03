@@ -424,7 +424,7 @@ export default function AbastecimentoForm({
       return;
     }
 
-    // Validação de email apenas se preenchido
+    // Validaç��o de email apenas se preenchido
     const cleanEmail = data.email?.trim();
     const emailToSend = cleanEmail && cleanEmail !== "" ? cleanEmail : null;
     if (emailToSend) {
@@ -960,9 +960,9 @@ export default function AbastecimentoForm({
                     }}
                   />
                 </div>
-                {errors.telefone && (
+                {(errors.telefone || validationErrors.telefone) && (
                   <span className="text-sm text-red-600">
-                    {errors.telefone.message}
+                    {errors.telefone?.message || validationErrors.telefone}
                   </span>
                 )}
               </div>
