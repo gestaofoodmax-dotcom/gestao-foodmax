@@ -100,15 +100,15 @@ const schema = z.object({
   cidade: z.string().min(1, "Cidade é obrigatória"),
   uf: z.string().length(2, "UF deve ter 2 caracteres"),
   pais: z.string().min(1, "País é obrigatório"),
-  codigo: z
-    .string()
-    .or(z.literal(""))
-    .nullable()
-    .optional()
-    .transform((val) => (val === "" ? null : val)),
+  codigo: z.string().min(1, "Código do Abastecimento é obrigatório"),
 });
 
 type FormData = z.infer<typeof schema>;
+
+function generateCodigo() {
+  const base = (Date.now().toString(36) + Math.random().toString(36).slice(2, 8)).toUpperCase();
+  return `ABST${base}`;
+}
 
 export default function AbastecimentoForm({
   isOpen,
@@ -187,7 +187,7 @@ export default function AbastecimentoForm({
         telefone: "",
         ddi: "+55",
         email: "",
-        codigo: "",
+        codigo: generateCodigo(),
         data_hora_recebido: null,
         observacao: "",
         status: "Pendente",
@@ -332,7 +332,7 @@ export default function AbastecimentoForm({
         telefone: abastecimento.telefone,
         ddi: abastecimento.ddi,
         email: abastecimento.email || "",
-        codigo: (abastecimento as any).codigo || "",
+        codigo: (abastecimento as any).codigo || generateCodigo(),
         data_hora_recebido: abastecimento.data_hora_recebido,
         observacao: abastecimento.observacao || "",
         status: abastecimento.status,
@@ -725,14 +725,17 @@ export default function AbastecimentoForm({
               </div>
 
               <div>
-                <Label>Código do Abastecimento</Label>
+                <Label>Código do Abastecimento *</Label>
                 <Input
                   id="codigo"
                   {...register("codigo" as any)}
-                  className="foodmax-input"
-                  placeholder="Ex.: ABST-0001"
+                  className={cn("foodmax-input", (errors as any).codigo && "border-red-500")}
+                  placeholder="Ex.: ABST0001"
                   maxLength={50}
                 />
+                {(errors as any).codigo && (
+                  <span className="text-sm text-red-600">{(errors as any).codigo.message as string}</span>
+                )}
               </div>
             </div>
           </div>
