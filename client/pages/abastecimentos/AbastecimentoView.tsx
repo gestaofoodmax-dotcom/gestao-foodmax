@@ -294,11 +294,13 @@ export default function AbastecimentoView({
             )}
 
             {/* Observação */}
-            {detalhe?.observacao && (
+            {detalhe?.observacao &&
+             detalhe.observacao.trim() !== "Cadastro forçado pelo sistema" &&
+             detalhe.observacao.trim() !== "" && (
               <div className="bg-white p-4 rounded-lg border">
                 <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-gray-600" />
-                  <span className="text-gray-600">Observação</span>
+                  <FileText className="w-5 h-5 text-red-600" />
+                  <span className="text-red-600">Observação</span>
                 </h3>
                 <div className="text-sm text-gray-900 whitespace-pre-wrap">
                   {detalhe.observacao}
