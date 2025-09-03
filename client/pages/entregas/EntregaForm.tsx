@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -29,7 +29,7 @@ import { Estabelecimento } from "@shared/estabelecimentos";
 import { Pedido } from "@shared/pedidos";
 import { Cliente } from "@shared/clientes";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, ChevronsUpDown, Check, X, Save, FileText, DollarSign, Calendar, Users, Phone, MapPin } from "lucide-react";
+import { ChevronsUpDown, Check, X, Save, FileText, DollarSign, Users, MapPin } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -222,20 +222,20 @@ export default function EntregaForm({
     }
   }, [entrega, reset, makeRequest, setValue]);
 
-  // Currency inputs as text (no R$). Empty when creating, filled when editing.
-  const [valorPedidoText, setValorPedidoText] = useState<string>("");
-  const [taxaExtraText, setTaxaExtraText] = useState<string>("");
-  const [valorEntregaText, setValorEntregaText] = useState<string>("");
+  // Currency inputs mask (same behavior as Itens -> Preço)
+  const [valorPedidoMask, setValorPedidoMask] = useState<string>("");
+  const [taxaExtraMask, setTaxaExtraMask] = useState<string>("");
+  const [valorEntregaMask, setValorEntregaMask] = useState<string>("");
 
   useEffect(() => {
     if (entrega) {
-      setValorPedidoText(((entrega.valor_pedido ?? 0) / 100).toFixed(2));
-      setTaxaExtraText(((entrega.taxa_extra ?? 0) / 100).toFixed(2));
-      setValorEntregaText(((entrega.valor_entrega ?? 0) / 100).toFixed(2));
+      setValorPedidoMask(formatCurrencyBRL(entrega.valor_pedido ?? 0));
+      setTaxaExtraMask(formatCurrencyBRL(entrega.taxa_extra ?? 0));
+      setValorEntregaMask(formatCurrencyBRL(entrega.valor_entrega ?? 0));
     } else {
-      setValorPedidoText("");
-      setTaxaExtraText("");
-      setValorEntregaText("");
+      setValorPedidoMask("");
+      setTaxaExtraMask("");
+      setValorEntregaMask("");
     }
   }, [isOpen, entrega]);
 
@@ -243,7 +243,8 @@ export default function EntregaForm({
   useEffect(() => {
     const computed = (values.valor_pedido || 0) + (values.taxa_extra || 0);
     setValue("valor_entrega", computed);
-    if (!entrega) setValorEntregaText(computed === 0 ? "" : (computed / 100).toFixed(2));
+    const bothEmpty = valorPedidoMask === "" && taxaExtraMask === "";
+    setValorEntregaMask(bothEmpty && computed === 0 ? "" : formatCurrencyBRL(computed));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values.valor_pedido, values.taxa_extra]);
 
@@ -254,7 +255,7 @@ export default function EntregaForm({
       if (det) {
         const valor = det.valor_total || 0;
         setValue("valor_pedido", valor, { shouldDirty: true });
-        setValorPedidoText((valor / 100).toFixed(2));
+        setValorPedidoMask(formatCurrencyBRL(valor));
         if (det.cliente_id) {
           setShowPedidoClienteAlert({
             open: true,
@@ -284,7 +285,6 @@ export default function EntregaForm({
   };
 
   const onSubmit = (data: FormData) => {
-    // Validar obrigatórios marcados com *
     const errorsLocal: string[] = [];
     if (!data.estabelecimento_id) errorsLocal.push("Estabelecimento");
     if (!data.endereco?.trim()) errorsLocal.push("Endereço");
@@ -341,7 +341,6 @@ export default function EntregaForm({
           <DialogTitle className="text-xl sm:text-2xl font-normal">{entrega ? "Editar Entrega" : "Nova Entrega"}</DialogTitle>
         </DialogHeader>
 
-        {/* Avisos topo */}
         {dataLoaded && !hasEst && (
           <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
             Antes de cadastrar, é necessário ter pelo menos um Estabelecimento. {" "}
@@ -367,7 +366,7 @@ export default function EntregaForm({
                 <Label>Estabelecimento *</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" role="combobox" className={cn("w-full justify-between foodmax-input", errors.estabelecimento_id && "border-red-500")}> 
+                    <Button variant="outline" role="combobox" className={cn("w-full justify-between foodmax-input", errors.estabelecimento_id && "border-red-500")}>
                       {values.estabelecimento_id ? estabelecimentos.find((e) => e.id === values.estabelecimento_id)?.nome : "Selecione"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -564,42 +563,39 @@ export default function EntregaForm({
               <div>
                 <Label>Valor do Pedido (R$)</Label>
                 <Input
-                  value={valorPedidoText}
+                  value={valorPedidoMask}
                   onChange={(e) => {
-                    const raw = e.target.value.replace(/[^0-9.,]/g, "");
-                    setValorPedidoText(raw);
-                    const c = parseCurrencyToCentavos(raw);
-                    setValue("valor_pedido", c, { shouldDirty: true });
+                    const cents = parseCurrencyToCentavos(e.target.value);
+                    setValorPedidoMask(e.target.value === "" ? "" : formatCurrencyBRL(cents));
+                    setValue("valor_pedido", cents, { shouldDirty: true });
                   }}
-                  placeholder=""
+                  placeholder="R$ 0,00"
                   className="foodmax-input"
                 />
               </div>
               <div>
                 <Label>Taxa Extra (R$)</Label>
                 <Input
-                  value={taxaExtraText}
+                  value={taxaExtraMask}
                   onChange={(e) => {
-                    const raw = e.target.value.replace(/[^0-9.,]/g, "");
-                    setTaxaExtraText(raw);
-                    const c = parseCurrencyToCentavos(raw);
-                    setValue("taxa_extra", c, { shouldDirty: true });
+                    const cents = parseCurrencyToCentavos(e.target.value);
+                    setTaxaExtraMask(e.target.value === "" ? "" : formatCurrencyBRL(cents));
+                    setValue("taxa_extra", cents, { shouldDirty: true });
                   }}
-                  placeholder=""
+                  placeholder="R$ 0,00"
                   className="foodmax-input"
                 />
               </div>
               <div>
                 <Label>Valor da Entrega (R$) *</Label>
                 <Input
-                  value={valorEntregaText}
+                  value={valorEntregaMask}
                   onChange={(e) => {
-                    const raw = e.target.value.replace(/[^0-9.,]/g, "");
-                    setValorEntregaText(raw);
-                    const c = parseCurrencyToCentavos(raw);
-                    setValue("valor_entrega", c, { shouldDirty: true });
+                    const cents = parseCurrencyToCentavos(e.target.value);
+                    setValorEntregaMask(e.target.value === "" ? "" : formatCurrencyBRL(cents));
+                    setValue("valor_entrega", cents, { shouldDirty: true });
                   }}
-                  placeholder=""
+                  placeholder="R$ 0,00"
                   className={cn("foodmax-input", (!values.valor_entrega && values.valor_entrega !== 0) && "border-red-500")}
                 />
               </div>
@@ -615,6 +611,7 @@ export default function EntregaForm({
                 </Select>
               </div>
             </div>
+          </div>
 
           {/* Contato da Entrega */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
@@ -672,39 +669,27 @@ export default function EntregaForm({
               <h3 className="font-semibold text-red-600">Observação</h3>
             </div>
             <div className="md:col-span-2">
+              <Label>Observação</Label>
               <Textarea rows={3} {...register("observacao" as any)} className="foodmax-input resize-none" />
-            </div>
-            </div>
-          </div>
-
-          {/* Endereço da Entrega */}
-          <div className="space-y-4 bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-2">
-              <MapPin className="w-5 h-5 text-purple-600" />
-              <h3 className="font-semibold text-purple-600">Endereço da Entrega</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>CEP</Label>
-                <Input {...register("cep" as any)} className="foodmax-input" maxLength={8} onInput={(e) => { const t = e.target as HTMLInputElement; t.value = t.value.replace(/[^0-9]/g, ""); }} />
+                <Label>Data/Hora Saída</Label>
+                <Input
+                  type="datetime-local"
+                  value={values.data_hora_saida ? new Date(values.data_hora_saida).toISOString().slice(0, 16) : ""}
+                  onChange={(e) => setValue("data_hora_saida", e.target.value ? new Date(e.target.value).toISOString() : null)}
+                  className="foodmax-input"
+                />
               </div>
               <div>
-                <Label>Endereço *</Label>
-                <Input {...register("endereco")} className={cn("foodmax-input", errors.endereco && "border-red-500")} />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="col-span-2">
-                  <Label>Cidade *</Label>
-                  <Input {...register("cidade")} className={cn("foodmax-input", errors.cidade && "border-red-500")} />
-                </div>
-                <div>
-                  <Label>UF *</Label>
-                  <Input {...register("uf")} className={cn("foodmax-input", errors.uf && "border-red-500")} maxLength={2} />
-                </div>
-              </div>
-              <div>
-                <Label>País *</Label>
-                <Input {...register("pais")} className={cn("foodmax-input", errors.pais && "border-red-500")} defaultValue="Brasil" />
+                <Label>Data/Hora Entregue</Label>
+                <Input
+                  type="datetime-local"
+                  value={values.data_hora_entregue ? new Date(values.data_hora_entregue).toISOString().slice(0, 16) : ""}
+                  onChange={(e) => setValue("data_hora_entregue", e.target.value ? new Date(e.target.value).toISOString() : null)}
+                  className="foodmax-input"
+                />
               </div>
             </div>
           </div>
