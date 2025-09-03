@@ -357,7 +357,16 @@ export default function AbastecimentoForm({
               item_id: i.item_id,
               quantidade: i.quantidade,
             }));
-            setSelectedItens(itensData.map((i: any) => ({ ...i, unidade_medida: (det.itens.find((x: any) => x.item_id === i.item_id)?.unidade_medida) || (itens.find((it) => it.id === i.item_id)?.unidade_medida) || "Unidade" })));
+            setSelectedItens(
+              itensData.map((i: any) => ({
+                ...i,
+                unidade_medida:
+                  det.itens.find((x: any) => x.item_id === i.item_id)
+                    ?.unidade_medida ||
+                  itens.find((it) => it.id === i.item_id)?.unidade_medida ||
+                  "Unidade",
+              })),
+            );
           }
           if (det?.endereco) {
             setValue("cep", det.endereco.cep || "");
@@ -873,7 +882,8 @@ export default function AbastecimentoForm({
                                     {
                                       item_id: item.id,
                                       quantidade: 1,
-                                      unidade_medida: item.unidade_medida || "Unidade",
+                                      unidade_medida:
+                                        item.unidade_medida || "Unidade",
                                     },
                                   ])
                                 }
@@ -944,7 +954,9 @@ export default function AbastecimentoForm({
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-center">
-                            <Label className="text-xs block mb-1">Unidade de Medida</Label>
+                            <Label className="text-xs block mb-1">
+                              Unidade de Medida
+                            </Label>
                             <select
                               value={selectedItem.unidade_medida as any}
                               onChange={(e) =>

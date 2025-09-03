@@ -26,7 +26,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { DataGrid } from "@/components/data-grid";
 import { toast } from "@/hooks/use-toast";
@@ -100,11 +106,17 @@ export default function AbastecimentosModule() {
   const [exportData, setExportData] = useState<any[]>([]);
 
   const [showEmailModal, setShowEmailModal] = useState(false);
-  const [emailForm, setEmailForm] = useState({ destinatarios: "", assunto: "", mensagem: "" });
+  const [emailForm, setEmailForm] = useState({
+    destinatarios: "",
+    assunto: "",
+    mensagem: "",
+  });
   const [emailSending, setEmailSending] = useState(false);
   const [emailProgress, setEmailProgress] = useState({ total: 0, sent: 0 });
-  const [currentEmailAbastecimento, setCurrentEmailAbastecimento] = useState<Abastecimento | null>(null);
-  const [currentEstabelecimento, setCurrentEstabelecimento] = useState<any>(null);
+  const [currentEmailAbastecimento, setCurrentEmailAbastecimento] =
+    useState<Abastecimento | null>(null);
+  const [currentEstabelecimento, setCurrentEstabelecimento] =
+    useState<any>(null);
 
   const [estabelecimentosMap, setEstabelecimentosMap] = useState<
     Map<number, string>
@@ -167,7 +179,13 @@ export default function AbastecimentosModule() {
         label: "Enviado",
         sortable: true,
         render: (v: any, r: any) => (
-          <Badge className={r.email_enviado ? "bg-green-50 text-green-700 border-green-200" : "bg-gray-50 text-gray-700 border-gray-200"}>
+          <Badge
+            className={
+              r.email_enviado
+                ? "bg-green-50 text-green-700 border-green-200"
+                : "bg-gray-50 text-gray-700 border-gray-200"
+            }
+          >
             {r.email_enviado ? "Sim" : "Não"}
           </Badge>
         ),
@@ -595,17 +613,23 @@ export default function AbastecimentosModule() {
     setShowEmailModal(true); // open immediately
 
     try {
-      const est = await makeRequest(`/api/estabelecimentos/${a.estabelecimento_id}`);
+      const est = await makeRequest(
+        `/api/estabelecimentos/${a.estabelecimento_id}`,
+      );
       setCurrentEstabelecimento(est || null);
 
       const fornResp = await makeRequest(`/api/fornecedores?page=1&limit=1000`);
       const fornecedores = Array.isArray(fornResp?.data) ? fornResp.data : [];
-      const fornecedoresSelecionados = fornecedores.filter((f: any) => a.fornecedores_ids.includes(f.id));
+      const fornecedoresSelecionados = fornecedores.filter((f: any) =>
+        a.fornecedores_ids.includes(f.id),
+      );
       const emailsFornecedores = fornecedoresSelecionados
         .map((f: any) => String(f.email || "").trim())
         .filter((e: string) => !!e);
 
-      const missingEmails = fornecedoresSelecionados.filter((f: any) => !String(f.email || "").trim());
+      const missingEmails = fornecedoresSelecionados.filter(
+        (f: any) => !String(f.email || "").trim(),
+      );
       if (missingEmails.length > 0) {
         toast({
           title: "Atenção",
@@ -622,7 +646,8 @@ export default function AbastecimentosModule() {
       const itensTexto = itens.length
         ? itens
             .map(
-              (i: any) => `${i.quantidade} (${i.unidade_medida || "Unidade"}) - ${i.item_nome || "Item"}`,
+              (i: any) =>
+                `${i.quantidade} (${i.unidade_medida || "Unidade"}) - ${i.item_nome || "Item"}`,
             )
             .join("\n")
         : "-";
@@ -901,7 +926,15 @@ export default function AbastecimentosModule() {
                         }`}
                         onClick={() => setActiveTab(st as any)}
                       >
-                        <span>{st === "Pendente" ? "Pendentes" : st === "Recebido" ? "Recebidos" : st === "Cancelado" ? "Cancelados" : st}</span>
+                        <span>
+                          {st === "Pendente"
+                            ? "Pendentes"
+                            : st === "Recebido"
+                              ? "Recebidos"
+                              : st === "Cancelado"
+                                ? "Cancelados"
+                                : st}
+                        </span>
                         <span
                           className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
                             activeTab === (st as any)
@@ -960,7 +993,8 @@ export default function AbastecimentosModule() {
                       setShowExport(true);
                       // Load enriched data in background (no blocking)
                       try {
-                        const data = await getAbastecimentosWithRelationsForExport();
+                        const data =
+                          await getAbastecimentosWithRelationsForExport();
                         setExportData(data);
                       } catch {
                         // keep basic data
@@ -1054,14 +1088,19 @@ export default function AbastecimentosModule() {
         ]}
       />
 
-      <Dialog open={showEmailModal} onOpenChange={(o) => !emailSending && setShowEmailModal(o)}>
+      <Dialog
+        open={showEmailModal}
+        onOpenChange={(o) => !emailSending && setShowEmailModal(o)}
+      >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-foodmax-orange">
               <ShoppingBag className="w-5 h-5 text-foodmax-orange" />
               Realizar Pedido Compra
             </DialogTitle>
-            <p className="text-xs text-black">Enviar Email para Fornecedor(es)</p>
+            <p className="text-xs text-black">
+              Enviar Email para Fornecedor(es)
+            </p>
           </DialogHeader>
 
           <div className="space-y-4">
@@ -1069,7 +1108,9 @@ export default function AbastecimentosModule() {
               <Label>Destinatários</Label>
               <Input
                 value={emailForm.destinatarios}
-                onChange={(e) => setEmailForm((f) => ({ ...f, destinatarios: e.target.value }))}
+                onChange={(e) =>
+                  setEmailForm((f) => ({ ...f, destinatarios: e.target.value }))
+                }
                 placeholder="email1@dominio.com, email2@dominio.com"
                 className="foodmax-input"
                 disabled={emailSending}
@@ -1079,7 +1120,9 @@ export default function AbastecimentosModule() {
               <Label>Assunto do Email</Label>
               <Input
                 value={emailForm.assunto}
-                onChange={(e) => setEmailForm((f) => ({ ...f, assunto: e.target.value }))}
+                onChange={(e) =>
+                  setEmailForm((f) => ({ ...f, assunto: e.target.value }))
+                }
                 className="foodmax-input"
                 disabled={emailSending}
               />
@@ -1089,7 +1132,9 @@ export default function AbastecimentosModule() {
               <Textarea
                 rows={10}
                 value={emailForm.mensagem}
-                onChange={(e) => setEmailForm((f) => ({ ...f, mensagem: e.target.value }))}
+                onChange={(e) =>
+                  setEmailForm((f) => ({ ...f, mensagem: e.target.value }))
+                }
                 className="foodmax-input"
                 disabled={emailSending}
               />
@@ -1097,7 +1142,13 @@ export default function AbastecimentosModule() {
 
             {emailSending && (
               <div>
-                <Progress value={emailProgress.total ? (emailProgress.sent / emailProgress.total) * 100 : 0} />
+                <Progress
+                  value={
+                    emailProgress.total
+                      ? (emailProgress.sent / emailProgress.total) * 100
+                      : 0
+                  }
+                />
                 <div className="mt-1 text-xs text-gray-600">
                   Enviados {emailProgress.sent} de {emailProgress.total}
                 </div>
@@ -1106,7 +1157,11 @@ export default function AbastecimentosModule() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEmailModal(false)} disabled={emailSending}>
+            <Button
+              variant="outline"
+              onClick={() => setShowEmailModal(false)}
+              disabled={emailSending}
+            >
               Cancelar
             </Button>
             <Button
@@ -1134,31 +1189,46 @@ export default function AbastecimentosModule() {
                   ),
                 );
                 if (recipients.length === 0) {
-                  toast({ title: "Aviso", description: "Informe pelo menos um destinatário" });
+                  toast({
+                    title: "Aviso",
+                    description: "Informe pelo menos um destinatário",
+                  });
                   return;
                 }
                 setEmailSending(true);
                 setEmailProgress({ total: recipients.length, sent: 0 });
                 try {
-                  const estEmail = String(currentEstabelecimento?.email || "").trim();
+                  const estEmail = String(
+                    currentEstabelecimento?.email || "",
+                  ).trim();
                   for (let i = 0; i < recipients.length; i++) {
                     const to = [recipients[i]];
                     if (estEmail) to.push(estEmail);
-                    await makeRequest(`/api/abastecimentos/${currentEmailAbastecimento.id}/enviar-email`, {
-                      method: "POST",
-                      body: JSON.stringify({
-                        destinatarios: to,
-                        assunto: emailForm.assunto,
-                        mensagem: emailForm.mensagem,
-                      }),
-                    });
+                    await makeRequest(
+                      `/api/abastecimentos/${currentEmailAbastecimento.id}/enviar-email`,
+                      {
+                        method: "POST",
+                        body: JSON.stringify({
+                          destinatarios: to,
+                          assunto: emailForm.assunto,
+                          mensagem: emailForm.mensagem,
+                        }),
+                      },
+                    );
                     setEmailProgress((p) => ({ ...p, sent: p.sent + 1 }));
                   }
-                  toast({ title: "Sucesso", description: "Email enviado com sucesso" });
+                  toast({
+                    title: "Sucesso",
+                    description: "Email enviado com sucesso",
+                  });
                   await refreshAfterMutation();
                   setShowEmailModal(false);
                 } catch (err: any) {
-                  toast({ title: "Erro ao enviar email", description: err?.message || "Erro desconhecido", variant: "destructive" });
+                  toast({
+                    title: "Erro ao enviar email",
+                    description: err?.message || "Erro desconhecido",
+                    variant: "destructive",
+                  });
                 } finally {
                   setEmailSending(false);
                 }
