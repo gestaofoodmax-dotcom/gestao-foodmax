@@ -589,8 +589,12 @@ export default function AbastecimentosModule() {
       return;
     }
 
+    setCurrentEmailAbastecimento(a);
+    setEmailForm({ destinatarios: "", assunto: "", mensagem: "" });
+    setEmailProgress({ total: 0, sent: 0 });
+    setShowEmailModal(true); // open immediately
+
     try {
-      setCurrentEmailAbastecimento(a);
       const est = await makeRequest(`/api/estabelecimentos/${a.estabelecimento_id}`);
       setCurrentEstabelecimento(est || null);
 
@@ -616,7 +620,11 @@ export default function AbastecimentosModule() {
       } catch {}
       const itens: any[] = Array.isArray(det?.itens) ? det.itens : [];
       const itensTexto = itens.length
-        ? itens.map((i: any) => `- ${i.item_nome || "Item"} - ${i.quantidade}`).join("\n")
+        ? itens
+            .map(
+              (i: any) => `${i.quantidade} (${i.unidade_medida || "Unidade"}) - ${i.item_nome || "Item"}`,
+            )
+            .join("\n")
         : "-";
 
       const estNome = est?.nome || "";
@@ -624,15 +632,14 @@ export default function AbastecimentosModule() {
       const endereco = est?.endereco
         ? [
             est.endereco.endereco,
-            est.endereco.cidade,
-            est.endereco.uf,
-            est.endereco.cep,
+            [est.endereco.cidade, est.endereco.uf].filter(Boolean).join("/"),
             est.endereco.pais,
           ]
             .filter((x: any) => !!x)
             .join(", ")
         : "";
-      const mensagem = `Olá, tudo bem?\n\nSegue abaixo o pedido de compra.\nItens do Abastecimento (Itens com Quantidades escolhidas)\n${itensTexto}\n\nDados de Contato (Nome, CNPJ, Email, Telefone e Endereço completo do Estabelecimento escolhido).\nNome: ${est?.nome || ""}\nCNPJ: ${est?.cnpj || ""}\nEmail: ${est?.email || ""}\nTelefone: ${(est?.ddi || "") + (est?.telefone ? " " + est.telefone : "")}\nEndereço: ${endereco}\n\n\nAtenciosamente, ${estNome}`;
+      const cep = est?.endereco?.cep || "";
+      const mensagem = `Olá, tudo bem?\n\nSegue abaixo o pedido de compra.\nItens:\n${itensTexto}\n\nDados de Contato:\nNome: ${est?.nome || ""}\nCNPJ: ${est?.cnpj || ""}\nEmail: ${est?.email || ""}\nTelefone: ${(est?.ddi || "") + (est?.telefone ? " " + est.telefone : "")}\nCEP: ${cep}\nEndereço: ${endereco}\n\nAtenciosamente\n${estNome}`;
 
       setEmailForm({
         destinatarios: emailsFornecedores.join(", "),
@@ -640,7 +647,6 @@ export default function AbastecimentosModule() {
         mensagem,
       });
       setEmailProgress({ total: emailsFornecedores.length, sent: 0 });
-      setShowEmailModal(true);
     } catch (e) {
       toast({ title: "Erro", description: "Falha ao preparar envio de email" });
     }
