@@ -157,10 +157,10 @@ export default function AbastecimentoView({
           <div className="space-y-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <ShoppingBag className="w-6 h-6 text-foodmax-orange" />
+                <Package className="w-6 h-6 text-foodmax-orange" />
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
-                    Abastecimento #{detalhe.id}
+                    {detalhe.codigo || `Abastecimento #${detalhe.id}`}
                   </h2>
                 </div>
               </div>
