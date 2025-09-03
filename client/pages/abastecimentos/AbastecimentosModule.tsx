@@ -55,7 +55,6 @@ export default function AbastecimentosModule() {
   const tabs: (StatusAbastecimento | "Todos")[] = [
     "Todos",
     "Pendente",
-    "Enviado",
     "Recebido",
     "Cancelado",
   ];
@@ -67,7 +66,6 @@ export default function AbastecimentosModule() {
   const [tabState, setTabState] = useState<Record<string, TabState>>({
     Todos: { search: "", page: 1 },
     Pendente: { search: "", page: 1 },
-    Enviado: { search: "", page: 1 },
     Recebido: { search: "", page: 1 },
     Cancelado: { search: "", page: 1 },
   });
@@ -88,7 +86,6 @@ export default function AbastecimentosModule() {
   const [totalCounts, setTotalCounts] = useState<Record<string, number>>({
     Todos: 0,
     Pendente: 0,
-    Enviado: 0,
     Recebido: 0,
     Cancelado: 0,
   });
@@ -155,13 +152,10 @@ export default function AbastecimentosModule() {
         render: (v: string | null) => formatDateTimeBR(v),
       },
       {
-        key: "data_cadastro",
-        label: "Data Cadastro",
+        key: "email_enviado",
+        label: "Enviado",
         sortable: true,
-        render: (v: string) =>
-          new Date(v).toLocaleDateString("pt-BR", {
-            timeZone: "America/Sao_Paulo",
-          }),
+        render: (v: any, r: any) => (r.email_enviado ? "Sim" : "Não"),
       },
       {
         key: "status",
@@ -170,6 +164,15 @@ export default function AbastecimentosModule() {
         render: (v: any) => (
           <Badge className={getStatusAbastecimentoColor(v)}>{v}</Badge>
         ),
+      },
+      {
+        key: "data_cadastro",
+        label: "Data Cadastro",
+        sortable: true,
+        render: (v: string) =>
+          new Date(v).toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          }),
       },
       {
         key: "acoes",
@@ -303,19 +306,17 @@ export default function AbastecimentosModule() {
       const requests = [
         makeRequest(`/api/abastecimentos?page=1&limit=1`),
         makeRequest(`/api/abastecimentos?page=1&limit=1&status=Pendente`),
-        makeRequest(`/api/abastecimentos?page=1&limit=1&status=Enviado`),
         makeRequest(`/api/abastecimentos?page=1&limit=1&status=Recebido`),
         makeRequest(`/api/abastecimentos?page=1&limit=1&status=Cancelado`),
       ];
-      let [allResp, pendResp, envResp, recResp, cancResp] = await Promise.all(
+      let [allResp, pendResp, recResp, cancResp] = await Promise.all(
         requests.map((p) => p.catch(() => null)),
       );
 
-      if (allResp || pendResp || envResp || recResp || cancResp) {
+      if (allResp || pendResp || recResp || cancResp) {
         setTotalCounts({
           Todos: allResp?.pagination?.total || 0,
           Pendente: pendResp?.pagination?.total || 0,
-          Enviado: envResp?.pagination?.total || 0,
           Recebido: recResp?.pagination?.total || 0,
           Cancelado: cancResp?.pagination?.total || 0,
         });
@@ -326,7 +327,6 @@ export default function AbastecimentosModule() {
       setTotalCounts({
         Todos: local.length,
         Pendente: local.filter((a) => a.status === "Pendente").length,
-        Enviado: local.filter((a) => a.status === "Enviado").length,
         Recebido: local.filter((a) => a.status === "Recebido").length,
         Cancelado: local.filter((a) => a.status === "Cancelado").length,
       });
@@ -855,7 +855,7 @@ export default function AbastecimentosModule() {
                         }`}
                         onClick={() => setActiveTab(st as any)}
                       >
-                        <span>{st}</span>
+                        <span>{st === "Pendente" ? "Pendentes" : st === "Recebido" ? "Recebidos" : st === "Cancelado" ? "Cancelados" : st}</span>
                         <span
                           className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
                             activeTab === (st as any)
