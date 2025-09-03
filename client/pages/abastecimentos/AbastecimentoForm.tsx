@@ -723,7 +723,10 @@ export default function AbastecimentoForm({
                     <Button
                       variant="outline"
                       role="combobox"
-                      className="w-full justify-between foodmax-input"
+                      className={cn(
+                        "w-full justify-between foodmax-input",
+                        validationErrors.categoria_id && "border-red-500"
+                      )}
                     >
                       {selectedCategoriaId
                         ? categorias.find((c) => c.id === selectedCategoriaId)
@@ -1134,7 +1137,7 @@ export default function AbastecimentoForm({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar alteração</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar alteraç��o</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="text-sm text-gray-700">
             {showEstabelecimentoAlert.message}
