@@ -377,7 +377,7 @@ export default function AbastecimentoForm({
   }, [itens, selectedCategoriaId]);
 
   const quantidadeTotal = useMemo(() => {
-    return selectedItens.reduce((sum, item) => sum + item.quantidade, 0);
+    return selectedItens.length;
   }, [selectedItens]);
 
   const onSubmit = (data: FormData) => {
@@ -944,7 +944,7 @@ export default function AbastecimentoForm({
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-center">
-                            <Label className="text-xs">Unidade de Medida</Label>
+                            <Label className="text-xs block mb-1">Unidade de Medida</Label>
                             <select
                               value={selectedItem.unidade_medida as any}
                               onChange={(e) =>
@@ -1015,7 +1015,7 @@ export default function AbastecimentoForm({
               <div className="pt-4">
                 <hr className="border-t border-gray-300 mb-4" />
                 <div className="text-sm text-gray-700">
-                  <span className="font-medium">Quantidade Total: </span>
+                  <span className="font-medium">Total de Itens: </span>
                   <span className="font-semibold">{quantidadeTotal}</span>
                 </div>
               </div>
