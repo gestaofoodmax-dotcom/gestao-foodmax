@@ -791,9 +791,10 @@ export default function AbastecimentosModule() {
             .join(" - ")
         : "";
 
-      const fornecedoresStr = Array.isArray(abastecimento.fornecedores_nomes)
+      const fornecedoresStrRaw = Array.isArray(abastecimento.fornecedores_nomes)
         ? abastecimento.fornecedores_nomes.filter((n: string) => !!n).join("; ")
         : "";
+      const fornecedoresStr = fornecedoresStrRaw ? `Fornecedores: ${fornecedoresStrRaw}` : "";
       return {
         estabelecimento_nome: abastecimento.estabelecimento_nome || "",
         codigo: abastecimento.codigo || "",
@@ -846,7 +847,9 @@ export default function AbastecimentosModule() {
           return {
             estabelecimento_nome: a.estabelecimento_nome || "",
             codigo: a.codigo || "",
-            fornecedores: "",
+            fornecedores: a.fornecedores_nomes && a.fornecedores_nomes.length
+              ? `Fornecedores: ${a.fornecedores_nomes.join("; ")}`
+              : "",
             categoria_nome: a.categoria_nome || "",
             quantidade_total: a.quantidade_total || 0,
             telefone: a.telefone || "",
@@ -1397,9 +1400,10 @@ export default function AbastecimentosModule() {
               }
             }
 
-            const fornecedoresText = String(
+            let fornecedoresText = String(
               (r as any).fornecedores || (r as any)["Fornecedores"] || "",
             ).trim();
+            fornecedoresText = fornecedoresText.replace(/^fornecedores\s*:\s*/i, "").trim();
             const fornecedores_nomes = fornecedoresText
               ? fornecedoresText
                   .split(";")
