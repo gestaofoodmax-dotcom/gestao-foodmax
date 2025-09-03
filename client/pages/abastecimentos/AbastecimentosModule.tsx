@@ -214,7 +214,7 @@ export default function AbastecimentosModule() {
             >
               <Send
                 className={`w-4 h-4 ${
-                  r.email_enviado ? "text-gray-400" : "text-black"
+                  r.email_enviado ? "text-gray-400" : "text-gray-700"
                 }`}
               />
             </Button>
