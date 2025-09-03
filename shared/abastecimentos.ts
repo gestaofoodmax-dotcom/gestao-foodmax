@@ -66,6 +66,7 @@ export interface CreateAbastecimentoRequest {
   observacao?: string | null;
   status?: StatusAbastecimento;
   email_enviado?: boolean;
+  codigo?: string | null;
   itens: {
     item_id: number;
     quantidade: number;
