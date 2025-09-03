@@ -815,6 +815,7 @@ export default function AbastecimentoForm({
                       className={cn(
                         "w-full justify-between foodmax-input",
                         !selectedCategoriaId && "opacity-60 cursor-not-allowed",
+                        validationErrors.itens && "border-red-500",
                       )}
                     >
                       {selectedCategoriaId
@@ -1187,7 +1188,7 @@ export default function AbastecimentoForm({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar alteraç��o</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar alteraç����o</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="text-sm text-gray-700">
             {showEstabelecimentoAlert.message}
