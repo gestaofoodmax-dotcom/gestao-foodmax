@@ -1027,9 +1027,9 @@ export default function AbastecimentoForm({
                       validationErrors.cidade && "border-red-500"
                     )}
                   />
-                  {errors.cidade && (
+                  {(errors.cidade || validationErrors.cidade) && (
                     <span className="text-sm text-red-600">
-                      {errors.cidade.message}
+                      {errors.cidade?.message || validationErrors.cidade}
                     </span>
                   )}
                 </div>
