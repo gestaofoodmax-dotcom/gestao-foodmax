@@ -674,7 +674,8 @@ export default function AbastecimentosModule() {
         second: "2-digit",
         hour12: false,
       }).formatToParts(date);
-      const get = (type: string) => parts.find((p) => p.type === type)?.value || "";
+      const get = (type: string) =>
+        parts.find((p) => p.type === type)?.value || "";
       const dd = get("day");
       const mm = get("month");
       const yyyy = get("year");
@@ -909,7 +910,8 @@ export default function AbastecimentosModule() {
                     size="sm"
                     onClick={async () => {
                       try {
-                        const data = await getAbastecimentosWithRelationsForExport();
+                        const data =
+                          await getAbastecimentosWithRelationsForExport();
                         setExportData(data);
                         setShowExport(true);
                       } catch {
@@ -998,7 +1000,10 @@ export default function AbastecimentosModule() {
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "itens", label: "Itens" },
-          { key: "estabelecimento_endereco", label: "Estabelecimento Endereço" },
+          {
+            key: "estabelecimento_endereco",
+            label: "Estabelecimento Endereço",
+          },
         ]}
       />
 
@@ -1024,7 +1029,11 @@ export default function AbastecimentosModule() {
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
           { key: "itens", label: "Itens (Nome - Quantidade; ...)" },
-          { key: "estabelecimento_endereco", label: "Estabelecimento Endereço (CEP - Endereço - Cidade - UF - País)" },
+          {
+            key: "estabelecimento_endereco",
+            label:
+              "Estabelecimento Endereço (CEP - Endereço - Cidade - UF - País)",
+          },
         ]}
         mapHeader={(h) => {
           const original = h.trim();
@@ -1102,7 +1111,8 @@ export default function AbastecimentosModule() {
             // DD/MM/YYYY, with optional time
             try {
               if (s.includes("/") && (s.includes(",") || s.includes(" "))) {
-                const sepIndex = s.indexOf(",") >= 0 ? s.indexOf(",") : s.indexOf(" ");
+                const sepIndex =
+                  s.indexOf(",") >= 0 ? s.indexOf(",") : s.indexOf(" ");
                 const datePart = s.slice(0, sepIndex).trim();
                 const timePart = s.slice(sepIndex + 1).trim();
                 const [day, month, year] = datePart.split("/");
@@ -1120,7 +1130,9 @@ export default function AbastecimentosModule() {
                 return isNaN(d.getTime()) ? null : d.toISOString();
               } else if (s.includes("/") && !s.includes(":")) {
                 const [day, month, year] = s.split("/");
-                const d = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
+                const d = new Date(
+                  Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)),
+                );
                 return isNaN(d.getTime()) ? null : d.toISOString();
               }
               const d = new Date(s);
@@ -1139,19 +1151,27 @@ export default function AbastecimentosModule() {
                 .map((g: string) => g.trim())
                 .filter((g: string) => g);
               for (const g of groups) {
-                const sepIndex = g.includes(",") ? g.indexOf(",") : g.indexOf("-");
+                const sepIndex = g.includes(",")
+                  ? g.indexOf(",")
+                  : g.indexOf("-");
                 if (sepIndex > -1) {
                   const nome = g.slice(0, sepIndex).trim();
                   const qtdStr = g.slice(sepIndex + 1).trim();
                   const qtd = parseInt(qtdStr) || 0;
-                  if (nome && qtd > 0) itens.push({ item_nome: nome, quantidade: qtd });
+                  if (nome && qtd > 0)
+                    itens.push({ item_nome: nome, quantidade: qtd });
                 }
               }
             }
 
-            const fornecedoresText = String((r as any).fornecedores || (r as any)["Fornecedores"] || "").trim();
+            const fornecedoresText = String(
+              (r as any).fornecedores || (r as any)["Fornecedores"] || "",
+            ).trim();
             const fornecedores_nomes = fornecedoresText
-              ? fornecedoresText.split(";").map((s: string) => s.trim()).filter((s: string) => !!s)
+              ? fornecedoresText
+                  .split(";")
+                  .map((s: string) => s.trim())
+                  .filter((s: string) => !!s)
               : [];
 
             const endText = String(
@@ -1178,26 +1198,37 @@ export default function AbastecimentosModule() {
             const status = String(r.status || "Pendente").trim();
             const email_enviado = String(r.email_enviado || "").toLowerCase();
             return {
-              estabelecimento_nome: String(r.estabelecimento_nome || r.estabelecimento || "").trim(),
+              estabelecimento_nome: String(
+                r.estabelecimento_nome || r.estabelecimento || "",
+              ).trim(),
               fornecedores_nomes,
-              categoria_nome: String(r.categoria_nome || r.categoria || "").trim(),
+              categoria_nome: String(
+                r.categoria_nome || r.categoria || "",
+              ).trim(),
               telefone: String(r.telefone || "").trim(),
               ddi: String(r.ddi || "+55").trim(),
               email: String(r.email || "").trim() || null,
               data_hora_recebido: parseDate(r.data_hora_recebido || ""),
-              observacao: String(r.observacao || r["Observação"] || "").trim() || null,
-              status: STATUS_ABASTECIMENTO.includes(status as any) ? status : "Pendente",
-              email_enviado: email_enviado === "sim" || email_enviado === "true",
+              observacao:
+                String(r.observacao || r["Observação"] || "").trim() || null,
+              status: STATUS_ABASTECIMENTO.includes(status as any)
+                ? status
+                : "Pendente",
+              email_enviado:
+                email_enviado === "sim" || email_enviado === "true",
               itens,
               endereco,
             };
           });
 
           try {
-            const response = await makeRequest(`/api/abastecimentos/import-full`, {
-              method: "POST",
-              body: JSON.stringify({ records: fullRecords }),
-            });
+            const response = await makeRequest(
+              `/api/abastecimentos/import-full`,
+              {
+                method: "POST",
+                body: JSON.stringify({ records: fullRecords }),
+              },
+            );
             await Promise.all([loadAbastecimentos(), loadCounts()]);
             return {
               success: true,

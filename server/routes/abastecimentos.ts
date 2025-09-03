@@ -792,7 +792,8 @@ export const importAbastecimentos: RequestHandler = async (req, res) => {
 function generateCodigo8(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
-  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = 0; i < 8; i++)
+    code += chars[Math.floor(Math.random() * chars.length)];
   return code;
 }
 
@@ -817,7 +818,13 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         status?: string;
         email_enviado?: boolean;
         itens?: { item_nome: string; quantidade: number }[];
-        endereco?: { cep?: string | null; endereco?: string; cidade?: string; uf?: string; pais?: string } | null;
+        endereco?: {
+          cep?: string | null;
+          endereco?: string;
+          cidade?: string;
+          uf?: string;
+          pais?: string;
+        } | null;
         estabelecimento_endereco?: string;
       }>;
     };
@@ -864,12 +871,17 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         if (!categoria_id) continue;
 
         const itensInput = Array.isArray(record.itens) ? record.itens : [];
-        const quantidade_total = itensInput.reduce((sum, it) => sum + (Number(it.quantidade) || 0), 0);
+        const quantidade_total = itensInput.reduce(
+          (sum, it) => sum + (Number(it.quantidade) || 0),
+          0,
+        );
 
         // Resolve fornecedores by names (if provided)
         let fornecedores_ids: number[] = [];
         try {
-          const fornecedoresList: string[] = Array.isArray(record.fornecedores_nomes)
+          const fornecedoresList: string[] = Array.isArray(
+            record.fornecedores_nomes,
+          )
             ? record.fornecedores_nomes
             : typeof (record as any).fornecedores === "string"
               ? String((record as any).fornecedores)
@@ -902,14 +914,15 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           ddi: record.ddi || "+55",
           email: record.email || null,
           codigo: generateCodigo8(),
-          data_hora_recebido: record.data_hora_recebido ? new Date(record.data_hora_recebido).toISOString() : null,
+          data_hora_recebido: record.data_hora_recebido
+            ? new Date(record.data_hora_recebido).toISOString()
+            : null,
           observacao: record.observacao || null,
-          status:
-            ["Pendente", "Enviado", "Recebido", "Cancelado"].includes(
-              String(record.status || "").trim(),
-            )
-              ? String(record.status).trim()
-              : "Pendente",
+          status: ["Pendente", "Enviado", "Recebido", "Cancelado"].includes(
+            String(record.status || "").trim(),
+          )
+            ? String(record.status).trim()
+            : "Pendente",
           email_enviado: !!record.email_enviado,
         } as any;
 
@@ -918,7 +931,12 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           .insert(baseInsert)
           .select("id")
           .single();
-        if (insertRes.error && String(insertRes.error.message || "").toLowerCase().includes("codigo")) {
+        if (
+          insertRes.error &&
+          String(insertRes.error.message || "")
+            .toLowerCase()
+            .includes("codigo")
+        ) {
           const { codigo, ...noCode } = baseInsert;
           insertRes = await supabase
             .from("abastecimentos")
@@ -930,7 +948,11 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         if (!abastecimento) continue;
 
         // Save itens (resolve item by name, create if needed)
-        const itensRows: { abastecimento_id: number; item_id: number; quantidade: number }[] = [];
+        const itensRows: {
+          abastecimento_id: number;
+          item_id: number;
+          quantidade: number;
+        }[] = [];
         for (const it of itensInput) {
           const nome = String(it.item_nome || "").trim();
           const quantidade = Math.max(0, Number(it.quantidade) || 0);
@@ -981,7 +1003,9 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         try {
           let end: any = (record as any).endereco || null;
           if (!end) {
-            const endText = String((record as any).estabelecimento_endereco || "").trim();
+            const endText = String(
+              (record as any).estabelecimento_endereco || "",
+            ).trim();
             if (endText) {
               const parts = endText.split("-").map((s) => s.trim());
               end = {
@@ -993,7 +1017,10 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
               };
             }
           }
-          if (end && (end.endereco || end.cidade || end.uf || end.pais || end.cep)) {
+          if (
+            end &&
+            (end.endereco || end.cidade || end.uf || end.pais || end.cep)
+          ) {
             await supabase.from("abastecimentos_enderecos").insert({
               abastecimento_id: abastecimento.id,
               cep: end.cep || null,
