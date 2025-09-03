@@ -708,6 +708,13 @@ export default function AbastecimentosModule() {
                 .join("; ")
             : "";
 
+        const end = abastecimento.endereco || null;
+        const enderecoStr = end
+          ? [end.cep, end.endereco, end.cidade, end.uf, end.pais]
+              .filter((x) => typeof x === "string" && x.trim() !== "")
+              .join(" - ")
+          : "";
+
         exportRows.push({
           estabelecimento_nome: abastecimento.estabelecimento_nome || "",
           categoria_nome: abastecimento.categoria_nome || "",
@@ -715,7 +722,7 @@ export default function AbastecimentosModule() {
           telefone: abastecimento.telefone || "",
           ddi: abastecimento.ddi || "",
           email: abastecimento.email || "",
-          data_hora_recebido: formatDateTimeBR(
+          data_hora_recebido: formatDateTimeBRNoComma(
             abastecimento.data_hora_recebido,
           ),
           observacao: abastecimento.observacao || "",
@@ -724,6 +731,7 @@ export default function AbastecimentosModule() {
           data_cadastro: abastecimento.data_cadastro || "",
           data_atualizacao: abastecimento.data_atualizacao || "",
           itens: itensStr,
+          estabelecimento_endereco: enderecoStr,
         });
       } catch {
         exportRows.push({
