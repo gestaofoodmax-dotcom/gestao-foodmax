@@ -1106,10 +1106,11 @@ export default function AbastecimentosModule() {
                 .map((g: string) => g.trim())
                 .filter((g: string) => g);
               for (const g of groups) {
-                const parts = g.split("-").map((s: string) => s.trim());
-                if (parts.length >= 2) {
-                  const nome = parts[0];
-                  const qtd = parseInt(parts[1]) || 0;
+                const sepIndex = g.includes(",") ? g.indexOf(",") : g.indexOf("-");
+                if (sepIndex > -1) {
+                  const nome = g.slice(0, sepIndex).trim();
+                  const qtdStr = g.slice(sepIndex + 1).trim();
+                  const qtd = parseInt(qtdStr) || 0;
                   if (nome && qtd > 0) itens.push({ item_nome: nome, quantidade: qtd });
                 }
               }
