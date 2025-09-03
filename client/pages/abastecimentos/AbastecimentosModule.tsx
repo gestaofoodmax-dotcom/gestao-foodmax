@@ -704,7 +704,7 @@ export default function AbastecimentosModule() {
                       : Number(i.quantidade || 0) || 0;
                   const nome = String(i.item_nome || "").trim();
                   if (!nome || qtd <= 0) return "";
-                  return `${nome}, ${qtd}`;
+                  return `${nome} - ${qtd}`;
                 })
                 .filter((s: string) => !!s)
                 .join("; ")
