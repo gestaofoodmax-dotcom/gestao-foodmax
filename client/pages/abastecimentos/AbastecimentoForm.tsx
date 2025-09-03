@@ -698,6 +698,11 @@ export default function AbastecimentoForm({
                     </Command>
                   </PopoverContent>
                 </Popover>
+                {validationErrors.fornecedores_ids && (
+                  <span className="text-sm text-red-600">
+                    {validationErrors.fornecedores_ids}
+                  </span>
+                )}
               </div>
             </div>
           </div>
