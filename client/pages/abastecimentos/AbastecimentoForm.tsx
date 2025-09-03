@@ -146,6 +146,9 @@ export default function AbastecimentoForm({
     onConfirm: () => void;
   }>({ open: false, message: "", onConfirm: () => {} });
 
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
   const {
     register,
     handleSubmit,
@@ -376,66 +379,56 @@ export default function AbastecimentoForm({
     console.log("Selected categoria:", selectedCategoriaId);
     console.log("Selected itens:", selectedItens);
 
-    // Basic validation
+    // Clear previous validation errors
+    setValidationErrors({});
+    const newErrors: Record<string, string> = {};
+
+    // Validação APENAS campos obrigatórios (marcados com *)
+    if (!data.estabelecimento_id) {
+      newErrors.estabelecimento_id = "Estabelecimento é obrigatório";
+    }
+
     if (selectedFornecedoresIds.length === 0) {
-      toast({
-        title: "Erro de validação",
-        description: "Selecione pelo menos um Fornecedor",
-        variant: "destructive",
-      });
-      return;
+      newErrors.fornecedores_ids = "Selecione pelo menos um Fornecedor";
     }
 
     if (!selectedCategoriaId) {
-      toast({
-        title: "Erro de validação",
-        description: "Selecione uma Categoria",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (selectedItens.length === 0) {
-      toast({
-        title: "Erro de validação",
-        description: "Adicione pelo menos um Item",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!data.estabelecimento_id) {
-      toast({
-        title: "Erro de validação",
-        description: "Selecione um Estabelecimento",
-        variant: "destructive",
-      });
-      return;
+      newErrors.categoria_id = "Selecione uma Categoria";
     }
 
     if (!data.telefone?.trim()) {
+      newErrors.telefone = "Telefone é obrigatório";
+    }
+
+    if (!data.endereco?.trim()) {
+      newErrors.endereco = "Endereço é obrigatório";
+    }
+
+    if (!data.cidade?.trim()) {
+      newErrors.cidade = "Cidade é obrigatória";
+    }
+
+    if (!data.uf?.trim()) {
+      newErrors.uf = "UF é obrigatório";
+    }
+
+    if (!data.pais?.trim()) {
+      newErrors.pais = "País é obrigatório";
+    }
+
+    // If there are validation errors, show them and prevent submission
+    if (Object.keys(newErrors).length > 0) {
+      setValidationErrors(newErrors);
       toast({
-        title: "Erro de validação",
-        description: "Telefone é obrigatório",
+        description: "Preencha todos os campos obrigatórios marcados com *",
         variant: "destructive",
       });
       return;
     }
 
-    if (!data.endereco?.trim() || !data.cidade?.trim() || !data.uf?.trim()) {
-      toast({
-        title: "Erro de validação",
-        description: "Endereço, Cidade e UF são obrigatórios",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Clean and validate email
+    // Validação de email apenas se preenchido
     const cleanEmail = data.email?.trim();
     const emailToSend = cleanEmail && cleanEmail !== "" ? cleanEmail : null;
-
-    // Validate email if provided
     if (emailToSend) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(emailToSend)) {
@@ -468,7 +461,7 @@ export default function AbastecimentoForm({
         endereco: data.endereco.trim(),
         cidade: data.cidade.trim(),
         uf: data.uf.trim().toUpperCase(),
-        pais: data.pais?.trim() || "Brasil",
+        pais: data.pais.trim(),
       },
     };
 
@@ -484,10 +477,20 @@ export default function AbastecimentoForm({
     categorias.length > 0 &&
     itens.length > 0;
 
+  // Debug prerequisites
+  console.log("Prerequisites check:", {
+    dataLoaded,
+    estabelecimentos: estabelecimentos.length,
+    fornecedores: fornecedores.length,
+    categorias: categorias.length,
+    itens: itens.length,
+    hasPrerequisites,
+  });
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="max-w-4xl max-h-[90vh] overflow-y-auto"
+        className="w-[85vw] h-[90vh] max-w-none overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -597,7 +600,10 @@ export default function AbastecimentoForm({
                     <Button
                       variant="outline"
                       role="combobox"
-                      className="w-full justify-between foodmax-input"
+                      className={cn(
+                        "w-full justify-between foodmax-input",
+                        validationErrors.estabelecimento_id && "border-red-500",
+                      )}
                     >
                       {watchedValues.estabelecimento_id
                         ? estabelecimentos.find(
@@ -636,9 +642,11 @@ export default function AbastecimentoForm({
                     </Command>
                   </PopoverContent>
                 </Popover>
-                {errors.estabelecimento_id && (
+                {(errors.estabelecimento_id ||
+                  validationErrors.estabelecimento_id) && (
                   <span className="text-sm text-red-600">
-                    {errors.estabelecimento_id.message as any}
+                    {errors.estabelecimento_id?.message ||
+                      validationErrors.estabelecimento_id}
                   </span>
                 )}
               </div>
@@ -650,7 +658,10 @@ export default function AbastecimentoForm({
                     <Button
                       variant="outline"
                       role="combobox"
-                      className="w-full justify-between foodmax-input"
+                      className={cn(
+                        "w-full justify-between foodmax-input",
+                        validationErrors.fornecedores_ids && "border-red-500",
+                      )}
                     >
                       {selectedFornecedoresIds.length > 0
                         ? `${selectedFornecedoresIds.length} selecionado(s)`
@@ -691,6 +702,11 @@ export default function AbastecimentoForm({
                     </Command>
                   </PopoverContent>
                 </Popover>
+                {validationErrors.fornecedores_ids && (
+                  <span className="text-sm text-red-600">
+                    {validationErrors.fornecedores_ids}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -711,7 +727,10 @@ export default function AbastecimentoForm({
                     <Button
                       variant="outline"
                       role="combobox"
-                      className="w-full justify-between foodmax-input"
+                      className={cn(
+                        "w-full justify-between foodmax-input",
+                        validationErrors.categoria_id && "border-red-500",
+                      )}
                     >
                       {selectedCategoriaId
                         ? categorias.find((c) => c.id === selectedCategoriaId)
@@ -752,6 +771,11 @@ export default function AbastecimentoForm({
                     </Command>
                   </PopoverContent>
                 </Popover>
+                {validationErrors.categoria_id && (
+                  <span className="text-sm text-red-600">
+                    {validationErrors.categoria_id}
+                  </span>
+                )}
               </div>
 
               <div>
@@ -929,7 +953,10 @@ export default function AbastecimentoForm({
                     id="telefone"
                     {...register("telefone")}
                     placeholder="DDD + número telefone"
-                    className="foodmax-input flex-1"
+                    className={cn(
+                      "foodmax-input flex-1",
+                      validationErrors.telefone && "border-red-500",
+                    )}
                     maxLength={15}
                     onInput={(e) => {
                       const target = e.target as HTMLInputElement;
@@ -937,9 +964,9 @@ export default function AbastecimentoForm({
                     }}
                   />
                 </div>
-                {errors.telefone && (
+                {(errors.telefone || validationErrors.telefone) && (
                   <span className="text-sm text-red-600">
-                    {errors.telefone.message}
+                    {errors.telefone?.message || validationErrors.telefone}
                   </span>
                 )}
               </div>
@@ -982,11 +1009,14 @@ export default function AbastecimentoForm({
                 <Input
                   id="endereco"
                   {...register("endereco")}
-                  className="foodmax-input"
+                  className={cn(
+                    "foodmax-input",
+                    validationErrors.endereco && "border-red-500",
+                  )}
                 />
-                {errors.endereco && (
+                {(errors.endereco || validationErrors.endereco) && (
                   <span className="text-sm text-red-600">
-                    {errors.endereco.message}
+                    {errors.endereco?.message || validationErrors.endereco}
                   </span>
                 )}
               </div>
@@ -996,11 +1026,14 @@ export default function AbastecimentoForm({
                   <Input
                     id="cidade"
                     {...register("cidade")}
-                    className="foodmax-input"
+                    className={cn(
+                      "foodmax-input",
+                      validationErrors.cidade && "border-red-500",
+                    )}
                   />
-                  {errors.cidade && (
+                  {(errors.cidade || validationErrors.cidade) && (
                     <span className="text-sm text-red-600">
-                      {errors.cidade.message}
+                      {errors.cidade?.message || validationErrors.cidade}
                     </span>
                   )}
                 </div>
@@ -1009,12 +1042,15 @@ export default function AbastecimentoForm({
                   <Input
                     id="uf"
                     {...register("uf")}
-                    className="foodmax-input"
+                    className={cn(
+                      "foodmax-input",
+                      validationErrors.uf && "border-red-500",
+                    )}
                     maxLength={2}
                   />
-                  {errors.uf && (
+                  {(errors.uf || validationErrors.uf) && (
                     <span className="text-sm text-red-600">
-                      {errors.uf.message}
+                      {errors.uf?.message || validationErrors.uf}
                     </span>
                   )}
                 </div>
@@ -1024,7 +1060,10 @@ export default function AbastecimentoForm({
                 <Input
                   id="pais"
                   {...register("pais")}
-                  className="foodmax-input"
+                  className={cn(
+                    "foodmax-input",
+                    validationErrors.pais && "border-red-500",
+                  )}
                   defaultValue="Brasil"
                 />
                 {errors.pais && (
@@ -1105,7 +1144,7 @@ export default function AbastecimentoForm({
           <Button
             type="submit"
             onClick={handleSubmit(onSubmit)}
-            disabled={isLoading || !hasPrerequisites}
+            disabled={isLoading}
             className="bg-foodmax-orange hover:bg-orange-600"
           >
             <Save className="w-4 h-4 mr-2" />{" "}
@@ -1122,7 +1161,7 @@ export default function AbastecimentoForm({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar alteração</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar alteraç��o</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="text-sm text-gray-700">
             {showEstabelecimentoAlert.message}

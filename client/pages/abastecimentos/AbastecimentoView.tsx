@@ -182,7 +182,7 @@ export default function AbastecimentoView({
             {/* Dados Básicos */}
             <div className="bg-white p-4 rounded-lg border">
               <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <Building className="w-5 h-5 text-blue-600" />
+                <FileText className="w-5 h-5 text-blue-600" />
                 <span className="text-blue-600">Dados Básicos</span>
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -193,46 +193,23 @@ export default function AbastecimentoView({
                   }
                 />
                 <DataField
-                  label="Categoria"
-                  value={detalhe.categoria_nome || detalhe.categoria_id}
-                />
-                <DataField
-                  label="Quantidade Total"
-                  value={detalhe.quantidade_total || 0}
+                  label="Fornecedores"
+                  value={
+                    detalhe?.fornecedores_nomes &&
+                    detalhe.fornecedores_nomes.length > 0
+                      ? detalhe.fornecedores_nomes.join(", ")
+                      : "-"
+                  }
                 />
               </div>
             </div>
-
-            {/* Fornecedores */}
-            {detalhe?.fornecedores_nomes &&
-              detalhe.fornecedores_nomes.length > 0 && (
-                <div className="border rounded-lg p-4">
-                  <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                    <Truck className="w-5 h-5 text-green-600" />
-                    <span className="text-green-600">Fornecedores</span>
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {detalhe.fornecedores_nomes.map(
-                      (nome: string, index: number) => (
-                        <Badge
-                          key={index}
-                          variant="outline"
-                          className="bg-green-50 text-green-700 border-green-200"
-                        >
-                          {nome}
-                        </Badge>
-                      ),
-                    )}
-                  </div>
-                </div>
-              )}
 
             {/* Itens do Abastecimento */}
             {detalhe?.itens && detalhe.itens.length > 0 && (
               <div className="border rounded-lg p-4">
                 <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <CupSoda className="w-5 h-5 text-purple-600" />
-                  <span className="text-purple-600">
+                  <CupSoda className="w-5 h-5 text-yellow-600" />
+                  <span className="text-yellow-600">
                     Itens do Abastecimento
                   </span>
                 </h3>
@@ -247,6 +224,9 @@ export default function AbastecimentoView({
                           {item.item_nome || item.item_id}
                         </div>
                         <div className="text-xs text-gray-500">
+                          {item.categoria_nome || "Categoria não informada"}
+                        </div>
+                        <div className="text-xs text-gray-500">
                           Estoque Atual: {item.estoque_atual ?? 0}
                         </div>
                       </div>
@@ -258,6 +238,17 @@ export default function AbastecimentoView({
                       </div>
                     </div>
                   ))}
+                </div>
+                <hr className="border-t border-gray-300 mt-4 mb-4" />
+                <div className="text-sm text-gray-700">
+                  <span className="font-medium">Quantidade Total: </span>
+                  <span className="font-semibold">
+                    {detalhe.itens.reduce(
+                      (total: number, item: any) =>
+                        total + (item.quantidade || 0),
+                      0,
+                    )}
+                  </span>
                 </div>
               </div>
             )}
@@ -285,8 +276,8 @@ export default function AbastecimentoView({
             {detalhe?.endereco && (
               <div className="bg-white p-4 rounded-lg border">
                 <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-red-600" />
-                  <span className="text-red-600">Endereço</span>
+                  <MapPin className="w-5 h-5 text-purple-600" />
+                  <span className="text-purple-600">Endereço</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <DataField label="CEP" value={detalhe.endereco.cep || "-"} />
@@ -308,17 +299,19 @@ export default function AbastecimentoView({
             )}
 
             {/* Observação */}
-            {detalhe?.observacao && (
-              <div className="bg-white p-4 rounded-lg border">
-                <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-gray-600" />
-                  <span className="text-gray-600">Observação</span>
-                </h3>
-                <div className="text-sm text-gray-900 whitespace-pre-wrap">
-                  {detalhe.observacao}
+            {detalhe?.observacao &&
+              detalhe.observacao.trim() !== "Cadastro forçado pelo sistema" &&
+              detalhe.observacao.trim() !== "" && (
+                <div className="bg-white p-4 rounded-lg border">
+                  <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-red-600" />
+                    <span className="text-red-600">Observação</span>
+                  </h3>
+                  <div className="text-sm text-gray-900 whitespace-pre-wrap">
+                    {detalhe.observacao}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Detalhes do Cadastro */}
             <div className="bg-white rounded-lg p-4 border">
