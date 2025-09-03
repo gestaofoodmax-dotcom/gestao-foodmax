@@ -286,10 +286,9 @@ export default function AbastecimentoView({
                     value={detalhe.endereco.endereco || "-"}
                   />
                   <DataField
-                    label="Cidade"
-                    value={detalhe.endereco.cidade || "-"}
+                    label="Cidade/UF"
+                    value={detalhe.endereco.cidade ? `${detalhe.endereco.cidade}${detalhe.endereco.uf ? `/${detalhe.endereco.uf}` : ""}` : "-"}
                   />
-                  <DataField label="UF" value={detalhe.endereco.uf || "-"} />
                   <DataField
                     label="País"
                     value={detalhe.endereco.pais || "-"}
