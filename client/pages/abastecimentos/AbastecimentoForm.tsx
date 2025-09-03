@@ -416,7 +416,7 @@ export default function AbastecimentoForm({
     if (!data.telefone?.trim()) {
       toast({
         title: "Erro de validação",
-        description: "Telefone é obrigatório",
+        description: "Telefone �� obrigatório",
         variant: "destructive",
       });
       return;
@@ -1113,10 +1113,30 @@ export default function AbastecimentoForm({
             <X className="w-4 h-4 mr-2" /> Cancelar
           </Button>
           <Button
-            type="submit"
-            onClick={handleSubmit(onSubmit)}
-            disabled={isLoading || !hasPrerequisites}
-            className="bg-foodmax-orange hover:bg-orange-600"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              console.log("=== SAVE BUTTON CLICKED ===");
+              console.log("Has prerequisites:", hasPrerequisites);
+              console.log("Is loading:", isLoading);
+              console.log("Current form values:", watchedValues);
+              console.log("Selected items:", selectedItens);
+              console.log("Selected fornecedores:", selectedFornecedoresIds);
+              console.log("Selected categoria:", selectedCategoriaId);
+
+              if (!hasPrerequisites) {
+                toast({
+                  title: "Dados necessários não carregados",
+                  description: "Aguarde o carregamento dos dados ou verifique se há estabelecimentos, fornecedores, categorias e itens cadastrados.",
+                  variant: "destructive",
+                });
+                return;
+              }
+
+              handleSubmit(onSubmit)(e);
+            }}
+            disabled={isLoading}
+            className="bg-foodmax-orange hover:bg-orange-600 disabled:opacity-50"
           >
             <Save className="w-4 h-4 mr-2" />{" "}
             {isLoading ? "Salvando..." : "Salvar"}
