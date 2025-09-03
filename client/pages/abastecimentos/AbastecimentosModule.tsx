@@ -221,7 +221,7 @@ export default function AbastecimentosModule() {
                   ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50"
                   : "bg-gray-50 hover:bg-gray-100 border-gray-200"
               }`}
-              title={r.email_enviado ? "Email já enviado" : "Enviar"}
+              title={r.email_enviado ? "Email já enviado" : "Enviar Email"}
             >
               <Send
                 className={`w-4 h-4 ${
