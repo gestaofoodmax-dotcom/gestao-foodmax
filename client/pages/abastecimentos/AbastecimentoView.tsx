@@ -258,7 +258,7 @@ export default function AbastecimentoView({
             <div className="bg-white p-4 rounded-lg border">
               <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
                 <Phone className="w-5 h-5 text-green-600" />
-                <span className="text-green-600">Contato</span>
+                <span className="text-green-600">Contato do Estabelecimento</span>
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DataField
@@ -278,7 +278,7 @@ export default function AbastecimentoView({
               <div className="bg-white p-4 rounded-lg border">
                 <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
                   <MapPin className="w-5 h-5 text-purple-600" />
-                  <span className="text-purple-600">Endereço</span>
+                  <span className="text-purple-600">Endereço do Estabelecimento</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <DataField label="CEP" value={detalhe.endereco.cep || "-"} />
