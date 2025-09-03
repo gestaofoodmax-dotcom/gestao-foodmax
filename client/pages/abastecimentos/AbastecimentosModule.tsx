@@ -152,7 +152,7 @@ export default function AbastecimentosModule() {
       },
       {
         key: "qtde_itens",
-        label: "Qtde Itens",
+        label: "Total Itens",
         sortable: true,
         render: (v: any, r: any) => r.qtde_itens || 0,
       },
