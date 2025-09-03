@@ -1112,6 +1112,27 @@ export default function AbastecimentosModule() {
               }
             }
 
+            const endText = String(
+              r.estabelecimento_endereco || r["Estabelecimento Endereço"] || "",
+            ).trim();
+            let endereco: {
+              cep?: string | null;
+              endereco?: string;
+              cidade?: string;
+              uf?: string;
+              pais?: string;
+            } | null = null;
+            if (endText) {
+              const parts = endText.split("-").map((s: string) => s.trim());
+              endereco = {
+                cep: parts[0] || null,
+                endereco: parts[1] || "",
+                cidade: parts[2] || "",
+                uf: parts[3] || "",
+                pais: parts[4] || "",
+              };
+            }
+
             const status = String(r.status || "Pendente").trim();
             const email_enviado = String(r.email_enviado || "").toLowerCase();
             return {
@@ -1125,6 +1146,7 @@ export default function AbastecimentosModule() {
               status: STATUS_ABASTECIMENTO.includes(status as any) ? status : "Pendente",
               email_enviado: email_enviado === "sim" || email_enviado === "true",
               itens,
+              endereco,
             };
           });
 
