@@ -182,7 +182,7 @@ export default function AbastecimentoView({
             {/* Dados Básicos */}
             <div className="bg-white p-4 rounded-lg border">
               <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <Building className="w-5 h-5 text-blue-600" />
+                <FileText className="w-5 h-5 text-blue-600" />
                 <span className="text-blue-600">Dados Básicos</span>
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -193,39 +193,15 @@ export default function AbastecimentoView({
                   }
                 />
                 <DataField
-                  label="Categoria"
-                  value={detalhe.categoria_nome || detalhe.categoria_id}
-                />
-                <DataField
-                  label="Quantidade Total"
-                  value={detalhe.quantidade_total || 0}
+                  label="Fornecedores"
+                  value={
+                    detalhe?.fornecedores_nomes && detalhe.fornecedores_nomes.length > 0
+                      ? detalhe.fornecedores_nomes.join(", ")
+                      : "-"
+                  }
                 />
               </div>
             </div>
-
-            {/* Fornecedores */}
-            {detalhe?.fornecedores_nomes &&
-              detalhe.fornecedores_nomes.length > 0 && (
-                <div className="border rounded-lg p-4">
-                  <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                    <Truck className="w-5 h-5 text-green-600" />
-                    <span className="text-green-600">Fornecedores</span>
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {detalhe.fornecedores_nomes.map(
-                      (nome: string, index: number) => (
-                        <Badge
-                          key={index}
-                          variant="outline"
-                          className="bg-green-50 text-green-700 border-green-200"
-                        >
-                          {nome}
-                        </Badge>
-                      ),
-                    )}
-                  </div>
-                </div>
-              )}
 
             {/* Itens do Abastecimento */}
             {detalhe?.itens && detalhe.itens.length > 0 && (
