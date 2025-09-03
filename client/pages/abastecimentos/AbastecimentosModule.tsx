@@ -580,7 +580,6 @@ export default function AbastecimentosModule() {
   const handleEnviarEmail = async (a: Abastecimento) => {
     const userRole = getUserRole();
     const hasPaymentPlan = hasPayment();
-
     if (userRole === "user" && !hasPaymentPlan) {
       toast({
         title: "Ação bloqueada",
@@ -591,33 +590,59 @@ export default function AbastecimentosModule() {
     }
 
     try {
-      await makeRequest(`/api/abastecimentos/${a.id}/enviar-email`, {
-        method: "POST",
-        body: JSON.stringify({
-          destinatarios: ["fornecedor@exemplo.com"],
-          assunto: "Pedido de Compra",
-          mensagem: "Segue pedido de compra...",
-        }),
-      });
-      toast({
-        title: "Email enviado",
-        description: "Email enviado com sucesso",
-      });
-      await refreshAfterMutation();
-    } catch (error: any) {
-      if (error.message?.includes("plano pago")) {
+      setCurrentEmailAbastecimento(a);
+      const est = await makeRequest(`/api/estabelecimentos/${a.estabelecimento_id}`);
+      setCurrentEstabelecimento(est || null);
+
+      const fornResp = await makeRequest(`/api/fornecedores?page=1&limit=1000`);
+      const fornecedores = Array.isArray(fornResp?.data) ? fornResp.data : [];
+      const fornecedoresSelecionados = fornecedores.filter((f: any) => a.fornecedores_ids.includes(f.id));
+      const emailsFornecedores = fornecedoresSelecionados
+        .map((f: any) => String(f.email || "").trim())
+        .filter((e: string) => !!e);
+
+      const missingEmails = fornecedoresSelecionados.filter((f: any) => !String(f.email || "").trim());
+      if (missingEmails.length > 0) {
         toast({
-          title: "Ação bloqueada",
-          description: "Essa ação só funciona no plano pago",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Erro ao enviar email",
-          description: "Ocorreu um erro ao enviar o email",
+          title: "Atenção",
+          description: `Fornecedor(es) sem email: ${missingEmails.map((m: any) => m.nome).join(", ")}`,
           variant: "destructive",
         });
       }
+
+      let det: any = null;
+      try {
+        det = await makeRequest(`/api/abastecimentos/${a.id}`);
+      } catch {}
+      const itens: any[] = Array.isArray(det?.itens) ? det.itens : [];
+      const itensTexto = itens.length
+        ? itens.map((i: any) => `- ${i.item_nome || "Item"} - ${i.quantidade}`).join("\n")
+        : "-";
+
+      const estNome = est?.nome || "";
+      const assunto = `Pedido de Compra - ${estNome}`;
+      const endereco = est?.endereco
+        ? [
+            est.endereco.endereco,
+            est.endereco.cidade,
+            est.endereco.uf,
+            est.endereco.cep,
+            est.endereco.pais,
+          ]
+            .filter((x: any) => !!x)
+            .join(", ")
+        : "";
+      const mensagem = `Olá, tudo bem?\n\nSegue abaixo o pedido de compra.\nItens do Abastecimento (Itens com Quantidades escolhidas)\n${itensTexto}\n\nDados de Contato (Nome, CNPJ, Email, Telefone e Endereço completo do Estabelecimento escolhido).\nNome: ${est?.nome || ""}\nCNPJ: ${est?.cnpj || ""}\nEmail: ${est?.email || ""}\nTelefone: ${(est?.ddi || "") + (est?.telefone ? " " + est.telefone : "")}\nEndereço: ${endereco}\n\n\nAtenciosamente, ${estNome}`;
+
+      setEmailForm({
+        destinatarios: emailsFornecedores.join(", "),
+        assunto,
+        mensagem,
+      });
+      setEmailProgress({ total: emailsFornecedores.length, sent: 0 });
+      setShowEmailModal(true);
+    } catch (e) {
+      toast({ title: "Erro", description: "Falha ao preparar envio de email" });
     }
   };
 
