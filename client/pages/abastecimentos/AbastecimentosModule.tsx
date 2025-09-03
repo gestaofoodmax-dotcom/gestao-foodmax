@@ -155,7 +155,11 @@ export default function AbastecimentosModule() {
         key: "email_enviado",
         label: "Enviado",
         sortable: true,
-        render: (v: any, r: any) => (r.email_enviado ? "Sim" : "Não"),
+        render: (v: any, r: any) => (
+          <Badge className={r.email_enviado ? "bg-green-50 text-green-700 border-green-200" : "bg-gray-50 text-gray-700 border-gray-200"}>
+            {r.email_enviado ? "Sim" : "Não"}
+          </Badge>
+        ),
       },
       {
         key: "status",
