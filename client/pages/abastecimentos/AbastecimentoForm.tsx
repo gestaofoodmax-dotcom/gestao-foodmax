@@ -96,7 +96,7 @@ const schema = z.object({
     .default("Pendente"),
   email_enviado: z.boolean().default(false),
   cep: z.string().nullable().optional(),
-  endereco: z.string().min(1, "Endereço é obrigatório"),
+  endereco: z.string().min(1, "Endere��o é obrigatório"),
   cidade: z.string().min(1, "Cidade é obrigatória"),
   uf: z.string().length(2, "UF deve ter 2 caracteres"),
   pais: z.string().min(1, "País é obrigatório"),
@@ -1038,7 +1038,10 @@ export default function AbastecimentoForm({
                   <Input
                     id="uf"
                     {...register("uf")}
-                    className="foodmax-input"
+                    className={cn(
+                      "foodmax-input",
+                      validationErrors.uf && "border-red-500"
+                    )}
                     maxLength={2}
                   />
                   {errors.uf && (
