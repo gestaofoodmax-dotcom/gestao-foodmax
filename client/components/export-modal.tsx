@@ -202,7 +202,8 @@ export function ExportModal({
   };
 
   const downloadCSV = (csvContent: string, filename: string) => {
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const BOM = "\uFEFF"; // Ensure UTF-8 for Excel
+    const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
 
     if (link.download !== undefined) {
