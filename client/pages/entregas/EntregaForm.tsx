@@ -710,14 +710,16 @@ export default function EntregaForm({
           </div>
 
           {/* Status */}
-          <div className="bg-white p-4 rounded-lg border w-full md:w-60">
+          <div className="bg-white p-4 rounded-lg border w-full">
             <Label>Status</Label>
-            <Select value={values.status as any} onValueChange={(v) => setValue("status", v as any)}>
-              <SelectTrigger className="foodmax-input"><SelectValue placeholder="Selecione o status" /></SelectTrigger>
-              <SelectContent>
-                {STATUS_ENTREGA.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
-              </SelectContent>
-            </Select>
+            <div className="w-60">
+              <Select value={values.status as any} onValueChange={(v) => setValue("status", v as any)}>
+                <SelectTrigger className="foodmax-input"><SelectValue placeholder="Selecione o status" /></SelectTrigger>
+                <SelectContent>
+                  {STATUS_ENTREGA.map((s) => (<SelectItem key={s} value={s}>{s}</SelectItem>))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </form>
 
