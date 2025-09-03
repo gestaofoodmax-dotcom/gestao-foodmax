@@ -208,13 +208,13 @@ export default function AbastecimentosModule() {
               className={`h-8 w-8 p-0 rounded-full border ${
                 r.email_enviado
                   ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50"
-                  : "bg-blue-50 hover:bg-blue-100 border-blue-200"
+                  : "bg-black hover:bg-gray-900 border-gray-800"
               }`}
               title={r.email_enviado ? "Email já enviado" : "Enviar"}
             >
               <Send
                 className={`w-4 h-4 ${
-                  r.email_enviado ? "text-gray-400" : "text-blue-700"
+                  r.email_enviado ? "text-gray-400" : "text-white"
                 }`}
               />
             </Button>
@@ -222,19 +222,19 @@ export default function AbastecimentosModule() {
               variant="ghost"
               size="sm"
               onClick={() => handleView(r)}
-              className="h-8 w-8 p-0 rounded-full border bg-yellow-50 hover:bg-yellow-100 border-yellow-200"
+              className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
               title="Visualizar"
             >
-              <Eye className="w-4 h-4 text-yellow-700" />
+              <Eye className="w-4 h-4 text-blue-700" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => handleEdit(r)}
-              className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
+              className="h-8 w-8 p-0 rounded-full border bg-yellow-50 hover:bg-yellow-100 border-yellow-200"
               title="Editar"
             >
-              <Edit className="w-4 h-4 text-blue-700" />
+              <Edit className="w-4 h-4 text-yellow-700" />
             </Button>
             <Button
               variant="ghost"
