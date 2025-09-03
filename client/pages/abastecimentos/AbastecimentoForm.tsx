@@ -640,9 +640,9 @@ export default function AbastecimentoForm({
                     </Command>
                   </PopoverContent>
                 </Popover>
-                {errors.estabelecimento_id && (
+                {(errors.estabelecimento_id || validationErrors.estabelecimento_id) && (
                   <span className="text-sm text-red-600">
-                    {errors.estabelecimento_id.message as any}
+                    {errors.estabelecimento_id?.message || validationErrors.estabelecimento_id}
                   </span>
                 )}
               </div>
