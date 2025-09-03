@@ -866,11 +866,36 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         const itensInput = Array.isArray(record.itens) ? record.itens : [];
         const quantidade_total = itensInput.reduce((sum, it) => sum + (Number(it.quantidade) || 0), 0);
 
+        // Resolve fornecedores by names (if provided)
+        let fornecedores_ids: number[] = [];
+        try {
+          const fornecedoresList: string[] = Array.isArray(record.fornecedores_nomes)
+            ? record.fornecedores_nomes
+            : typeof (record as any).fornecedores === "string"
+              ? String((record as any).fornecedores)
+                  .split(";")
+                  .map((s) => s.trim())
+                  .filter((s) => !!s)
+              : [];
+          if (fornecedoresList.length > 0) {
+            for (const nome of fornecedoresList) {
+              const { data: forn } = await supabase
+                .from("fornecedores")
+                .select("id")
+                .eq("id_usuario", userId)
+                .eq("nome", nome)
+                .maybeSingle();
+              if (forn?.id) fornecedores_ids.push(forn.id);
+            }
+            fornecedores_ids = Array.from(new Set(fornecedores_ids));
+          }
+        } catch {}
+
         // Create abastecimento (with fallback for codigo column)
         const baseInsert = {
           id_usuario: userId,
           estabelecimento_id: est.id,
-          fornecedores_ids: [],
+          fornecedores_ids,
           categoria_id,
           quantidade_total,
           telefone: record.telefone || "",
