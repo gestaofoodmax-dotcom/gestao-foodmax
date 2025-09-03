@@ -53,12 +53,7 @@ const AbastecimentoSchema = z.object({
     uf: z.string().length(2),
     pais: z.string().min(1),
   }),
-  codigo: z
-    .string()
-    .or(z.literal(""))
-    .nullable()
-    .optional()
-    .transform((val) => (val === "" ? null : val)),
+  codigo: z.string().length(8),
 });
 
 const UpdateAbastecimentoSchema = AbastecimentoSchema.partial();
@@ -384,7 +379,7 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
       telefone: parsed.telefone,
       ddi: parsed.ddi,
       email: parsed.email || null,
-      codigo: parsed.codigo || null,
+      codigo: parsed.codigo,
       data_hora_recebido: parsed.data_hora_recebido || null,
       observacao: parsed.observacao || null,
       status: parsed.status || "Pendente",

@@ -100,16 +100,13 @@ const schema = z.object({
   cidade: z.string().min(1, "Cidade é obrigatória"),
   uf: z.string().length(2, "UF deve ter 2 caracteres"),
   pais: z.string().min(1, "País é obrigatório"),
-  codigo: z.string().min(1, "Código do Abastecimento é obrigatório"),
+  codigo: z.string().length(8, "Código deve ter 8 caracteres"),
 });
 
 type FormData = z.infer<typeof schema>;
 
 function generateCodigo() {
-  const base = (
-    Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
-  ).toUpperCase();
-  return `ABST${base}`;
+  return Math.random().toString(36).slice(2, 10).toUpperCase();
 }
 
 export default function AbastecimentoForm({
@@ -466,7 +463,9 @@ export default function AbastecimentoForm({
       observacao: data.observacao?.trim() || null,
       status: (data.status as StatusAbastecimento) || "Pendente",
       email_enviado: Boolean(data.email_enviado),
-      codigo: (data as any).codigo ? String((data as any).codigo).trim() : null,
+      codigo: String((data as any).codigo || "")
+        .trim()
+        .toUpperCase(),
       itens: selectedItens.map((item) => ({
         item_id: Number(item.item_id),
         quantidade: Number(item.quantidade),
@@ -743,7 +742,14 @@ export default function AbastecimentoForm({
                     (errors as any).codigo && "border-red-500",
                   )}
                   placeholder="Ex.: ABST0001"
-                  maxLength={50}
+                  maxLength={8}
+                  onInput={(e) => {
+                    const t = e.target as HTMLInputElement;
+                    t.value = t.value
+                      .replace(/[^a-z0-9]/gi, "")
+                      .toUpperCase()
+                      .slice(0, 8);
+                  }}
                 />
                 {(errors as any).codigo && (
                   <span className="text-sm text-red-600">
