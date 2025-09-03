@@ -424,6 +424,7 @@ CREATE TABLE IF NOT EXISTS abastecimentos_itens (
     abastecimento_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,
     quantidade INTEGER NOT NULL DEFAULT 1 CHECK (quantidade > 0),
+    unidade_medida VARCHAR(50) NOT NULL DEFAULT 'Unidade',
     data_cadastro TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     data_atualizacao TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
@@ -543,6 +544,7 @@ COMMENT ON TABLE abastecimentos_itens IS 'Items included in each supply order (s
 COMMENT ON COLUMN abastecimentos_itens.abastecimento_id IS 'Reference to the supply order';
 COMMENT ON COLUMN abastecimentos_itens.item_id IS 'Reference to the item being ordered';
 COMMENT ON COLUMN abastecimentos_itens.quantidade IS 'Quantity of this item in the order';
+COMMENT ON COLUMN abastecimentos_itens.unidade_medida IS 'Unit of measure for the item (e.g., Quilograma, Litro, Unidade)';
 
 COMMENT ON TABLE abastecimentos_enderecos IS 'Delivery address for each supply order';
 COMMENT ON COLUMN abastecimentos_enderecos.abastecimento_id IS 'Reference to the supply order';

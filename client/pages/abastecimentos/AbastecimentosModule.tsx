@@ -24,6 +24,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { DataGrid } from "@/components/data-grid";
 import { toast } from "@/hooks/use-toast";
 import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
@@ -55,7 +65,6 @@ export default function AbastecimentosModule() {
   const tabs: (StatusAbastecimento | "Todos")[] = [
     "Todos",
     "Pendente",
-    "Enviado",
     "Recebido",
     "Cancelado",
   ];
@@ -67,7 +76,6 @@ export default function AbastecimentosModule() {
   const [tabState, setTabState] = useState<Record<string, TabState>>({
     Todos: { search: "", page: 1 },
     Pendente: { search: "", page: 1 },
-    Enviado: { search: "", page: 1 },
     Recebido: { search: "", page: 1 },
     Cancelado: { search: "", page: 1 },
   });
@@ -88,7 +96,6 @@ export default function AbastecimentosModule() {
   const [totalCounts, setTotalCounts] = useState<Record<string, number>>({
     Todos: 0,
     Pendente: 0,
-    Enviado: 0,
     Recebido: 0,
     Cancelado: 0,
   });
@@ -97,6 +104,19 @@ export default function AbastecimentosModule() {
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [exportData, setExportData] = useState<any[]>([]);
+
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailForm, setEmailForm] = useState({
+    destinatarios: "",
+    assunto: "",
+    mensagem: "",
+  });
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailProgress, setEmailProgress] = useState({ total: 0, sent: 0 });
+  const [currentEmailAbastecimento, setCurrentEmailAbastecimento] =
+    useState<Abastecimento | null>(null);
+  const [currentEstabelecimento, setCurrentEstabelecimento] =
+    useState<any>(null);
 
   const [estabelecimentosMap, setEstabelecimentosMap] = useState<
     Map<number, string>
@@ -144,7 +164,7 @@ export default function AbastecimentosModule() {
       },
       {
         key: "qtde_itens",
-        label: "Qtde Itens",
+        label: "Total Itens",
         sortable: true,
         render: (v: any, r: any) => r.qtde_itens || 0,
       },
@@ -155,13 +175,20 @@ export default function AbastecimentosModule() {
         render: (v: string | null) => formatDateTimeBR(v),
       },
       {
-        key: "data_cadastro",
-        label: "Data Cadastro",
+        key: "email_enviado",
+        label: "Enviado",
         sortable: true,
-        render: (v: string) =>
-          new Date(v).toLocaleDateString("pt-BR", {
-            timeZone: "America/Sao_Paulo",
-          }),
+        render: (v: any, r: any) => (
+          <Badge
+            className={
+              r.email_enviado
+                ? "bg-green-50 text-green-700 border-green-200"
+                : "bg-gray-50 text-gray-700 border-gray-200"
+            }
+          >
+            {r.email_enviado ? "Sim" : "Não"}
+          </Badge>
+        ),
       },
       {
         key: "status",
@@ -170,6 +197,15 @@ export default function AbastecimentosModule() {
         render: (v: any) => (
           <Badge className={getStatusAbastecimentoColor(v)}>{v}</Badge>
         ),
+      },
+      {
+        key: "data_cadastro",
+        label: "Data Cadastro",
+        sortable: true,
+        render: (v: string) =>
+          new Date(v).toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          }),
       },
       {
         key: "acoes",
@@ -210,7 +246,7 @@ export default function AbastecimentosModule() {
                   ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50"
                   : "bg-gray-50 hover:bg-gray-100 border-gray-200"
               }`}
-              title={r.email_enviado ? "Email já enviado" : "Enviar"}
+              title={r.email_enviado ? "Email já enviado" : "Enviar Email"}
             >
               <Send
                 className={`w-4 h-4 ${
@@ -303,19 +339,17 @@ export default function AbastecimentosModule() {
       const requests = [
         makeRequest(`/api/abastecimentos?page=1&limit=1`),
         makeRequest(`/api/abastecimentos?page=1&limit=1&status=Pendente`),
-        makeRequest(`/api/abastecimentos?page=1&limit=1&status=Enviado`),
         makeRequest(`/api/abastecimentos?page=1&limit=1&status=Recebido`),
         makeRequest(`/api/abastecimentos?page=1&limit=1&status=Cancelado`),
       ];
-      let [allResp, pendResp, envResp, recResp, cancResp] = await Promise.all(
+      let [allResp, pendResp, recResp, cancResp] = await Promise.all(
         requests.map((p) => p.catch(() => null)),
       );
 
-      if (allResp || pendResp || envResp || recResp || cancResp) {
+      if (allResp || pendResp || recResp || cancResp) {
         setTotalCounts({
           Todos: allResp?.pagination?.total || 0,
           Pendente: pendResp?.pagination?.total || 0,
-          Enviado: envResp?.pagination?.total || 0,
           Recebido: recResp?.pagination?.total || 0,
           Cancelado: cancResp?.pagination?.total || 0,
         });
@@ -326,7 +360,6 @@ export default function AbastecimentosModule() {
       setTotalCounts({
         Todos: local.length,
         Pendente: local.filter((a) => a.status === "Pendente").length,
-        Enviado: local.filter((a) => a.status === "Enviado").length,
         Recebido: local.filter((a) => a.status === "Recebido").length,
         Cancelado: local.filter((a) => a.status === "Cancelado").length,
       });
@@ -565,7 +598,6 @@ export default function AbastecimentosModule() {
   const handleEnviarEmail = async (a: Abastecimento) => {
     const userRole = getUserRole();
     const hasPaymentPlan = hasPayment();
-
     if (userRole === "user" && !hasPaymentPlan) {
       toast({
         title: "Ação bloqueada",
@@ -575,34 +607,73 @@ export default function AbastecimentosModule() {
       return;
     }
 
+    setCurrentEmailAbastecimento(a);
+    setEmailForm({ destinatarios: "", assunto: "", mensagem: "" });
+    setEmailProgress({ total: 0, sent: 0 });
+    setShowEmailModal(true); // open immediately
+
     try {
-      await makeRequest(`/api/abastecimentos/${a.id}/enviar-email`, {
-        method: "POST",
-        body: JSON.stringify({
-          destinatarios: ["fornecedor@exemplo.com"],
-          assunto: "Pedido de Compra",
-          mensagem: "Segue pedido de compra...",
-        }),
-      });
-      toast({
-        title: "Email enviado",
-        description: "Email enviado com sucesso",
-      });
-      await refreshAfterMutation();
-    } catch (error: any) {
-      if (error.message?.includes("plano pago")) {
+      const est = await makeRequest(
+        `/api/estabelecimentos/${a.estabelecimento_id}`,
+      );
+      setCurrentEstabelecimento(est || null);
+
+      const fornResp = await makeRequest(`/api/fornecedores?page=1&limit=1000`);
+      const fornecedores = Array.isArray(fornResp?.data) ? fornResp.data : [];
+      const fornecedoresSelecionados = fornecedores.filter((f: any) =>
+        a.fornecedores_ids.includes(f.id),
+      );
+      const emailsFornecedores = fornecedoresSelecionados
+        .map((f: any) => String(f.email || "").trim())
+        .filter((e: string) => !!e);
+
+      const missingEmails = fornecedoresSelecionados.filter(
+        (f: any) => !String(f.email || "").trim(),
+      );
+      if (missingEmails.length > 0) {
         toast({
-          title: "Ação bloqueada",
-          description: "Essa ação só funciona no plano pago",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Erro ao enviar email",
-          description: "Ocorreu um erro ao enviar o email",
+          title: "Atenção",
+          description: `Fornecedor(es) sem email: ${missingEmails.map((m: any) => m.nome).join(", ")}`,
           variant: "destructive",
         });
       }
+
+      let det: any = null;
+      try {
+        det = await makeRequest(`/api/abastecimentos/${a.id}`);
+      } catch {}
+      const itens: any[] = Array.isArray(det?.itens) ? det.itens : [];
+      const itensTexto = itens.length
+        ? itens
+            .map(
+              (i: any) =>
+                `${i.quantidade} (${i.unidade_medida || "Unidade"}) - ${i.item_nome || "Item"}`,
+            )
+            .join("\n")
+        : "-";
+
+      const estNome = est?.nome || "";
+      const assunto = `Pedido de Compra - ${estNome}`;
+      const endereco = est?.endereco
+        ? [
+            est.endereco.endereco,
+            [est.endereco.cidade, est.endereco.uf].filter(Boolean).join("/"),
+            est.endereco.pais,
+          ]
+            .filter((x: any) => !!x)
+            .join(", ")
+        : "";
+      const cep = est?.endereco?.cep || "";
+      const mensagem = `Olá, tudo bem?\n\nSegue abaixo o pedido de compra.\nItens:\n${itensTexto}\n\nDados de Contato:\nNome: ${est?.nome || ""}\nCNPJ: ${est?.cnpj || ""}\nEmail: ${est?.email || ""}\nTelefone: ${(est?.ddi || "") + (est?.telefone ? " " + est.telefone : "")}\nCEP: ${cep}\nEndereço: ${endereco}\n\nAtenciosamente\n${estNome}`;
+
+      setEmailForm({
+        destinatarios: emailsFornecedores.join(", "),
+        assunto,
+        mensagem,
+      });
+      setEmailProgress({ total: emailsFornecedores.length, sent: 0 });
+    } catch (e) {
+      toast({ title: "Erro", description: "Falha ao preparar envio de email" });
     }
   };
 
@@ -855,7 +926,15 @@ export default function AbastecimentosModule() {
                         }`}
                         onClick={() => setActiveTab(st as any)}
                       >
-                        <span>{st}</span>
+                        <span>
+                          {st === "Pendente"
+                            ? "Pendentes"
+                            : st === "Recebido"
+                              ? "Recebidos"
+                              : st === "Cancelado"
+                                ? "Cancelados"
+                                : st}
+                        </span>
                         <span
                           className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
                             activeTab === (st as any)
@@ -909,14 +988,16 @@ export default function AbastecimentosModule() {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
+                      // Open modal immediately with current data for responsiveness
+                      setExportData(filteredAbastecimentos as any);
+                      setShowExport(true);
+                      // Load enriched data in background (no blocking)
                       try {
                         const data =
                           await getAbastecimentosWithRelationsForExport();
                         setExportData(data);
-                        setShowExport(true);
                       } catch {
-                        setExportData(filteredAbastecimentos as any);
-                        setShowExport(true);
+                        // keep basic data
                       }
                     }}
                   >
@@ -1006,6 +1087,158 @@ export default function AbastecimentosModule() {
           },
         ]}
       />
+
+      <Dialog
+        open={showEmailModal}
+        onOpenChange={(o) => !emailSending && setShowEmailModal(o)}
+      >
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-foodmax-orange">
+              <ShoppingBag className="w-5 h-5 text-foodmax-orange" />
+              Realizar Pedido Compra
+            </DialogTitle>
+            <p className="text-xs text-black">
+              Enviar Email para Fornecedor(es)
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label>Destinatários</Label>
+              <Input
+                value={emailForm.destinatarios}
+                onChange={(e) =>
+                  setEmailForm((f) => ({ ...f, destinatarios: e.target.value }))
+                }
+                placeholder="email1@dominio.com, email2@dominio.com"
+                className="foodmax-input"
+                disabled={emailSending}
+              />
+            </div>
+            <div>
+              <Label>Assunto do Email</Label>
+              <Input
+                value={emailForm.assunto}
+                onChange={(e) =>
+                  setEmailForm((f) => ({ ...f, assunto: e.target.value }))
+                }
+                className="foodmax-input"
+                disabled={emailSending}
+              />
+            </div>
+            <div>
+              <Label>Mensagem do Email</Label>
+              <Textarea
+                rows={10}
+                value={emailForm.mensagem}
+                onChange={(e) =>
+                  setEmailForm((f) => ({ ...f, mensagem: e.target.value }))
+                }
+                className="foodmax-input"
+                disabled={emailSending}
+              />
+            </div>
+
+            {emailSending && (
+              <div>
+                <Progress
+                  value={
+                    emailProgress.total
+                      ? (emailProgress.sent / emailProgress.total) * 100
+                      : 0
+                  }
+                />
+                <div className="mt-1 text-xs text-gray-600">
+                  Enviados {emailProgress.sent} de {emailProgress.total}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowEmailModal(false)}
+              disabled={emailSending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              className="bg-foodmax-orange text-white hover:bg-orange-600"
+              disabled={emailSending}
+              onClick={async () => {
+                if (!currentEmailAbastecimento) return;
+                const userRole = getUserRole();
+                const hasPaymentPlan = hasPayment();
+                if (userRole === "user" && !hasPaymentPlan) {
+                  toast({
+                    title: "Ação bloqueada",
+                    description: "Essa ação só funciona no plano pago",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                const raw = emailForm.destinatarios || "";
+                const recipients = Array.from(
+                  new Set(
+                    raw
+                      .split(/[;,\s]+/)
+                      .map((s) => s.trim())
+                      .filter((s) => s && /[^@\s]+@[^@\s]+\.[^@\s]+/.test(s)),
+                  ),
+                );
+                if (recipients.length === 0) {
+                  toast({
+                    title: "Aviso",
+                    description: "Informe pelo menos um destinatário",
+                  });
+                  return;
+                }
+                setEmailSending(true);
+                setEmailProgress({ total: recipients.length, sent: 0 });
+                try {
+                  const estEmail = String(
+                    currentEstabelecimento?.email || "",
+                  ).trim();
+                  for (let i = 0; i < recipients.length; i++) {
+                    const to = [recipients[i]];
+                    if (estEmail) to.push(estEmail);
+                    await makeRequest(
+                      `/api/abastecimentos/${currentEmailAbastecimento.id}/enviar-email`,
+                      {
+                        method: "POST",
+                        body: JSON.stringify({
+                          destinatarios: to,
+                          assunto: emailForm.assunto,
+                          mensagem: emailForm.mensagem,
+                        }),
+                      },
+                    );
+                    setEmailProgress((p) => ({ ...p, sent: p.sent + 1 }));
+                  }
+                  toast({
+                    title: "Sucesso",
+                    description: "Email enviado com sucesso",
+                  });
+                  await refreshAfterMutation();
+                  setShowEmailModal(false);
+                } catch (err: any) {
+                  toast({
+                    title: "Erro ao enviar email",
+                    description: err?.message || "Erro desconhecido",
+                    variant: "destructive",
+                  });
+                } finally {
+                  setEmailSending(false);
+                }
+              }}
+            >
+              Enviar Email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ImportModal
         isOpen={showImport}

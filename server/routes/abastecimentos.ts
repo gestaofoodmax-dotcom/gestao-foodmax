@@ -39,6 +39,7 @@ const AbastecimentoSchema = z.object({
       z.object({
         item_id: z.number().int().positive(),
         quantidade: z.number().int().positive(),
+        unidade_medida: z.string().min(1),
       }),
     )
     .min(1),
@@ -289,7 +290,7 @@ export const getAbastecimento: RequestHandler = async (req, res) => {
       const [{ data: itens }, { data: categorias }] = await Promise.all([
         supabase
           .from("itens")
-          .select("id, nome, estoque_atual, categoria_id")
+          .select("id, nome, estoque_atual, categoria_id, unidade_medida")
           .in("id", itemIds),
         supabase.from("itens_categorias").select("id, nome"),
       ]);
@@ -305,6 +306,7 @@ export const getAbastecimento: RequestHandler = async (req, res) => {
           ...i,
           item_nome: base.nome,
           estoque_atual: base.estoque_atual,
+          unidade_medida: i.unidade_medida || base.unidade_medida,
           categoria_nome: base.categoria_id
             ? catMap.get(base.categoria_id)
             : undefined,
@@ -444,6 +446,7 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
         abastecimento_id: abastecimento.id,
         item_id: item.item_id,
         quantidade: item.quantidade,
+        unidade_medida: item.unidade_medida,
       }));
       console.log("Inserting itens:", JSON.stringify(itensData, null, 2));
 
@@ -565,6 +568,7 @@ export const updateAbastecimento: RequestHandler = async (req, res) => {
             abastecimento_id: parseInt(id),
             item_id: item.item_id,
             quantidade: item.quantidade,
+            unidade_medida: item.unidade_medida,
           })),
         );
       }

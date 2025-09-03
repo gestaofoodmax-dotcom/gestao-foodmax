@@ -28,6 +28,7 @@ export interface AbastecimentoItem {
   abastecimento_id: number;
   item_id: number;
   quantidade: number;
+  unidade_medida: import("./itens").Item["unidade_medida"] | string;
   data_cadastro: string;
   data_atualizacao: string;
 }
@@ -51,6 +52,7 @@ export interface AbastecimentoDetalhado extends Abastecimento {
   itens: (AbastecimentoItem & {
     item_nome?: string;
     estoque_atual?: number;
+    unidade_medida?: import("./itens").Item["unidade_medida"] | string;
   })[];
   endereco?: AbastecimentoEndereco;
 }
@@ -70,6 +72,7 @@ export interface CreateAbastecimentoRequest {
   itens: {
     item_id: number;
     quantidade: number;
+    unidade_medida: import("./itens").Item["unidade_medida"] | string;
   }[];
   endereco: {
     cep?: string | null;

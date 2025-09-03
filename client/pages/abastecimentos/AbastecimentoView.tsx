@@ -233,6 +233,12 @@ export default function AbastecimentoView({
                       </div>
                       <div className="flex items-center gap-6 text-sm">
                         <div className="text-center">
+                          <div className="font-medium">
+                            {item.unidade_medida || "-"}
+                          </div>
+                          <div className="text-gray-500">Unidade</div>
+                        </div>
+                        <div className="text-center">
                           <div className="font-medium">{item.quantidade}</div>
                           <div className="text-gray-500">Qtde</div>
                         </div>
@@ -242,14 +248,8 @@ export default function AbastecimentoView({
                 </div>
                 <hr className="border-t border-gray-300 mt-4 mb-4" />
                 <div className="text-sm text-gray-700">
-                  <span className="font-medium">Quantidade Total: </span>
-                  <span className="font-semibold">
-                    {detalhe.itens.reduce(
-                      (total: number, item: any) =>
-                        total + (item.quantidade || 0),
-                      0,
-                    )}
-                  </span>
+                  <span className="font-medium">Total de Itens: </span>
+                  <span className="font-semibold">{detalhe.itens.length}</span>
                 </div>
               </div>
             )}
