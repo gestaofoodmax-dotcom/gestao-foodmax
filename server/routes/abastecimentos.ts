@@ -1016,9 +1016,9 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           let end: any = (record as any).endereco || null;
           if (!end) {
             const rawEnd = String(
-              (record as any).enderecos || (record as any).estabelecimento_endereco || "",
+              (record as any).estabelecimento_endereco || (record as any).enderecos || "",
             ).trim();
-            const endText = rawEnd.replace(/^endereço\s*:\s*/i, "").trim();
+            const endText = rawEnd.replace(/^(estabelecimento\s*)?endereço\s*:\s*/i, "").trim();
             if (endText) {
               const parts = endText.split("-").map((s) => s.trim());
               const cep = parts[0] || null;
