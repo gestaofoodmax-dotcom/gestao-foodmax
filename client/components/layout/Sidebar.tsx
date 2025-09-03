@@ -96,7 +96,10 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
       {
         key: "venda",
         label: "Venda",
-        items: [{ icon: ShoppingBag, label: "Pedidos", route: "/pedidos" }],
+        items: [
+          { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
+          { icon: Truck, label: "Entregas", route: "/entregas" },
+        ],
       },
     ],
     [],
