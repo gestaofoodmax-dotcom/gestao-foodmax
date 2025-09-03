@@ -484,6 +484,16 @@ export default function AbastecimentoForm({
     categorias.length > 0 &&
     itens.length > 0;
 
+  // Debug prerequisites
+  console.log("Prerequisites check:", {
+    dataLoaded,
+    estabelecimentos: estabelecimentos.length,
+    fornecedores: fornecedores.length,
+    categorias: categorias.length,
+    itens: itens.length,
+    hasPrerequisites,
+  });
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
