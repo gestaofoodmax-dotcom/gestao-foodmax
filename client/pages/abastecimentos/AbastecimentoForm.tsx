@@ -1137,7 +1137,7 @@ export default function AbastecimentoForm({
               console.log("Attempting to submit form...");
               handleSubmit(onSubmit)(e);
             }}
-            disabled={isLoading}
+            disabled={false}
             className="bg-foodmax-orange hover:bg-orange-600 disabled:opacity-50"
           >
             <Save className="w-4 h-4 mr-2" />{" "}
