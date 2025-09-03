@@ -948,6 +948,36 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           await supabase.from("abastecimentos_itens").insert(itensRows);
         }
 
+        // Save endereco if provided (structured or consolidated string)
+        try {
+          let end: any = (record as any).endereco || null;
+          if (!end) {
+            const endText = String((record as any).estabelecimento_endereco || "").trim();
+            if (endText) {
+              const parts = endText.split("-").map((s) => s.trim());
+              end = {
+                cep: parts[0] || null,
+                endereco: parts[1] || "",
+                cidade: parts[2] || "",
+                uf: parts[3] || "",
+                pais: parts[4] || "",
+              };
+            }
+          }
+          if (end && (end.endereco || end.cidade || end.uf || end.pais || end.cep)) {
+            await supabase.from("abastecimentos_enderecos").insert({
+              abastecimento_id: abastecimento.id,
+              cep: end.cep || null,
+              endereco: end.endereco || "",
+              cidade: end.cidade || "",
+              uf: end.uf || "",
+              pais: end.pais || "",
+            });
+          }
+        } catch (e) {
+          // ignore address errors on import
+        }
+
         imported++;
       } catch (e) {
         continue;
