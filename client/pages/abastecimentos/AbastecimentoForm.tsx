@@ -376,56 +376,11 @@ export default function AbastecimentoForm({
     console.log("Selected categoria:", selectedCategoriaId);
     console.log("Selected itens:", selectedItens);
 
-    // Basic validation
-    if (selectedFornecedoresIds.length === 0) {
-      toast({
-        title: "Erro de validação",
-        description: "Selecione pelo menos um Fornecedor",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!selectedCategoriaId) {
-      toast({
-        title: "Erro de validação",
-        description: "Selecione uma Categoria",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (selectedItens.length === 0) {
-      toast({
-        title: "Erro de validação",
-        description: "Adicione pelo menos um Item",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!data.estabelecimento_id) {
-      toast({
-        title: "Erro de validação",
-        description: "Selecione um Estabelecimento",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // Basic required field validation
     if (!data.telefone?.trim()) {
       toast({
         title: "Erro de validação",
         description: "Telefone é obrigatório",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!data.endereco?.trim() || !data.cidade?.trim() || !data.uf?.trim()) {
-      toast({
-        title: "Erro de validação",
-        description: "Endereço, Cidade e UF são obrigatórios",
         variant: "destructive",
       });
       return;
