@@ -146,7 +146,9 @@ export default function AbastecimentoForm({
     onConfirm: () => void;
   }>({ open: false, message: "", onConfirm: () => {} });
 
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<
+    Record<string, string>
+  >({});
   const {
     register,
     handleSubmit,
@@ -600,7 +602,7 @@ export default function AbastecimentoForm({
                       role="combobox"
                       className={cn(
                         "w-full justify-between foodmax-input",
-                        validationErrors.estabelecimento_id && "border-red-500"
+                        validationErrors.estabelecimento_id && "border-red-500",
                       )}
                     >
                       {watchedValues.estabelecimento_id
@@ -640,9 +642,11 @@ export default function AbastecimentoForm({
                     </Command>
                   </PopoverContent>
                 </Popover>
-                {(errors.estabelecimento_id || validationErrors.estabelecimento_id) && (
+                {(errors.estabelecimento_id ||
+                  validationErrors.estabelecimento_id) && (
                   <span className="text-sm text-red-600">
-                    {errors.estabelecimento_id?.message || validationErrors.estabelecimento_id}
+                    {errors.estabelecimento_id?.message ||
+                      validationErrors.estabelecimento_id}
                   </span>
                 )}
               </div>
@@ -656,7 +660,7 @@ export default function AbastecimentoForm({
                       role="combobox"
                       className={cn(
                         "w-full justify-between foodmax-input",
-                        validationErrors.fornecedores_ids && "border-red-500"
+                        validationErrors.fornecedores_ids && "border-red-500",
                       )}
                     >
                       {selectedFornecedoresIds.length > 0
@@ -725,7 +729,7 @@ export default function AbastecimentoForm({
                       role="combobox"
                       className={cn(
                         "w-full justify-between foodmax-input",
-                        validationErrors.categoria_id && "border-red-500"
+                        validationErrors.categoria_id && "border-red-500",
                       )}
                     >
                       {selectedCategoriaId
@@ -951,7 +955,7 @@ export default function AbastecimentoForm({
                     placeholder="DDD + número telefone"
                     className={cn(
                       "foodmax-input flex-1",
-                      validationErrors.telefone && "border-red-500"
+                      validationErrors.telefone && "border-red-500",
                     )}
                     maxLength={15}
                     onInput={(e) => {
@@ -1007,7 +1011,7 @@ export default function AbastecimentoForm({
                   {...register("endereco")}
                   className={cn(
                     "foodmax-input",
-                    validationErrors.endereco && "border-red-500"
+                    validationErrors.endereco && "border-red-500",
                   )}
                 />
                 {(errors.endereco || validationErrors.endereco) && (
@@ -1024,7 +1028,7 @@ export default function AbastecimentoForm({
                     {...register("cidade")}
                     className={cn(
                       "foodmax-input",
-                      validationErrors.cidade && "border-red-500"
+                      validationErrors.cidade && "border-red-500",
                     )}
                   />
                   {(errors.cidade || validationErrors.cidade) && (
@@ -1040,7 +1044,7 @@ export default function AbastecimentoForm({
                     {...register("uf")}
                     className={cn(
                       "foodmax-input",
-                      validationErrors.uf && "border-red-500"
+                      validationErrors.uf && "border-red-500",
                     )}
                     maxLength={2}
                   />
@@ -1058,7 +1062,7 @@ export default function AbastecimentoForm({
                   {...register("pais")}
                   className={cn(
                     "foodmax-input",
-                    validationErrors.pais && "border-red-500"
+                    validationErrors.pais && "border-red-500",
                   )}
                   defaultValue="Brasil"
                 />

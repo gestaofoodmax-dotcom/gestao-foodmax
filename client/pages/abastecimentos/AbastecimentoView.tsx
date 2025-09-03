@@ -195,7 +195,8 @@ export default function AbastecimentoView({
                 <DataField
                   label="Fornecedores"
                   value={
-                    detalhe?.fornecedores_nomes && detalhe.fornecedores_nomes.length > 0
+                    detalhe?.fornecedores_nomes &&
+                    detalhe.fornecedores_nomes.length > 0
                       ? detalhe.fornecedores_nomes.join(", ")
                       : "-"
                   }
@@ -242,7 +243,11 @@ export default function AbastecimentoView({
                 <div className="text-sm text-gray-700">
                   <span className="font-medium">Quantidade Total: </span>
                   <span className="font-semibold">
-                    {detalhe.itens.reduce((total: number, item: any) => total + (item.quantidade || 0), 0)}
+                    {detalhe.itens.reduce(
+                      (total: number, item: any) =>
+                        total + (item.quantidade || 0),
+                      0,
+                    )}
                   </span>
                 </div>
               </div>
@@ -295,18 +300,18 @@ export default function AbastecimentoView({
 
             {/* Observação */}
             {detalhe?.observacao &&
-             detalhe.observacao.trim() !== "Cadastro forçado pelo sistema" &&
-             detalhe.observacao.trim() !== "" && (
-              <div className="bg-white p-4 rounded-lg border">
-                <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-red-600" />
-                  <span className="text-red-600">Observação</span>
-                </h3>
-                <div className="text-sm text-gray-900 whitespace-pre-wrap">
-                  {detalhe.observacao}
+              detalhe.observacao.trim() !== "Cadastro forçado pelo sistema" &&
+              detalhe.observacao.trim() !== "" && (
+                <div className="bg-white p-4 rounded-lg border">
+                  <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-red-600" />
+                    <span className="text-red-600">Observação</span>
+                  </h3>
+                  <div className="text-sm text-gray-900 whitespace-pre-wrap">
+                    {detalhe.observacao}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Detalhes do Cadastro */}
             <div className="bg-white rounded-lg p-4 border">
