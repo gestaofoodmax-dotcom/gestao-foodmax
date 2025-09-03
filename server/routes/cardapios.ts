@@ -113,35 +113,50 @@ export const getCardapio: RequestHandler = async (req, res) => {
       return res.status(404).json({ error: "Cardápio não encontrado" });
     }
 
-    // Get cardapio items with item details
-    const { data: itens, error: itensError } = await supabase
+    // Get cardapio items rows (no nested joins)
+    const { data: ciRows, error: ciErr } = await supabase
       .from("cardapios_itens")
-      .select(
-        `
-        *,
-        itens:item_id (
-          id,
-          nome,
-          estoque_atual,
-          itens_categorias:categoria_id (nome)
-        )
-      `,
-      )
+      .select("id, item_id, quantidade, valor_unitario")
       .eq("cardapio_id", id);
+    if (ciErr) throw ciErr;
 
-    if (itensError) throw itensError;
+    let detailed: any[] = [];
+    if (ciRows && ciRows.length > 0) {
+      const itemIds = Array.from(new Set(ciRows.map((r: any) => r.item_id)));
+
+      const [{ data: itensRows }, { data: catsRows }] = await Promise.all([
+        supabase
+          .from("itens")
+          .select("id, nome, estoque_atual, categoria_id")
+          .in("id", itemIds),
+        supabase.from("itens_categorias").select("id, nome"),
+      ]);
+
+      const itensMap = new Map<number, any>();
+      (itensRows || []).forEach((i: any) => itensMap.set(i.id, i));
+      const catsMap = new Map<number, any>();
+      (catsRows || []).forEach((c: any) => catsMap.set(c.id, c));
+
+      detailed = ciRows.map((r: any) => {
+        const base = itensMap.get(r.item_id) || {};
+        const catNome = base.categoria_id
+          ? catsMap.get(base.categoria_id)?.nome
+          : undefined;
+        return {
+          id: r.id,
+          item_id: r.item_id,
+          item_nome: base.nome || "",
+          categoria_nome: catNome || "",
+          quantidade: r.quantidade,
+          valor_unitario: r.valor_unitario,
+          item_estoque_atual: base.estoque_atual,
+        };
+      });
+    }
 
     const cardapioDetalhado = {
       ...cardapio,
-      itens: itens.map((item) => ({
-        id: item.id,
-        item_id: item.item_id,
-        item_nome: item.itens?.nome || "",
-        categoria_nome: item.itens?.itens_categorias?.nome || "",
-        quantidade: item.quantidade,
-        valor_unitario: item.valor_unitario,
-        item_estoque_atual: item.itens?.estoque_atual,
-      })),
+      itens: detailed,
     };
 
     res.json(cardapioDetalhado);

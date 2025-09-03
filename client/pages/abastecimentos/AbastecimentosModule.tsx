@@ -208,13 +208,13 @@ export default function AbastecimentosModule() {
               className={`h-8 w-8 p-0 rounded-full border ${
                 r.email_enviado
                   ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50"
-                  : "bg-blue-50 hover:bg-blue-100 border-blue-200"
+                  : "bg-gray-50 hover:bg-gray-100 border-gray-200"
               }`}
               title={r.email_enviado ? "Email já enviado" : "Enviar"}
             >
               <Send
                 className={`w-4 h-4 ${
-                  r.email_enviado ? "text-gray-400" : "text-blue-700"
+                  r.email_enviado ? "text-gray-400" : "text-gray-700"
                 }`}
               />
             </Button>
@@ -222,19 +222,19 @@ export default function AbastecimentosModule() {
               variant="ghost"
               size="sm"
               onClick={() => handleView(r)}
-              className="h-8 w-8 p-0 rounded-full border bg-yellow-50 hover:bg-yellow-100 border-yellow-200"
+              className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
               title="Visualizar"
             >
-              <Eye className="w-4 h-4 text-yellow-700" />
+              <Eye className="w-4 h-4 text-blue-700" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => handleEdit(r)}
-              className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
+              className="h-8 w-8 p-0 rounded-full border bg-yellow-50 hover:bg-yellow-100 border-yellow-200"
               title="Editar"
             >
-              <Edit className="w-4 h-4 text-blue-700" />
+              <Edit className="w-4 h-4 text-yellow-700" />
             </Button>
             <Button
               variant="ghost"
@@ -339,7 +339,6 @@ export default function AbastecimentosModule() {
       const params = new URLSearchParams({
         page: String(currentPage),
         limit: String(pageSize),
-        ...(currentSearch && { search: currentSearch }),
         ...(activeTab !== "Todos" && { status: activeTab }),
       });
       let response: AbastecimentosListResponse | null = null;
@@ -353,16 +352,9 @@ export default function AbastecimentosModule() {
         setAbastecimentos(data as any);
       } else {
         const local = readLocalAbastecimentos();
-        const filtered = local
-          .filter((a) => activeTab === "Todos" || a.status === activeTab)
-          .filter(
-            (a) =>
-              !currentSearch ||
-              (a.observacao &&
-                a.observacao
-                  .toLowerCase()
-                  .includes(currentSearch.toLowerCase())),
-          );
+        const filtered = local.filter(
+          (a) => activeTab === "Todos" || a.status === activeTab,
+        );
         setAbastecimentos(enrichWithNomes(filtered) as any);
       }
     } finally {
@@ -649,11 +641,16 @@ export default function AbastecimentosModule() {
   const getAllAbastecimentosForExport = async (): Promise<any[]> => {
     try {
       const params = new URLSearchParams({ page: "1", limit: "1000" });
+      if (activeTab !== "Todos") params.set("status", activeTab as string);
       const resp = await makeRequest(`/api/abastecimentos?${params}`);
       const data = Array.isArray(resp?.data) ? resp.data : [];
       return enrichWithNomes(data as any);
     } catch {
-      return enrichWithNomes(readLocalAbastecimentos() as any);
+      return enrichWithNomes(
+        readLocalAbastecimentos().filter(
+          (a) => activeTab === "Todos" || a.status === activeTab,
+        ) as any,
+      );
     }
   };
 
@@ -829,10 +826,13 @@ export default function AbastecimentosModule() {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      const data =
-                        await getAbastecimentosWithRelationsForExport();
-                      setExportData(data);
+                      setExportData(filteredAbastecimentos as any);
                       setShowExport(true);
+                      try {
+                        const data =
+                          await getAbastecimentosWithRelationsForExport();
+                        setExportData(data);
+                      } catch {}
                     }}
                   >
                     <Download className="w-4 h-4 mr-2" />
