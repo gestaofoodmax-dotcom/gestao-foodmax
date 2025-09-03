@@ -1015,6 +1015,122 @@ export default function AbastecimentosModule() {
         ]}
       />
 
+      <Dialog open={showEmailModal} onOpenChange={(o) => !emailSending && setShowEmailModal(o)}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-foodmax-orange">
+              <ShoppingBag className="w-5 h-5 text-foodmax-orange" />
+              Realizar Pedido Compra
+            </DialogTitle>
+            <p className="text-xs text-black">Enviar Email para Fornecedor(es)</p>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label>Destinatários</Label>
+              <Input
+                value={emailForm.destinatarios}
+                onChange={(e) => setEmailForm((f) => ({ ...f, destinatarios: e.target.value }))}
+                placeholder="email1@dominio.com, email2@dominio.com"
+                className="foodmax-input"
+                disabled={emailSending}
+              />
+            </div>
+            <div>
+              <Label>Assunto do Email</Label>
+              <Input
+                value={emailForm.assunto}
+                onChange={(e) => setEmailForm((f) => ({ ...f, assunto: e.target.value }))}
+                className="foodmax-input"
+                disabled={emailSending}
+              />
+            </div>
+            <div>
+              <Label>Mensagem do Email</Label>
+              <Textarea
+                rows={10}
+                value={emailForm.mensagem}
+                onChange={(e) => setEmailForm((f) => ({ ...f, mensagem: e.target.value }))}
+                className="foodmax-input"
+                disabled={emailSending}
+              />
+            </div>
+
+            {emailSending && (
+              <div>
+                <Progress value={emailProgress.total ? (emailProgress.sent / emailProgress.total) * 100 : 0} />
+                <div className="mt-1 text-xs text-gray-600">
+                  Enviados {emailProgress.sent} de {emailProgress.total}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEmailModal(false)} disabled={emailSending}>
+              Cancelar
+            </Button>
+            <Button
+              className="bg-foodmax-orange text-white hover:bg-orange-600"
+              disabled={emailSending}
+              onClick={async () => {
+                if (!currentEmailAbastecimento) return;
+                const userRole = getUserRole();
+                const hasPaymentPlan = hasPayment();
+                if (userRole === "user" && !hasPaymentPlan) {
+                  toast({
+                    title: "Ação bloqueada",
+                    description: "Essa ação só funciona no plano pago",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                const raw = emailForm.destinatarios || "";
+                const recipients = Array.from(
+                  new Set(
+                    raw
+                      .split(/[;,\s]+/)
+                      .map((s) => s.trim())
+                      .filter((s) => s && /[^@\s]+@[^@\s]+\.[^@\s]+/.test(s)),
+                  ),
+                );
+                if (recipients.length === 0) {
+                  toast({ title: "Aviso", description: "Informe pelo menos um destinatário" });
+                  return;
+                }
+                setEmailSending(true);
+                setEmailProgress({ total: recipients.length, sent: 0 });
+                try {
+                  const estEmail = String(currentEstabelecimento?.email || "").trim();
+                  for (let i = 0; i < recipients.length; i++) {
+                    const to = [recipients[i]];
+                    if (estEmail) to.push(estEmail);
+                    await makeRequest(`/api/abastecimentos/${currentEmailAbastecimento.id}/enviar-email`, {
+                      method: "POST",
+                      body: JSON.stringify({
+                        destinatarios: to,
+                        assunto: emailForm.assunto,
+                        mensagem: emailForm.mensagem,
+                      }),
+                    });
+                    setEmailProgress((p) => ({ ...p, sent: p.sent + 1 }));
+                  }
+                  toast({ title: "Sucesso", description: "Email enviado com sucesso" });
+                  await refreshAfterMutation();
+                  setShowEmailModal(false);
+                } catch (err: any) {
+                  toast({ title: "Erro ao enviar email", description: err?.message || "Erro desconhecido", variant: "destructive" });
+                } finally {
+                  setEmailSending(false);
+                }
+              }}
+            >
+              Enviar Email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <ImportModal
         isOpen={showImport}
         onClose={() => setShowImport(false)}
