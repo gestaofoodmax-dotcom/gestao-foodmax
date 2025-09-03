@@ -1111,7 +1111,9 @@ export default function AbastecimentosModule() {
 
       <Dialog
         open={showEmailModal}
-        onOpenChange={(o) => !emailSending && !emailLoading && setShowEmailModal(o)}
+        onOpenChange={(o) =>
+          !emailSending && !emailLoading && setShowEmailModal(o)
+        }
       >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -1136,7 +1138,10 @@ export default function AbastecimentosModule() {
                 <Input
                   value={emailForm.destinatarios}
                   onChange={(e) =>
-                    setEmailForm((f) => ({ ...f, destinatarios: e.target.value }))
+                    setEmailForm((f) => ({
+                      ...f,
+                      destinatarios: e.target.value,
+                    }))
                   }
                   placeholder="email1@dominio.com, email2@dominio.com"
                   className="foodmax-input"
