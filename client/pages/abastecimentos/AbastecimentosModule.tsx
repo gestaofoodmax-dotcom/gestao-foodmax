@@ -1149,6 +1149,11 @@ export default function AbastecimentosModule() {
               }
             }
 
+            const fornecedoresText = String((r as any).fornecedores || (r as any)["Fornecedores"] || "").trim();
+            const fornecedores_nomes = fornecedoresText
+              ? fornecedoresText.split(";").map((s: string) => s.trim()).filter((s: string) => !!s)
+              : [];
+
             const endText = String(
               r.estabelecimento_endereco || r["Estabelecimento Endereço"] || "",
             ).trim();
