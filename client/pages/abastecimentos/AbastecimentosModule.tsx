@@ -1001,17 +1001,13 @@ export default function AbastecimentosModule() {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      // Open modal immediately with current data for responsiveness
-                      setExportData(filteredAbastecimentos as any);
-                      setShowExport(true);
-                      // Load enriched data in background (no blocking)
                       try {
-                        const data =
-                          await getAbastecimentosWithRelationsForExport();
+                        const data = await getAbastecimentosWithRelationsForExport();
                         setExportData(data);
                       } catch {
-                        // keep basic data
+                        setExportData(filteredAbastecimentos as any);
                       }
+                      setShowExport(true);
                     }}
                   >
                     <Download className="w-4 h-4 mr-2" />
