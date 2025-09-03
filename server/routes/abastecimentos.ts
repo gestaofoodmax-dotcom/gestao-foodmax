@@ -821,7 +821,12 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         observacao?: string | null;
         status?: string;
         email_enviado?: boolean;
-        itens?: { item_nome: string; quantidade: number }[];
+        codigo?: string;
+        itens?: {
+          item_nome: string;
+          quantidade: number;
+          unidade_medida?: string;
+        }[];
         endereco?: {
           cep?: string | null;
           endereco?: string;
@@ -830,6 +835,7 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           pais?: string;
         } | null;
         estabelecimento_endereco?: string;
+        enderecos?: string;
       }>;
     };
 
@@ -917,7 +923,12 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           telefone: record.telefone || "",
           ddi: record.ddi || "+55",
           email: record.email || null,
-          codigo: generateCodigo8(),
+          codigo:
+            record.codigo &&
+            typeof record.codigo === "string" &&
+            record.codigo.trim().length === 8
+              ? record.codigo.trim().toUpperCase()
+              : generateCodigo8(),
           data_hora_recebido: record.data_hora_recebido
             ? new Date(record.data_hora_recebido).toISOString()
             : null,
@@ -956,10 +967,12 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           abastecimento_id: number;
           item_id: number;
           quantidade: number;
+          unidade_medida: string;
         }[] = [];
         for (const it of itensInput) {
           const nome = String(it.item_nome || "").trim();
           const quantidade = Math.max(0, Number(it.quantidade) || 0);
+          const unidade_medida = String(it.unidade_medida || "un").trim();
           if (!nome || quantidade <= 0) continue;
 
           // Resolve or create item
@@ -981,7 +994,7 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
                 nome,
                 preco: 0,
                 custo_pago: 0,
-                unidade_medida: "un",
+                unidade_medida: unidade_medida || "un",
                 peso_gramas: null,
                 estoque_atual: 0,
                 ativo: true,
@@ -995,6 +1008,7 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
               abastecimento_id: abastecimento.id,
               item_id,
               quantidade,
+              unidade_medida: unidade_medida || "un",
             });
           }
         }
@@ -1007,17 +1021,38 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         try {
           let end: any = (record as any).endereco || null;
           if (!end) {
-            const endText = String(
-              (record as any).estabelecimento_endereco || "",
+            const rawEnd = String(
+              (record as any).estabelecimento_endereco ||
+                (record as any).enderecos ||
+                "",
             ).trim();
+            const endText = rawEnd
+              .replace(/^(estabelecimento\s*)?endereço\s*:\s*/i, "")
+              .trim();
             if (endText) {
               const parts = endText.split("-").map((s) => s.trim());
+              const cep = parts[0] || null;
+              const enderecoStr = parts[1] || "";
+              const cidadeUf = parts[2] || "";
+              const maybePais = parts[3] || "";
+              let cidade = "";
+              let uf = "";
+              let pais = maybePais;
+              if (cidadeUf.includes("/")) {
+                const [c, u] = cidadeUf.split("/").map((s) => s.trim());
+                cidade = c || "";
+                uf = u || "";
+              } else {
+                cidade = parts[2] || "";
+                uf = parts[3] || "";
+                pais = parts[4] || "";
+              }
               end = {
-                cep: parts[0] || null,
-                endereco: parts[1] || "",
-                cidade: parts[2] || "",
-                uf: parts[3] || "",
-                pais: parts[4] || "",
+                cep,
+                endereco: enderecoStr,
+                cidade,
+                uf,
+                pais,
               };
             }
           }

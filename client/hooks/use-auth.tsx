@@ -250,21 +250,55 @@ export function useAuthenticatedRequest() {
         throw new Error("Sessão inválida. Faça login novamente.");
       }
 
+      const method = String(options.method || "GET").toUpperCase();
       const headers = {
-        "Content-Type": "application/json",
+        ...(method !== "GET" ? { "Content-Type": "application/json" } : {}),
         "x-user-id": String(effectiveUserId),
-        ...options.headers,
+        ...(options.headers as any),
       } as Record<string, string>;
 
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      });
+      // Add a timeout so hung requests don't blow up the UI
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+
+      let response: Response;
+      try {
+        response = await fetch(url, {
+          ...options,
+          headers,
+          signal: controller.signal,
+        });
+      } catch (err: any) {
+        clearTimeout(timeout);
+        // Graceful offline/connection fallback for GET requests
+        if (method === "GET") {
+          return null as any;
+        }
+        const networkMsg =
+          navigator && navigator.onLine === false
+            ? "Sem conexão com a internet. Verifique sua rede."
+            : "Falha de rede ao comunicar com o servidor.";
+        const e = new Error(networkMsg);
+        (e as any).cause = err;
+        throw e;
+      } finally {
+        clearTimeout(timeout);
+      }
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}) as any);
-        const serverMessage =
-          (errorData as any)?.error || (errorData as any)?.message;
+        // Try to decode JSON error; if it fails, fall back to text/status
+        let errorData: any = {};
+        let serverMessage: string | undefined;
+        try {
+          errorData = await response.json();
+          serverMessage = errorData?.error || errorData?.message;
+        } catch {
+          try {
+            const text = await response.text();
+            serverMessage = text && text.length < 300 ? text : undefined;
+          } catch {}
+        }
+
         let friendly = serverMessage as string | undefined;
         if (!friendly) {
           switch (response.status) {
@@ -291,7 +325,15 @@ export function useAuthenticatedRequest() {
         throw err;
       }
 
-      return response.json();
+      // Try JSON response; if it fails, return null for GET
+      try {
+        return await response.json();
+      } catch (e) {
+        if (method === "GET") return null as any;
+        const err = new Error("Resposta inválida do servidor");
+        (err as any).cause = e;
+        throw err;
+      }
     },
     [user?.id],
   );

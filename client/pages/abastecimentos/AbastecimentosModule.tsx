@@ -112,6 +112,7 @@ export default function AbastecimentosModule() {
     mensagem: "",
   });
   const [emailSending, setEmailSending] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
   const [emailProgress, setEmailProgress] = useState({ total: 0, sent: 0 });
   const [currentEmailAbastecimento, setCurrentEmailAbastecimento] =
     useState<Abastecimento | null>(null);
@@ -610,15 +611,26 @@ export default function AbastecimentosModule() {
     setCurrentEmailAbastecimento(a);
     setEmailForm({ destinatarios: "", assunto: "", mensagem: "" });
     setEmailProgress({ total: 0, sent: 0 });
-    setShowEmailModal(true); // open immediately
+    setEmailLoading(true);
+    setShowEmailModal(true);
+
+    // Clear caches to ensure fresh data
+    try {
+      localStorage.removeItem(LOCAL_ABASTECIMENTOS);
+      localStorage.removeItem("fm_abastecimentos_cache");
+      localStorage.removeItem("fm_grid_cache");
+    } catch {}
 
     try {
+      const ts = Date.now();
       const est = await makeRequest(
-        `/api/estabelecimentos/${a.estabelecimento_id}`,
+        `/api/estabelecimentos/${a.estabelecimento_id}?_t=${ts}`,
       );
       setCurrentEstabelecimento(est || null);
 
-      const fornResp = await makeRequest(`/api/fornecedores?page=1&limit=1000`);
+      const fornResp = await makeRequest(
+        `/api/fornecedores?page=1&limit=1000&_t=${ts}`,
+      );
       const fornecedores = Array.isArray(fornResp?.data) ? fornResp.data : [];
       const fornecedoresSelecionados = fornecedores.filter((f: any) =>
         a.fornecedores_ids.includes(f.id),
@@ -640,7 +652,7 @@ export default function AbastecimentosModule() {
 
       let det: any = null;
       try {
-        det = await makeRequest(`/api/abastecimentos/${a.id}`);
+        det = await makeRequest(`/api/abastecimentos/${a.id}?_t=${ts}`);
       } catch {}
       const itens: any[] = Array.isArray(det?.itens) ? det.itens : [];
       const itensTexto = itens.length
@@ -674,6 +686,8 @@ export default function AbastecimentosModule() {
       setEmailProgress({ total: emailsFornecedores.length, sent: 0 });
     } catch (e) {
       toast({ title: "Erro", description: "Falha ao preparar envio de email" });
+    } finally {
+      setEmailLoading(false);
     }
   };
 
@@ -769,16 +783,20 @@ export default function AbastecimentosModule() {
                     ? i.quantidade
                     : Number(i.quantidade || 0) || 0;
                 const nome = String(i.item_nome || "").trim();
+                const um = String(i.unidade_medida || "Unidade").trim();
                 if (!nome || qtd <= 0) return "";
-                return `${nome} - ${qtd}`;
+                return `${nome} - ${um} - ${qtd}`;
               })
               .filter((s: string) => !!s)
               .join("; ")
           : "";
 
       const end = abastecimento.endereco || null;
+      const cityUf = end?.cidade
+        ? `${end.cidade}${end.uf ? `/${end.uf}` : ""}`
+        : "";
       const enderecoStr = end
-        ? [end.cep, end.endereco, end.cidade, end.uf, end.pais]
+        ? [end.cep, end.endereco, cityUf, end.pais]
             .filter((x) => typeof x === "string" && x.trim() !== "")
             .join(" - ")
         : "";
@@ -788,6 +806,7 @@ export default function AbastecimentosModule() {
         : "";
       return {
         estabelecimento_nome: abastecimento.estabelecimento_nome || "",
+        codigo: abastecimento.codigo || "",
         fornecedores: fornecedoresStr,
         categoria_nome: abastecimento.categoria_nome || "",
         quantidade_total: abastecimento.quantidade_total || 0,
@@ -836,7 +855,11 @@ export default function AbastecimentosModule() {
           // fallback to base row (without relations)
           return {
             estabelecimento_nome: a.estabelecimento_nome || "",
-            fornecedores: "",
+            codigo: a.codigo || "",
+            fornecedores:
+              a.fornecedores_nomes && a.fornecedores_nomes.length
+                ? a.fornecedores_nomes.join("; ")
+                : "",
             categoria_nome: a.categoria_nome || "",
             quantidade_total: a.quantidade_total || 0,
             telefone: a.telefone || "",
@@ -988,17 +1011,14 @@ export default function AbastecimentosModule() {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      // Open modal immediately with current data for responsiveness
-                      setExportData(filteredAbastecimentos as any);
-                      setShowExport(true);
-                      // Load enriched data in background (no blocking)
                       try {
                         const data =
                           await getAbastecimentosWithRelationsForExport();
                         setExportData(data);
                       } catch {
-                        // keep basic data
+                        setExportData(filteredAbastecimentos as any);
                       }
+                      setShowExport(true);
                     }}
                   >
                     <Download className="w-4 h-4 mr-2" />
@@ -1068,6 +1088,7 @@ export default function AbastecimentosModule() {
         moduleName="Abastecimentos"
         columns={[
           { key: "estabelecimento_nome", label: "Estabelecimento" },
+          { key: "codigo", label: "Código" },
           { key: "fornecedores", label: "Fornecedores" },
           { key: "categoria_nome", label: "Categoria" },
           { key: "quantidade_total", label: "Quantidade Total" },
@@ -1090,7 +1111,9 @@ export default function AbastecimentosModule() {
 
       <Dialog
         open={showEmailModal}
-        onOpenChange={(o) => !emailSending && setShowEmailModal(o)}
+        onOpenChange={(o) =>
+          !emailSending && !emailLoading && setShowEmailModal(o)
+        }
       >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -1103,70 +1126,80 @@ export default function AbastecimentosModule() {
             </p>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div>
-              <Label>Destinatários</Label>
-              <Input
-                value={emailForm.destinatarios}
-                onChange={(e) =>
-                  setEmailForm((f) => ({ ...f, destinatarios: e.target.value }))
-                }
-                placeholder="email1@dominio.com, email2@dominio.com"
-                className="foodmax-input"
-                disabled={emailSending}
-              />
+          {emailLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-foodmax-orange mr-2"></div>
+              <span className="text-sm text-gray-600">Carregando dados...</span>
             </div>
-            <div>
-              <Label>Assunto do Email</Label>
-              <Input
-                value={emailForm.assunto}
-                onChange={(e) =>
-                  setEmailForm((f) => ({ ...f, assunto: e.target.value }))
-                }
-                className="foodmax-input"
-                disabled={emailSending}
-              />
-            </div>
-            <div>
-              <Label>Mensagem do Email</Label>
-              <Textarea
-                rows={10}
-                value={emailForm.mensagem}
-                onChange={(e) =>
-                  setEmailForm((f) => ({ ...f, mensagem: e.target.value }))
-                }
-                className="foodmax-input"
-                disabled={emailSending}
-              />
-            </div>
-
-            {emailSending && (
+          ) : (
+            <div className="space-y-4">
               <div>
-                <Progress
-                  value={
-                    emailProgress.total
-                      ? (emailProgress.sent / emailProgress.total) * 100
-                      : 0
+                <Label>Destinatários</Label>
+                <Input
+                  value={emailForm.destinatarios}
+                  onChange={(e) =>
+                    setEmailForm((f) => ({
+                      ...f,
+                      destinatarios: e.target.value,
+                    }))
                   }
+                  placeholder="email1@dominio.com, email2@dominio.com"
+                  className="foodmax-input"
+                  disabled={emailSending || emailLoading}
                 />
-                <div className="mt-1 text-xs text-gray-600">
-                  Enviados {emailProgress.sent} de {emailProgress.total}
-                </div>
               </div>
-            )}
-          </div>
+              <div>
+                <Label>Assunto do Email</Label>
+                <Input
+                  value={emailForm.assunto}
+                  onChange={(e) =>
+                    setEmailForm((f) => ({ ...f, assunto: e.target.value }))
+                  }
+                  className="foodmax-input"
+                  disabled={emailSending || emailLoading}
+                />
+              </div>
+              <div>
+                <Label>Mensagem do Email</Label>
+                <Textarea
+                  rows={10}
+                  value={emailForm.mensagem}
+                  onChange={(e) =>
+                    setEmailForm((f) => ({ ...f, mensagem: e.target.value }))
+                  }
+                  className="foodmax-input"
+                  disabled={emailSending || emailLoading}
+                />
+              </div>
+
+              {emailSending && (
+                <div>
+                  <Progress
+                    value={
+                      emailProgress.total
+                        ? (emailProgress.sent / emailProgress.total) * 100
+                        : 0
+                    }
+                  />
+                  <div className="mt-1 text-xs text-gray-600">
+                    Enviados {emailProgress.sent} de {emailProgress.total}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setShowEmailModal(false)}
-              disabled={emailSending}
+              disabled={emailSending || emailLoading}
             >
               Cancelar
             </Button>
             <Button
               className="bg-foodmax-orange text-white hover:bg-orange-600"
-              disabled={emailSending}
+              disabled={emailSending || emailLoading}
               onClick={async () => {
                 if (!currentEmailAbastecimento) return;
                 const userRole = getUserRole();
@@ -1252,20 +1285,31 @@ export default function AbastecimentosModule() {
             label: "Estabelecimento",
             required: true,
           },
-          { key: "fornecedores", label: "Fornecedores (Nome; Nome; ...)" },
+          { key: "codigo", label: "Código" },
+          {
+            key: "fornecedores",
+            label: "Fornecedores (Nome do Fornecedor; Nome do Fornecedor; ...)",
+          },
           { key: "categoria_nome", label: "Categoria", required: true },
           { key: "telefone", label: "Telefone", required: true },
           { key: "ddi", label: "DDI" },
           { key: "email", label: "Email" },
-          { key: "data_hora_recebido", label: "Data/Hora Recebido" },
+          {
+            key: "data_hora_recebido",
+            label:
+              "Data/Hora Recebido (dd/mm/yyyy hh:mm:ss, horário de Brasília)",
+          },
           { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
-          { key: "itens", label: "Itens (Nome - Quantidade; ...)" },
+          {
+            key: "itens",
+            label: "Itens (Nome do Item - Unidade de Medida - Quantidade; ...)",
+          },
           {
             key: "estabelecimento_endereco",
             label:
-              "Estabelecimento Endereço (CEP - Endereço - Cidade - UF - País)",
+              "Estabelecimento Endereço (CEP - Endereço - Cidade/UF - País)",
           },
         ]}
         mapHeader={(h) => {
@@ -1274,6 +1318,8 @@ export default function AbastecimentosModule() {
 
           const exactMap: Record<string, string> = {
             Estabelecimento: "estabelecimento_nome",
+            Código: "codigo",
+            "Código do Abastecimento": "codigo",
             Fornecedores: "fornecedores",
             Categoria: "categoria_nome",
             Telefone: "telefone",
@@ -1285,6 +1331,7 @@ export default function AbastecimentosModule() {
             "Email Enviado": "email_enviado",
             Itens: "itens",
             "Estabelecimento Endereço": "estabelecimento_endereco",
+            Endereços: "estabelecimento_endereco",
           };
 
           if (exactMap[original]) {
@@ -1293,6 +1340,7 @@ export default function AbastecimentosModule() {
 
           const lowerMap: Record<string, string> = {
             estabelecimento: "estabelecimento_nome",
+            codigo: "codigo",
             fornecedores: "fornecedores",
             categoria: "categoria_nome",
             telefone: "telefone",
@@ -1306,6 +1354,8 @@ export default function AbastecimentosModule() {
             itens: "itens",
             "estabelecimento endereço": "estabelecimento_endereco",
             "endereço do estabelecimento": "estabelecimento_endereco",
+            enderecos: "estabelecimento_endereco",
+            endereços: "estabelecimento_endereco",
           };
 
           return lowerMap[n] || n.replace(/\s+/g, "_");
@@ -1358,30 +1408,53 @@ export default function AbastecimentosModule() {
           };
 
           const fullRecords = records.map((r) => {
-            const itensText = String(r.itens || r["Itens"] || "").trim();
-            const itens: { item_nome: string; quantidade: number }[] = [];
+            const itensRaw = String(r.itens || r["Itens"] || "").trim();
+            const itensText = itensRaw.replace(/^itens\s*:\s*/i, "").trim();
+            const itens: {
+              item_nome: string;
+              quantidade: number;
+              unidade_medida?: string;
+            }[] = [];
             if (itensText) {
               const groups = itensText
                 .split(";")
                 .map((g: string) => g.trim())
                 .filter((g: string) => g);
               for (const g of groups) {
-                const sepIndex = g.includes(",")
-                  ? g.indexOf(",")
-                  : g.indexOf("-");
-                if (sepIndex > -1) {
-                  const nome = g.slice(0, sepIndex).trim();
-                  const qtdStr = g.slice(sepIndex + 1).trim();
-                  const qtd = parseInt(qtdStr) || 0;
-                  if (nome && qtd > 0)
-                    itens.push({ item_nome: nome, quantidade: qtd });
+                const parts = g
+                  .split("-")
+                  .map((p) => p.trim())
+                  .filter(Boolean);
+                if (parts.length >= 3) {
+                  const quantidade = parseInt(parts[parts.length - 1]) || 0;
+                  const unidade_medida = parts[parts.length - 2] || "Unidade";
+                  const item_nome = parts
+                    .slice(0, parts.length - 2)
+                    .join("-")
+                    .trim();
+                  if (item_nome && quantidade > 0) {
+                    itens.push({ item_nome, quantidade, unidade_medida });
+                  }
+                } else if (parts.length >= 2) {
+                  // fallback antigo: Nome - Quantidade
+                  const quantidade = parseInt(parts[parts.length - 1]) || 0;
+                  const item_nome = parts
+                    .slice(0, parts.length - 1)
+                    .join("-")
+                    .trim();
+                  if (item_nome && quantidade > 0) {
+                    itens.push({ item_nome, quantidade });
+                  }
                 }
               }
             }
 
-            const fornecedoresText = String(
+            let fornecedoresText = String(
               (r as any).fornecedores || (r as any)["Fornecedores"] || "",
             ).trim();
+            fornecedoresText = fornecedoresText
+              .replace(/^fornecedores\s*:\s*/i, "")
+              .trim();
             const fornecedores_nomes = fornecedoresText
               ? fornecedoresText
                   .split(";")
@@ -1389,9 +1462,16 @@ export default function AbastecimentosModule() {
                   .filter((s: string) => !!s)
               : [];
 
-            const endText = String(
-              r.estabelecimento_endereco || r["Estabelecimento Endereço"] || "",
+            const endRaw = String(
+              (r as any).estabelecimento_endereco ||
+                r["Estabelecimento Endereço"] ||
+                (r as any).enderecos ||
+                (r as any)["Endereços"] ||
+                "",
             ).trim();
+            const endText = endRaw
+              .replace(/^(estabelecimento\s*)?endereço\s*:\s*/i, "")
+              .trim();
             let endereco: {
               cep?: string | null;
               endereco?: string;
@@ -1401,17 +1481,38 @@ export default function AbastecimentosModule() {
             } | null = null;
             if (endText) {
               const parts = endText.split("-").map((s: string) => s.trim());
+              // Expect: CEP - Endereco - Cidade/UF - País
+              const cep = parts[0] || null;
+              const enderecoStr = parts[1] || "";
+              const cidadeUf = parts[2] || "";
+              const pais = parts[3] || "";
+              let cidade = "";
+              let uf = "";
+              if (cidadeUf.includes("/")) {
+                const [c, u] = cidadeUf.split("/").map((s) => s.trim());
+                cidade = c || "";
+                uf = u || "";
+              } else {
+                cidade = cidadeUf || "";
+                uf = parts[4] || ""; // fallback antigo
+              }
               endereco = {
-                cep: parts[0] || null,
-                endereco: parts[1] || "",
-                cidade: parts[2] || "",
-                uf: parts[3] || "",
-                pais: parts[4] || "",
+                cep,
+                endereco: enderecoStr,
+                cidade,
+                uf,
+                pais,
               };
             }
 
             const status = String(r.status || "Pendente").trim();
             const email_enviado = String(r.email_enviado || "").toLowerCase();
+            const codigo = String(
+              (r as any).codigo ||
+                (r as any)["Código"] ||
+                (r as any)["Código do Abastecimento"] ||
+                "",
+            ).trim();
             return {
               estabelecimento_nome: String(
                 r.estabelecimento_nome || r.estabelecimento || "",
@@ -1431,6 +1532,7 @@ export default function AbastecimentosModule() {
                 : "Pendente",
               email_enviado:
                 email_enviado === "sim" || email_enviado === "true",
+              codigo: codigo || undefined,
               itens,
               endereco,
             };

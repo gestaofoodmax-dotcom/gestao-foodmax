@@ -444,6 +444,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
           status: z.string().optional(),
           data_cadastro: z.string().optional(),
           data_atualizacao: z.string().optional(),
+          itens: z.string().optional(),
           item_nome: z.string().optional(),
           item_quantidade: z.union([z.number(), z.string()]).optional(),
           item_valor_unitario: z.union([z.number(), z.string()]).optional(),
@@ -527,9 +528,31 @@ export const importCardapios: RequestHandler = async (req, res) => {
         });
       }
 
-      // Add item if provided
+      // Add item(s) if provided
+      const target = cardapiosMap.get(key);
+      if (r.itens && typeof r.itens === "string" && r.itens.trim()) {
+        const groups = r.itens
+          .split(";")
+          .map((g: string) => g.trim())
+          .filter((g: string) => !!g);
+        for (const g of groups) {
+          const parts = g
+            .split("-")
+            .map((p) => p.trim())
+            .filter(Boolean);
+          if (parts.length >= 3) {
+            const item_nome = parts.slice(0, parts.length - 2).join("-");
+            const quantidade = Number(parts[parts.length - 2]) || 0;
+            const valor_unitario = parseCentavos(parts[parts.length - 1]);
+            if (item_nome && quantidade > 0) {
+              target.itens.push({ item_nome, quantidade, valor_unitario });
+            }
+          }
+        }
+      }
+
       if (r.item_nome && r.item_nome.trim()) {
-        cardapiosMap.get(key).itens.push({
+        target.itens.push({
           item_nome: r.item_nome.trim(),
           quantidade:
             typeof r.item_quantidade === "string"

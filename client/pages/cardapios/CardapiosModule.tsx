@@ -441,15 +441,18 @@ export default function CardapiosModule() {
     );
   }, [cardapios, activeTab]);
 
-  const formatDateForExport = (dateValue: any): string => {
-    // DEFINITIVE SIMPLE FIX - ALWAYS RETURN VALID DATE
-    // First, just return today's date to test if export works
-    const today = new Date();
-    const day = String(today.getDate()).padStart(2, "0");
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const year = today.getFullYear();
-
-    return `${day}/${month}/${year}`;
+  const formatDateForExport = (value: any): string => {
+    if (!value) return "";
+    try {
+      const d = new Date(value);
+      if (isNaN(d.getTime())) return "";
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = String(d.getFullYear());
+      return `${dd}/${mm}/${yyyy}`;
+    } catch {
+      return "";
+    }
   };
 
   const loadAllCardapiosForExport = async (): Promise<
@@ -481,61 +484,28 @@ export default function CardapiosModule() {
   };
 
   const getCardapiosWithItemsForExport = async () => {
-    // Load all cardápios for export (not just the filtered ones from current tab)
     const allCardapios = await loadAllCardapiosForExport();
-
-    // If specific cardápios are selected, export only those
-    // Otherwise, export ALL cardápios
     const cardapiosToExport =
       selectedIds.length > 0
         ? allCardapios.filter((c) => selectedIds.includes(c.id))
         : allCardapios;
 
-    const exportData = [];
+    const exportRows: any[] = [];
     for (const cardapio of cardapiosToExport) {
       try {
-        const response = await makeRequest(`/api/cardapios/${cardapio.id}`);
-        const cardapioDetalhado = response;
-
-        if (cardapioDetalhado.itens && cardapioDetalhado.itens.length > 0) {
-          for (const item of cardapioDetalhado.itens) {
-            exportData.push({
-              nome: cardapio.nome,
-              tipo_cardapio: cardapio.tipo_cardapio,
-              quantidade_total: cardapio.quantidade_total,
-              preco_itens: (cardapio.preco_itens / 100).toFixed(2),
-              margem_lucro: cardapio.margem_lucro_percentual,
-              preco_total: (cardapio.preco_total / 100).toFixed(2),
-              descricao: cardapio.descricao || "",
-              ativo: cardapio.ativo ? "Ativo" : "Inativo",
-              data_cadastro: formatDateForExport(cardapio.data_cadastro),
-              data_atualizacao: formatDateForExport(cardapio.data_atualizacao),
-              item_nome: item.item_nome,
-              item_quantidade: item.quantidade,
-              item_valor_unitario: (item.valor_unitario / 100).toFixed(2),
-            });
-          }
-        } else {
-          // Cardápio sem itens
-          exportData.push({
-            nome: cardapio.nome,
-            tipo_cardapio: cardapio.tipo_cardapio,
-            quantidade_total: cardapio.quantidade_total,
-            preco_itens: (cardapio.preco_itens / 100).toFixed(2),
-            margem_lucro: cardapio.margem_lucro_percentual,
-            preco_total: (cardapio.preco_total / 100).toFixed(2),
-            descricao: cardapio.descricao || "",
-            ativo: cardapio.ativo ? "Ativo" : "Inativo",
-            data_cadastro: formatDateForExport(cardapio.data_cadastro),
-            data_atualizacao: formatDateForExport(cardapio.data_atualizacao),
-            item_nome: "",
-            item_quantidade: "",
-            item_valor_unitario: "",
-          });
-        }
-      } catch {
-        // Fallback to basic data if detailed fetch fails
-        exportData.push({
+        const det = await makeRequest(`/api/cardapios/${cardapio.id}`);
+        const itensArr: any[] = Array.isArray(det?.itens) ? det.itens : [];
+        const itensStr = itensArr
+          .map((i) => {
+            const nome = String(i.item_nome || "").trim();
+            const qtd = Number(i.quantidade || 0);
+            const vu = (Number(i.valor_unitario || 0) / 100).toFixed(2);
+            if (!nome || qtd <= 0) return "";
+            return `${nome} - ${qtd} - ${vu}`;
+          })
+          .filter(Boolean)
+          .join("; ");
+        exportRows.push({
           nome: cardapio.nome,
           tipo_cardapio: cardapio.tipo_cardapio,
           quantidade_total: cardapio.quantidade_total,
@@ -546,13 +516,25 @@ export default function CardapiosModule() {
           ativo: cardapio.ativo ? "Ativo" : "Inativo",
           data_cadastro: formatDateForExport(cardapio.data_cadastro),
           data_atualizacao: formatDateForExport(cardapio.data_atualizacao),
-          item_nome: "",
-          item_quantidade: "",
-          item_valor_unitario: "",
+          itens: itensStr,
+        });
+      } catch {
+        exportRows.push({
+          nome: cardapio.nome,
+          tipo_cardapio: cardapio.tipo_cardapio,
+          quantidade_total: cardapio.quantidade_total,
+          preco_itens: (cardapio.preco_itens / 100).toFixed(2),
+          margem_lucro: cardapio.margem_lucro_percentual,
+          preco_total: (cardapio.preco_total / 100).toFixed(2),
+          descricao: cardapio.descricao || "",
+          ativo: cardapio.ativo ? "Ativo" : "Inativo",
+          data_cadastro: formatDateForExport(cardapio.data_cadastro),
+          data_atualizacao: formatDateForExport(cardapio.data_atualizacao),
+          itens: "",
         });
       }
     }
-    return exportData;
+    return exportRows;
   };
 
   return (
@@ -734,9 +716,7 @@ export default function CardapiosModule() {
           { key: "ativo", label: "Ativo" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
-          { key: "item_nome", label: "Item Nome" },
-          { key: "item_quantidade", label: "Item Quantidade" },
-          { key: "item_valor_unitario", label: "Item Valor Unitario" },
+          { key: "itens", label: "Itens" },
         ]}
       />
 
@@ -750,16 +730,17 @@ export default function CardapiosModule() {
           { key: "nome", label: "Nome", required: true },
           { key: "tipo_cardapio", label: "Tipo de Cardápio", required: true },
           { key: "quantidade_total", label: "Quantidade Total" },
-          { key: "preco_itens", label: "Pre��o dos Itens" },
+          { key: "preco_itens", label: "Preço dos Itens" },
           { key: "margem_lucro", label: "Margem de Lucro", required: true },
           { key: "preco_total", label: "Preço Total", required: true },
           { key: "descricao", label: "Descrição" },
           { key: "ativo", label: "Ativo" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
-          { key: "item_nome", label: "Item Nome" },
-          { key: "item_quantidade", label: "Item Quantidade" },
-          { key: "item_valor_unitario", label: "Item Valor Unitario" },
+          {
+            key: "itens",
+            label: "Itens (Nome do Item - Quantidade - Valor Unitário; ... )",
+          },
         ]}
         mapHeader={(h) => {
           const n = h.trim().toLowerCase();
@@ -773,12 +754,10 @@ export default function CardapiosModule() {
             descrição: "descricao",
             descricao: "descricao",
             ativo: "ativo",
-            status: "ativo", // For backward compatibility
+            status: "ativo",
             "data cadastro": "data_cadastro",
             "data atualização": "data_atualizacao",
-            "item nome": "item_nome",
-            "item quantidade": "item_quantidade",
-            "item valor unitario": "item_valor_unitario",
+            itens: "itens",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
@@ -803,7 +782,7 @@ export default function CardapiosModule() {
           try {
             console.log("Importing records:", records);
 
-            // Send records directly to server for processing
+            // Send records directly to server for processing (server parses 'itens' string)
             const response = await makeRequest(`/api/cardapios/import`, {
               method: "POST",
               body: JSON.stringify({ records }),
