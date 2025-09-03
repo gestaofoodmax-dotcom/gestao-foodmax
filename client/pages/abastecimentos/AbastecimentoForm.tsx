@@ -96,7 +96,7 @@ const schema = z.object({
     .default("Pendente"),
   email_enviado: z.boolean().default(false),
   cep: z.string().nullable().optional(),
-  endereco: z.string().min(1, "Endere��o é obrigatório"),
+  endereco: z.string().min(1, "Endereço é obrigatório"),
   cidade: z.string().min(1, "Cidade é obrigatória"),
   uf: z.string().length(2, "UF deve ter 2 caracteres"),
   pais: z.string().min(1, "País é obrigatório"),
@@ -1044,9 +1044,9 @@ export default function AbastecimentoForm({
                     )}
                     maxLength={2}
                   />
-                  {errors.uf && (
+                  {(errors.uf || validationErrors.uf) && (
                     <span className="text-sm text-red-600">
-                      {errors.uf.message}
+                      {errors.uf?.message || validationErrors.uf}
                     </span>
                   )}
                 </div>
