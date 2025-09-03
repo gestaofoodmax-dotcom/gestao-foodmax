@@ -377,74 +377,48 @@ export default function AbastecimentoForm({
     console.log("Selected categoria:", selectedCategoriaId);
     console.log("Selected itens:", selectedItens);
 
+    // Clear previous validation errors
+    setValidationErrors({});
+    const newErrors: Record<string, string> = {};
+
     // Validação APENAS campos obrigatórios (marcados com *)
     if (!data.estabelecimento_id) {
-      toast({
-        title: "Erro de validação",
-        description: "Estabelecimento é obrigatório",
-        variant: "destructive",
-      });
-      return;
+      newErrors.estabelecimento_id = "Estabelecimento é obrigatório";
     }
 
     if (selectedFornecedoresIds.length === 0) {
-      toast({
-        title: "Erro de validação",
-        description: "Selecione pelo menos um Fornecedor",
-        variant: "destructive",
-      });
-      return;
+      newErrors.fornecedores_ids = "Selecione pelo menos um Fornecedor";
     }
 
     if (!selectedCategoriaId) {
-      toast({
-        title: "Erro de validação",
-        description: "Selecione uma Categoria",
-        variant: "destructive",
-      });
-      return;
+      newErrors.categoria_id = "Selecione uma Categoria";
     }
 
     if (!data.telefone?.trim()) {
-      toast({
-        title: "Erro de validação",
-        description: "Telefone é obrigatório",
-        variant: "destructive",
-      });
-      return;
+      newErrors.telefone = "Telefone é obrigatório";
     }
 
     if (!data.endereco?.trim()) {
-      toast({
-        title: "Erro de validação",
-        description: "Endereço é obrigatório",
-        variant: "destructive",
-      });
-      return;
+      newErrors.endereco = "Endereço é obrigatório";
     }
 
     if (!data.cidade?.trim()) {
-      toast({
-        title: "Erro de validação",
-        description: "Cidade é obrigatória",
-        variant: "destructive",
-      });
-      return;
+      newErrors.cidade = "Cidade é obrigatória";
     }
 
     if (!data.uf?.trim()) {
-      toast({
-        title: "Erro de validação",
-        description: "UF é obrigatório",
-        variant: "destructive",
-      });
-      return;
+      newErrors.uf = "UF é obrigatório";
     }
 
     if (!data.pais?.trim()) {
+      newErrors.pais = "País é obrigatório";
+    }
+
+    // If there are validation errors, show them and prevent submission
+    if (Object.keys(newErrors).length > 0) {
+      setValidationErrors(newErrors);
       toast({
-        title: "Erro de validação",
-        description: "País é obrigatório",
+        description: "Preencha todos os campos obrigatórios marcados com *",
         variant: "destructive",
       });
       return;
