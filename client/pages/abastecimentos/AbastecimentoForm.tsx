@@ -332,6 +332,7 @@ export default function AbastecimentoForm({
         telefone: abastecimento.telefone,
         ddi: abastecimento.ddi,
         email: abastecimento.email || "",
+        codigo: (abastecimento as any).codigo || "",
         data_hora_recebido: abastecimento.data_hora_recebido,
         observacao: abastecimento.observacao || "",
         status: abastecimento.status,
