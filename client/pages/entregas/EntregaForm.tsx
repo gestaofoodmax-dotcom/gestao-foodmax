@@ -633,20 +633,34 @@ export default function EntregaForm({
             </div>
           </div>
 
-          {/* Datas */}
+          {/* Endereço da Entrega */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <Calendar className="w-5 h-5 text-indigo-600" />
-              <h3 className="font-semibold text-indigo-600">Datas</h3>
+              <MapPin className="w-5 h-5 text-purple-600" />
+              <h3 className="font-semibold text-purple-600">Endereço da Entrega</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label>Data/Hora Saída</Label>
-                <Input type="datetime-local" value={values.data_hora_saida ? new Date(values.data_hora_saida).toISOString().slice(0, 16) : ""} onChange={(e) => setValue("data_hora_saida", e.target.value ? new Date(e.target.value).toISOString() : null)} className="foodmax-input" />
+                <Label>CEP</Label>
+                <Input {...register("cep" as any)} className="foodmax-input" maxLength={8} onInput={(e) => { const t = e.target as HTMLInputElement; t.value = t.value.replace(/[^0-9]/g, ""); }} />
               </div>
               <div>
-                <Label>Data/Hora Entregue</Label>
-                <Input type="datetime-local" value={values.data_hora_entregue ? new Date(values.data_hora_entregue).toISOString().slice(0, 16) : ""} onChange={(e) => setValue("data_hora_entregue", e.target.value ? new Date(e.target.value).toISOString() : null)} className="foodmax-input" />
+                <Label>Endereço *</Label>
+                <Input {...register("endereco")} className={cn("foodmax-input", errors.endereco && "border-red-500")} />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="col-span-2">
+                  <Label>Cidade *</Label>
+                  <Input {...register("cidade")} className={cn("foodmax-input", errors.cidade && "border-red-500")} />
+                </div>
+                <div>
+                  <Label>UF *</Label>
+                  <Input {...register("uf")} className={cn("foodmax-input", errors.uf && "border-red-500")} maxLength={2} />
+                </div>
+              </div>
+              <div>
+                <Label>País *</Label>
+                <Input {...register("pais")} className={cn("foodmax-input", errors.pais && "border-red-500")} defaultValue="Brasil" />
               </div>
             </div>
           </div>
