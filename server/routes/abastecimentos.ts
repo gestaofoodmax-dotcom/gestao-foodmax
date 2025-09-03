@@ -919,7 +919,10 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           telefone: record.telefone || "",
           ddi: record.ddi || "+55",
           email: record.email || null,
-          codigo: generateCodigo8(),
+          codigo:
+            record.codigo && typeof record.codigo === "string" && record.codigo.trim().length === 8
+              ? record.codigo.trim().toUpperCase()
+              : generateCodigo8(),
           data_hora_recebido: record.data_hora_recebido
             ? new Date(record.data_hora_recebido).toISOString()
             : null,
