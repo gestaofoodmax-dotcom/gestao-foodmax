@@ -401,38 +401,154 @@ export default function EntregaForm({
               </div>
 
               {selectedTipo === "Própria" ? (
-                <div className="md:col-span-2">
-                  <Label>Pedido *</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" role="combobox" className={cn("w-full justify-between foodmax-input")}> 
-                        {values.pedido_id ? (() => { const p = pedidos.find((x) => x.id === values.pedido_id); return p ? `${p.codigo} - ${formatCurrencyBRL(p.valor_total)}` : "Selecione"; })() : "Selecione"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-full p-0">
-                      <Command>
-                        <CommandInput placeholder="Filtrar pedido (código)..." />
-                        <CommandEmpty>Nenhum pedido encontrado.</CommandEmpty>
-                        <CommandList>
-                          <CommandGroup>
-                            {pedidos.map((p) => (
-                              <CommandItem key={p.id} onSelect={() => onSelectPedido(p.id)}>
-                                <Check className={cn("mr-2 h-4 w-4", values.pedido_id === p.id ? "opacity-100" : "opacity-0")} />
-                                {p.codigo} - {formatCurrencyBRL(p.valor_total)}
+                <>
+                  <div>
+                    <Label>Pedido *</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className={cn("w-full justify-between foodmax-input")}>
+                          {values.pedido_id ? (() => { const p = pedidos.find((x) => x.id === values.pedido_id); return p ? `${p.codigo} - ${(p.valor_total/100).toFixed(2)}` : "Selecione"; })() : "Selecione"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Filtrar pedido (código)..." />
+                          <CommandEmpty>Nenhum pedido encontrado.</CommandEmpty>
+                          <CommandList>
+                            <CommandGroup>
+                              {pedidos.map((p) => (
+                                <CommandItem key={p.id} onSelect={() => onSelectPedido(p.id)}>
+                                  <Check className={cn("mr-2 h-4 w-4", values.pedido_id === p.id ? "opacity-100" : "opacity-0")} />
+                                  {p.codigo} - {(p.valor_total/100).toFixed(2)}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                  <div>
+                    <Label>Cliente</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="w-full justify-between foodmax-input">
+                          {values.cliente_id ? (clientes.find((c) => c.id === values.cliente_id)?.nome || "Selecione") : "Não Cliente"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Filtrar cliente..." />
+                          <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                          <CommandList>
+                            <CommandGroup>
+                              <CommandItem onSelect={() => setValue("cliente_id", null)}>
+                                <Check className={cn("mr-2 h-4 w-4", !values.cliente_id ? "opacity-100" : "opacity-0")} />
+                                Não Cliente
                               </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                </div>
+                              {clientes.map((c) => (
+                                <CommandItem key={c.id} onSelect={async () => {
+                                  if (c.id !== values.cliente_id) {
+                                    setValue("cliente_id", c.id);
+                                    setShowPedidoClienteAlert({
+                                      open: true,
+                                      message: "Preencher dados de Telefone e Endereço com o Cliente selecionado?",
+                                      onConfirm: async () => {
+                                        try {
+                                          const cli = await makeRequest(`/api/clientes/${c.id}`);
+                                          if (cli) {
+                                            setValue("ddi", cli.ddi || "+55", { shouldDirty: true });
+                                            setValue("telefone", cli.telefone || "", { shouldDirty: true });
+                                            if (cli.endereco) {
+                                              setValue("cep", cli.endereco.cep || "", { shouldDirty: true });
+                                              setValue("endereco", cli.endereco.endereco || "", { shouldDirty: true });
+                                              setValue("cidade", cli.endereco.cidade || "", { shouldDirty: true });
+                                              setValue("uf", cli.endereco.uf || "", { shouldDirty: true });
+                                              setValue("pais", cli.endereco.pais || "Brasil", { shouldDirty: true });
+                                            }
+                                          }
+                                        } catch {}
+                                        setShowPedidoClienteAlert({ open: false, onConfirm: () => {}, message: "" });
+                                      },
+                                    });
+                                  }
+                                }}>
+                                  <Check className={cn("mr-2 h-4 w-4", values.cliente_id === c.id ? "opacity-100" : "opacity-0")} />
+                                  {c.nome}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </>
               ) : (
-                <div className="md:col-span-2">
-                  <Label>Código Pedido via APP *</Label>
-                  <Input {...register("codigo_pedido_app" as any)} className="foodmax-input" maxLength={64} />
-                </div>
+                <>
+                  <div>
+                    <Label>Código Pedido via APP *</Label>
+                    <Input {...register("codigo_pedido_app" as any)} className="foodmax-input" maxLength={64} />
+                  </div>
+                  <div>
+                    <Label>Cliente</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button variant="outline" role="combobox" className="w-full justify-between foodmax-input">
+                          {values.cliente_id ? (clientes.find((c) => c.id === values.cliente_id)?.nome || "Selecione") : "Não Cliente"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-full p-0">
+                        <Command>
+                          <CommandInput placeholder="Filtrar cliente..." />
+                          <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                          <CommandList>
+                            <CommandGroup>
+                              <CommandItem onSelect={() => setValue("cliente_id", null)}>
+                                <Check className={cn("mr-2 h-4 w-4", !values.cliente_id ? "opacity-100" : "opacity-0")} />
+                                Não Cliente
+                              </CommandItem>
+                              {clientes.map((c) => (
+                                <CommandItem key={c.id} onSelect={async () => {
+                                  if (c.id !== values.cliente_id) {
+                                    setValue("cliente_id", c.id);
+                                    setShowPedidoClienteAlert({
+                                      open: true,
+                                      message: "Preencher dados de Telefone e Endereço com o Cliente selecionado?",
+                                      onConfirm: async () => {
+                                        try {
+                                          const cli = await makeRequest(`/api/clientes/${c.id}`);
+                                          if (cli) {
+                                            setValue("ddi", cli.ddi || "+55", { shouldDirty: true });
+                                            setValue("telefone", cli.telefone || "", { shouldDirty: true });
+                                            if (cli.endereco) {
+                                              setValue("cep", cli.endereco.cep || "", { shouldDirty: true });
+                                              setValue("endereco", cli.endereco.endereco || "", { shouldDirty: true });
+                                              setValue("cidade", cli.endereco.cidade || "", { shouldDirty: true });
+                                              setValue("uf", cli.endereco.uf || "", { shouldDirty: true });
+                                              setValue("pais", cli.endereco.pais || "Brasil", { shouldDirty: true });
+                                            }
+                                          }
+                                        } catch {}
+                                        setShowPedidoClienteAlert({ open: false, onConfirm: () => {}, message: "" });
+                                      },
+                                    });
+                                  }
+                                }}>
+                                  <Check className={cn("mr-2 h-4 w-4", values.cliente_id === c.id ? "opacity-100" : "opacity-0")} />
+                                  {c.nome}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+                </>
               )}
 
             </div>
