@@ -654,7 +654,10 @@ export default function AbastecimentoForm({
                     <Button
                       variant="outline"
                       role="combobox"
-                      className="w-full justify-between foodmax-input"
+                      className={cn(
+                        "w-full justify-between foodmax-input",
+                        validationErrors.fornecedores_ids && "border-red-500"
+                      )}
                     >
                       {selectedFornecedoresIds.length > 0
                         ? `${selectedFornecedoresIds.length} selecionado(s)`
