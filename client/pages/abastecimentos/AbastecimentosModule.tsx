@@ -1026,6 +1026,8 @@ export default function AbastecimentosModule() {
             status: "status",
             "email enviado": "email_enviado",
             itens: "itens",
+            "estabelecimento endereço": "estabelecimento_endereco",
+            "endereço do estabelecimento": "estabelecimento_endereco",
           };
 
           return lowerMap[n] || n.replace(/\s+/g, "_");
