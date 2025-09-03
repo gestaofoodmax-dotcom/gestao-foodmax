@@ -440,7 +440,10 @@ export default function AbastecimentosModule() {
   };
 
   const handleSave = async (data: any) => {
+    console.log("=== HANDLE SAVE INICIADO ===");
     console.log("HandleSave called with data:", data);
+    console.log("Is editing:", isEditing);
+    console.log("Current abastecimento:", currentAbastecimento);
     setFormLoading(true);
     try {
       if (isEditing && currentAbastecimento) {
