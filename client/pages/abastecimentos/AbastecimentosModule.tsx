@@ -842,9 +842,10 @@ export default function AbastecimentosModule() {
           return {
             estabelecimento_nome: a.estabelecimento_nome || "",
             codigo: a.codigo || "",
-            fornecedores: a.fornecedores_nomes && a.fornecedores_nomes.length
-              ? a.fornecedores_nomes.join("; ")
-              : "",
+            fornecedores:
+              a.fornecedores_nomes && a.fornecedores_nomes.length
+                ? a.fornecedores_nomes.join("; ")
+                : "",
             categoria_nome: a.categoria_nome || "",
             quantidade_total: a.quantidade_total || 0,
             telefone: a.telefone || "",
@@ -997,7 +998,8 @@ export default function AbastecimentosModule() {
                     size="sm"
                     onClick={async () => {
                       try {
-                        const data = await getAbastecimentosWithRelationsForExport();
+                        const data =
+                          await getAbastecimentosWithRelationsForExport();
                         setExportData(data);
                       } catch {
                         setExportData(filteredAbastecimentos as any);
@@ -1086,7 +1088,10 @@ export default function AbastecimentosModule() {
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "itens", label: "Itens" },
-          { key: "estabelecimento_endereco", label: "Estabelecimento Endereço" },
+          {
+            key: "estabelecimento_endereco",
+            label: "Estabelecimento Endereço",
+          },
         ]}
       />
 
@@ -1255,17 +1260,31 @@ export default function AbastecimentosModule() {
             required: true,
           },
           { key: "codigo", label: "Código" },
-          { key: "fornecedores", label: "Fornecedores (Nome do Fornecedor; Nome do Fornecedor; ...)" },
+          {
+            key: "fornecedores",
+            label: "Fornecedores (Nome do Fornecedor; Nome do Fornecedor; ...)",
+          },
           { key: "categoria_nome", label: "Categoria", required: true },
           { key: "telefone", label: "Telefone", required: true },
           { key: "ddi", label: "DDI" },
           { key: "email", label: "Email" },
-          { key: "data_hora_recebido", label: "Data/Hora Recebido (dd/mm/yyyy hh:mm:ss, horário de Brasília)" },
+          {
+            key: "data_hora_recebido",
+            label:
+              "Data/Hora Recebido (dd/mm/yyyy hh:mm:ss, horário de Brasília)",
+          },
           { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
-          { key: "itens", label: "Itens (Nome do Item - Unidade de Medida - Quantidade; ...)" },
-          { key: "estabelecimento_endereco", label: "Estabelecimento Endereço (CEP - Endereço - Cidade/UF - País)" },
+          {
+            key: "itens",
+            label: "Itens (Nome do Item - Unidade de Medida - Quantidade; ...)",
+          },
+          {
+            key: "estabelecimento_endereco",
+            label:
+              "Estabelecimento Endereço (CEP - Endereço - Cidade/UF - País)",
+          },
         ]}
         mapHeader={(h) => {
           const original = h.trim();
@@ -1310,7 +1329,7 @@ export default function AbastecimentosModule() {
             "estabelecimento endereço": "estabelecimento_endereco",
             "endereço do estabelecimento": "estabelecimento_endereco",
             enderecos: "estabelecimento_endereco",
-            "endereços": "estabelecimento_endereco",
+            endereços: "estabelecimento_endereco",
           };
 
           return lowerMap[n] || n.replace(/\s+/g, "_");
@@ -1365,25 +1384,38 @@ export default function AbastecimentosModule() {
           const fullRecords = records.map((r) => {
             const itensRaw = String(r.itens || r["Itens"] || "").trim();
             const itensText = itensRaw.replace(/^itens\s*:\s*/i, "").trim();
-            const itens: { item_nome: string; quantidade: number; unidade_medida?: string }[] = [];
+            const itens: {
+              item_nome: string;
+              quantidade: number;
+              unidade_medida?: string;
+            }[] = [];
             if (itensText) {
               const groups = itensText
                 .split(";")
                 .map((g: string) => g.trim())
                 .filter((g: string) => g);
               for (const g of groups) {
-                const parts = g.split("-").map((p) => p.trim()).filter(Boolean);
+                const parts = g
+                  .split("-")
+                  .map((p) => p.trim())
+                  .filter(Boolean);
                 if (parts.length >= 3) {
                   const quantidade = parseInt(parts[parts.length - 1]) || 0;
                   const unidade_medida = parts[parts.length - 2] || "Unidade";
-                  const item_nome = parts.slice(0, parts.length - 2).join("-").trim();
+                  const item_nome = parts
+                    .slice(0, parts.length - 2)
+                    .join("-")
+                    .trim();
                   if (item_nome && quantidade > 0) {
                     itens.push({ item_nome, quantidade, unidade_medida });
                   }
                 } else if (parts.length >= 2) {
                   // fallback antigo: Nome - Quantidade
                   const quantidade = parseInt(parts[parts.length - 1]) || 0;
-                  const item_nome = parts.slice(0, parts.length - 1).join("-").trim();
+                  const item_nome = parts
+                    .slice(0, parts.length - 1)
+                    .join("-")
+                    .trim();
                   if (item_nome && quantidade > 0) {
                     itens.push({ item_nome, quantidade });
                   }
@@ -1394,7 +1426,9 @@ export default function AbastecimentosModule() {
             let fornecedoresText = String(
               (r as any).fornecedores || (r as any)["Fornecedores"] || "",
             ).trim();
-            fornecedoresText = fornecedoresText.replace(/^fornecedores\s*:\s*/i, "").trim();
+            fornecedoresText = fornecedoresText
+              .replace(/^fornecedores\s*:\s*/i, "")
+              .trim();
             const fornecedores_nomes = fornecedoresText
               ? fornecedoresText
                   .split(";")
@@ -1403,9 +1437,15 @@ export default function AbastecimentosModule() {
               : [];
 
             const endRaw = String(
-              (r as any).estabelecimento_endereco || r["Estabelecimento Endereço"] || (r as any).enderecos || (r as any)["Endereços"] || "",
+              (r as any).estabelecimento_endereco ||
+                r["Estabelecimento Endereço"] ||
+                (r as any).enderecos ||
+                (r as any)["Endereços"] ||
+                "",
             ).trim();
-            const endText = endRaw.replace(/^(estabelecimento\s*)?endereço\s*:\s*/i, "").trim();
+            const endText = endRaw
+              .replace(/^(estabelecimento\s*)?endereço\s*:\s*/i, "")
+              .trim();
             let endereco: {
               cep?: string | null;
               endereco?: string;
@@ -1441,7 +1481,12 @@ export default function AbastecimentosModule() {
 
             const status = String(r.status || "Pendente").trim();
             const email_enviado = String(r.email_enviado || "").toLowerCase();
-            const codigo = String((r as any).codigo || (r as any)["Código"] || (r as any)["Código do Abastecimento"] || "").trim();
+            const codigo = String(
+              (r as any).codigo ||
+                (r as any)["Código"] ||
+                (r as any)["Código do Abastecimento"] ||
+                "",
+            ).trim();
             return {
               estabelecimento_nome: String(
                 r.estabelecimento_nome || r.estabelecimento || "",

@@ -822,7 +822,11 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         status?: string;
         email_enviado?: boolean;
         codigo?: string;
-        itens?: { item_nome: string; quantidade: number; unidade_medida?: string }[];
+        itens?: {
+          item_nome: string;
+          quantidade: number;
+          unidade_medida?: string;
+        }[];
         endereco?: {
           cep?: string | null;
           endereco?: string;
@@ -920,7 +924,9 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           ddi: record.ddi || "+55",
           email: record.email || null,
           codigo:
-            record.codigo && typeof record.codigo === "string" && record.codigo.trim().length === 8
+            record.codigo &&
+            typeof record.codigo === "string" &&
+            record.codigo.trim().length === 8
               ? record.codigo.trim().toUpperCase()
               : generateCodigo8(),
           data_hora_recebido: record.data_hora_recebido
@@ -1016,9 +1022,13 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           let end: any = (record as any).endereco || null;
           if (!end) {
             const rawEnd = String(
-              (record as any).estabelecimento_endereco || (record as any).enderecos || "",
+              (record as any).estabelecimento_endereco ||
+                (record as any).enderecos ||
+                "",
             ).trim();
-            const endText = rawEnd.replace(/^(estabelecimento\s*)?endereço\s*:\s*/i, "").trim();
+            const endText = rawEnd
+              .replace(/^(estabelecimento\s*)?endereço\s*:\s*/i, "")
+              .trim();
             if (endText) {
               const parts = endText.split("-").map((s) => s.trim());
               const cep = parts[0] || null;
