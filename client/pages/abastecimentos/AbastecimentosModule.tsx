@@ -208,13 +208,13 @@ export default function AbastecimentosModule() {
               className={`h-8 w-8 p-0 rounded-full border ${
                 r.email_enviado
                   ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50"
-                  : "bg-black hover:bg-gray-900 border-gray-800"
+                  : "bg-gray-50 hover:bg-gray-100 border-gray-200"
               }`}
               title={r.email_enviado ? "Email já enviado" : "Enviar"}
             >
               <Send
                 className={`w-4 h-4 ${
-                  r.email_enviado ? "text-gray-400" : "text-white"
+                  r.email_enviado ? "text-gray-400" : "text-black"
                 }`}
               />
             </Button>
