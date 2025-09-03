@@ -1056,7 +1056,10 @@ export default function AbastecimentoForm({
                 <Input
                   id="pais"
                   {...register("pais")}
-                  className="foodmax-input"
+                  className={cn(
+                    "foodmax-input",
+                    validationErrors.pais && "border-red-500"
+                  )}
                   defaultValue="Brasil"
                 />
                 {errors.pais && (
