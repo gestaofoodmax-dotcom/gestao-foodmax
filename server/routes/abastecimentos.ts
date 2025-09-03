@@ -1015,17 +1015,34 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         try {
           let end: any = (record as any).endereco || null;
           if (!end) {
-            const endText = String(
-              (record as any).estabelecimento_endereco || "",
+            const rawEnd = String(
+              (record as any).enderecos || (record as any).estabelecimento_endereco || "",
             ).trim();
+            const endText = rawEnd.replace(/^endereço\s*:\s*/i, "").trim();
             if (endText) {
               const parts = endText.split("-").map((s) => s.trim());
+              const cep = parts[0] || null;
+              const enderecoStr = parts[1] || "";
+              const cidadeUf = parts[2] || "";
+              const maybePais = parts[3] || "";
+              let cidade = "";
+              let uf = "";
+              let pais = maybePais;
+              if (cidadeUf.includes("/")) {
+                const [c, u] = cidadeUf.split("/").map((s) => s.trim());
+                cidade = c || "";
+                uf = u || "";
+              } else {
+                cidade = parts[2] || "";
+                uf = parts[3] || "";
+                pais = parts[4] || "";
+              }
               end = {
-                cep: parts[0] || null,
-                endereco: parts[1] || "",
-                cidade: parts[2] || "",
-                uf: parts[3] || "",
-                pais: parts[4] || "",
+                cep,
+                endereco: enderecoStr,
+                cidade,
+                uf,
+                pais,
               };
             }
           }
