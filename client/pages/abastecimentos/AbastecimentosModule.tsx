@@ -1108,10 +1108,12 @@ export default function AbastecimentosModule() {
           const parseDate = (dateStr: string) => {
             if (!dateStr) return null;
             const s = String(dateStr).trim();
-            const re = /^(\d{2})\/(\d{2})\/(\d{4})(?:[ ,]+(\d{2}):(\d{2})(?::(\d{2}))?)?$/;
+            const re =
+              /^(\d{2})\/(\d{2})\/(\d{4})(?:[ ,]+(\d{2}):(\d{2})(?::(\d{2}))?)?$/;
             const m = s.match(re);
             if (m) {
-              const [, dd, mm, yyyy, hh = "00", mi = "00", ss = "00"] = m as any;
+              const [, dd, mm, yyyy, hh = "00", mi = "00", ss = "00"] =
+                m as any;
               return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}-03:00`;
             }
             try {
