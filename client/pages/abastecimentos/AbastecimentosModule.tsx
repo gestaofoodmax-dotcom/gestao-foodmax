@@ -661,6 +661,29 @@ export default function AbastecimentosModule() {
         ? all.filter((a: any) => selectedIds.includes(a.id))
         : all;
 
+    const formatDateTimeBRNoComma = (iso: string | null | undefined) => {
+      if (!iso) return "";
+      const date = new Date(iso);
+      const parts = new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).formatToParts(date);
+      const get = (type: string) => parts.find((p) => p.type === type)?.value || "";
+      const dd = get("day");
+      const mm = get("month");
+      const yyyy = get("year");
+      const hh = get("hour");
+      const mi = get("minute");
+      const ss = get("second");
+      return `${dd}/${mm}/${yyyy} ${hh}:${mi}:${ss}`;
+    };
+
     const exportRows: any[] = [];
 
     for (const a of abastecimentosToExport) {
