@@ -22,7 +22,7 @@ import {
   Calendar,
   X,
   Edit,
-  ShoppingBag,
+  Package,
   Users,
 } from "lucide-react";
 
@@ -157,10 +157,10 @@ export default function AbastecimentoView({
           <div className="space-y-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <ShoppingBag className="w-6 h-6 text-foodmax-orange" />
+                <Package className="w-6 h-6 text-foodmax-orange" />
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
-                    Abastecimento #{detalhe.id}
+                    {detalhe.codigo || `Abastecimento #${detalhe.id}`}
                   </h2>
                 </div>
               </div>
@@ -200,6 +200,10 @@ export default function AbastecimentoView({
                       ? detalhe.fornecedores_nomes.join(", ")
                       : "-"
                   }
+                />
+                <DataField
+                  label="Código do Abastecimento"
+                  value={detalhe.codigo || "-"}
                 />
               </div>
             </div>
@@ -286,10 +290,13 @@ export default function AbastecimentoView({
                     value={detalhe.endereco.endereco || "-"}
                   />
                   <DataField
-                    label="Cidade"
-                    value={detalhe.endereco.cidade || "-"}
+                    label="Cidade/UF"
+                    value={
+                      detalhe.endereco.cidade
+                        ? `${detalhe.endereco.cidade}${detalhe.endereco.uf ? `/${detalhe.endereco.uf}` : ""}`
+                        : "-"
+                    }
                   />
-                  <DataField label="UF" value={detalhe.endereco.uf || "-"} />
                   <DataField
                     label="País"
                     value={detalhe.endereco.pais || "-"}

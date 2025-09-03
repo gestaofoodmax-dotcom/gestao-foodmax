@@ -14,6 +14,7 @@ export interface Abastecimento {
   telefone: string;
   ddi: string;
   email?: string | null;
+  codigo?: string | null;
   data_hora_recebido: string | null;
   observacao?: string | null;
   status: StatusAbastecimento;
@@ -65,6 +66,7 @@ export interface CreateAbastecimentoRequest {
   observacao?: string | null;
   status?: StatusAbastecimento;
   email_enviado?: boolean;
+  codigo?: string | null;
   itens: {
     item_id: number;
     quantidade: number;

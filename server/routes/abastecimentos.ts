@@ -53,6 +53,12 @@ const AbastecimentoSchema = z.object({
     uf: z.string().length(2),
     pais: z.string().min(1),
   }),
+  codigo: z
+    .string()
+    .or(z.literal(""))
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
 });
 
 const UpdateAbastecimentoSchema = AbastecimentoSchema.partial();
@@ -378,6 +384,7 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
       telefone: parsed.telefone,
       ddi: parsed.ddi,
       email: parsed.email || null,
+      codigo: parsed.codigo || null,
       data_hora_recebido: parsed.data_hora_recebido || null,
       observacao: parsed.observacao || null,
       status: parsed.status || "Pendente",
@@ -388,11 +395,36 @@ export const createAbastecimento: RequestHandler = async (req, res) => {
       JSON.stringify(abastecimentoData, null, 2),
     );
 
-    const { data: abastecimento, error } = await supabase
-      .from("abastecimentos")
-      .insert(abastecimentoData)
-      .select()
-      .single();
+    let insertResult;
+    try {
+      insertResult = await supabase
+        .from("abastecimentos")
+        .insert(abastecimentoData)
+        .select()
+        .single();
+    } catch (e) {
+      insertResult = { data: null, error: e } as any;
+    }
+
+    let abastecimento = insertResult.data;
+    let error = insertResult.error;
+
+    if (
+      error &&
+      String(error.message || error)
+        .toLowerCase()
+        .includes("codigo")
+    ) {
+      console.warn("Retrying insert without 'codigo' column (fallback mode)");
+      const { codigo, ...fallbackData } = abastecimentoData as any;
+      const retry = await supabase
+        .from("abastecimentos")
+        .insert(fallbackData)
+        .select()
+        .single();
+      abastecimento = retry.data;
+      error = retry.error as any;
+    }
 
     if (error) {
       console.error("Supabase error inserting abastecimento:", error);
@@ -487,14 +519,34 @@ export const updateAbastecimento: RequestHandler = async (req, res) => {
       );
     }
 
-    const { data: abastecimento, error } = await supabase
+    let updateRes = await supabase
       .from("abastecimentos")
       .update(abastecimentoUpdate)
       .eq("id", id)
       .eq("id_usuario", userId)
       .select()
       .single();
-    if (error) throw error;
+
+    if (
+      updateRes.error &&
+      String(updateRes.error.message || "")
+        .toLowerCase()
+        .includes("codigo")
+    ) {
+      console.warn("Retrying update without 'codigo' column (fallback mode)");
+      const { codigo, ...fallbackUpdate } = abastecimentoUpdate as any;
+      updateRes = await supabase
+        .from("abastecimentos")
+        .update(fallbackUpdate)
+        .eq("id", id)
+        .eq("id_usuario", userId)
+        .select()
+        .single();
+    }
+
+    if (updateRes.error) throw updateRes.error;
+
+    const abastecimento = updateRes.data;
 
     if (parsed.itens) {
       await supabase

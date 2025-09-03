@@ -131,6 +131,12 @@ export default function AbastecimentosModule() {
         render: (v: any, r: any) => r.estabelecimento_nome || "-",
       },
       {
+        key: "codigo",
+        label: "Código",
+        sortable: true,
+        render: (v: any, r: any) => r.codigo || "-",
+      },
+      {
         key: "categoria_nome",
         label: "Categoria",
         sortable: true,
