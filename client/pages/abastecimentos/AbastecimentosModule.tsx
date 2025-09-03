@@ -762,23 +762,31 @@ export default function AbastecimentosModule() {
         : [];
       const itensStr =
         itensArr.length > 0
-          ? itensArr
+          ?
+            `Itens: ` +
+            itensArr
               .map((i: any) => {
                 const qtd =
                   typeof i.quantidade === "number"
                     ? i.quantidade
                     : Number(i.quantidade || 0) || 0;
                 const nome = String(i.item_nome || "").trim();
+                const um = String(i.unidade_medida || "Unidade").trim();
                 if (!nome || qtd <= 0) return "";
-                return `${nome} - ${qtd}`;
+                return `${nome} - ${um} - ${qtd}`;
               })
               .filter((s: string) => !!s)
               .join("; ")
           : "";
 
       const end = abastecimento.endereco || null;
+      const cityUf = end?.cidade
+        ? `${end.cidade}${end.uf ? `/${end.uf}` : ""}`
+        : "";
       const enderecoStr = end
-        ? [end.cep, end.endereco, end.cidade, end.uf, end.pais]
+        ?
+          `Endereço: ` +
+          [end.cep, end.endereco, cityUf, end.pais]
             .filter((x) => typeof x === "string" && x.trim() !== "")
             .join(" - ")
         : "";
@@ -788,6 +796,7 @@ export default function AbastecimentosModule() {
         : "";
       return {
         estabelecimento_nome: abastecimento.estabelecimento_nome || "",
+        codigo: abastecimento.codigo || "",
         fornecedores: fornecedoresStr,
         categoria_nome: abastecimento.categoria_nome || "",
         quantidade_total: abastecimento.quantidade_total || 0,
@@ -803,7 +812,7 @@ export default function AbastecimentosModule() {
         data_cadastro: abastecimento.data_cadastro || "",
         data_atualizacao: abastecimento.data_atualizacao || "",
         itens: itensStr,
-        estabelecimento_endereco: enderecoStr,
+        enderecos: enderecoStr,
       } as any;
     };
 
@@ -836,6 +845,7 @@ export default function AbastecimentosModule() {
           // fallback to base row (without relations)
           return {
             estabelecimento_nome: a.estabelecimento_nome || "",
+            codigo: a.codigo || "",
             fornecedores: "",
             categoria_nome: a.categoria_nome || "",
             quantidade_total: a.quantidade_total || 0,
@@ -849,7 +859,7 @@ export default function AbastecimentosModule() {
             data_cadastro: a.data_cadastro || "",
             data_atualizacao: a.data_atualizacao || "",
             itens: "",
-            estabelecimento_endereco: "",
+            enderecos: "",
           } as any;
         }),
       );
@@ -1068,6 +1078,7 @@ export default function AbastecimentosModule() {
         moduleName="Abastecimentos"
         columns={[
           { key: "estabelecimento_nome", label: "Estabelecimento" },
+          { key: "codigo", label: "Código" },
           { key: "fornecedores", label: "Fornecedores" },
           { key: "categoria_nome", label: "Categoria" },
           { key: "quantidade_total", label: "Quantidade Total" },
@@ -1081,10 +1092,7 @@ export default function AbastecimentosModule() {
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "itens", label: "Itens" },
-          {
-            key: "estabelecimento_endereco",
-            label: "Estabelecimento Endereço",
-          },
+          { key: "enderecos", label: "Endereços" },
         ]}
       />
 
@@ -1252,6 +1260,7 @@ export default function AbastecimentosModule() {
             label: "Estabelecimento",
             required: true,
           },
+          { key: "codigo", label: "Código" },
           { key: "fornecedores", label: "Fornecedores (Nome; Nome; ...)" },
           { key: "categoria_nome", label: "Categoria", required: true },
           { key: "telefone", label: "Telefone", required: true },
@@ -1261,12 +1270,8 @@ export default function AbastecimentosModule() {
           { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
-          { key: "itens", label: "Itens (Nome - Quantidade; ...)" },
-          {
-            key: "estabelecimento_endereco",
-            label:
-              "Estabelecimento Endereço (CEP - Endereço - Cidade - UF - País)",
-          },
+          { key: "itens", label: "Itens (Itens: Nome - Unidade - Quantidade; ...)" },
+          { key: "enderecos", label: "Endereços (Endereço: CEP - Endereço - Cidade/UF - País)" },
         ]}
         mapHeader={(h) => {
           const original = h.trim();
@@ -1274,6 +1279,8 @@ export default function AbastecimentosModule() {
 
           const exactMap: Record<string, string> = {
             Estabelecimento: "estabelecimento_nome",
+            Código: "codigo",
+            "Código do Abastecimento": "codigo",
             Fornecedores: "fornecedores",
             Categoria: "categoria_nome",
             Telefone: "telefone",
@@ -1284,7 +1291,8 @@ export default function AbastecimentosModule() {
             Status: "status",
             "Email Enviado": "email_enviado",
             Itens: "itens",
-            "Estabelecimento Endereço": "estabelecimento_endereco",
+            Endereços: "enderecos",
+            "Estabelecimento Endereço": "enderecos",
           };
 
           if (exactMap[original]) {
@@ -1293,6 +1301,7 @@ export default function AbastecimentosModule() {
 
           const lowerMap: Record<string, string> = {
             estabelecimento: "estabelecimento_nome",
+            codigo: "codigo",
             fornecedores: "fornecedores",
             categoria: "categoria_nome",
             telefone: "telefone",
@@ -1304,8 +1313,10 @@ export default function AbastecimentosModule() {
             status: "status",
             "email enviado": "email_enviado",
             itens: "itens",
-            "estabelecimento endereço": "estabelecimento_endereco",
-            "endereço do estabelecimento": "estabelecimento_endereco",
+            "estabelecimento endereço": "enderecos",
+            "endereço do estabelecimento": "enderecos",
+            enderecos: "enderecos",
+            "endereços": "enderecos",
           };
 
           return lowerMap[n] || n.replace(/\s+/g, "_");
@@ -1358,23 +1369,30 @@ export default function AbastecimentosModule() {
           };
 
           const fullRecords = records.map((r) => {
-            const itensText = String(r.itens || r["Itens"] || "").trim();
-            const itens: { item_nome: string; quantidade: number }[] = [];
+            const itensRaw = String(r.itens || r["Itens"] || "").trim();
+            const itensText = itensRaw.replace(/^itens\s*:\s*/i, "").trim();
+            const itens: { item_nome: string; quantidade: number; unidade_medida?: string }[] = [];
             if (itensText) {
               const groups = itensText
                 .split(";")
                 .map((g: string) => g.trim())
                 .filter((g: string) => g);
               for (const g of groups) {
-                const sepIndex = g.includes(",")
-                  ? g.indexOf(",")
-                  : g.indexOf("-");
-                if (sepIndex > -1) {
-                  const nome = g.slice(0, sepIndex).trim();
-                  const qtdStr = g.slice(sepIndex + 1).trim();
-                  const qtd = parseInt(qtdStr) || 0;
-                  if (nome && qtd > 0)
-                    itens.push({ item_nome: nome, quantidade: qtd });
+                const parts = g.split("-").map((p) => p.trim()).filter(Boolean);
+                if (parts.length >= 3) {
+                  const quantidade = parseInt(parts[parts.length - 1]) || 0;
+                  const unidade_medida = parts[parts.length - 2] || "Unidade";
+                  const item_nome = parts.slice(0, parts.length - 2).join("-").trim();
+                  if (item_nome && quantidade > 0) {
+                    itens.push({ item_nome, quantidade, unidade_medida });
+                  }
+                } else if (parts.length >= 2) {
+                  // fallback antigo: Nome - Quantidade
+                  const quantidade = parseInt(parts[parts.length - 1]) || 0;
+                  const item_nome = parts.slice(0, parts.length - 1).join("-").trim();
+                  if (item_nome && quantidade > 0) {
+                    itens.push({ item_nome, quantidade });
+                  }
                 }
               }
             }
@@ -1389,9 +1407,10 @@ export default function AbastecimentosModule() {
                   .filter((s: string) => !!s)
               : [];
 
-            const endText = String(
-              r.estabelecimento_endereco || r["Estabelecimento Endereço"] || "",
+            const endRaw = String(
+              (r as any).enderecos || (r as any)["Endereços"] || r.estabelecimento_endereco || r["Estabelecimento Endereço"] || "",
             ).trim();
+            const endText = endRaw.replace(/^endereço\s*:\s*/i, "").trim();
             let endereco: {
               cep?: string | null;
               endereco?: string;
@@ -1401,17 +1420,33 @@ export default function AbastecimentosModule() {
             } | null = null;
             if (endText) {
               const parts = endText.split("-").map((s: string) => s.trim());
+              // Expect: CEP - Endereco - Cidade/UF - País
+              const cep = parts[0] || null;
+              const enderecoStr = parts[1] || "";
+              const cidadeUf = parts[2] || "";
+              const pais = parts[3] || "";
+              let cidade = "";
+              let uf = "";
+              if (cidadeUf.includes("/")) {
+                const [c, u] = cidadeUf.split("/").map((s) => s.trim());
+                cidade = c || "";
+                uf = u || "";
+              } else {
+                cidade = cidadeUf || "";
+                uf = parts[4] || ""; // fallback antigo
+              }
               endereco = {
-                cep: parts[0] || null,
-                endereco: parts[1] || "",
-                cidade: parts[2] || "",
-                uf: parts[3] || "",
-                pais: parts[4] || "",
+                cep,
+                endereco: enderecoStr,
+                cidade,
+                uf,
+                pais,
               };
             }
 
             const status = String(r.status || "Pendente").trim();
             const email_enviado = String(r.email_enviado || "").toLowerCase();
+            const codigo = String((r as any).codigo || (r as any)["Código"] || (r as any)["Código do Abastecimento"] || "").trim();
             return {
               estabelecimento_nome: String(
                 r.estabelecimento_nome || r.estabelecimento || "",
@@ -1431,6 +1466,7 @@ export default function AbastecimentosModule() {
                 : "Pendente",
               email_enviado:
                 email_enviado === "sim" || email_enviado === "true",
+              codigo: codigo || undefined,
               itens,
               endereco,
             };
