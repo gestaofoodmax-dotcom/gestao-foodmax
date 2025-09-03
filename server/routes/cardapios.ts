@@ -536,7 +536,10 @@ export const importCardapios: RequestHandler = async (req, res) => {
           .map((g: string) => g.trim())
           .filter((g: string) => !!g);
         for (const g of groups) {
-          const parts = g.split("-").map((p) => p.trim()).filter(Boolean);
+          const parts = g
+            .split("-")
+            .map((p) => p.trim())
+            .filter(Boolean);
           if (parts.length >= 3) {
             const item_nome = parts.slice(0, parts.length - 2).join("-");
             const quantidade = Number(parts[parts.length - 2]) || 0;

@@ -737,7 +737,10 @@ export default function CardapiosModule() {
           { key: "ativo", label: "Ativo" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
-          { key: "itens", label: "Itens (Nome do Item - Quantidade - Valor Unitário; ... )" },
+          {
+            key: "itens",
+            label: "Itens (Nome do Item - Quantidade - Valor Unitário; ... )",
+          },
         ]}
         mapHeader={(h) => {
           const n = h.trim().toLowerCase();
