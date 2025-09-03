@@ -29,7 +29,7 @@ import { Estabelecimento } from "@shared/estabelecimentos";
 import { Pedido } from "@shared/pedidos";
 import { Cliente } from "@shared/clientes";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, ChevronsUpDown, Check, X, Save, Truck, Wallet, Calendar, Users, Phone, MapPin, FileText } from "lucide-react";
+import { AlertTriangle, ChevronsUpDown, Check, X, Save, FileText, DollarSign, Calendar, Users, Phone, MapPin } from "lucide-react";
 import {
   Popover,
   PopoverContent,
