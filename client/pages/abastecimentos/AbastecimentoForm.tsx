@@ -187,6 +187,7 @@ export default function AbastecimentoForm({
         telefone: "",
         ddi: "+55",
         email: "",
+        codigo: "",
         data_hora_recebido: null,
         observacao: "",
         status: "Pendente",
