@@ -616,45 +616,13 @@ export default function EntregaForm({
               </div>
             </div>
 
-          {/* Cliente e Contato */}
+          {/* Contato da Entrega */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
               <Users className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-green-600">Cliente e Contato</h3>
+              <h3 className="font-semibold text-green-600">Contato da Entrega</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <Label>Cliente</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" role="combobox" className="w-full justify-between foodmax-input">
-                      {values.cliente_id ? (clientes.find((c) => c.id === values.cliente_id)?.nome || "Selecione") : "Não Cliente"}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-full p-0">
-                    <Command>
-                      <CommandInput placeholder="Filtrar cliente..." />
-                      <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
-                      <CommandList>
-                        <CommandGroup>
-                          <CommandItem onSelect={() => setValue("cliente_id", null)}>
-                            <Check className={cn("mr-2 h-4 w-4", !values.cliente_id ? "opacity-100" : "opacity-0")} />
-                            Não Cliente
-                          </CommandItem>
-                          {clientes.map((c) => (
-                            <CommandItem key={c.id} onSelect={() => setValue("cliente_id", c.id)}>
-                              <Check className={cn("mr-2 h-4 w-4", values.cliente_id === c.id ? "opacity-100" : "opacity-0")} />
-                              {c.nome}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
-
               <div className="md:col-span-2">
                 <Label>Telefone</Label>
                 <div className="flex gap-2">
