@@ -668,6 +668,23 @@ export default function AbastecimentosModule() {
         const det = await makeRequest(`/api/abastecimentos/${a.id}`);
         const abastecimento = det || a;
 
+        const itensArr: any[] = Array.isArray(abastecimento.itens)
+          ? abastecimento.itens
+          : [];
+        const itensStr =
+          itensArr.length > 0
+            ? itensArr
+                .map((i: any) => {
+                  const qtd =
+                    typeof i.quantidade === "number"
+                      ? i.quantidade
+                      : Number(i.quantidade || 0) || 0;
+                  return `${i.item_nome || ""} - ${qtd}`.trim();
+                })
+                .filter((s: string) => s && s !== " - 0")
+                .join("; ")
+            : "";
+
         exportRows.push({
           estabelecimento_nome: abastecimento.estabelecimento_nome || "",
           categoria_nome: abastecimento.categoria_nome || "",
@@ -683,6 +700,7 @@ export default function AbastecimentosModule() {
           email_enviado: abastecimento.email_enviado ? "Sim" : "Não",
           data_cadastro: abastecimento.data_cadastro || "",
           data_atualizacao: abastecimento.data_atualizacao || "",
+          itens: itensStr,
         });
       } catch {
         exportRows.push({
@@ -698,6 +716,7 @@ export default function AbastecimentosModule() {
           email_enviado: a.email_enviado ? "Sim" : "Não",
           data_cadastro: a.data_cadastro || "",
           data_atualizacao: a.data_atualizacao || "",
+          itens: "",
         });
       }
     }
@@ -913,6 +932,7 @@ export default function AbastecimentosModule() {
           { key: "email_enviado", label: "Email Enviado" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
+          { key: "itens", label: "Itens" },
         ]}
       />
 
@@ -929,7 +949,6 @@ export default function AbastecimentosModule() {
             required: true,
           },
           { key: "categoria_nome", label: "Categoria", required: true },
-          { key: "quantidade_total", label: "Quantidade Total" },
           { key: "telefone", label: "Telefone", required: true },
           { key: "ddi", label: "DDI" },
           { key: "email", label: "Email" },
@@ -937,6 +956,7 @@ export default function AbastecimentosModule() {
           { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
+          { key: "itens", label: "Itens (Nome - Quantidade; ...)" },
         ]}
         mapHeader={(h) => {
           const original = h.trim();
@@ -945,7 +965,6 @@ export default function AbastecimentosModule() {
           const exactMap: Record<string, string> = {
             Estabelecimento: "estabelecimento_nome",
             Categoria: "categoria_nome",
-            "Quantidade Total": "quantidade_total",
             Telefone: "telefone",
             DDI: "ddi",
             Email: "email",
@@ -953,6 +972,7 @@ export default function AbastecimentosModule() {
             Observação: "observacao",
             Status: "status",
             "Email Enviado": "email_enviado",
+            Itens: "itens",
           };
 
           if (exactMap[original]) {
@@ -962,7 +982,6 @@ export default function AbastecimentosModule() {
           const lowerMap: Record<string, string> = {
             estabelecimento: "estabelecimento_nome",
             categoria: "categoria_nome",
-            "quantidade total": "quantidade_total",
             telefone: "telefone",
             ddi: "ddi",
             email: "email",
@@ -971,6 +990,7 @@ export default function AbastecimentosModule() {
             observacao: "observacao",
             status: "status",
             "email enviado": "email_enviado",
+            itens: "itens",
           };
 
           return lowerMap[n] || n.replace(/\s+/g, "_");
@@ -999,7 +1019,97 @@ export default function AbastecimentosModule() {
 
           return errors;
         }}
-        onImport={handleImportAbastecimentos}
+        onImport={async (records) => {
+          // Parse and normalize records to full import payload
+          const now = new Date().toISOString();
+
+          const parseDate = (dateStr: string) => {
+            if (!dateStr) return null;
+            const s = String(dateStr);
+            // DD/MM/YYYY, with optional time
+            try {
+              if (s.includes("/") && (s.includes(",") || s.includes(" "))) {
+                const sepIndex = s.indexOf(",") >= 0 ? s.indexOf(",") : s.indexOf(" ");
+                const datePart = s.slice(0, sepIndex).trim();
+                const timePart = s.slice(sepIndex + 1).trim();
+                const [day, month, year] = datePart.split("/");
+                const [hh = "0", mm = "0", ss = "0"] = timePart.split(":");
+                const d = new Date(
+                  Date.UTC(
+                    parseInt(year),
+                    parseInt(month) - 1,
+                    parseInt(day),
+                    parseInt(hh),
+                    parseInt(mm),
+                    parseInt(ss),
+                  ),
+                );
+                return isNaN(d.getTime()) ? null : d.toISOString();
+              } else if (s.includes("/") && !s.includes(":")) {
+                const [day, month, year] = s.split("/");
+                const d = new Date(Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)));
+                return isNaN(d.getTime()) ? null : d.toISOString();
+              }
+              const d = new Date(s);
+              return isNaN(d.getTime()) ? null : d.toISOString();
+            } catch {
+              return null;
+            }
+          };
+
+          const fullRecords = records.map((r) => {
+            const itensText = String(r.itens || r["Itens"] || "").trim();
+            const itens: { item_nome: string; quantidade: number }[] = [];
+            if (itensText) {
+              const groups = itensText
+                .split(";")
+                .map((g: string) => g.trim())
+                .filter((g: string) => g);
+              for (const g of groups) {
+                const parts = g.split("-").map((s: string) => s.trim());
+                if (parts.length >= 2) {
+                  const nome = parts[0];
+                  const qtd = parseInt(parts[1]) || 0;
+                  if (nome && qtd > 0) itens.push({ item_nome: nome, quantidade: qtd });
+                }
+              }
+            }
+
+            const status = String(r.status || "Pendente").trim();
+            const email_enviado = String(r.email_enviado || "").toLowerCase();
+            return {
+              estabelecimento_nome: String(r.estabelecimento_nome || r.estabelecimento || "").trim(),
+              categoria_nome: String(r.categoria_nome || r.categoria || "").trim(),
+              telefone: String(r.telefone || "").trim(),
+              ddi: String(r.ddi || "+55").trim(),
+              email: String(r.email || "").trim() || null,
+              data_hora_recebido: parseDate(r.data_hora_recebido || ""),
+              observacao: String(r.observacao || r["Observação"] || "").trim() || null,
+              status: STATUS_ABASTECIMENTO.includes(status as any) ? status : "Pendente",
+              email_enviado: email_enviado === "sim" || email_enviado === "true",
+              itens,
+            };
+          });
+
+          try {
+            const response = await makeRequest(`/api/abastecimentos/import-full`, {
+              method: "POST",
+              body: JSON.stringify({ records: fullRecords }),
+            });
+            await Promise.all([loadAbastecimentos(), loadCounts()]);
+            return {
+              success: true,
+              imported: response?.imported ?? fullRecords.length,
+              message: `${response?.imported ?? fullRecords.length} abastecimento(s) importado(s) com relações`,
+            } as any;
+          } catch (e) {
+            return {
+              success: false,
+              imported: 0,
+              message: "Erro ao importar: " + (e as Error).message,
+            } as any;
+          }
+        }}
       />
 
       <DeleteAlert
