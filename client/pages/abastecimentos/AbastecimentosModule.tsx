@@ -641,11 +641,16 @@ export default function AbastecimentosModule() {
   const getAllAbastecimentosForExport = async (): Promise<any[]> => {
     try {
       const params = new URLSearchParams({ page: "1", limit: "1000" });
+      if (activeTab !== "Todos") params.set("status", activeTab as string);
       const resp = await makeRequest(`/api/abastecimentos?${params}`);
       const data = Array.isArray(resp?.data) ? resp.data : [];
       return enrichWithNomes(data as any);
     } catch {
-      return enrichWithNomes(readLocalAbastecimentos() as any);
+      return enrichWithNomes(
+        readLocalAbastecimentos().filter(
+          (a) => activeTab === "Todos" || a.status === activeTab,
+        ) as any,
+      );
     }
   };
 
