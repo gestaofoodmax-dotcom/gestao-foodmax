@@ -100,7 +100,7 @@ const schema = z.object({
   cidade: z.string().min(1, "Cidade é obrigatória"),
   uf: z.string().length(2, "UF deve ter 2 caracteres"),
   pais: z.string().min(1, "País é obrigatório"),
-  codigo: z.string().min(1, "Código do Abastecimento é obrigatório"),
+  codigo: z.string().length(8, "Código deve ter 8 caracteres"),
 });
 
 type FormData = z.infer<typeof schema>;
