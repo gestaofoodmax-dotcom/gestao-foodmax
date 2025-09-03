@@ -352,16 +352,9 @@ export default function AbastecimentosModule() {
         setAbastecimentos(data as any);
       } else {
         const local = readLocalAbastecimentos();
-        const filtered = local
-          .filter((a) => activeTab === "Todos" || a.status === activeTab)
-          .filter(
-            (a) =>
-              !currentSearch ||
-              (a.observacao &&
-                a.observacao
-                  .toLowerCase()
-                  .includes(currentSearch.toLowerCase())),
-          );
+        const filtered = local.filter(
+          (a) => activeTab === "Todos" || a.status === activeTab,
+        );
         setAbastecimentos(enrichWithNomes(filtered) as any);
       }
     } finally {
@@ -933,7 +926,7 @@ export default function AbastecimentosModule() {
           { key: "ddi", label: "DDI" },
           { key: "email", label: "Email" },
           { key: "data_hora_recebido", label: "Data/Hora Recebido" },
-          { key: "observacao", label: "Observação" },
+          { key: "observacao", label: "Observaç��o" },
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
         ]}
