@@ -949,7 +949,10 @@ export default function AbastecimentoForm({
                     id="telefone"
                     {...register("telefone")}
                     placeholder="DDD + número telefone"
-                    className="foodmax-input flex-1"
+                    className={cn(
+                      "foodmax-input flex-1",
+                      validationErrors.telefone && "border-red-500"
+                    )}
                     maxLength={15}
                     onInput={(e) => {
                       const target = e.target as HTMLInputElement;
