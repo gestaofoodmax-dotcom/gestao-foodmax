@@ -463,7 +463,9 @@ export default function AbastecimentoForm({
       observacao: data.observacao?.trim() || null,
       status: (data.status as StatusAbastecimento) || "Pendente",
       email_enviado: Boolean(data.email_enviado),
-      codigo: String((data as any).codigo || "").trim().toUpperCase(),
+      codigo: String((data as any).codigo || "")
+        .trim()
+        .toUpperCase(),
       itens: selectedItens.map((item) => ({
         item_id: Number(item.item_id),
         quantidade: Number(item.quantidade),
@@ -743,7 +745,10 @@ export default function AbastecimentoForm({
                   maxLength={8}
                   onInput={(e) => {
                     const t = e.target as HTMLInputElement;
-                    t.value = t.value.replace(/[^a-z0-9]/gi, "").toUpperCase().slice(0, 8);
+                    t.value = t.value
+                      .replace(/[^a-z0-9]/gi, "")
+                      .toUpperCase()
+                      .slice(0, 8);
                   }}
                 />
                 {(errors as any).codigo && (
