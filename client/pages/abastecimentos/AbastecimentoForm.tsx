@@ -424,6 +424,10 @@ export default function AbastecimentoForm({
       newErrors.pais = "País é obrigatório";
     }
 
+    if (selectedItens.length === 0) {
+      newErrors.itens = "Selecione pelo menos um Item";
+    }
+
     // If there are validation errors, show them and prevent submission
     if (Object.keys(newErrors).length > 0) {
       setValidationErrors(newErrors);
