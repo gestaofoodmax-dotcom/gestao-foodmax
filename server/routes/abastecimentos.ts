@@ -821,7 +821,8 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
         observacao?: string | null;
         status?: string;
         email_enviado?: boolean;
-        itens?: { item_nome: string; quantidade: number }[];
+        codigo?: string;
+        itens?: { item_nome: string; quantidade: number; unidade_medida?: string }[];
         endereco?: {
           cep?: string | null;
           endereco?: string;
@@ -830,6 +831,7 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           pais?: string;
         } | null;
         estabelecimento_endereco?: string;
+        enderecos?: string;
       }>;
     };
 
