@@ -29,7 +29,7 @@ import { Estabelecimento } from "@shared/estabelecimentos";
 import { Pedido } from "@shared/pedidos";
 import { Cliente } from "@shared/clientes";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, ChevronsUpDown, Check, X, Save } from "lucide-react";
+import { AlertTriangle, ChevronsUpDown, Check, X, Save, Truck, Wallet, Calendar, Users, Phone, MapPin, FileText } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -351,8 +351,12 @@ export default function EntregaForm({
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Dados Básicos */}
+          {/* Dados da Entrega */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <Truck className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-blue-600">Dados da Entrega</h3>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Estabelecimento *</Label>
@@ -426,6 +430,16 @@ export default function EntregaForm({
                 </div>
               )}
 
+            </div>
+          </div>
+
+          {/* Valores */}
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <Wallet className="w-5 h-5 text-yellow-600" />
+              <h3 className="font-semibold text-yellow-600">Valores</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <Label>Valor do Pedido (R$)</Label>
                 <Input
@@ -453,6 +467,8 @@ export default function EntregaForm({
                   className={cn("foodmax-input", (!values.valor_entrega && values.valor_entrega !== 0) && "border-red-500")}
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Forma de Pagamento *</Label>
                 <Select value={values.forma_pagamento as any} onValueChange={(v) => setValue("forma_pagamento", v as any)}>
@@ -462,12 +478,20 @@ export default function EntregaForm({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
+          {/* Cliente e Contato */}
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <Users className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Cliente e Contato</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Label>Cliente</Label>
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" role="combobox" className="w-full justify-between foodmax-input"> 
+                    <Button variant="outline" role="combobox" className="w-full justify-between foodmax-input">
                       {values.cliente_id ? (clientes.find((c) => c.id === values.cliente_id)?.nome || "Selecione") : "Não Cliente"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -502,7 +526,16 @@ export default function EntregaForm({
                   <Input {...register("telefone")} placeholder="DDD + número telefone" className={cn("foodmax-input flex-1", errors.telefone && "border-red-500")} maxLength={15} onInput={(e) => { const t = e.target as HTMLInputElement; t.value = t.value.replace(/[^0-9]/g, ""); }} />
                 </div>
               </div>
+            </div>
+          </div>
 
+          {/* Datas */}
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <Calendar className="w-5 h-5 text-indigo-600" />
+              <h3 className="font-semibold text-indigo-600">Datas</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Data/Hora Saída</Label>
                 <Input type="datetime-local" value={values.data_hora_saida ? new Date(values.data_hora_saida).toISOString().slice(0, 16) : ""} onChange={(e) => setValue("data_hora_saida", e.target.value ? new Date(e.target.value).toISOString() : null)} className="foodmax-input" />
@@ -511,16 +544,27 @@ export default function EntregaForm({
                 <Label>Data/Hora Entregue</Label>
                 <Input type="datetime-local" value={values.data_hora_entregue ? new Date(values.data_hora_entregue).toISOString().slice(0, 16) : ""} onChange={(e) => setValue("data_hora_entregue", e.target.value ? new Date(e.target.value).toISOString() : null)} className="foodmax-input" />
               </div>
-
-              <div className="md:col-span-2">
-                <Label>Observação</Label>
-                <Textarea rows={3} {...register("observacao" as any)} className="foodmax-input resize-none" />
-              </div>
             </div>
           </div>
 
-          {/* Endereço da entrega */}
+          {/* Observação */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <FileText className="w-5 h-5 text-red-600" />
+              <h3 className="font-semibold text-red-600">Observação</h3>
+            </div>
+            <div className="md:col-span-2">
+              <Textarea rows={3} {...register("observacao" as any)} className="foodmax-input resize-none" />
+            </div>
+            </div>
+          </div>
+
+          {/* Endereço da Entrega */}
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-2">
+              <MapPin className="w-5 h-5 text-purple-600" />
+              <h3 className="font-semibold text-purple-600">Endereço da Entrega</h3>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>CEP</Label>
