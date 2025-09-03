@@ -132,7 +132,7 @@ export default function AbastecimentosModule() {
       },
       {
         key: "codigo",
-        label: "Código",
+        label: "C��digo",
         sortable: true,
         render: (v: any, r: any) => r.codigo || "-",
       },
@@ -764,6 +764,7 @@ export default function AbastecimentosModule() {
           // fallback to base row (without relations)
           return {
             estabelecimento_nome: a.estabelecimento_nome || "",
+            fornecedores: "",
             categoria_nome: a.categoria_nome || "",
             quantidade_total: a.quantidade_total || 0,
             telefone: a.telefone || "",
