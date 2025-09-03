@@ -305,7 +305,7 @@ export default function AbastecimentoForm({
       setShowEstabelecimentoAlert({
         open: true,
         message:
-          "Alterar o estabelecimento irá sobrescrever os dados de contato. Deseja continuar?",
+          "Alterar o Estabelecimento irá sobrescrever os dados de Contato e Endereço. Deseja continuar?",
         onConfirm: async () => {
           setValue("estabelecimento_id", newEstId);
           await loadEstabelecimentoContacts(newEstId);
@@ -928,8 +928,11 @@ export default function AbastecimentoForm({
                         key={selectedItem.item_id}
                         className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                       >
-                        <div>
+                        <div className="flex-1">
                           <div className="font-medium">{item.nome}</div>
+                          <div className="text-xs text-gray-500">
+                            Categoria: {categorias.find((c) => c.id === item.categoria_id)?.nome || "Categoria não informada"}
+                          </div>
                           <div className="text-xs text-gray-600">
                             Estoque Atual: {item.estoque_atual ?? 0}
                           </div>
@@ -1221,7 +1224,7 @@ export default function AbastecimentoForm({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar alteraç��o</AlertDialogTitle>
+            <AlertDialogTitle>Confirmar alteração</AlertDialogTitle>
           </AlertDialogHeader>
           <div className="text-sm text-gray-700">
             {showEstabelecimentoAlert.message}
