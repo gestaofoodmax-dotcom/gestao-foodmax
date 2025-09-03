@@ -740,7 +740,11 @@ export default function AbastecimentoForm({
                     (errors as any).codigo && "border-red-500",
                   )}
                   placeholder="Ex.: ABST0001"
-                  maxLength={50}
+                  maxLength={8}
+                  onInput={(e) => {
+                    const t = e.target as HTMLInputElement;
+                    t.value = t.value.replace(/[^a-z0-9]/gi, "").toUpperCase().slice(0, 8);
+                  }}
                 />
                 {(errors as any).codigo && (
                   <span className="text-sm text-red-600">
