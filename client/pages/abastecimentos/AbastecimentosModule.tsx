@@ -762,9 +762,7 @@ export default function AbastecimentosModule() {
         : [];
       const itensStr =
         itensArr.length > 0
-          ?
-            `Itens: ` +
-            itensArr
+          ? itensArr
               .map((i: any) => {
                 const qtd =
                   typeof i.quantidade === "number"
@@ -784,17 +782,14 @@ export default function AbastecimentosModule() {
         ? `${end.cidade}${end.uf ? `/${end.uf}` : ""}`
         : "";
       const enderecoStr = end
-        ?
-          `Estabelecimento Endereço: ` +
-          [end.cep, end.endereco, cityUf, end.pais]
+        ? [end.cep, end.endereco, cityUf, end.pais]
             .filter((x) => typeof x === "string" && x.trim() !== "")
             .join(" - ")
         : "";
 
-      const fornecedoresStrRaw = Array.isArray(abastecimento.fornecedores_nomes)
+      const fornecedoresStr = Array.isArray(abastecimento.fornecedores_nomes)
         ? abastecimento.fornecedores_nomes.filter((n: string) => !!n).join("; ")
         : "";
-      const fornecedoresStr = fornecedoresStrRaw ? `Fornecedores: ${fornecedoresStrRaw}` : "";
       return {
         estabelecimento_nome: abastecimento.estabelecimento_nome || "",
         codigo: abastecimento.codigo || "",
@@ -848,7 +843,7 @@ export default function AbastecimentosModule() {
             estabelecimento_nome: a.estabelecimento_nome || "",
             codigo: a.codigo || "",
             fornecedores: a.fornecedores_nomes && a.fornecedores_nomes.length
-              ? `Fornecedores: ${a.fornecedores_nomes.join("; ")}`
+              ? a.fornecedores_nomes.join("; ")
               : "",
             categoria_nome: a.categoria_nome || "",
             quantidade_total: a.quantidade_total || 0,
@@ -1260,7 +1255,7 @@ export default function AbastecimentosModule() {
             required: true,
           },
           { key: "codigo", label: "Código" },
-          { key: "fornecedores", label: "Fornecedores (Fornecedores: Nome do Fornecedor; Nome do Fornecedor; ...)" },
+          { key: "fornecedores", label: "Fornecedores (Nome do Fornecedor; Nome do Fornecedor; ...)" },
           { key: "categoria_nome", label: "Categoria", required: true },
           { key: "telefone", label: "Telefone", required: true },
           { key: "ddi", label: "DDI" },
@@ -1269,8 +1264,8 @@ export default function AbastecimentosModule() {
           { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
-          { key: "itens", label: "Itens (Itens: Nome do Item - Unidade de Medida - Quantidade; ...)" },
-          { key: "estabelecimento_endereco", label: "Estabelecimento Endereço (Estabelecimento Endereço: CEP - Endereço - Cidade/UF - País)" },
+          { key: "itens", label: "Itens (Nome do Item - Unidade de Medida - Quantidade; ...)" },
+          { key: "estabelecimento_endereco", label: "Estabelecimento Endereço (CEP - Endereço - Cidade/UF - País)" },
         ]}
         mapHeader={(h) => {
           const original = h.trim();
