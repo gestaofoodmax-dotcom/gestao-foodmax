@@ -132,7 +132,7 @@ export default function AbastecimentosModule() {
       },
       {
         key: "codigo",
-        label: "C��digo",
+        label: "Código",
         sortable: true,
         render: (v: any, r: any) => r.codigo || "-",
       },
