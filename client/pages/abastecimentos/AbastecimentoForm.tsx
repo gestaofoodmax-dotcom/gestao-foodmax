@@ -1195,11 +1195,16 @@ export default function AbastecimentoForm({
                   <SelectValue placeholder="Selecione o status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {STATUS_ABASTECIMENTO.map((s) => (
+                  {["Pendente", "Recebido", "Cancelado"].map((s) => (
                     <SelectItem key={s} value={s}>
                       {s}
                     </SelectItem>
                   ))}
+                  {watchedValues.status === "Enviado" && (
+                    <SelectItem value="Enviado" disabled>
+                      Enviado
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
             </div>
