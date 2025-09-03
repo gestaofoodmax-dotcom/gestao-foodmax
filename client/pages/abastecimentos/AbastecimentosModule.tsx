@@ -475,7 +475,7 @@ export default function AbastecimentosModule() {
           });
           console.log("Create response:", response);
           toast({
-            title: "✅ Abastecimento criado com sucesso!",
+            title: "Abastecimento criado com sucesso!",
             description: "Dados salvos no banco de dados",
             variant: "default",
           });
