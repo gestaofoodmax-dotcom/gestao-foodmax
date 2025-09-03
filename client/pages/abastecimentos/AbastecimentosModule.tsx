@@ -339,7 +339,6 @@ export default function AbastecimentosModule() {
       const params = new URLSearchParams({
         page: String(currentPage),
         limit: String(pageSize),
-        ...(currentSearch && { search: currentSearch }),
         ...(activeTab !== "Todos" && { status: activeTab }),
       });
       let response: AbastecimentosListResponse | null = null;
