@@ -22,7 +22,7 @@ import {
   Calendar,
   X,
   Edit,
-  ShoppingBag,
+  Package,
   Users,
 } from "lucide-react";
 
