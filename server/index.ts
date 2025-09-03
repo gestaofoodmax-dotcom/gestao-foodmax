@@ -86,6 +86,7 @@ import {
   marcarRecebido,
   enviarEmail,
   importAbastecimentos,
+  importAbastecimentosFull,
   testDatabaseConnection,
 } from "./routes/abastecimentos";
 
