@@ -980,6 +980,7 @@ export default function AbastecimentosModule() {
         moduleName="Abastecimentos"
         columns={[
           { key: "estabelecimento_nome", label: "Estabelecimento" },
+          { key: "fornecedores", label: "Fornecedores" },
           { key: "categoria_nome", label: "Categoria" },
           { key: "quantidade_total", label: "Quantidade Total" },
           { key: "telefone", label: "Telefone" },
