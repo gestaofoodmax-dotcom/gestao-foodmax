@@ -53,6 +53,12 @@ const AbastecimentoSchema = z.object({
     uf: z.string().length(2),
     pais: z.string().min(1),
   }),
+  codigo: z
+    .string()
+    .or(z.literal(""))
+    .nullable()
+    .optional()
+    .transform((val) => (val === "" ? null : val)),
 });
 
 const UpdateAbastecimentoSchema = AbastecimentoSchema.partial();
