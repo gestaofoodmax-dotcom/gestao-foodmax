@@ -482,7 +482,7 @@ export default function AbastecimentosModule() {
         } catch (apiError) {
           console.error("API Error, but forcing success:", apiError);
           toast({
-            title: "✅ Abastecimento salvo localmente!",
+            title: "Abastecimento salvo localmente!",
             description: "Dados processados com sucesso",
             variant: "default",
           });
