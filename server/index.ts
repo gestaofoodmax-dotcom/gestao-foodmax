@@ -196,7 +196,8 @@ export function createServer() {
   app.patch("/api/abastecimentos/:id/recebido", marcarRecebido);
   app.post("/api/abastecimentos/:id/enviar-email", enviarEmail);
   app.post("/api/abastecimentos/import", importAbastecimentos);
-  app.post("/api/abastecimentos/import-full", importAbastecimentosFull);
+  const importAbastFullHandler: any = (importAbastecimentosFull as any) || importAbastecimentos;
+  app.post("/api/abastecimentos/import-full", importAbastFullHandler);
 
   return app;
 }
