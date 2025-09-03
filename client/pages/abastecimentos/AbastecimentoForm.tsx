@@ -106,10 +106,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 function generateCodigo() {
-  const base = (
-    Date.now().toString(36) + Math.random().toString(36).slice(2, 8)
-  ).toUpperCase();
-  return `ABST${base}`;
+  return Math.random().toString(36).slice(2, 10).toUpperCase();
 }
 
 export default function AbastecimentoForm({
