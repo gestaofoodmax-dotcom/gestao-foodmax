@@ -89,6 +89,17 @@ import {
   importAbastecimentosFull,
   testDatabaseConnection,
 } from "./routes/abastecimentos";
+import {
+  listEntregas,
+  getEntrega,
+  createEntrega,
+  updateEntrega,
+  deleteEntrega,
+  bulkDeleteEntregas,
+  registrarSaida,
+  registrarEntregue,
+  importEntregasFull,
+} from "./routes/entregas";
 
 export function createServer() {
   const app = express();
