@@ -1046,6 +1046,7 @@ export default function AbastecimentosModule() {
 
           const lowerMap: Record<string, string> = {
             estabelecimento: "estabelecimento_nome",
+            fornecedores: "fornecedores",
             categoria: "categoria_nome",
             telefone: "telefone",
             ddi: "ddi",
