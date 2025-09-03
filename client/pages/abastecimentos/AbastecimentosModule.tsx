@@ -1169,6 +1169,7 @@ export default function AbastecimentosModule() {
             const email_enviado = String(r.email_enviado || "").toLowerCase();
             return {
               estabelecimento_nome: String(r.estabelecimento_nome || r.estabelecimento || "").trim(),
+              fornecedores_nomes,
               categoria_nome: String(r.categoria_nome || r.categoria || "").trim(),
               telefone: String(r.telefone || "").trim(),
               ddi: String(r.ddi || "+55").trim(),
