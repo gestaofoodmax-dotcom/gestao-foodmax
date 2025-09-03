@@ -416,7 +416,7 @@ export default function AbastecimentoForm({
     if (!data.telefone?.trim()) {
       toast({
         title: "Erro de validação",
-        description: "Telefone �� obrigatório",
+        description: "Telefone é obrigatório",
         variant: "destructive",
       });
       return;
@@ -1124,15 +1124,17 @@ export default function AbastecimentoForm({
               console.log("Selected fornecedores:", selectedFornecedoresIds);
               console.log("Selected categoria:", selectedCategoriaId);
 
-              if (!hasPrerequisites) {
-                toast({
-                  title: "Dados necessários não carregados",
-                  description: "Aguarde o carregamento dos dados ou verifique se há estabelecimentos, fornecedores, categorias e itens cadastrados.",
-                  variant: "destructive",
-                });
-                return;
-              }
+              // TEMPORARILY DISABLED prerequisites check for testing
+              // if (!hasPrerequisites) {
+              //   toast({
+              //     title: "Dados necessários não carregados",
+              //     description: "Aguarde o carregamento dos dados ou verifique se há estabelecimentos, fornecedores, categorias e itens cadastrados.",
+              //     variant: "destructive",
+              //   });
+              //   return;
+              // }
 
+              console.log("Attempting to submit form...");
               handleSubmit(onSubmit)(e);
             }}
             disabled={isLoading}
