@@ -24,6 +24,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { DataGrid } from "@/components/data-grid";
 import { toast } from "@/hooks/use-toast";
 import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
