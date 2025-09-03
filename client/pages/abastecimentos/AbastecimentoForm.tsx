@@ -24,7 +24,7 @@ import {
 } from "@shared/abastecimentos";
 import { Estabelecimento } from "@shared/estabelecimentos";
 import { Fornecedor } from "@shared/fornecedores";
-import { Item, ItemCategoria } from "@shared/itens";
+import { Item, ItemCategoria, UNIDADES_MEDIDA } from "@shared/itens";
 import {
   Popover,
   PopoverContent,
@@ -142,6 +142,7 @@ export default function AbastecimentoForm({
     {
       item_id: number;
       quantidade: number;
+      unidade_medida: import("@/../shared/itens").Item["unidade_medida"] | string;
     }[]
   >([]);
 
@@ -356,7 +357,7 @@ export default function AbastecimentoForm({
               item_id: i.item_id,
               quantidade: i.quantidade,
             }));
-            setSelectedItens(itensData);
+            setSelectedItens(itensData.map((i: any) => ({ ...i, unidade_medida: (det.itens.find((x: any) => x.item_id === i.item_id)?.unidade_medida) || (itens.find((it) => it.id === i.item_id)?.unidade_medida) || "Unidade" })));
           }
           if (det?.endereco) {
             setValue("cep", det.endereco.cep || "");
@@ -469,6 +470,7 @@ export default function AbastecimentoForm({
       itens: selectedItens.map((item) => ({
         item_id: Number(item.item_id),
         quantidade: Number(item.quantidade),
+        unidade_medida: String(item.unidade_medida || "Unidade"),
       })),
       endereco: {
         cep: data.cep?.trim() || null,
@@ -871,6 +873,7 @@ export default function AbastecimentoForm({
                                     {
                                       item_id: item.id,
                                       quantidade: 1,
+                                      unidade_medida: item.unidade_medida || "Unidade",
                                     },
                                   ])
                                 }
@@ -939,7 +942,29 @@ export default function AbastecimentoForm({
                             Estoque Atual: {item.estoque_atual ?? 0}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-4">
+                          <div className="text-center">
+                            <Label className="text-xs">Unidade de Medida</Label>
+                            <select
+                              value={selectedItem.unidade_medida as any}
+                              onChange={(e) =>
+                                setSelectedItens((prev) =>
+                                  prev.map((p) =>
+                                    p.item_id === selectedItem.item_id
+                                      ? { ...p, unidade_medida: e.target.value }
+                                      : p,
+                                  ),
+                                )
+                              }
+                              className="w-40 h-8 border rounded px-2 bg-white"
+                            >
+                              {UNIDADES_MEDIDA.map((u) => (
+                                <option key={u} value={u}>
+                                  {u}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                           <div className="text-center">
                             <Label className="text-xs">Quantidade</Label>
                             <Input
