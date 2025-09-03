@@ -444,6 +444,7 @@ export const importCardapios: RequestHandler = async (req, res) => {
           status: z.string().optional(),
           data_cadastro: z.string().optional(),
           data_atualizacao: z.string().optional(),
+          itens: z.string().optional(),
           item_nome: z.string().optional(),
           item_quantidade: z.union([z.number(), z.string()]).optional(),
           item_valor_unitario: z.union([z.number(), z.string()]).optional(),
