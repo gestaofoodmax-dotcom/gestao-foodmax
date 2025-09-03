@@ -821,10 +821,12 @@ export default function AbastecimentosModule() {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      const data =
-                        await getAbastecimentosWithRelationsForExport();
-                      setExportData(data);
+                      setExportData(filteredAbastecimentos as any);
                       setShowExport(true);
+                      try {
+                        const data = await getAbastecimentosWithRelationsForExport();
+                        setExportData(data);
+                      } catch {}
                     }}
                   >
                     <Download className="w-4 h-4 mr-2" />
