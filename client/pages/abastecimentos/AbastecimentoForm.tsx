@@ -424,7 +424,7 @@ export default function AbastecimentoForm({
       return;
     }
 
-    // Valida��ão de email apenas se preenchido
+    // Validação de email apenas se preenchido
     const cleanEmail = data.email?.trim();
     const emailToSend = cleanEmail && cleanEmail !== "" ? cleanEmail : null;
     if (emailToSend) {
@@ -1022,7 +1022,10 @@ export default function AbastecimentoForm({
                   <Input
                     id="cidade"
                     {...register("cidade")}
-                    className="foodmax-input"
+                    className={cn(
+                      "foodmax-input",
+                      validationErrors.cidade && "border-red-500"
+                    )}
                   />
                   {errors.cidade && (
                     <span className="text-sm text-red-600">
