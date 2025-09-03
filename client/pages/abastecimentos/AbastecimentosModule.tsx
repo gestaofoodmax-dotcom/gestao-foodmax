@@ -711,8 +711,12 @@ export default function AbastecimentosModule() {
             .join(" - ")
         : "";
 
+      const fornecedoresStr = Array.isArray(abastecimento.fornecedores_nomes)
+        ? abastecimento.fornecedores_nomes.filter((n: string) => !!n).join("; ")
+        : "";
       return {
         estabelecimento_nome: abastecimento.estabelecimento_nome || "",
+        fornecedores: fornecedoresStr,
         categoria_nome: abastecimento.categoria_nome || "",
         quantidade_total: abastecimento.quantidade_total || 0,
         telefone: abastecimento.telefone || "",
