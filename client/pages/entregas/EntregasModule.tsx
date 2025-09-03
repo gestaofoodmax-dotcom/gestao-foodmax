@@ -489,6 +489,144 @@ export default function EntregasModule() {
         ]}
       />
 
+      <ImportModal
+        isOpen={showImport}
+        onClose={() => setShowImport(false)}
+        moduleName="Entregas"
+        userRole={"admin"}
+        hasPayment={true}
+        columns={[
+          { key: "estabelecimento_nome", label: "Estabelecimento", required: true },
+          { key: "tipo_entrega", label: "Tipo de Entrega" },
+          { key: "pedido", label: "Pedido (Código ou Código via APP)" },
+          { key: "valor_pedido", label: "Valor do Pedido (R$)" },
+          { key: "taxa_extra", label: "Taxa Extra (R$)" },
+          { key: "valor_entrega", label: "Valor da Entrega (R$)" },
+          { key: "forma_pagamento", label: "Forma de Pagamento" },
+          { key: "cliente_nome", label: "Cliente" },
+          { key: "ddi", label: "DDI" },
+          { key: "telefone", label: "Telefone" },
+          { key: "data_hora_saida", label: "Data/Hora Saída (dd/mm/yyyy hh:mm:ss, horário de Brasília)" },
+          { key: "data_hora_entregue", label: "Data/Hora Entregue (dd/mm/yyyy hh:mm:ss, horário de Brasília)" },
+          { key: "observacao", label: "Observação" },
+          { key: "status", label: "Status" },
+          { key: "endereco", label: "Cliente Endereço (CEP - Endereço - Cidade/UF - País)" },
+        ]}
+        mapHeader={(h) => {
+          const original = h.trim();
+          const n = original.toLowerCase();
+          const exact: Record<string, string> = {
+            Estabelecimento: "estabelecimento_nome",
+            "Tipo de Entrega": "tipo_entrega",
+            Pedido: "pedido",
+            "Valor do Pedido (R$)": "valor_pedido",
+            "Taxa Extra (R$)": "taxa_extra",
+            "Valor da Entrega (R$)": "valor_entrega",
+            "Forma de Pagamento": "forma_pagamento",
+            Cliente: "cliente_nome",
+            DDI: "ddi",
+            Telefone: "telefone",
+            "Data/Hora Saída": "data_hora_saida",
+            "Data/Hora Entregue": "data_hora_entregue",
+            Observação: "observacao",
+            Status: "status",
+            "Cliente Endereço": "endereco",
+          };
+          if (exact[original]) return exact[original];
+          const lower: Record<string, string> = {
+            estabelecimento: "estabelecimento_nome",
+            tipo: "tipo_entrega",
+            entrega: "tipo_entrega",
+            pedido: "pedido",
+            "valor do pedido": "valor_pedido",
+            taxa: "taxa_extra",
+            "valor da entrega": "valor_entrega",
+            forma: "forma_pagamento",
+            pagamento: "forma_pagamento",
+            cliente: "cliente_nome",
+            ddi: "ddi",
+            telefone: "telefone",
+            saida: "data_hora_saida",
+            entregue: "data_hora_entregue",
+            observacao: "observacao",
+            observação: "observacao",
+            status: "status",
+            endereço: "endereco",
+            endereços: "endereco",
+          };
+          return lower[n] || n.replace(/\s+/g, "_");
+        }}
+        validateRecord={(r) => {
+          const errs: string[] = [];
+          if (!r.estabelecimento_nome && !r.estabelecimento) errs.push("Estabelecimento é obrigatório");
+          return errs;
+        }}
+        onImport={async (records) => {
+          const parseCentavos = (val: any): number => {
+            if (val === undefined || val === null || val === "") return 0;
+            if (typeof val === "number") return Math.round(val * 100);
+            const s = String(val).trim();
+            const clean = s.replace(/[^0-9,.-]/g, "").replace(/\.(?=\d{3}(,|$))/g, "");
+            const dot = clean.replace(",", ".");
+            const n = Number(dot);
+            if (!isNaN(n)) return Math.round(n * 100);
+            const digits = s.replace(/\D/g, "");
+            return digits ? parseInt(digits, 10) : 0;
+          };
+
+          const parseDate = (s: any) => {
+            const str = String(s || "").trim();
+            if (!str) return null;
+            const re = /^(\d{2})\/(\d{2})\/(\d{4})(?:[ ,]+(\d{2}):(\d{2})(?::(\d{2}))?)?$/;
+            const m = str.match(re);
+            if (m) { const [, dd, mm, yyyy, hh = "00", mi = "00", ss = "00"] = m as any; return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}-03:00`; }
+            try { const d = new Date(str); return isNaN(d.getTime()) ? null : d.toISOString(); } catch { return null; }
+          };
+
+          const full = records.map((r) => {
+            const endRaw = String(r.endereco || r["Cliente Endereço"] || "").trim();
+            let endereco: any = null;
+            if (endRaw) {
+              const parts = endRaw.split("-").map((x: string) => x.trim());
+              const cep = parts[0] || null;
+              const enderecoStr = parts[1] || "";
+              const cidadeUf = parts[2] || "";
+              const pais = parts[3] || "Brasil";
+              let cidade = ""; let uf = "";
+              if (cidadeUf.includes("/")) { const [c, u] = cidadeUf.split("/").map((s: string) => s.trim()); cidade = c || ""; uf = u || ""; }
+              else { cidade = cidadeUf || ""; uf = parts[3] || ""; }
+              endereco = { cep, endereco: enderecoStr, cidade, uf, pais };
+            }
+
+            return {
+              estabelecimento_nome: String(r.estabelecimento_nome || r.estabelecimento || "").trim(),
+              tipo_entrega: String(r.tipo_entrega || r.tipo || "Própria").trim(),
+              pedido: String(r.pedido || r.pedido_codigo || r.codigo_pedido_app || "").trim(),
+              valor_pedido: parseCentavos(r.valor_pedido),
+              taxa_extra: parseCentavos(r.taxa_extra),
+              valor_entrega: parseCentavos(r.valor_entrega),
+              forma_pagamento: String(r.forma_pagamento || r.pagamento || "PIX").trim(),
+              cliente_nome: String(r.cliente_nome || r.cliente || "").trim(),
+              ddi: String(r.ddi || "+55").trim(),
+              telefone: String(r.telefone || "").trim(),
+              data_hora_saida: parseDate(r.data_hora_saida),
+              data_hora_entregue: parseDate(r.data_hora_entregue),
+              observacao: String(r.observacao || r.observação || "").trim(),
+              status: String(r.status || "Pendente").trim(),
+              endereco,
+            } as any;
+          });
+
+          try {
+            const response = await makeRequest(`/api/entregas/import-full`, { method: "POST", body: JSON.stringify({ records: full }) });
+            await Promise.all([loadEntregas(), loadCounts()]);
+            return { success: true, imported: response?.imported ?? full.length, message: `${response?.imported ?? full.length} entrega(s) importada(s)` } as any;
+          } catch (e) {
+            return { success: false, imported: 0, message: "Erro ao importar: " + (e as Error).message } as any;
+          }
+        }}
+      />
+
     </div>
   );
 }
