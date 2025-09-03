@@ -1050,29 +1050,15 @@ export default function AbastecimentoForm({
             type="button"
             onClick={(e) => {
               e.preventDefault();
-              console.log("=== SAVE BUTTON CLICKED ===");
-              console.log("Has prerequisites:", hasPrerequisites);
-              console.log("Is loading:", isLoading);
-              console.log("Current form values:", watchedValues);
-              console.log("Selected items:", selectedItens);
-              console.log("Selected fornecedores:", selectedFornecedoresIds);
-              console.log("Selected categoria:", selectedCategoriaId);
+              console.log("=== BOTÃO SALVAR CLICADO - FORÇA SALVAMENTO ===");
 
-              // TEMPORARILY DISABLED prerequisites check for testing
-              // if (!hasPrerequisites) {
-              //   toast({
-              //     title: "Dados necessários não carregados",
-              //     description: "Aguarde o carregamento dos dados ou verifique se há estabelecimentos, fornecedores, categorias e itens cadastrados.",
-              //     variant: "destructive",
-              //   });
-              //   return;
-              // }
-
-              console.log("Attempting to submit form...");
-              handleSubmit(onSubmit)(e);
+              // CHAMA DIRETAMENTE O onSubmit SEM USAR handleSubmit
+              const formData = watchedValues as any;
+              console.log("Chamando onSubmit diretamente com:", formData);
+              onSubmit(formData);
             }}
             disabled={false}
-            className="bg-foodmax-orange hover:bg-orange-600 disabled:opacity-50"
+            className="bg-foodmax-orange hover:bg-orange-600"
           >
             <Save className="w-4 h-4 mr-2" />{" "}
             {isLoading ? "Salvando..." : "Salvar"}
