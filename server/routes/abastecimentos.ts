@@ -39,6 +39,7 @@ const AbastecimentoSchema = z.object({
       z.object({
         item_id: z.number().int().positive(),
         quantidade: z.number().int().positive(),
+        unidade_medida: z.string().min(1),
       }),
     )
     .min(1),
