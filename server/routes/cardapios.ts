@@ -118,12 +118,15 @@ export const getCardapio: RequestHandler = async (req, res) => {
       .from("cardapios_itens")
       .select(
         `
-        *,
-        itens:item_id (
+        id,
+        item_id,
+        quantidade,
+        valor_unitario,
+        itens (
           id,
           nome,
           estoque_atual,
-          itens_categorias:categoria_id (nome)
+          itens_categorias (nome)
         )
       `,
       )
