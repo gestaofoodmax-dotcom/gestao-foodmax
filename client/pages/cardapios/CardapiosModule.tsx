@@ -779,7 +779,7 @@ export default function CardapiosModule() {
           try {
             console.log("Importing records:", records);
 
-            // Send records directly to server for processing
+            // Send records directly to server for processing (server parses 'itens' string)
             const response = await makeRequest(`/api/cardapios/import`, {
               method: "POST",
               body: JSON.stringify({ records }),
