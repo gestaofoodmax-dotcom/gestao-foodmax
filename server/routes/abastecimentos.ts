@@ -286,19 +286,28 @@ export const getAbastecimento: RequestHandler = async (req, res) => {
         new Set(itensRows.map((i: any) => i.item_id).filter(Boolean)),
       );
 
-      const { data: itens } = await supabase
-        .from("itens")
-        .select("id, nome, estoque_atual")
-        .in("id", itemIds);
+      const [{ data: itens }, { data: categorias }] = await Promise.all([
+        supabase
+          .from("itens")
+          .select("id, nome, estoque_atual, categoria_id")
+          .in("id", itemIds),
+        supabase.from("itens_categorias").select("id, nome"),
+      ]);
 
       const itensMap = new Map<number, any>();
       (itens || []).forEach((i: any) => itensMap.set(i.id, i));
+      const catMap = new Map<number, any>();
+      (categorias || []).forEach((c: any) => catMap.set(c.id, c.nome));
 
-      itensDetalhados = (itensRows || []).map((i: any) => ({
-        ...i,
-        item_nome: itensMap.get(i.item_id)?.nome,
-        estoque_atual: itensMap.get(i.item_id)?.estoque_atual,
-      }));
+      itensDetalhados = (itensRows || []).map((i: any) => {
+        const base = itensMap.get(i.item_id) || {};
+        return {
+          ...i,
+          item_nome: base.nome,
+          estoque_atual: base.estoque_atual,
+          categoria_nome: base.categoria_id ? catMap.get(base.categoria_id) : undefined,
+        };
+      });
     }
 
     // Load endereco
