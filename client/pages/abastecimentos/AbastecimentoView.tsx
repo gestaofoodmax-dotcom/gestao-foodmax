@@ -271,8 +271,8 @@ export default function AbastecimentoView({
             {detalhe?.endereco && (
               <div className="bg-white p-4 rounded-lg border">
                 <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-red-600" />
-                  <span className="text-red-600">Endereço</span>
+                  <MapPin className="w-5 h-5 text-purple-600" />
+                  <span className="text-purple-600">Endereço</span>
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <DataField label="CEP" value={detalhe.endereco.cep || "-"} />
