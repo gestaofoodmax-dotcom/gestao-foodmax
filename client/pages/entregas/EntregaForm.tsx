@@ -222,23 +222,28 @@ export default function EntregaForm({
     }
   }, [entrega, reset, makeRequest, setValue]);
 
-  // Currency inputs: keep as centavos but show formatted
+  // Currency inputs as text (no R$). Empty when creating, filled when editing.
   const [valorPedidoText, setValorPedidoText] = useState<string>("");
   const [taxaExtraText, setTaxaExtraText] = useState<string>("");
   const [valorEntregaText, setValorEntregaText] = useState<string>("");
 
   useEffect(() => {
-    setValorPedidoText(formatCurrencyBRL(values.valor_pedido));
-    setTaxaExtraText(formatCurrencyBRL(values.taxa_extra));
-    setValorEntregaText(formatCurrencyBRL(values.valor_entrega));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+    if (entrega) {
+      setValorPedidoText(((entrega.valor_pedido ?? 0) / 100).toFixed(2));
+      setTaxaExtraText(((entrega.taxa_extra ?? 0) / 100).toFixed(2));
+      setValorEntregaText(((entrega.valor_entrega ?? 0) / 100).toFixed(2));
+    } else {
+      setValorPedidoText("");
+      setTaxaExtraText("");
+      setValorEntregaText("");
+    }
+  }, [isOpen, entrega]);
 
-  // recompute valor_entrega when valor_pedido or taxa_extra changes (unless user changed manually later)
+  // recompute valor_entrega when valor_pedido or taxa_extra changes
   useEffect(() => {
     const computed = (values.valor_pedido || 0) + (values.taxa_extra || 0);
     setValue("valor_entrega", computed);
-    setValorEntregaText(formatCurrencyBRL(computed));
+    if (!entrega) setValorEntregaText(computed === 0 ? "" : (computed / 100).toFixed(2));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [values.valor_pedido, values.taxa_extra]);
 
@@ -249,7 +254,7 @@ export default function EntregaForm({
       if (det) {
         const valor = det.valor_total || 0;
         setValue("valor_pedido", valor, { shouldDirty: true });
-        setValorPedidoText(formatCurrencyBRL(valor));
+        setValorPedidoText((valor / 100).toFixed(2));
         if (det.cliente_id) {
           setShowPedidoClienteAlert({
             open: true,
@@ -444,8 +449,13 @@ export default function EntregaForm({
                 <Label>Valor do Pedido (R$)</Label>
                 <Input
                   value={valorPedidoText}
-                  onChange={(e) => { const c = parseCurrencyToCentavos(e.target.value); setValue("valor_pedido", c, { shouldDirty: true }); setValorPedidoText(e.target.value); }}
-                  placeholder="0,00"
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9.,]/g, "");
+                    setValorPedidoText(raw);
+                    const c = parseCurrencyToCentavos(raw);
+                    setValue("valor_pedido", c, { shouldDirty: true });
+                  }}
+                  placeholder=""
                   className="foodmax-input"
                 />
               </div>
@@ -453,8 +463,13 @@ export default function EntregaForm({
                 <Label>Taxa Extra (R$)</Label>
                 <Input
                   value={taxaExtraText}
-                  onChange={(e) => { const c = parseCurrencyToCentavos(e.target.value); setValue("taxa_extra", c, { shouldDirty: true }); setTaxaExtraText(e.target.value); }}
-                  placeholder="0,00"
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9.,]/g, "");
+                    setTaxaExtraText(raw);
+                    const c = parseCurrencyToCentavos(raw);
+                    setValue("taxa_extra", c, { shouldDirty: true });
+                  }}
+                  placeholder=""
                   className="foodmax-input"
                 />
               </div>
@@ -462,8 +477,13 @@ export default function EntregaForm({
                 <Label>Valor da Entrega (R$) *</Label>
                 <Input
                   value={valorEntregaText}
-                  onChange={(e) => { const c = parseCurrencyToCentavos(e.target.value); setValue("valor_entrega", c, { shouldDirty: true }); setValorEntregaText(e.target.value); }}
-                  placeholder="0,00"
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9.,]/g, "");
+                    setValorEntregaText(raw);
+                    const c = parseCurrencyToCentavos(raw);
+                    setValue("valor_entrega", c, { shouldDirty: true });
+                  }}
+                  placeholder=""
                   className={cn("foodmax-input", (!values.valor_entrega && values.valor_entrega !== 0) && "border-red-500")}
                 />
               </div>
