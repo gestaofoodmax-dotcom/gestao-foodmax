@@ -536,7 +536,7 @@ export default function EntregaForm({
                   <Input {...register("cidade")} className={cn("foodmax-input", errors.cidade && "border-red-500")} />
                 </div>
                 <div>
-                  <Label>UF *</nLabel>
+                  <Label>UF *</Label>
                   <Input {...register("uf")} className={cn("foodmax-input", errors.uf && "border-red-500")} maxLength={2} />
                 </div>
               </div>
