@@ -767,6 +767,11 @@ export default function AbastecimentoForm({
                     </Command>
                   </PopoverContent>
                 </Popover>
+                {validationErrors.categoria_id && (
+                  <span className="text-sm text-red-600">
+                    {validationErrors.categoria_id}
+                  </span>
+                )}
               </div>
 
               <div>
