@@ -436,7 +436,7 @@ export default function EntregaForm({
           {/* Valores */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-2">
-              <Wallet className="w-5 h-5 text-yellow-600" />
+              <DollarSign className="w-5 h-5 text-yellow-600" />
               <h3 className="font-semibold text-yellow-600">Valores</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
