@@ -965,6 +965,7 @@ export default function AbastecimentosModule() {
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
           { key: "itens", label: "Itens" },
+          { key: "estabelecimento_endereco", label: "Estabelecimento Endereço" },
         ]}
       />
 
