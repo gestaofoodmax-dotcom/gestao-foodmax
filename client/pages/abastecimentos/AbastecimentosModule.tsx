@@ -99,6 +99,13 @@ export default function AbastecimentosModule() {
   const [showImport, setShowImport] = useState(false);
   const [exportData, setExportData] = useState<any[]>([]);
 
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailForm, setEmailForm] = useState({ destinatarios: "", assunto: "", mensagem: "" });
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailProgress, setEmailProgress] = useState({ total: 0, sent: 0 });
+  const [currentEmailAbastecimento, setCurrentEmailAbastecimento] = useState<Abastecimento | null>(null);
+  const [currentEstabelecimento, setCurrentEstabelecimento] = useState<any>(null);
+
   const [estabelecimentosMap, setEstabelecimentosMap] = useState<
     Map<number, string>
   >(new Map());
