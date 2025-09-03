@@ -684,75 +684,99 @@ export default function AbastecimentosModule() {
       return `${dd}/${mm}/${yyyy} ${hh}:${mi}:${ss}`;
     };
 
-    const exportRows: any[] = [];
-
-    for (const a of abastecimentosToExport) {
-      try {
-        const det = await makeRequest(`/api/abastecimentos/${a.id}`);
-        const abastecimento = det || a;
-
-        const itensArr: any[] = Array.isArray(abastecimento.itens)
-          ? abastecimento.itens
-          : [];
-        const itensStr =
-          itensArr.length > 0
-            ? itensArr
-                .map((i: any) => {
-                  const qtd =
-                    typeof i.quantidade === "number"
-                      ? i.quantidade
-                      : Number(i.quantidade || 0) || 0;
-                  const nome = String(i.item_nome || "").trim();
-                  if (!nome || qtd <= 0) return "";
-                  return `${nome} - ${qtd}`;
-                })
-                .filter((s: string) => !!s)
-                .join("; ")
-            : "";
-
-        const end = abastecimento.endereco || null;
-        const enderecoStr = end
-          ? [end.cep, end.endereco, end.cidade, end.uf, end.pais]
-              .filter((x) => typeof x === "string" && x.trim() !== "")
-              .join(" - ")
+    const buildRowFromDetail = (abastecimento: any) => {
+      const itensArr: any[] = Array.isArray(abastecimento.itens)
+        ? abastecimento.itens
+        : [];
+      const itensStr =
+        itensArr.length > 0
+          ? itensArr
+              .map((i: any) => {
+                const qtd =
+                  typeof i.quantidade === "number"
+                    ? i.quantidade
+                    : Number(i.quantidade || 0) || 0;
+                const nome = String(i.item_nome || "").trim();
+                if (!nome || qtd <= 0) return "";
+                return `${nome} - ${qtd}`;
+              })
+              .filter((s: string) => !!s)
+              .join("; ")
           : "";
 
-        exportRows.push({
-          estabelecimento_nome: abastecimento.estabelecimento_nome || "",
-          categoria_nome: abastecimento.categoria_nome || "",
-          quantidade_total: abastecimento.quantidade_total || 0,
-          telefone: abastecimento.telefone || "",
-          ddi: abastecimento.ddi || "",
-          email: abastecimento.email || "",
-          data_hora_recebido: formatDateTimeBRNoComma(
-            abastecimento.data_hora_recebido,
-          ),
-          observacao: abastecimento.observacao || "",
-          status: abastecimento.status,
-          email_enviado: abastecimento.email_enviado ? "Sim" : "Não",
-          data_cadastro: abastecimento.data_cadastro || "",
-          data_atualizacao: abastecimento.data_atualizacao || "",
-          itens: itensStr,
-          estabelecimento_endereco: enderecoStr,
-        });
-      } catch {
-        exportRows.push({
-          estabelecimento_nome: a.estabelecimento_nome || "",
-          categoria_nome: a.categoria_nome || "",
-          quantidade_total: a.quantidade_total || 0,
-          telefone: a.telefone || "",
-          ddi: a.ddi || "",
-          email: a.email || "",
-          data_hora_recebido: formatDateTimeBRNoComma(a.data_hora_recebido),
-          observacao: a.observacao || "",
-          status: a.status,
-          email_enviado: a.email_enviado ? "Sim" : "Não",
-          data_cadastro: a.data_cadastro || "",
-          data_atualizacao: a.data_atualizacao || "",
-          itens: "",
-          estabelecimento_endereco: "",
-        });
-      }
+      const end = abastecimento.endereco || null;
+      const enderecoStr = end
+        ? [end.cep, end.endereco, end.cidade, end.uf, end.pais]
+            .filter((x) => typeof x === "string" && x.trim() !== "")
+            .join(" - ")
+        : "";
+
+      return {
+        estabelecimento_nome: abastecimento.estabelecimento_nome || "",
+        categoria_nome: abastecimento.categoria_nome || "",
+        quantidade_total: abastecimento.quantidade_total || 0,
+        telefone: abastecimento.telefone || "",
+        ddi: abastecimento.ddi || "",
+        email: abastecimento.email || "",
+        data_hora_recebido: formatDateTimeBRNoComma(
+          abastecimento.data_hora_recebido,
+        ),
+        observacao: abastecimento.observacao || "",
+        status: abastecimento.status,
+        email_enviado: abastecimento.email_enviado ? "Sim" : "Não",
+        data_cadastro: abastecimento.data_cadastro || "",
+        data_atualizacao: abastecimento.data_atualizacao || "",
+        itens: itensStr,
+        estabelecimento_endereco: enderecoStr,
+      } as any;
+    };
+
+    // Fetch details in chunks with retry
+    const chunkSize = 10;
+    const exportRows: any[] = [];
+
+    for (let i = 0; i < abastecimentosToExport.length; i += chunkSize) {
+      const chunk = abastecimentosToExport.slice(i, i + chunkSize);
+      const results = await Promise.all(
+        chunk.map(async (a: any) => {
+          const fetchOnce = async () =>
+            await makeRequest(`/api/abastecimentos/${a.id}?_t=${Date.now()}`);
+
+          let det: any = null;
+          try {
+            det = await fetchOnce();
+          } catch {
+            try {
+              // small retry
+              await new Promise((r) => setTimeout(r, 150));
+              det = await fetchOnce();
+            } catch {
+              det = null;
+            }
+          }
+
+          if (det) return buildRowFromDetail(det);
+
+          // fallback to base row (without relations)
+          return {
+            estabelecimento_nome: a.estabelecimento_nome || "",
+            categoria_nome: a.categoria_nome || "",
+            quantidade_total: a.quantidade_total || 0,
+            telefone: a.telefone || "",
+            ddi: a.ddi || "",
+            email: a.email || "",
+            data_hora_recebido: formatDateTimeBRNoComma(a.data_hora_recebido),
+            observacao: a.observacao || "",
+            status: a.status,
+            email_enviado: a.email_enviado ? "Sim" : "Não",
+            data_cadastro: a.data_cadastro || "",
+            data_atualizacao: a.data_atualizacao || "",
+            itens: "",
+            estabelecimento_endereco: "",
+          } as any;
+        }),
+      );
+      exportRows.push(...results);
     }
 
     return exportRows;
