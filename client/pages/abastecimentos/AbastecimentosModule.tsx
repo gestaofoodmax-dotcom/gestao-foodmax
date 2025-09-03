@@ -741,13 +741,14 @@ export default function AbastecimentosModule() {
           telefone: a.telefone || "",
           ddi: a.ddi || "",
           email: a.email || "",
-          data_hora_recebido: formatDateTimeBR(a.data_hora_recebido),
+          data_hora_recebido: formatDateTimeBRNoComma(a.data_hora_recebido),
           observacao: a.observacao || "",
           status: a.status,
           email_enviado: a.email_enviado ? "Sim" : "Não",
           data_cadastro: a.data_cadastro || "",
           data_atualizacao: a.data_atualizacao || "",
           itens: "",
+          estabelecimento_endereco: "",
         });
       }
     }
