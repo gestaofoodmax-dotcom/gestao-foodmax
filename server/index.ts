@@ -211,5 +211,16 @@ export function createServer() {
     (importAbastecimentosFull as any) || importAbastecimentos;
   app.post("/api/abastecimentos/import-full", importAbastFullHandler);
 
+  // Entregas routes
+  app.get("/api/entregas", listEntregas);
+  app.get("/api/entregas/:id", getEntrega);
+  app.post("/api/entregas", createEntrega);
+  app.put("/api/entregas/:id", updateEntrega);
+  app.delete("/api/entregas/:id", deleteEntrega);
+  app.post("/api/entregas/bulk-delete", bulkDeleteEntregas);
+  app.patch("/api/entregas/:id/saida", registrarSaida);
+  app.patch("/api/entregas/:id/entregue", registrarEntregue);
+  app.post("/api/entregas/import-full", importEntregasFull);
+
   return app;
 }
