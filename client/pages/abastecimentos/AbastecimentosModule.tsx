@@ -132,7 +132,7 @@ export default function AbastecimentosModule() {
       },
       {
         key: "codigo",
-        label: "Código",
+        label: "C��digo",
         sortable: true,
         render: (v: any, r: any) => r.codigo || "-",
       },
@@ -661,45 +661,128 @@ export default function AbastecimentosModule() {
         ? all.filter((a: any) => selectedIds.includes(a.id))
         : all;
 
+    const formatDateTimeBRNoComma = (iso: string | null | undefined) => {
+      if (!iso) return "";
+      const date = new Date(iso);
+      const parts = new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).formatToParts(date);
+      const get = (type: string) =>
+        parts.find((p) => p.type === type)?.value || "";
+      const dd = get("day");
+      const mm = get("month");
+      const yyyy = get("year");
+      const hh = get("hour");
+      const mi = get("minute");
+      const ss = get("second");
+      return `${dd}/${mm}/${yyyy} ${hh}:${mi}:${ss}`;
+    };
+
+    const buildRowFromDetail = (abastecimento: any) => {
+      const itensArr: any[] = Array.isArray(abastecimento.itens)
+        ? abastecimento.itens
+        : [];
+      const itensStr =
+        itensArr.length > 0
+          ? itensArr
+              .map((i: any) => {
+                const qtd =
+                  typeof i.quantidade === "number"
+                    ? i.quantidade
+                    : Number(i.quantidade || 0) || 0;
+                const nome = String(i.item_nome || "").trim();
+                if (!nome || qtd <= 0) return "";
+                return `${nome} - ${qtd}`;
+              })
+              .filter((s: string) => !!s)
+              .join("; ")
+          : "";
+
+      const end = abastecimento.endereco || null;
+      const enderecoStr = end
+        ? [end.cep, end.endereco, end.cidade, end.uf, end.pais]
+            .filter((x) => typeof x === "string" && x.trim() !== "")
+            .join(" - ")
+        : "";
+
+      const fornecedoresStr = Array.isArray(abastecimento.fornecedores_nomes)
+        ? abastecimento.fornecedores_nomes.filter((n: string) => !!n).join("; ")
+        : "";
+      return {
+        estabelecimento_nome: abastecimento.estabelecimento_nome || "",
+        fornecedores: fornecedoresStr,
+        categoria_nome: abastecimento.categoria_nome || "",
+        quantidade_total: abastecimento.quantidade_total || 0,
+        telefone: abastecimento.telefone || "",
+        ddi: abastecimento.ddi || "",
+        email: abastecimento.email || "",
+        data_hora_recebido: formatDateTimeBRNoComma(
+          abastecimento.data_hora_recebido,
+        ),
+        observacao: abastecimento.observacao || "",
+        status: abastecimento.status,
+        email_enviado: abastecimento.email_enviado ? "Sim" : "Não",
+        data_cadastro: abastecimento.data_cadastro || "",
+        data_atualizacao: abastecimento.data_atualizacao || "",
+        itens: itensStr,
+        estabelecimento_endereco: enderecoStr,
+      } as any;
+    };
+
+    // Fetch details in chunks with retry
+    const chunkSize = 10;
     const exportRows: any[] = [];
 
-    for (const a of abastecimentosToExport) {
-      try {
-        const det = await makeRequest(`/api/abastecimentos/${a.id}`);
-        const abastecimento = det || a;
+    for (let i = 0; i < abastecimentosToExport.length; i += chunkSize) {
+      const chunk = abastecimentosToExport.slice(i, i + chunkSize);
+      const results = await Promise.all(
+        chunk.map(async (a: any) => {
+          const fetchOnce = async () =>
+            await makeRequest(`/api/abastecimentos/${a.id}?_t=${Date.now()}`);
 
-        exportRows.push({
-          estabelecimento_nome: abastecimento.estabelecimento_nome || "",
-          categoria_nome: abastecimento.categoria_nome || "",
-          quantidade_total: abastecimento.quantidade_total || 0,
-          telefone: abastecimento.telefone || "",
-          ddi: abastecimento.ddi || "",
-          email: abastecimento.email || "",
-          data_hora_recebido: formatDateTimeBR(
-            abastecimento.data_hora_recebido,
-          ),
-          observacao: abastecimento.observacao || "",
-          status: abastecimento.status,
-          email_enviado: abastecimento.email_enviado ? "Sim" : "Não",
-          data_cadastro: abastecimento.data_cadastro || "",
-          data_atualizacao: abastecimento.data_atualizacao || "",
-        });
-      } catch {
-        exportRows.push({
-          estabelecimento_nome: a.estabelecimento_nome || "",
-          categoria_nome: a.categoria_nome || "",
-          quantidade_total: a.quantidade_total || 0,
-          telefone: a.telefone || "",
-          ddi: a.ddi || "",
-          email: a.email || "",
-          data_hora_recebido: formatDateTimeBR(a.data_hora_recebido),
-          observacao: a.observacao || "",
-          status: a.status,
-          email_enviado: a.email_enviado ? "Sim" : "Não",
-          data_cadastro: a.data_cadastro || "",
-          data_atualizacao: a.data_atualizacao || "",
-        });
-      }
+          let det: any = null;
+          try {
+            det = await fetchOnce();
+          } catch {
+            try {
+              // small retry
+              await new Promise((r) => setTimeout(r, 150));
+              det = await fetchOnce();
+            } catch {
+              det = null;
+            }
+          }
+
+          if (det) return buildRowFromDetail(det);
+
+          // fallback to base row (without relations)
+          return {
+            estabelecimento_nome: a.estabelecimento_nome || "",
+            fornecedores: "",
+            categoria_nome: a.categoria_nome || "",
+            quantidade_total: a.quantidade_total || 0,
+            telefone: a.telefone || "",
+            ddi: a.ddi || "",
+            email: a.email || "",
+            data_hora_recebido: formatDateTimeBRNoComma(a.data_hora_recebido),
+            observacao: a.observacao || "",
+            status: a.status,
+            email_enviado: a.email_enviado ? "Sim" : "Não",
+            data_cadastro: a.data_cadastro || "",
+            data_atualizacao: a.data_atualizacao || "",
+            itens: "",
+            estabelecimento_endereco: "",
+          } as any;
+        }),
+      );
+      exportRows.push(...results);
     }
 
     return exportRows;
@@ -826,13 +909,15 @@ export default function AbastecimentosModule() {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      setExportData(filteredAbastecimentos as any);
-                      setShowExport(true);
                       try {
                         const data =
                           await getAbastecimentosWithRelationsForExport();
                         setExportData(data);
-                      } catch {}
+                        setShowExport(true);
+                      } catch {
+                        setExportData(filteredAbastecimentos as any);
+                        setShowExport(true);
+                      }
                     }}
                   >
                     <Download className="w-4 h-4 mr-2" />
@@ -902,6 +987,7 @@ export default function AbastecimentosModule() {
         moduleName="Abastecimentos"
         columns={[
           { key: "estabelecimento_nome", label: "Estabelecimento" },
+          { key: "fornecedores", label: "Fornecedores" },
           { key: "categoria_nome", label: "Categoria" },
           { key: "quantidade_total", label: "Quantidade Total" },
           { key: "telefone", label: "Telefone" },
@@ -913,6 +999,11 @@ export default function AbastecimentosModule() {
           { key: "email_enviado", label: "Email Enviado" },
           { key: "data_cadastro", label: "Data Cadastro" },
           { key: "data_atualizacao", label: "Data Atualização" },
+          { key: "itens", label: "Itens" },
+          {
+            key: "estabelecimento_endereco",
+            label: "Estabelecimento Endereço",
+          },
         ]}
       />
 
@@ -928,8 +1019,8 @@ export default function AbastecimentosModule() {
             label: "Estabelecimento",
             required: true,
           },
+          { key: "fornecedores", label: "Fornecedores (Nome; Nome; ...)" },
           { key: "categoria_nome", label: "Categoria", required: true },
-          { key: "quantidade_total", label: "Quantidade Total" },
           { key: "telefone", label: "Telefone", required: true },
           { key: "ddi", label: "DDI" },
           { key: "email", label: "Email" },
@@ -937,6 +1028,12 @@ export default function AbastecimentosModule() {
           { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
           { key: "email_enviado", label: "Email Enviado" },
+          { key: "itens", label: "Itens (Nome - Quantidade; ...)" },
+          {
+            key: "estabelecimento_endereco",
+            label:
+              "Estabelecimento Endereço (CEP - Endereço - Cidade - UF - País)",
+          },
         ]}
         mapHeader={(h) => {
           const original = h.trim();
@@ -944,8 +1041,8 @@ export default function AbastecimentosModule() {
 
           const exactMap: Record<string, string> = {
             Estabelecimento: "estabelecimento_nome",
+            Fornecedores: "fornecedores",
             Categoria: "categoria_nome",
-            "Quantidade Total": "quantidade_total",
             Telefone: "telefone",
             DDI: "ddi",
             Email: "email",
@@ -953,6 +1050,8 @@ export default function AbastecimentosModule() {
             Observação: "observacao",
             Status: "status",
             "Email Enviado": "email_enviado",
+            Itens: "itens",
+            "Estabelecimento Endereço": "estabelecimento_endereco",
           };
 
           if (exactMap[original]) {
@@ -961,8 +1060,8 @@ export default function AbastecimentosModule() {
 
           const lowerMap: Record<string, string> = {
             estabelecimento: "estabelecimento_nome",
+            fornecedores: "fornecedores",
             categoria: "categoria_nome",
-            "quantidade total": "quantidade_total",
             telefone: "telefone",
             ddi: "ddi",
             email: "email",
@@ -971,6 +1070,9 @@ export default function AbastecimentosModule() {
             observacao: "observacao",
             status: "status",
             "email enviado": "email_enviado",
+            itens: "itens",
+            "estabelecimento endereço": "estabelecimento_endereco",
+            "endereço do estabelecimento": "estabelecimento_endereco",
           };
 
           return lowerMap[n] || n.replace(/\s+/g, "_");
@@ -999,7 +1101,148 @@ export default function AbastecimentosModule() {
 
           return errors;
         }}
-        onImport={handleImportAbastecimentos}
+        onImport={async (records) => {
+          // Parse and normalize records to full import payload
+          const now = new Date().toISOString();
+
+          const parseDate = (dateStr: string) => {
+            if (!dateStr) return null;
+            const s = String(dateStr);
+            // DD/MM/YYYY, with optional time
+            try {
+              if (s.includes("/") && (s.includes(",") || s.includes(" "))) {
+                const sepIndex =
+                  s.indexOf(",") >= 0 ? s.indexOf(",") : s.indexOf(" ");
+                const datePart = s.slice(0, sepIndex).trim();
+                const timePart = s.slice(sepIndex + 1).trim();
+                const [day, month, year] = datePart.split("/");
+                const [hh = "0", mm = "0", ss = "0"] = timePart.split(":");
+                const d = new Date(
+                  Date.UTC(
+                    parseInt(year),
+                    parseInt(month) - 1,
+                    parseInt(day),
+                    parseInt(hh),
+                    parseInt(mm),
+                    parseInt(ss),
+                  ),
+                );
+                return isNaN(d.getTime()) ? null : d.toISOString();
+              } else if (s.includes("/") && !s.includes(":")) {
+                const [day, month, year] = s.split("/");
+                const d = new Date(
+                  Date.UTC(parseInt(year), parseInt(month) - 1, parseInt(day)),
+                );
+                return isNaN(d.getTime()) ? null : d.toISOString();
+              }
+              const d = new Date(s);
+              return isNaN(d.getTime()) ? null : d.toISOString();
+            } catch {
+              return null;
+            }
+          };
+
+          const fullRecords = records.map((r) => {
+            const itensText = String(r.itens || r["Itens"] || "").trim();
+            const itens: { item_nome: string; quantidade: number }[] = [];
+            if (itensText) {
+              const groups = itensText
+                .split(";")
+                .map((g: string) => g.trim())
+                .filter((g: string) => g);
+              for (const g of groups) {
+                const sepIndex = g.includes(",")
+                  ? g.indexOf(",")
+                  : g.indexOf("-");
+                if (sepIndex > -1) {
+                  const nome = g.slice(0, sepIndex).trim();
+                  const qtdStr = g.slice(sepIndex + 1).trim();
+                  const qtd = parseInt(qtdStr) || 0;
+                  if (nome && qtd > 0)
+                    itens.push({ item_nome: nome, quantidade: qtd });
+                }
+              }
+            }
+
+            const fornecedoresText = String(
+              (r as any).fornecedores || (r as any)["Fornecedores"] || "",
+            ).trim();
+            const fornecedores_nomes = fornecedoresText
+              ? fornecedoresText
+                  .split(";")
+                  .map((s: string) => s.trim())
+                  .filter((s: string) => !!s)
+              : [];
+
+            const endText = String(
+              r.estabelecimento_endereco || r["Estabelecimento Endereço"] || "",
+            ).trim();
+            let endereco: {
+              cep?: string | null;
+              endereco?: string;
+              cidade?: string;
+              uf?: string;
+              pais?: string;
+            } | null = null;
+            if (endText) {
+              const parts = endText.split("-").map((s: string) => s.trim());
+              endereco = {
+                cep: parts[0] || null,
+                endereco: parts[1] || "",
+                cidade: parts[2] || "",
+                uf: parts[3] || "",
+                pais: parts[4] || "",
+              };
+            }
+
+            const status = String(r.status || "Pendente").trim();
+            const email_enviado = String(r.email_enviado || "").toLowerCase();
+            return {
+              estabelecimento_nome: String(
+                r.estabelecimento_nome || r.estabelecimento || "",
+              ).trim(),
+              fornecedores_nomes,
+              categoria_nome: String(
+                r.categoria_nome || r.categoria || "",
+              ).trim(),
+              telefone: String(r.telefone || "").trim(),
+              ddi: String(r.ddi || "+55").trim(),
+              email: String(r.email || "").trim() || null,
+              data_hora_recebido: parseDate(r.data_hora_recebido || ""),
+              observacao:
+                String(r.observacao || r["Observação"] || "").trim() || null,
+              status: STATUS_ABASTECIMENTO.includes(status as any)
+                ? status
+                : "Pendente",
+              email_enviado:
+                email_enviado === "sim" || email_enviado === "true",
+              itens,
+              endereco,
+            };
+          });
+
+          try {
+            const response = await makeRequest(
+              `/api/abastecimentos/import-full`,
+              {
+                method: "POST",
+                body: JSON.stringify({ records: fullRecords }),
+              },
+            );
+            await Promise.all([loadAbastecimentos(), loadCounts()]);
+            return {
+              success: true,
+              imported: response?.imported ?? fullRecords.length,
+              message: `${response?.imported ?? fullRecords.length} abastecimento(s) importado(s) com relações`,
+            } as any;
+          } catch (e) {
+            return {
+              success: false,
+              imported: 0,
+              message: "Erro ao importar: " + (e as Error).message,
+            } as any;
+          }
+        }}
       />
 
       <DeleteAlert

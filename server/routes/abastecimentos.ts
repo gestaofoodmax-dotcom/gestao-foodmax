@@ -788,3 +788,261 @@ export const importAbastecimentos: RequestHandler = async (req, res) => {
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
+
+function generateCodigo8(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 8; i++)
+    code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+export const importAbastecimentosFull: RequestHandler = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+
+    const supabase = getSupabaseServiceClient();
+    const { records } = req.body as {
+      records: Array<{
+        estabelecimento_nome: string;
+        fornecedores_nomes?: string[];
+        fornecedores?: string;
+        categoria_nome?: string;
+        telefone?: string;
+        ddi?: string;
+        email?: string | null;
+        data_hora_recebido?: string | null;
+        observacao?: string | null;
+        status?: string;
+        email_enviado?: boolean;
+        itens?: { item_nome: string; quantidade: number }[];
+        endereco?: {
+          cep?: string | null;
+          endereco?: string;
+          cidade?: string;
+          uf?: string;
+          pais?: string;
+        } | null;
+        estabelecimento_endereco?: string;
+      }>;
+    };
+
+    if (!Array.isArray(records)) {
+      return res.status(400).json({ error: "Records deve ser um array" });
+    }
+
+    let imported = 0;
+
+    for (const record of records) {
+      try {
+        const estNome = String(record.estabelecimento_nome || "").trim();
+        if (!estNome) continue;
+
+        // Resolve estabelecimento
+        const { data: est } = await supabase
+          .from("estabelecimentos")
+          .select("id")
+          .eq("nome", estNome)
+          .eq("id_usuario", userId)
+          .single();
+        if (!est) continue;
+
+        // Resolve categoria
+        const catNome = String(record.categoria_nome || "Sem Categoria").trim();
+        let categoria_id: number | null = null;
+        const { data: cat } = await supabase
+          .from("itens_categorias")
+          .select("id")
+          .eq("nome", catNome)
+          .eq("id_usuario", userId)
+          .maybeSingle();
+        if (cat) {
+          categoria_id = cat.id;
+        } else {
+          const { data: novaCat } = await supabase
+            .from("itens_categorias")
+            .insert({ id_usuario: userId, nome: catNome, ativo: true })
+            .select("id")
+            .single();
+          categoria_id = novaCat?.id ?? null;
+        }
+        if (!categoria_id) continue;
+
+        const itensInput = Array.isArray(record.itens) ? record.itens : [];
+        const quantidade_total = itensInput.reduce(
+          (sum, it) => sum + (Number(it.quantidade) || 0),
+          0,
+        );
+
+        // Resolve fornecedores by names (if provided)
+        let fornecedores_ids: number[] = [];
+        try {
+          const fornecedoresList: string[] = Array.isArray(
+            record.fornecedores_nomes,
+          )
+            ? record.fornecedores_nomes
+            : typeof (record as any).fornecedores === "string"
+              ? String((record as any).fornecedores)
+                  .split(";")
+                  .map((s) => s.trim())
+                  .filter((s) => !!s)
+              : [];
+          if (fornecedoresList.length > 0) {
+            for (const nome of fornecedoresList) {
+              const { data: forn } = await supabase
+                .from("fornecedores")
+                .select("id")
+                .eq("id_usuario", userId)
+                .eq("nome", nome)
+                .maybeSingle();
+              if (forn?.id) fornecedores_ids.push(forn.id);
+            }
+            fornecedores_ids = Array.from(new Set(fornecedores_ids));
+          }
+        } catch {}
+
+        // Create abastecimento (with fallback for codigo column)
+        const baseInsert = {
+          id_usuario: userId,
+          estabelecimento_id: est.id,
+          fornecedores_ids,
+          categoria_id,
+          quantidade_total,
+          telefone: record.telefone || "",
+          ddi: record.ddi || "+55",
+          email: record.email || null,
+          codigo: generateCodigo8(),
+          data_hora_recebido: record.data_hora_recebido
+            ? new Date(record.data_hora_recebido).toISOString()
+            : null,
+          observacao: record.observacao || null,
+          status: ["Pendente", "Enviado", "Recebido", "Cancelado"].includes(
+            String(record.status || "").trim(),
+          )
+            ? String(record.status).trim()
+            : "Pendente",
+          email_enviado: !!record.email_enviado,
+        } as any;
+
+        let insertRes = await supabase
+          .from("abastecimentos")
+          .insert(baseInsert)
+          .select("id")
+          .single();
+        if (
+          insertRes.error &&
+          String(insertRes.error.message || "")
+            .toLowerCase()
+            .includes("codigo")
+        ) {
+          const { codigo, ...noCode } = baseInsert;
+          insertRes = await supabase
+            .from("abastecimentos")
+            .insert(noCode)
+            .select("id")
+            .single();
+        }
+        const abastecimento = insertRes.data;
+        if (!abastecimento) continue;
+
+        // Save itens (resolve item by name, create if needed)
+        const itensRows: {
+          abastecimento_id: number;
+          item_id: number;
+          quantidade: number;
+        }[] = [];
+        for (const it of itensInput) {
+          const nome = String(it.item_nome || "").trim();
+          const quantidade = Math.max(0, Number(it.quantidade) || 0);
+          if (!nome || quantidade <= 0) continue;
+
+          // Resolve or create item
+          let item_id: number | null = null;
+          const { data: item } = await supabase
+            .from("itens")
+            .select("id")
+            .eq("nome", nome)
+            .eq("id_usuario", userId)
+            .maybeSingle();
+          if (item) {
+            item_id = item.id;
+          } else {
+            const { data: novoItem } = await supabase
+              .from("itens")
+              .insert({
+                id_usuario: userId,
+                categoria_id,
+                nome,
+                preco: 0,
+                custo_pago: 0,
+                unidade_medida: "un",
+                peso_gramas: null,
+                estoque_atual: 0,
+                ativo: true,
+              })
+              .select("id")
+              .single();
+            item_id = novoItem?.id ?? null;
+          }
+          if (item_id) {
+            itensRows.push({
+              abastecimento_id: abastecimento.id,
+              item_id,
+              quantidade,
+            });
+          }
+        }
+
+        if (itensRows.length > 0) {
+          await supabase.from("abastecimentos_itens").insert(itensRows);
+        }
+
+        // Save endereco if provided (structured or consolidated string)
+        try {
+          let end: any = (record as any).endereco || null;
+          if (!end) {
+            const endText = String(
+              (record as any).estabelecimento_endereco || "",
+            ).trim();
+            if (endText) {
+              const parts = endText.split("-").map((s) => s.trim());
+              end = {
+                cep: parts[0] || null,
+                endereco: parts[1] || "",
+                cidade: parts[2] || "",
+                uf: parts[3] || "",
+                pais: parts[4] || "",
+              };
+            }
+          }
+          if (
+            end &&
+            (end.endereco || end.cidade || end.uf || end.pais || end.cep)
+          ) {
+            await supabase.from("abastecimentos_enderecos").insert({
+              abastecimento_id: abastecimento.id,
+              cep: end.cep || null,
+              endereco: end.endereco || "",
+              cidade: end.cidade || "",
+              uf: end.uf || "",
+              pais: end.pais || "",
+            });
+          }
+        } catch (e) {
+          // ignore address errors on import
+        }
+
+        imported++;
+      } catch (e) {
+        continue;
+      }
+    }
+
+    res.json({ success: true, imported });
+  } catch (error) {
+    console.error("Error importing abastecimentos full:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
