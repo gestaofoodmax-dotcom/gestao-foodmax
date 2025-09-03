@@ -598,7 +598,10 @@ export default function AbastecimentoForm({
                     <Button
                       variant="outline"
                       role="combobox"
-                      className="w-full justify-between foodmax-input"
+                      className={cn(
+                        "w-full justify-between foodmax-input",
+                        validationErrors.estabelecimento_id && "border-red-500"
+                      )}
                     >
                       {watchedValues.estabelecimento_id
                         ? estabelecimentos.find(
