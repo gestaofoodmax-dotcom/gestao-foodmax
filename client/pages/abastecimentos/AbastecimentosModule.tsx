@@ -1264,7 +1264,7 @@ export default function AbastecimentosModule() {
             required: true,
           },
           { key: "codigo", label: "Código" },
-          { key: "fornecedores", label: "Fornecedores (Nome; Nome; ...)" },
+          { key: "fornecedores", label: "Fornecedores (Fornecedores: Nome do Fornecedor; Nome do Fornecedor; ...)" },
           { key: "categoria_nome", label: "Categoria", required: true },
           { key: "telefone", label: "Telefone", required: true },
           { key: "ddi", label: "DDI" },
