@@ -424,7 +424,7 @@ export default function AbastecimentoForm({
       return;
     }
 
-    // Validaç��o de email apenas se preenchido
+    // Validação de email apenas se preenchido
     const cleanEmail = data.email?.trim();
     const emailToSend = cleanEmail && cleanEmail !== "" ? cleanEmail : null;
     if (emailToSend) {
@@ -529,7 +529,7 @@ export default function AbastecimentoForm({
                       onClick={() => window.open("/fornecedores", "_blank")}
                       className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
                     >
-                      <LinkIcon className="w-3 h-3" /> (ir para módulo
+                      <LinkIcon className="w-3 h-3" /> (ir para m��dulo
                       Fornecedores)
                     </button>
                   </div>
@@ -1005,7 +1005,10 @@ export default function AbastecimentoForm({
                 <Input
                   id="endereco"
                   {...register("endereco")}
-                  className="foodmax-input"
+                  className={cn(
+                    "foodmax-input",
+                    validationErrors.endereco && "border-red-500"
+                  )}
                 />
                 {errors.endereco && (
                   <span className="text-sm text-red-600">
