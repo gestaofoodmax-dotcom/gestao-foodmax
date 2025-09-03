@@ -1129,17 +1129,9 @@ export default function AbastecimentoForm({
             <X className="w-4 h-4 mr-2" /> Cancelar
           </Button>
           <Button
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              console.log("=== BOTÃO SALVAR CLICADO - FORÇA SALVAMENTO ===");
-
-              // CHAMA DIRETAMENTE O onSubmit SEM USAR handleSubmit
-              const formData = watchedValues as any;
-              console.log("Chamando onSubmit diretamente com:", formData);
-              onSubmit(formData);
-            }}
-            disabled={false}
+            type="submit"
+            onClick={handleSubmit(onSubmit)}
+            disabled={isLoading}
             className="bg-foodmax-orange hover:bg-orange-600"
           >
             <Save className="w-4 h-4 mr-2" />{" "}
