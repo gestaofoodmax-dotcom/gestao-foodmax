@@ -931,7 +931,9 @@ export default function AbastecimentoForm({
                         <div className="flex-1">
                           <div className="font-medium">{item.nome}</div>
                           <div className="text-xs text-gray-500">
-                            Categoria: {categorias.find((c) => c.id === item.categoria_id)?.nome || "Categoria não informada"}
+                            Categoria:{" "}
+                            {categorias.find((c) => c.id === item.categoria_id)
+                              ?.nome || "Categoria não informada"}
                           </div>
                           <div className="text-xs text-gray-600">
                             Estoque Atual: {item.estoque_atual ?? 0}
