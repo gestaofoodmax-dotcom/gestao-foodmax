@@ -207,8 +207,8 @@ export default function AbastecimentoView({
             {detalhe?.itens && detalhe.itens.length > 0 && (
               <div className="border rounded-lg p-4">
                 <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                  <CupSoda className="w-5 h-5 text-purple-600" />
-                  <span className="text-purple-600">
+                  <CupSoda className="w-5 h-5 text-yellow-600" />
+                  <span className="text-yellow-600">
                     Itens do Abastecimento
                   </span>
                 </h3>
@@ -223,6 +223,9 @@ export default function AbastecimentoView({
                           {item.item_nome || item.item_id}
                         </div>
                         <div className="text-xs text-gray-500">
+                          {item.categoria_nome || "Categoria não informada"}
+                        </div>
+                        <div className="text-xs text-gray-500">
                           Estoque Atual: {item.estoque_atual ?? 0}
                         </div>
                       </div>
@@ -234,6 +237,13 @@ export default function AbastecimentoView({
                       </div>
                     </div>
                   ))}
+                </div>
+                <hr className="border-t border-gray-300 mt-4 mb-4" />
+                <div className="text-sm text-gray-700">
+                  <span className="font-medium">Quantidade Total: </span>
+                  <span className="font-semibold">
+                    {detalhe.itens.reduce((total: number, item: any) => total + (item.quantidade || 0), 0)}
+                  </span>
                 </div>
               </div>
             )}
