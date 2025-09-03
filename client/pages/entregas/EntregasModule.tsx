@@ -410,6 +410,13 @@ export default function EntregasModule() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => setShowImport(true)}
+                  >
+                    Importar
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={async () => {
                       try { const data = await buildExportRows(); setExportData(data); } catch { setExportData(entregas as any); }
                       setShowExport(true);
