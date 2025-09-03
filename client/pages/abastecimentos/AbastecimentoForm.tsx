@@ -142,7 +142,7 @@ export default function AbastecimentoForm({
     {
       item_id: number;
       quantidade: number;
-      unidade_medida: import("@/../shared/itens").Item["unidade_medida"] | string;
+      unidade_medida: string;
     }[]
   >([]);
 
