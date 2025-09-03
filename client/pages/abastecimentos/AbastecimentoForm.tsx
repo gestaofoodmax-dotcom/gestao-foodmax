@@ -723,6 +723,17 @@ export default function AbastecimentoForm({
                   </span>
                 )}
               </div>
+
+              <div>
+                <Label>Código do Abastecimento</Label>
+                <Input
+                  id="codigo"
+                  {...register("codigo" as any)}
+                  className="foodmax-input"
+                  placeholder="Ex.: ABST-0001"
+                  maxLength={50}
+                />
+              </div>
             </div>
           </div>
 
