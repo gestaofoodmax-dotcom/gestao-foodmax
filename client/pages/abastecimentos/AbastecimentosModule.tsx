@@ -1027,6 +1027,7 @@ export default function AbastecimentosModule() {
 
           const exactMap: Record<string, string> = {
             Estabelecimento: "estabelecimento_nome",
+            Fornecedores: "fornecedores",
             Categoria: "categoria_nome",
             Telefone: "telefone",
             DDI: "ddi",
