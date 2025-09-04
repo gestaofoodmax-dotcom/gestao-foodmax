@@ -89,6 +89,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
         items: [
           { icon: List, label: "Itens", route: "/itens" },
           { icon: Utensils, label: "Cardápios", route: "/cardapios" },
+          { icon: Mail, label: "Comunicação", route: "/comunicacoes" },
           { icon: DollarSign, label: "Financeiro", route: "/financeiro" },
         ],
       },
