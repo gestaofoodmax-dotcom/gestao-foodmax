@@ -309,6 +309,45 @@ export default function FinanceiroModule() {
     loadTransacoes();
   }, [isLoading, loadTransacoes]);
 
+  useEffect(() => {
+    const fetchAllForExport = async () => {
+      try {
+        const params = new URLSearchParams({ page: "1", limit: "10000" });
+        if (activeTab !== "todos") params.set("tipo", activeTab === "receitas" ? "Receita" : "Despesa");
+        if (selectedEstabelecimento !== "all") params.set("estabelecimento_id", selectedEstabelecimento);
+        if (period) params.set("period", period);
+        if (searchTerm) params.set("search", searchTerm);
+        const res: FinanceiroListResponse = await makeRequest(`/api/financeiro?${params}`);
+        const mapped = (res.data || []).map((t) => ({
+          estabelecimento_nome: estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome || "",
+          tipo: t.tipo,
+          categoria: t.categoria,
+          valor: (t.valor / 100).toFixed(2),
+          data_transacao: t.data_transacao ? new Date(t.data_transacao).toISOString().split("T")[0] : "",
+          descricao: t.descricao || "",
+          ativo: t.ativo ? "Ativo" : "Inativo",
+          data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
+        }));
+        setExportData(mapped);
+      } catch {
+        const local = readLocal();
+        const mapped = local.map((t) => ({
+          estabelecimento_nome: estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome || "",
+          tipo: t.tipo,
+          categoria: t.categoria,
+          valor: (t.valor / 100).toFixed(2),
+          data_transacao: t.data_transacao ? new Date(t.data_transacao).toISOString().split("T")[0] : "",
+          descricao: t.descricao || "",
+          ativo: t.ativo ? "Ativo" : "Inativo",
+          data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
+        }));
+        setExportData(mapped);
+      }
+    };
+    if (showExport) fetchAllForExport();
+    else setExportData([]);
+  }, [showExport, activeTab, selectedEstabelecimento, period, searchTerm, estabelecimentos, makeRequest]);
+
   const [showForm, setShowForm] = useState(false);
   const [showView, setShowView] = useState(false);
   const [currentItem, setCurrentItem] = useState<FinanceiroTransacao | null>(
