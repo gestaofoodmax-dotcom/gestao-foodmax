@@ -7,8 +7,25 @@ import { Badge } from "@/components/ui/badge";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
 import { DataGrid } from "@/components/data-grid";
 import { toast } from "@/hooks/use-toast";
-import { Download, Edit, Eye, Menu, Plus, Search, Trash2, Truck, CheckCircle2, Timer, Upload } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Download,
+  Edit,
+  Eye,
+  Menu,
+  Plus,
+  Search,
+  Trash2,
+  Truck,
+  CheckCircle2,
+  Timer,
+  Upload,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
 import {
@@ -29,13 +46,20 @@ export default function EntregasModule() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const { makeRequest } = useAuthenticatedRequest();
 
-  const tabs: ("Todos" | TipoEntrega)[] = ["Todos", "Própria", "iFood", "Rappi", "UberEats", "Outro"];
-  const [activeTab, setActiveTab] = useState<("Todos" | TipoEntrega)>("Todos");
+  const tabs: ("Todos" | TipoEntrega)[] = [
+    "Todos",
+    "Própria",
+    "iFood",
+    "Rappi",
+    "UberEats",
+    "Outro",
+  ];
+  const [activeTab, setActiveTab] = useState<"Todos" | TipoEntrega>("Todos");
 
   type TabState = { search: string; page: number };
   const [tabState, setTabState] = useState<Record<string, TabState>>({
     Todos: { search: "", page: 1 },
-    "Própria": { search: "", page: 1 },
+    Própria: { search: "", page: 1 },
     iFood: { search: "", page: 1 },
     Rappi: { search: "", page: 1 },
     UberEats: { search: "", page: 1 },
@@ -44,8 +68,12 @@ export default function EntregasModule() {
   const currentSearch = tabState[activeTab]?.search ?? "";
   const currentPage = tabState[activeTab]?.page ?? 1;
   const setCurrentSearch = (val: string) =>
-    setTabState((s) => ({ ...s, [activeTab]: { ...s[activeTab], search: val, page: 1 } }));
-  const setCurrentPage = (page: number) => setTabState((s) => ({ ...s, [activeTab]: { ...s[activeTab], page } }));
+    setTabState((s) => ({
+      ...s,
+      [activeTab]: { ...s[activeTab], search: val, page: 1 },
+    }));
+  const setCurrentPage = (page: number) =>
+    setTabState((s) => ({ ...s, [activeTab]: { ...s[activeTab], page } }));
 
   const [entregas, setEntregas] = useState<Entrega[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +81,7 @@ export default function EntregasModule() {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [totalCounts, setTotalCounts] = useState<Record<string, number>>({
     Todos: 0,
-    "Própria": 0,
+    Própria: 0,
     iFood: 0,
     Rappi: 0,
     UberEats: 0,
@@ -67,31 +95,69 @@ export default function EntregasModule() {
 
   const LOCAL_KEY = "fm_entregas";
   const readLocal = (): Entrega[] => {
-    try { const raw = localStorage.getItem(LOCAL_KEY); return raw ? JSON.parse(raw) : []; } catch { return []; }
+    try {
+      const raw = localStorage.getItem(LOCAL_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
   };
-  const writeLocal = (list: Entrega[]) => localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
+  const writeLocal = (list: Entrega[]) =>
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
 
-  useEffect(() => { setSidebarOpen(!isMobile); }, [isMobile]);
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
 
   const gridColumns = useMemo(
     () => [
-      { key: "estabelecimento_nome", label: "Estabelecimento", sortable: true, render: (_: any, r: any) => r.estabelecimento_nome || "-" },
+      {
+        key: "estabelecimento_nome",
+        label: "Estabelecimento",
+        sortable: true,
+        render: (_: any, r: any) => r.estabelecimento_nome || "-",
+      },
       {
         key: "pedido",
         label: "Pedido",
         sortable: false,
-        render: (_: any, r: any) => r.pedido_codigo || r.codigo_pedido_app || "-",
+        render: (_: any, r: any) =>
+          r.pedido_codigo || r.codigo_pedido_app || "-",
       },
       {
         key: "tipo_entrega",
         label: "Tipo",
         sortable: true,
-        render: (v: any) => <Badge className={getTipoEntregaColor(v)}>{v}</Badge>,
+        render: (v: any) => (
+          <Badge className={getTipoEntregaColor(v)}>{v}</Badge>
+        ),
       },
-      { key: "data_hora_saida", label: "Data/Hora Saída", sortable: true, render: (v: any) => formatDateTimeBR(v) },
-      { key: "data_hora_entregue", label: "Data/Hora Entregue", sortable: true, render: (v: any) => formatDateTimeBR(v) },
-      { key: "valor_entrega", label: "Valor Entrega", sortable: true, render: (v: number) => formatCurrencyBRL(v) },
-      { key: "status", label: "Status", sortable: true, render: (v: any) => <Badge className={getStatusEntregaColor(v)}>{v}</Badge> },
+      {
+        key: "data_hora_saida",
+        label: "Data/Hora Saída",
+        sortable: true,
+        render: (v: any) => formatDateTimeBR(v),
+      },
+      {
+        key: "data_hora_entregue",
+        label: "Data/Hora Entregue",
+        sortable: true,
+        render: (v: any) => formatDateTimeBR(v),
+      },
+      {
+        key: "valor_entrega",
+        label: "Valor Entrega",
+        sortable: true,
+        render: (v: number) => formatCurrencyBRL(v),
+      },
+      {
+        key: "status",
+        label: "Status",
+        sortable: true,
+        render: (v: any) => (
+          <Badge className={getStatusEntregaColor(v)}>{v}</Badge>
+        ),
+      },
       {
         key: "acoes",
         label: "Ações",
@@ -103,9 +169,15 @@ export default function EntregasModule() {
               onClick={() => handleRegistrarEntregue(r)}
               disabled={r.status === "Entregue" || !!r.data_hora_entregue}
               className={`h-8 w-8 p-0 rounded-full border ${r.status === "Entregue" || !!r.data_hora_entregue ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50" : "bg-green-50 hover:bg-green-100 border-green-200"}`}
-              title={r.status === "Entregue" || !!r.data_hora_entregue ? "Já entregue" : "Registrar Entrega"}
+              title={
+                r.status === "Entregue" || !!r.data_hora_entregue
+                  ? "Já entregue"
+                  : "Registrar Entrega"
+              }
             >
-              <CheckCircle2 className={`w-4 h-4 ${r.status === "Entregue" || !!r.data_hora_entregue ? "text-gray-400" : "text-green-700"}`} />
+              <CheckCircle2
+                className={`w-4 h-4 ${r.status === "Entregue" || !!r.data_hora_entregue ? "text-gray-400" : "text-green-700"}`}
+              />
             </Button>
             <Button
               variant="ghost"
@@ -113,17 +185,41 @@ export default function EntregasModule() {
               onClick={() => handleRegistrarSaida(r)}
               disabled={r.status !== "Pendente" || !!r.data_hora_saida}
               className={`h-8 w-8 p-0 rounded-full border ${r.status !== "Pendente" || !!r.data_hora_saida ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50" : "bg-yellow-50 hover:bg-yellow-100 border-yellow-200"}`}
-              title={r.status !== "Pendente" || !!r.data_hora_saida ? "Saída já registrada" : "Registrar Saída"}
+              title={
+                r.status !== "Pendente" || !!r.data_hora_saida
+                  ? "Saída já registrada"
+                  : "Registrar Saída"
+              }
             >
-              <Timer className={`w-4 h-4 ${r.status !== "Pendente" || !!r.data_hora_saida ? "text-gray-400" : "text-yellow-700"}`} />
+              <Timer
+                className={`w-4 h-4 ${r.status !== "Pendente" || !!r.data_hora_saida ? "text-gray-400" : "text-yellow-700"}`}
+              />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleView(r)} className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200" title="Visualizar">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleView(r)}
+              className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
+              title="Visualizar"
+            >
               <Eye className="w-4 h-4 text-blue-700" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleEdit(r)} className="h-8 w-8 p-0 rounded-full border bg-yellow-50 hover:bg-yellow-100 border-yellow-200" title="Editar">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEdit(r)}
+              className="h-8 w-8 p-0 rounded-full border bg-yellow-50 hover:bg-yellow-100 border-yellow-200"
+              title="Editar"
+            >
               <Edit className="w-4 h-4 text-yellow-700" />
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleDelete(r)} className="h-8 w-8 p-0 rounded-full border bg-red-50 hover:bg-red-100 border-red-200" title="Excluir">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDelete(r)}
+              className="h-8 w-8 p-0 rounded-full border bg-red-50 hover:bg-red-100 border-red-200"
+              title="Excluir"
+            >
               <Trash2 className="w-4 h-4 text-red-700" />
             </Button>
           </div>
@@ -143,10 +239,12 @@ export default function EntregasModule() {
         makeRequest(`/api/entregas?page=1&limit=1&tipo=UberEats`),
         makeRequest(`/api/entregas?page=1&limit=1&tipo=Outro`),
       ];
-      const [all, propria, ifood, rappi, uber, outro] = await Promise.all(reqs.map((p) => p.catch(() => null)));
+      const [all, propria, ifood, rappi, uber, outro] = await Promise.all(
+        reqs.map((p) => p.catch(() => null)),
+      );
       setTotalCounts({
         Todos: all?.pagination?.total || 0,
-        "Própria": propria?.pagination?.total || 0,
+        Própria: propria?.pagination?.total || 0,
         iFood: ifood?.pagination?.total || 0,
         Rappi: rappi?.pagination?.total || 0,
         UberEats: uber?.pagination?.total || 0,
@@ -156,7 +254,7 @@ export default function EntregasModule() {
       const local = readLocal();
       setTotalCounts({
         Todos: local.length,
-        "Própria": local.filter((e) => e.tipo_entrega === "Própria").length,
+        Própria: local.filter((e) => e.tipo_entrega === "Própria").length,
         iFood: local.filter((e) => e.tipo_entrega === "iFood").length,
         Rappi: local.filter((e) => e.tipo_entrega === "Rappi").length,
         UberEats: local.filter((e) => e.tipo_entrega === "UberEats").length,
@@ -168,15 +266,24 @@ export default function EntregasModule() {
   const loadEntregas = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page: String(currentPage), limit: String(pageSize) });
+      const params = new URLSearchParams({
+        page: String(currentPage),
+        limit: String(pageSize),
+      });
       if (activeTab !== "Todos") params.set("tipo", activeTab);
       let response: EntregasListResponse | null = null;
-      try { response = await makeRequest(`/api/entregas?${params}`); } catch { response = null; }
+      try {
+        response = await makeRequest(`/api/entregas?${params}`);
+      } catch {
+        response = null;
+      }
       if (response) {
         setEntregas(response.data as any);
       } else {
         const local = readLocal();
-        const filtered = local.filter((e) => activeTab === "Todos" || e.tipo_entrega === activeTab);
+        const filtered = local.filter(
+          (e) => activeTab === "Todos" || e.tipo_entrega === activeTab,
+        );
         setEntregas(filtered as any);
       }
     } finally {
@@ -185,9 +292,15 @@ export default function EntregasModule() {
     }
   }, [activeTab, currentPage, makeRequest]);
 
-  useEffect(() => { loadCounts(); }, [loadCounts]);
-  useEffect(() => { loadEntregas(); }, [loadEntregas]);
-  useEffect(() => { setSelectedIds([]); }, [activeTab]);
+  useEffect(() => {
+    loadCounts();
+  }, [loadCounts]);
+  useEffect(() => {
+    loadEntregas();
+  }, [loadEntregas]);
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [activeTab]);
 
   const handlePageChange = (p: number) => setCurrentPage(p);
   const handleSearch = (v: string) => setCurrentSearch(v);
@@ -198,13 +311,28 @@ export default function EntregasModule() {
   const [formLoading, setFormLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  const handleNew = () => { setCurrentEntrega(null); setIsEditing(false); setShowForm(true); };
-  const handleEdit = (e: Entrega) => { setCurrentEntrega(e); setIsEditing(true); setShowView(false); setShowForm(true); };
-  const handleView = (e: Entrega) => { setCurrentEntrega(e); setShowView(true); };
+  const handleNew = () => {
+    setCurrentEntrega(null);
+    setIsEditing(false);
+    setShowForm(true);
+  };
+  const handleEdit = (e: Entrega) => {
+    setCurrentEntrega(e);
+    setIsEditing(true);
+    setShowView(false);
+    setShowForm(true);
+  };
+  const handleView = (e: Entrega) => {
+    setCurrentEntrega(e);
+    setShowView(true);
+  };
   const handleDelete = async (e: Entrega) => {
     try {
       await makeRequest(`/api/entregas/${e.id}`, { method: "DELETE" });
-      toast({ title: "Entrega excluída", description: "Entrega excluída com sucesso" });
+      toast({
+        title: "Entrega excluída",
+        description: "Entrega excluída com sucesso",
+      });
       await Promise.all([loadEntregas(), loadCounts()]);
     } catch {
       const list = readLocal().filter((x) => x.id !== e.id);
@@ -216,7 +344,9 @@ export default function EntregasModule() {
   };
 
   const refreshAfterMutation = async () => {
-    try { localStorage.removeItem(LOCAL_KEY); } catch {}
+    try {
+      localStorage.removeItem(LOCAL_KEY);
+    } catch {}
     setSelectedIds([]);
     await Promise.all([loadEntregas(), loadCounts()]);
   };
@@ -225,14 +355,31 @@ export default function EntregasModule() {
     setFormLoading(true);
     try {
       if (isEditing && currentEntrega) {
-        await makeRequest(`/api/entregas/${currentEntrega.id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data), });
-        toast({ title: "Entrega atualizada", description: "Dados atualizados" });
+        await makeRequest(`/api/entregas/${currentEntrega.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        toast({
+          title: "Entrega atualizada",
+          description: "Dados atualizados",
+        });
       } else {
         try {
-          await makeRequest(`/api/entregas`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data), });
-          toast({ title: "Entrega criada", description: "Dados salvos no banco" });
+          await makeRequest(`/api/entregas`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+          toast({
+            title: "Entrega criada",
+            description: "Dados salvos no banco",
+          });
         } catch {
-          toast({ title: "Entrega salva localmente", description: "Dados processados" });
+          toast({
+            title: "Entrega salva localmente",
+            description: "Dados processados",
+          });
         }
       }
       await refreshAfterMutation();
@@ -242,7 +389,8 @@ export default function EntregasModule() {
       const now = new Date().toISOString();
       if (isEditing && currentEntrega) {
         const idx = list.findIndex((x) => x.id === currentEntrega.id);
-        if (idx >= 0) list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
+        if (idx >= 0)
+          list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
       } else {
         const novo: Entrega = {
           id: Date.now(),
@@ -279,7 +427,10 @@ export default function EntregasModule() {
   const handleRegistrarSaida = async (e: Entrega) => {
     try {
       await makeRequest(`/api/entregas/${e.id}/saida`, { method: "PATCH" });
-      toast({ title: "Saída registrada", description: "Status alterado para Saiu" });
+      toast({
+        title: "Saída registrada",
+        description: "Status alterado para Saiu",
+      });
       await refreshAfterMutation();
     } catch {
       const list = readLocal();
@@ -297,7 +448,10 @@ export default function EntregasModule() {
   const handleRegistrarEntregue = async (e: Entrega) => {
     try {
       await makeRequest(`/api/entregas/${e.id}/entregue`, { method: "PATCH" });
-      toast({ title: "Entrega registrada", description: "Status alterado para Entregue" });
+      toast({
+        title: "Entrega registrada",
+        description: "Status alterado para Entregue",
+      });
       await refreshAfterMutation();
     } catch {
       const list = readLocal();
@@ -318,7 +472,11 @@ export default function EntregasModule() {
       if (activeTab !== "Todos") params.set("tipo", activeTab);
       const resp = await makeRequest(`/api/entregas?${params}`);
       return Array.isArray(resp?.data) ? resp.data : [];
-    } catch { return readLocal().filter((e) => activeTab === "Todos" || e.tipo_entrega === activeTab); }
+    } catch {
+      return readLocal().filter(
+        (e) => activeTab === "Todos" || e.tipo_entrega === activeTab,
+      );
+    }
   };
 
   const buildExportRows = async () => {
@@ -329,8 +487,13 @@ export default function EntregasModule() {
         const date = new Date(iso);
         const parts = new Intl.DateTimeFormat("pt-BR", {
           timeZone: "America/Sao_Paulo",
-          year: "numeric", month: "2-digit", day: "2-digit",
-          hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
         }).formatToParts(date);
         const get = (t: string) => parts.find((p) => p.type === t)?.value || "";
         return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get("minute")}:${get("second")}`;
@@ -352,7 +515,12 @@ export default function EntregasModule() {
         observacao: e.observacao || "",
         status: e.status,
         cliente_endereco: e.endereco
-          ? [e.endereco.cep, e.endereco.endereco, [e.endereco.cidade, e.endereco.uf].filter(Boolean).join("/"), e.endereco.pais]
+          ? [
+              e.endereco.cep,
+              e.endereco.endereco,
+              [e.endereco.cidade, e.endereco.uf].filter(Boolean).join("/"),
+              e.endereco.pais,
+            ]
               .filter((x: any) => typeof x === "string" && x.trim() !== "")
               .join(" - ")
           : "",
@@ -362,17 +530,30 @@ export default function EntregasModule() {
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
-      <Sidebar open={sidebarOpen} onToggle={(next) => setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)} />
+      <Sidebar
+        open={sidebarOpen}
+        onToggle={(next) =>
+          setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)
+        }
+      />
       <div className="flex-1 flex flex-col">
         <header className="bg-foodmax-gray-bg px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden p-2 mr-3 rounded-lg border bg-white" aria-label="Abrir menu">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="md:hidden p-2 mr-3 rounded-lg border bg-white"
+                aria-label="Abrir menu"
+              >
                 <Menu className="w-5 h-5" />
               </button>
               <div>
-                <h2 className="text-2xl font-semibold text-gray-800">Entregas</h2>
-                <p className="text-gray-600 mt-1">Gerencie as entregas por tipo e status.</p>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Entregas
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Gerencie as entregas por tipo e status.
+                </p>
               </div>
             </div>
           </div>
@@ -388,7 +569,9 @@ export default function EntregasModule() {
                       onClick={() => setActiveTab(t as any)}
                     >
                       <span>{t}</span>
-                      <span className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === (t as any) ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}>
+                      <span
+                        className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === (t as any) ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
+                      >
                         {totalCounts[t] ?? 0}
                       </span>
                       {activeTab === (t as any) && (
@@ -404,7 +587,12 @@ export default function EntregasModule() {
               <div className="flex flex-col md:flex-row md:items-center gap-4">
                 <div className="relative md:flex-1 md:max-w-md">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <Input placeholder="Buscar registros..." value={currentSearch} onChange={(e) => handleSearch(e.target.value)} className="foodmax-input pl-10" />
+                  <Input
+                    placeholder="Buscar registros..."
+                    value={currentSearch}
+                    onChange={(e) => handleSearch(e.target.value)}
+                    className="foodmax-input pl-10"
+                  />
                 </div>
                 <div className="flex items-center gap-2 w-full md:w-auto md:ml-auto flex-wrap">
                   <Button
@@ -418,13 +606,21 @@ export default function EntregasModule() {
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      try { const data = await buildExportRows(); setExportData(data); } catch { setExportData(entregas as any); }
+                      try {
+                        const data = await buildExportRows();
+                        setExportData(data);
+                      } catch {
+                        setExportData(entregas as any);
+                      }
                       setShowExport(true);
                     }}
                   >
                     <Download className="w-4 h-4 mr-2" /> Exportar
                   </Button>
-                  <Button onClick={() => setShowForm(true)} className="bg-foodmax-orange text-white hover:bg-orange-600">
+                  <Button
+                    onClick={() => setShowForm(true)}
+                    className="bg-foodmax-orange text-white hover:bg-orange-600"
+                  >
                     <Plus className="w-4 h-4 mr-2" /> Novo
                   </Button>
                 </div>
@@ -451,7 +647,11 @@ export default function EntregasModule() {
 
       <EntregaForm
         isOpen={showForm}
-        onClose={() => { setShowForm(false); setCurrentEntrega(null); setIsEditing(false); }}
+        onClose={() => {
+          setShowForm(false);
+          setCurrentEntrega(null);
+          setIsEditing(false);
+        }}
         onSave={handleSave}
         entrega={currentEntrega}
         isLoading={formLoading}
@@ -459,14 +659,20 @@ export default function EntregasModule() {
 
       <EntregaView
         isOpen={showView}
-        onClose={() => { setShowView(false); setCurrentEntrega(null); }}
+        onClose={() => {
+          setShowView(false);
+          setCurrentEntrega(null);
+        }}
         entrega={currentEntrega as any}
         onEdit={(e) => handleEdit(e as any)}
       />
 
       <ExportModal
         isOpen={showExport}
-        onClose={() => { setShowExport(false); setExportData([]); }}
+        onClose={() => {
+          setShowExport(false);
+          setExportData([]);
+        }}
         data={exportData}
         selectedIds={selectedIds}
         moduleName="Entregas"
@@ -496,7 +702,11 @@ export default function EntregasModule() {
         userRole={"admin"}
         hasPayment={true}
         columns={[
-          { key: "estabelecimento_nome", label: "Estabelecimento", required: true },
+          {
+            key: "estabelecimento_nome",
+            label: "Estabelecimento",
+            required: true,
+          },
           { key: "tipo_entrega", label: "Tipo de Entrega" },
           { key: "pedido", label: "Pedido (Código ou Código via APP)" },
           { key: "valor_pedido", label: "Valor do Pedido (R$)" },
@@ -506,11 +716,21 @@ export default function EntregasModule() {
           { key: "cliente_nome", label: "Cliente" },
           { key: "ddi", label: "DDI" },
           { key: "telefone", label: "Telefone" },
-          { key: "data_hora_saida", label: "Data/Hora Saída (dd/mm/yyyy hh:mm:ss, horário de Brasília)" },
-          { key: "data_hora_entregue", label: "Data/Hora Entregue (dd/mm/yyyy hh:mm:ss, horário de Brasília)" },
+          {
+            key: "data_hora_saida",
+            label: "Data/Hora Saída (dd/mm/yyyy hh:mm:ss, horário de Brasília)",
+          },
+          {
+            key: "data_hora_entregue",
+            label:
+              "Data/Hora Entregue (dd/mm/yyyy hh:mm:ss, horário de Brasília)",
+          },
           { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
-          { key: "endereco", label: "Cliente Endereço (CEP - Endereço - Cidade/UF - País)" },
+          {
+            key: "endereco",
+            label: "Cliente Endereço (CEP - Endereço - Cidade/UF - País)",
+          },
         ]}
         mapHeader={(h) => {
           const original = h.trim();
@@ -558,7 +778,8 @@ export default function EntregasModule() {
         }}
         validateRecord={(r) => {
           const errs: string[] = [];
-          if (!r.estabelecimento_nome && !r.estabelecimento) errs.push("Estabelecimento é obrigatório");
+          if (!r.estabelecimento_nome && !r.estabelecimento)
+            errs.push("Estabelecimento é obrigatório");
           return errs;
         }}
         onImport={async (records) => {
@@ -566,7 +787,9 @@ export default function EntregasModule() {
             if (val === undefined || val === null || val === "") return 0;
             if (typeof val === "number") return Math.round(val * 100);
             const s = String(val).trim();
-            const clean = s.replace(/[^0-9,.-]/g, "").replace(/\.(?=\d{3}(,|$))/g, "");
+            const clean = s
+              .replace(/[^0-9,.-]/g, "")
+              .replace(/\.(?=\d{3}(,|$))/g, "");
             const dot = clean.replace(",", ".");
             const n = Number(dot);
             if (!isNaN(n)) return Math.round(n * 100);
@@ -577,14 +800,26 @@ export default function EntregasModule() {
           const parseDate = (s: any) => {
             const str = String(s || "").trim();
             if (!str) return null;
-            const re = /^(\d{2})\/(\d{2})\/(\d{4})(?:[ ,]+(\d{2}):(\d{2})(?::(\d{2}))?)?$/;
+            const re =
+              /^(\d{2})\/(\d{2})\/(\d{4})(?:[ ,]+(\d{2}):(\d{2})(?::(\d{2}))?)?$/;
             const m = str.match(re);
-            if (m) { const [, dd, mm, yyyy, hh = "00", mi = "00", ss = "00"] = m as any; return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}-03:00`; }
-            try { const d = new Date(str); return isNaN(d.getTime()) ? null : d.toISOString(); } catch { return null; }
+            if (m) {
+              const [, dd, mm, yyyy, hh = "00", mi = "00", ss = "00"] =
+                m as any;
+              return `${yyyy}-${mm}-${dd}T${hh}:${mi}:${ss}-03:00`;
+            }
+            try {
+              const d = new Date(str);
+              return isNaN(d.getTime()) ? null : d.toISOString();
+            } catch {
+              return null;
+            }
           };
 
           const full = records.map((r) => {
-            const endRaw = String(r.endereco || r["Cliente Endereço"] || "").trim();
+            const endRaw = String(
+              r.endereco || r["Cliente Endereço"] || "",
+            ).trim();
             let endereco: any = null;
             if (endRaw) {
               const parts = endRaw.split("-").map((x: string) => x.trim());
@@ -592,20 +827,35 @@ export default function EntregasModule() {
               const enderecoStr = parts[1] || "";
               const cidadeUf = parts[2] || "";
               const pais = parts[3] || "Brasil";
-              let cidade = ""; let uf = "";
-              if (cidadeUf.includes("/")) { const [c, u] = cidadeUf.split("/").map((s: string) => s.trim()); cidade = c || ""; uf = u || ""; }
-              else { cidade = cidadeUf || ""; uf = parts[3] || ""; }
+              let cidade = "";
+              let uf = "";
+              if (cidadeUf.includes("/")) {
+                const [c, u] = cidadeUf.split("/").map((s: string) => s.trim());
+                cidade = c || "";
+                uf = u || "";
+              } else {
+                cidade = cidadeUf || "";
+                uf = parts[3] || "";
+              }
               endereco = { cep, endereco: enderecoStr, cidade, uf, pais };
             }
 
             return {
-              estabelecimento_nome: String(r.estabelecimento_nome || r.estabelecimento || "").trim(),
-              tipo_entrega: String(r.tipo_entrega || r.tipo || "Própria").trim(),
-              pedido: String(r.pedido || r.pedido_codigo || r.codigo_pedido_app || "").trim(),
+              estabelecimento_nome: String(
+                r.estabelecimento_nome || r.estabelecimento || "",
+              ).trim(),
+              tipo_entrega: String(
+                r.tipo_entrega || r.tipo || "Própria",
+              ).trim(),
+              pedido: String(
+                r.pedido || r.pedido_codigo || r.codigo_pedido_app || "",
+              ).trim(),
               valor_pedido: parseCentavos(r.valor_pedido),
               taxa_extra: parseCentavos(r.taxa_extra),
               valor_entrega: parseCentavos(r.valor_entrega),
-              forma_pagamento: String(r.forma_pagamento || r.pagamento || "PIX").trim(),
+              forma_pagamento: String(
+                r.forma_pagamento || r.pagamento || "PIX",
+              ).trim(),
               cliente_nome: String(r.cliente_nome || r.cliente || "").trim(),
               ddi: String(r.ddi || "+55").trim(),
               telefone: String(r.telefone || "").trim(),
@@ -618,15 +868,25 @@ export default function EntregasModule() {
           });
 
           try {
-            const response = await makeRequest(`/api/entregas/import-full`, { method: "POST", body: JSON.stringify({ records: full }) });
+            const response = await makeRequest(`/api/entregas/import-full`, {
+              method: "POST",
+              body: JSON.stringify({ records: full }),
+            });
             await Promise.all([loadEntregas(), loadCounts()]);
-            return { success: true, imported: response?.imported ?? full.length, message: `${response?.imported ?? full.length} entrega(s) importada(s)` } as any;
+            return {
+              success: true,
+              imported: response?.imported ?? full.length,
+              message: `${response?.imported ?? full.length} entrega(s) importada(s)`,
+            } as any;
           } catch (e) {
-            return { success: false, imported: 0, message: "Erro ao importar: " + (e as Error).message } as any;
+            return {
+              success: false,
+              imported: 0,
+              message: "Erro ao importar: " + (e as Error).message,
+            } as any;
           }
         }}
       />
-
     </div>
   );
 }

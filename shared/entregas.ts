@@ -116,11 +116,11 @@ export const STATUS_ENTREGA: StatusEntrega[] = [
 
 export const getTipoEntregaColor = (tipo: TipoEntrega) => {
   const colors: Record<TipoEntrega, string> = {
-    "Própria": "bg-blue-50 text-blue-700 border-blue-200",
-    "iFood": "bg-red-50 text-red-700 border-red-200",
-    "Rappi": "bg-orange-50 text-orange-700 border-orange-200",
-    "UberEats": "bg-green-50 text-green-700 border-green-200",
-    "Outro": "bg-gray-50 text-gray-700 border-gray-200",
+    Própria: "bg-blue-50 text-blue-700 border-blue-200",
+    iFood: "bg-red-50 text-red-700 border-red-200",
+    Rappi: "bg-orange-50 text-orange-700 border-orange-200",
+    UberEats: "bg-green-50 text-green-700 border-green-200",
+    Outro: "bg-gray-50 text-gray-700 border-gray-200",
   };
   return colors[tipo];
 };

@@ -2,7 +2,13 @@ import { RequestHandler } from "express";
 import { z } from "zod";
 import { getSupabaseServiceClient } from "../supabase";
 
-const TipoEntregaEnum = z.enum(["Própria", "iFood", "Rappi", "UberEats", "Outro"]);
+const TipoEntregaEnum = z.enum([
+  "Própria",
+  "iFood",
+  "Rappi",
+  "UberEats",
+  "Outro",
+]);
 const StatusEntregaEnum = z.enum(["Pendente", "Saiu", "Entregue", "Cancelado"]);
 const FormaPagamentoEnum = z.enum([
   "PIX",
@@ -95,7 +101,10 @@ export const listEntregas: RequestHandler = async (req, res) => {
       );
     }
 
-    if (tipo && ["Própria", "iFood", "Rappi", "UberEats", "Outro"].includes(tipo)) {
+    if (
+      tipo &&
+      ["Própria", "iFood", "Rappi", "UberEats", "Outro"].includes(tipo)
+    ) {
       query = query.eq("tipo_entrega", tipo);
     }
 
@@ -218,8 +227,9 @@ export const createEntrega: RequestHandler = async (req, res) => {
 
     // regra de consistência: se tipo != Própria, não aceitar pedido_id
     const tipo = parsed.tipo_entrega;
-    const pedido_id = tipo === "Própria" ? parsed.pedido_id ?? null : null;
-    const codigo_pedido_app = tipo === "Própria" ? null : parsed.codigo_pedido_app ?? null;
+    const pedido_id = tipo === "Própria" ? (parsed.pedido_id ?? null) : null;
+    const codigo_pedido_app =
+      tipo === "Própria" ? null : (parsed.codigo_pedido_app ?? null);
 
     const insertData: any = {
       id_usuario: userId,
@@ -289,7 +299,8 @@ export const updateEntrega: RequestHandler = async (req, res) => {
       .eq("id", id)
       .eq("id_usuario", userId)
       .single();
-    if (!existing) return res.status(404).json({ error: "Entrega não encontrada" });
+    if (!existing)
+      return res.status(404).json({ error: "Entrega não encontrada" });
 
     const { endereco: _e, ...body } = parsed as any;
 
@@ -348,7 +359,8 @@ export const deleteEntrega: RequestHandler = async (req, res) => {
       .eq("id", id)
       .eq("id_usuario", userId)
       .single();
-    if (!existing) return res.status(404).json({ error: "Entrega não encontrada" });
+    if (!existing)
+      return res.status(404).json({ error: "Entrega não encontrada" });
 
     const { error } = await supabase
       .from("entregas")
@@ -463,13 +475,17 @@ export const importEntregasFull: RequestHandler = async (req, res) => {
           .single();
         if (!est) continue;
 
-        const tipo: z.infer<typeof TipoEntregaEnum> = (r.tipo_entrega as any) || "Própria";
-        const forma: z.infer<typeof FormaPagamentoEnum> = (r.forma_pagamento as any) || "PIX";
+        const tipo: z.infer<typeof TipoEntregaEnum> =
+          (r.tipo_entrega as any) || "Própria";
+        const forma: z.infer<typeof FormaPagamentoEnum> =
+          (r.forma_pagamento as any) || "PIX";
 
         let pedido_id: number | null = null;
         let codigo_pedido_app: string | null = null;
         if (tipo === "Própria") {
-          const codigo = String(r.pedido_codigo || r.codigo_pedido || r.pedido || "").trim();
+          const codigo = String(
+            r.pedido_codigo || r.codigo_pedido || r.pedido || "",
+          ).trim();
           if (codigo) {
             const { data: ped } = await supabase
               .from("pedidos")
@@ -480,7 +496,10 @@ export const importEntregasFull: RequestHandler = async (req, res) => {
             pedido_id = ped?.id ?? null;
           }
         } else {
-          codigo_pedido_app = String(r.codigo_pedido_app || r.pedido || r.pedido_codigo || "").trim() || null;
+          codigo_pedido_app =
+            String(
+              r.codigo_pedido_app || r.pedido || r.pedido_codigo || "",
+            ).trim() || null;
         }
 
         let cliente_id: number | null = null;
@@ -497,7 +516,8 @@ export const importEntregasFull: RequestHandler = async (req, res) => {
 
         const valor_pedido = Number(r.valor_pedido) || 0;
         const taxa_extra = Number(r.taxa_extra) || 0;
-        const valor_entrega = Number(r.valor_entrega) || valor_pedido + taxa_extra;
+        const valor_entrega =
+          Number(r.valor_entrega) || valor_pedido + taxa_extra;
 
         const { data: entrega } = await supabase
           .from("entregas")
@@ -514,8 +534,12 @@ export const importEntregasFull: RequestHandler = async (req, res) => {
             cliente_id,
             ddi: r.ddi || "+55",
             telefone: r.telefone || "",
-            data_hora_saida: r.data_hora_saida ? new Date(r.data_hora_saida).toISOString() : null,
-            data_hora_entregue: r.data_hora_entregue ? new Date(r.data_hora_entregue).toISOString() : null,
+            data_hora_saida: r.data_hora_saida
+              ? new Date(r.data_hora_saida).toISOString()
+              : null,
+            data_hora_entregue: r.data_hora_entregue
+              ? new Date(r.data_hora_entregue).toISOString()
+              : null,
             observacao: r.observacao || null,
             status: (r.status as any) || "Pendente",
           })
