@@ -15,7 +15,7 @@ export default function ComunicacaoView({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-normal">Visualizar Comunicação</DialogTitle>
         </DialogHeader>
