@@ -403,14 +403,14 @@ export default function FinanceiroModule() {
                         </div>
                       </div>
                     </div>
-                    <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-gray-500">
+                    <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-blue-500">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-gray-600">Saldo Líquido</p>
                           <p className={`text-2xl font-bold ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`}>{formatCurrencyBRL(totals.saldoLiquido)}</p>
                         </div>
                         <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                          <Wallet className={`w-6 h-6 ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`} />
+                          <Wallet className="w-6 h-6 text-blue-600" />
                         </div>
                       </div>
                     </div>
