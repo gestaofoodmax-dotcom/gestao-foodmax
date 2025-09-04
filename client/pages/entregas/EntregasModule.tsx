@@ -524,7 +524,7 @@ export default function EntregasModule() {
         data_hora_entregue: formatDateTimeBRNoComma(e.data_hora_entregue),
         observacao: e.observacao || "",
         status: e.status,
-        cliente_endereco: e.endereco
+        entrega_endereco: e.endereco
           ? [
               e.endereco.cep,
               e.endereco.endereco,
