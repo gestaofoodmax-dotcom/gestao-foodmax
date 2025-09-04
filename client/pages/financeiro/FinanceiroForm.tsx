@@ -94,6 +94,7 @@ export default function FinanceiroForm({
 
   const [valorMask, setValorMask] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [openCalendar, setOpenCalendar] = useState(false);
   const formatDateBR = (d?: Date) =>
     d ? d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "";
 
