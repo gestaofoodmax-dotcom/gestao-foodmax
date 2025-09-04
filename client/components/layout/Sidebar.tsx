@@ -15,7 +15,6 @@ import {
   ChevronUp,
   LogOut,
   Bike,
-  Motorcycle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toTitleCase } from "@/lib/utils";
@@ -100,7 +99,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
         label: "Venda",
         items: [
           { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
-          { icon: Motorcycle, label: "Entregas", route: "/entregas" },
+          { icon: Bike, label: "Entregas", route: "/entregas" },
         ],
       },
     ],
