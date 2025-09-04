@@ -31,27 +31,50 @@ export default function ConfiguracoesModule() {
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
-      <Sidebar open={sidebarOpen} onToggle={(next) => setSidebarOpen(typeof next === 'boolean' ? next : !sidebarOpen)} />
+      <Sidebar
+        open={sidebarOpen}
+        onToggle={(next) =>
+          setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)
+        }
+      />
       <div className="flex-1 flex flex-col">
         <header className="bg-foodmax-gray-bg px-6 py-4">
           <div className="flex items-center">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden p-2 mr-3 rounded-lg border bg-white" aria-label="Abrir menu">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden p-2 mr-3 rounded-lg border bg-white"
+              aria-label="Abrir menu"
+            >
               <Menu className="w-5 h-5" />
             </button>
-            <h2 className="text-2xl font-semibold text-gray-800">Configurações</h2>
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Configurações
+            </h2>
           </div>
         </header>
         <main className="flex-1 p-6">
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="bg-white rounded-xl border p-6">
-              <h3 className="text-lg font-semibold mb-3">Template de Promoção</h3>
-              <Textarea rows={8} value={template} onChange={(e) => setTemplate(e.target.value)} className="foodmax-input resize-none" />
+              <h3 className="text-lg font-semibold mb-3">
+                Template de Promoção
+              </h3>
+              <Textarea
+                rows={8}
+                value={template}
+                onChange={(e) => setTemplate(e.target.value)}
+                className="foodmax-input resize-none"
+              />
             </div>
 
             <div className="bg-white rounded-xl border p-6">
               <h3 className="text-lg font-semibold mb-3">Imagens (URLs)</h3>
               <div className="flex gap-2 mb-3">
-                <Input placeholder="https://..." value={newImage} onChange={(e) => setNewImage(e.target.value)} className="foodmax-input" />
+                <Input
+                  placeholder="https://..."
+                  value={newImage}
+                  onChange={(e) => setNewImage(e.target.value)}
+                  className="foodmax-input"
+                />
                 <Button
                   onClick={() => {
                     if (!newImage.trim()) return;
@@ -67,9 +90,22 @@ export default function ConfiguracoesModule() {
                   {images.map((src, idx) => (
                     <div key={idx} className="w-32">
                       <div className="w-full h-24 rounded border overflow-hidden bg-gray-50">
-                        <img src={src} alt="img" className="w-full h-full object-cover" />
+                        <img
+                          src={src}
+                          alt="img"
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <Button variant="outline" size="sm" className="w-full mt-1" onClick={() => setImages((prev) => prev.filter((_, i) => i !== idx))}>Remover</Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full mt-1"
+                        onClick={() =>
+                          setImages((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                      >
+                        Remover
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -77,7 +113,12 @@ export default function ConfiguracoesModule() {
             </div>
 
             <div>
-              <Button onClick={save} className="bg-foodmax-orange hover:bg-orange-600"><Save className="w-4 h-4 mr-2" /> Salvar</Button>
+              <Button
+                onClick={save}
+                className="bg-foodmax-orange hover:bg-orange-600"
+              >
+                <Save className="w-4 h-4 mr-2" /> Salvar
+              </Button>
             </div>
           </div>
         </main>

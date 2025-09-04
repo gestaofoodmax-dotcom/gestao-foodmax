@@ -1,4 +1,9 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { getStatusBadgeColor } from "@shared/comunicacoes";
 
@@ -17,7 +22,9 @@ export default function ComunicacaoView({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="w-[85vw] h-[90vh] max-w-none overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl font-normal">Visualizar Comunicação</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl font-normal">
+            Visualizar Comunicação
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3 text-sm">
@@ -27,7 +34,9 @@ export default function ComunicacaoView({
             </div>
             <div>
               <div className="text-gray-500">Status</div>
-              <Badge className={getStatusBadgeColor(comunicacao.status)}>{comunicacao.status}</Badge>
+              <Badge className={getStatusBadgeColor(comunicacao.status)}>
+                {comunicacao.status}
+              </Badge>
             </div>
             <div>
               <div className="text-gray-500">Tipo</div>
@@ -35,7 +44,9 @@ export default function ComunicacaoView({
             </div>
             <div>
               <div className="text-gray-500">Email Enviado</div>
-              <div className="font-medium">{comunicacao.email_enviado ? 'Sim' : 'Não'}</div>
+              <div className="font-medium">
+                {comunicacao.email_enviado ? "Sim" : "Não"}
+              </div>
             </div>
           </div>
           <div>

@@ -78,7 +78,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 }
               } catch {}
             } else {
-              console.log("[DEBUG] Auth API failed, keeping fallback admin user");
+              console.log(
+                "[DEBUG] Auth API failed, keeping fallback admin user",
+              );
               setHasPaymentFlag(true);
               try {
                 const existingName = localStorage.getItem("fm_user_name");
@@ -88,7 +90,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
               } catch {}
             }
           } catch (e) {
-            console.log("[DEBUG] Auth API unreachable, using fallback admin user");
+            console.log(
+              "[DEBUG] Auth API unreachable, using fallback admin user",
+            );
             setHasPaymentFlag(true);
             try {
               const existingName = localStorage.getItem("fm_user_name");
@@ -99,7 +103,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           }
         }
       } catch (error) {
-        console.warn("[WARN] Error initializing auth (fallback in use):", error);
+        console.warn(
+          "[WARN] Error initializing auth (fallback in use):",
+          error,
+        );
         // Still create fallback admin user even on error
         const adminUser = {
           id: 1,

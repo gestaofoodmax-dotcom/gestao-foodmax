@@ -46,9 +46,7 @@ export const listComunicacoes: RequestHandler = async (req, res) => {
       .eq("id_usuario", userId);
 
     if (search) {
-      query = query.or(
-        `assunto.ilike.%${search}%,mensagem.ilike.%${search}%`,
-      );
+      query = query.or(`assunto.ilike.%${search}%,mensagem.ilike.%${search}%`);
     }
 
     if (status && status !== "Todos") {
@@ -100,7 +98,8 @@ export const getComunicacao: RequestHandler = async (req, res) => {
       .eq("id_usuario", userId)
       .single();
 
-    if (error || !data) return res.status(404).json({ error: "Registro não encontrado" });
+    if (error || !data)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     res.json(data);
   } catch (error) {
@@ -143,7 +142,9 @@ export const createComunicacao: RequestHandler = async (req, res) => {
   } catch (error: any) {
     console.error("Error creating comunicacao:", error);
     if (error.name === "ZodError")
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
@@ -165,7 +166,8 @@ export const updateComunicacao: RequestHandler = async (req, res) => {
       .eq("id", id)
       .eq("id_usuario", userId)
       .single();
-    if (exErr || !existing) return res.status(404).json({ error: "Registro não encontrado" });
+    if (exErr || !existing)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     const updateData: any = { ...parsed };
 
@@ -183,7 +185,9 @@ export const updateComunicacao: RequestHandler = async (req, res) => {
   } catch (error: any) {
     console.error("Error updating comunicacao:", error);
     if (error.name === "ZodError")
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };
@@ -252,7 +256,10 @@ async function ensurePaidPlan(userId: number) {
 
 function extractEmailsFromText(text?: string | null): string[] {
   if (!text) return [];
-  const parts = text.split(/[;,\s]+/g).map((s) => s.trim()).filter(Boolean);
+  const parts = text
+    .split(/[;,\s]+/g)
+    .map((s) => s.trim())
+    .filter(Boolean);
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return parts.filter((p) => re.test(p.toLowerCase()));
 }
@@ -266,7 +273,9 @@ export const sendComunicacao: RequestHandler = async (req, res) => {
 
     const hasPayment = await ensurePaidPlan(userId);
     if (!hasPayment) {
-      return res.status(403).json({ error: "Essa ação só funciona no plano pago." });
+      return res
+        .status(403)
+        .json({ error: "Essa ação só funciona no plano pago." });
     }
 
     const { id } = req.params;
@@ -276,10 +285,13 @@ export const sendComunicacao: RequestHandler = async (req, res) => {
       .eq("id", id)
       .eq("id_usuario", userId)
       .single();
-    if (comErr || !com) return res.status(404).json({ error: "Registro não encontrado" });
+    if (comErr || !com)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     if (com.status !== "Pendente") {
-      return res.status(400).json({ error: "Apenas registros pendentes podem ser enviados" });
+      return res
+        .status(400)
+        .json({ error: "Apenas registros pendentes podem ser enviados" });
     }
 
     // Build recipients
@@ -349,14 +361,23 @@ export const sendComunicacao: RequestHandler = async (req, res) => {
     // Mark as sent
     const { data, error } = await supabase
       .from("comunicacoes")
-      .update({ email_enviado: true, status: "Enviado", data_envio: new Date().toISOString() })
+      .update({
+        email_enviado: true,
+        status: "Enviado",
+        data_envio: new Date().toISOString(),
+      })
       .eq("id", id)
       .eq("id_usuario", userId)
       .select()
       .single();
     if (error) throw error;
 
-    res.json({ success: true, sentCount: emails.length, recipients: emails, comunicacao: data });
+    res.json({
+      success: true,
+      sentCount: emails.length,
+      recipients: emails,
+      comunicacao: data,
+    });
   } catch (error) {
     console.error("Error sending comunicacao:", error);
     res.status(500).json({ error: "Erro ao enviar email" });
@@ -372,14 +393,18 @@ export const sendComunicacoesBulk: RequestHandler = async (req, res) => {
 
     const hasPayment = await ensurePaidPlan(userId);
     if (!hasPayment) {
-      return res.status(403).json({ error: "Essa ação só funciona no plano pago." });
+      return res
+        .status(403)
+        .json({ error: "Essa ação só funciona no plano pago." });
     }
 
     const { ids } = req.body as { ids: number[] };
     if (!Array.isArray(ids) || ids.length === 0)
       return res.status(400).json({ error: "Seleção inválida" });
     if (ids.length > 50)
-      return res.status(400).json({ error: "Só é possível enviar até 50 registros por vez" });
+      return res
+        .status(400)
+        .json({ error: "Só é possível enviar até 50 registros por vez" });
 
     const { data: rows, error: listErr } = await supabase
       .from("comunicacoes")
@@ -461,14 +486,23 @@ export const sendComunicacoesBulk: RequestHandler = async (req, res) => {
       // Simulate send and mark record
       await supabase
         .from("comunicacoes")
-        .update({ email_enviado: true, status: "Enviado", data_envio: new Date().toISOString() })
+        .update({
+          email_enviado: true,
+          status: "Enviado",
+          data_envio: new Date().toISOString(),
+        })
         .eq("id", com.id)
         .eq("id_usuario", userId);
 
       processed += 1;
     }
 
-    res.json({ success: true, processed, total: (rows || []).length, totalEmails });
+    res.json({
+      success: true,
+      processed,
+      total: (rows || []).length,
+      totalEmails,
+    });
   } catch (error: any) {
     console.error("Error bulk sending comunicacoes:", error);
     res.status(500).json({ error: error?.message || "Erro ao enviar emails" });
