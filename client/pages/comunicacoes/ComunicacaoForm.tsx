@@ -317,15 +317,51 @@ export default function ComunicacaoForm({
                     <svg className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7l-2-2H3v16h18V6z"/></svg>
                     <h3 className="font-semibold text-green-600">Conteúdo</h3>
                   </div>
-                  <Label>Assunto *</Label>
-                  <Input {...register('assunto')} className="foodmax-input" />
-                  {errors.assunto && (
-                    <span className="text-sm text-red-600">{errors.assunto.message}</span>
+                  <Label>Destinatários *</Label>
+                  <Select
+                    value={watched.destinatarios_tipo as any}
+                    onValueChange={(v) => setValue('destinatarios_tipo', v as any)}
+                  >
+                    <SelectTrigger className="foodmax-input">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="TodosFornecedores">Todos os fornecedores</SelectItem>
+                      <SelectItem value="FornecedoresEspecificos">Fornecedores específicos</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {watched.destinatarios_tipo === 'FornecedoresEspecificos' && (
+                    <div className="mt-3 max-h-48 overflow-auto border rounded p-2 bg-gray-50">
+                      {fornecedores.map((f) => (
+                        <label key={f.id} className="flex items-center gap-2 py-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedFornecedores.includes(f.id)}
+                            onChange={(e) =>
+                              setSelectedFornecedores((prev) =>
+                                e.target.checked ? [...prev, f.id] : prev.filter((id) => id !== f.id),
+                              )
+                            }
+                          />
+                          <span>{f.nome}</span>
+                          <span className="text-xs text-gray-500">{f.email}</span>
+                        </label>
+                      ))}
+                    </div>
                   )}
+
+                  <div className="mt-4">
+                    <Label>Assunto *</Label>
+                    <Input {...register('assunto')} className="foodmax-input" />
+                    {errors.assunto && (
+                      <span className="text-sm text-red-600">{errors.assunto.message}</span>
+                    )}
+                  </div>
                   <div className="mt-3">
                     <Label>Mensagem *</Label>
                     <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
                   </div>
+
                   <div className="mt-4">
                     <Label>Destinatários *</Label>
                     <Select
