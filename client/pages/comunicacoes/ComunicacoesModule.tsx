@@ -133,6 +133,7 @@ export default function ComunicacoesModule() {
     {
       key: "destinatarios_tipo",
       label: "Destinatários",
+      sortable: true,
       render: (_: any, r: Comunicacao) => {
         const t = r.destinatarios_tipo;
         if (t === 'TodosClientes') return 'Todos os clientes';
