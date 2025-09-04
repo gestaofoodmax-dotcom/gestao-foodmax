@@ -10,7 +10,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertTriangle, BarChart3, PieChart as PieIcon, Menu } from "lucide-react";
+import {
+  AlertTriangle,
+  BarChart3,
+  PieChart as PieIcon,
+  Menu,
+} from "lucide-react";
 import { Estabelecimento } from "@shared/estabelecimentos";
 import { FinanceiroTransacao } from "@shared/financeiro";
 import { Pedido, STATUS_PEDIDO } from "@shared/pedidos";
@@ -142,7 +147,9 @@ export default function RelatoriosModule() {
         selectedEstabelecimento === "all" ||
         t.estabelecimento_id === Number(selectedEstabelecimento);
       const byDate = from
-        ? (t.data_transacao ? new Date(t.data_transacao) : new Date(t.data_cadastro)) >= from
+        ? (t.data_transacao
+            ? new Date(t.data_transacao)
+            : new Date(t.data_cadastro)) >= from
         : true;
       return byEst && byDate;
     });
@@ -164,9 +171,14 @@ export default function RelatoriosModule() {
     // aggregate by month or day depending on period
     const from = parsePeriod(period);
     const useMonthly = !from || period === "12m" || period === "all";
-    const map = new Map<string, { label: string; receitas: number; despesas: number }>();
-    const fmtMonth = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    const labelMonth = (d: Date) => d.toLocaleString("pt-BR", { month: "short", year: "numeric" });
+    const map = new Map<
+      string,
+      { label: string; receitas: number; despesas: number }
+    >();
+    const fmtMonth = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const labelMonth = (d: Date) =>
+      d.toLocaleString("pt-BR", { month: "short", year: "numeric" });
     const fmtDay = (d: Date) => d.toISOString().slice(0, 10);
     const labelDay = (d: Date) => d.toLocaleDateString("pt-BR");
 
@@ -187,7 +199,11 @@ export default function RelatoriosModule() {
   }, [filteredFinanceiro, period]);
 
   const pedidosPieData = useMemo(() => {
-    const counts: Record<string, number> = { Pendente: 0, Finalizado: 0, Cancelado: 0 };
+    const counts: Record<string, number> = {
+      Pendente: 0,
+      Finalizado: 0,
+      Cancelado: 0,
+    };
     filteredPedidos.forEach((p) => {
       counts[p.status] = (counts[p.status] || 0) + 1;
     });
@@ -199,7 +215,10 @@ export default function RelatoriosModule() {
   }, [filteredPedidos]);
 
   const estabOptions = useMemo(() => {
-    const opts = estabelecimentos.map((e) => ({ value: String(e.id), label: e.nome }));
+    const opts = estabelecimentos.map((e) => ({
+      value: String(e.id),
+      label: e.nome,
+    }));
     opts.push({ value: "all", label: "Todos Estabelecimentos" });
     return opts;
   }, [estabelecimentos]);
@@ -223,7 +242,11 @@ export default function RelatoriosModule() {
 
     for (let i = 0; i < elements.length; i++) {
       const el = elements[i];
-      const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
       const imgData = canvas.toDataURL("image/png");
       const imgWidth = pageWidth - 40; // margins
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -232,14 +255,20 @@ export default function RelatoriosModule() {
         pdf.addPage();
         pageIndex++;
       }
-      const y = i === 0 ? 60 : (imgHeight > pageHeight - 80 ? 20 : (pageHeight - imgHeight) / 2);
+      const y =
+        i === 0
+          ? 60
+          : imgHeight > pageHeight - 80
+            ? 20
+            : (pageHeight - imgHeight) / 2;
       pdf.addImage(imgData, "PNG", 20, y, imgWidth, imgHeight);
     }
 
     const nomeEstab =
       selectedEstabelecimento === "all"
         ? "todos"
-        : estabelecimentos.find((e) => e.id === Number(selectedEstabelecimento))?.nome || "estabelecimento";
+        : estabelecimentos.find((e) => e.id === Number(selectedEstabelecimento))
+            ?.nome || "estabelecimento";
     const file = `relatorio-${nomeEstab.replace(/\s+/g, "-").toLowerCase()}-${period}.pdf`;
     pdf.save(file);
   }, [estabelecimentos, period, selectedEstabelecimento]);
@@ -248,7 +277,9 @@ export default function RelatoriosModule() {
     <div className="flex h-screen bg-foodmax-gray-bg">
       <Sidebar
         open={sidebarOpen}
-        onToggle={(next) => setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)}
+        onToggle={(next) =>
+          setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)
+        }
       />
       <div className="flex-1 flex flex-col">
         <header className="bg-foodmax-gray-bg px-6 py-4">
@@ -262,12 +293,19 @@ export default function RelatoriosModule() {
                 <Menu className="w-5 h-5" />
               </button>
               <div>
-                <h2 className="text-2xl font-semibold text-gray-800">Relatórios</h2>
-                <p className="text-gray-600 mt-1">Gere gráficos financeiros e de pedidos.</p>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Relatórios
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Gere gráficos financeiros e de pedidos.
+                </p>
                 <div className="mt-3 w-full">
                   <div className="flex flex-col md:flex-row md:items-center">
                     <div className="min-w-[320px] md:min-w-[420px] w-full md:mr-3">
-                      <Select value={selectedEstabelecimento} onValueChange={setSelectedEstabelecimento}>
+                      <Select
+                        value={selectedEstabelecimento}
+                        onValueChange={setSelectedEstabelecimento}
+                      >
                         <SelectTrigger className="foodmax-input h-11">
                           <SelectValue placeholder="Selecione o estabelecimento" />
                         </SelectTrigger>
@@ -314,8 +352,14 @@ export default function RelatoriosModule() {
               <AlertTriangle className="w-5 h-5 mt-0.5" />
               <div>
                 <p>
-                  Antes de cadastrar, é necessário ter pelo menos um Estabelecimento.{' '}
-                  <a href="/estabelecimentos" className="underline text-yellow-900">Abrir módulo Estabelecimentos</a>
+                  Antes de cadastrar, é necessário ter pelo menos um
+                  Estabelecimento.{" "}
+                  <a
+                    href="/estabelecimentos"
+                    className="underline text-yellow-900"
+                  >
+                    Abrir módulo Estabelecimentos
+                  </a>
                 </p>
               </div>
             </div>
@@ -331,7 +375,9 @@ export default function RelatoriosModule() {
               >
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart3 className="w-5 h-5 text-blue-700" />
-                  <h3 className="text-lg font-semibold text-blue-700">Relatório de Transações</h3>
+                  <h3 className="text-lg font-semibold text-blue-700">
+                    Relatório de Transações
+                  </h3>
                 </div>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
@@ -339,7 +385,14 @@ export default function RelatoriosModule() {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                       <YAxis tick={{ fontSize: 12 }} />
-                      <Tooltip formatter={(v: any) => (Number(v) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} />
+                      <Tooltip
+                        formatter={(v: any) =>
+                          (Number(v) / 100).toLocaleString("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          })
+                        }
+                      />
                       <Legend />
                       <Bar dataKey="receitas" name="Receitas" fill="#16a34a" />
                       <Bar dataKey="despesas" name="Despesas" fill="#dc2626" />
@@ -354,7 +407,9 @@ export default function RelatoriosModule() {
               >
                 <div className="flex items-center gap-2 mb-4">
                   <PieIcon className="w-5 h-5 text-orange-700" />
-                  <h3 className="text-lg font-semibold text-orange-700">Relatório de Pedidos</h3>
+                  <h3 className="text-lg font-semibold text-orange-700">
+                    Relatório de Pedidos
+                  </h3>
                 </div>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
@@ -375,7 +430,10 @@ export default function RelatoriosModule() {
                             Cancelado: "#dc2626",
                           };
                           return (
-                            <Cell key={`cell-${index}`} fill={colors[entry.name] || "#4b5563"} />
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={colors[entry.name] || "#4b5563"}
+                            />
                           );
                         })}
                       </Pie>
