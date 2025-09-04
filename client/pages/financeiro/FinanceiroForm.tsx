@@ -108,7 +108,7 @@ export default function FinanceiroForm({
           categoria: item.categoria,
           valor: item.valor,
           data_transacao: item.data_transacao
-            ? item.data_transacao.split("T")[0]
+            ? new Date(item.data_transacao).toLocaleDateString("pt-BR")
             : "",
           descricao: item.descricao || "",
           ativo: item.ativo,
@@ -300,9 +300,17 @@ export default function FinanceiroForm({
                 </Label>
                 <Input
                   id="data"
-                  type="date"
-                  required
+                  type="text"
+                  placeholder="dd/mm/aaaa"
                   {...register("data_transacao")}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/[^0-9]/g, "").slice(0, 8);
+                    const dd = raw.slice(0, 2);
+                    const mm = raw.slice(2, 4);
+                    const yyyy = raw.slice(4, 8);
+                    const masked = [dd, mm, yyyy].filter(Boolean).join("/");
+                    e.target.value = masked;
+                  }}
                   className={`foodmax-input ${errors.data_transacao ? "border-red-500" : ""}`}
                 />
               </div>
