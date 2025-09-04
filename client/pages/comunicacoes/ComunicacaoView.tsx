@@ -7,17 +7,19 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { getStatusBadgeColor } from "@shared/comunicacoes";
-import { FileText, Info, Mail, UserCheck, Calendar, X } from "lucide-react";
+import { FileText, Info, Mail, X, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function ComunicacaoView({
   isOpen,
   onClose,
   comunicacao,
+  onEdit,
 }: {
   isOpen: boolean;
   onClose: () => void;
   comunicacao: any | null;
+  onEdit?: (c: any) => void;
 }) {
   if (!comunicacao) return null;
 
@@ -55,7 +57,7 @@ export default function ComunicacaoView({
         <div className="space-y-6">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-3">
-              <FileText className="w-6 h-6 text-foodmax-orange" />
+              <Mail className="w-6 h-6 text-foodmax-orange" />
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
                   {comunicacao.assunto || `Comunicação #${comunicacao.id}`}
@@ -129,6 +131,16 @@ export default function ComunicacaoView({
             <X className="w-4 h-4 mr-2" />
             Fechar
           </Button>
+          {onEdit && comunicacao && (
+            <Button
+              type="button"
+              onClick={() => onEdit(comunicacao)}
+              className="bg-foodmax-orange hover:bg-orange-600"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Editar
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
