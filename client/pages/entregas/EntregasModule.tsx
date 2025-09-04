@@ -336,17 +336,14 @@ export default function EntregasModule() {
   const handleDelete = async (e: Entrega) => {
     try {
       await makeRequest(`/api/entregas/${e.id}`, { method: "DELETE" });
-      toast({
-        title: "Entrega excluída",
-        description: "Entrega excluída com sucesso",
-      });
-      await Promise.all([loadEntregas(), loadCounts()]);
+      toast({ title: "Entrega excluída", description: "Entrega excluída com sucesso" });
+      await refreshAfterMutation();
     } catch {
       const list = readLocal().filter((x) => x.id !== e.id);
       writeLocal(list);
       setEntregas(list);
       toast({ title: "Entrega excluída", description: "Entrega excluída" });
-      await loadCounts();
+      await refreshAfterMutation();
     }
   };
 
