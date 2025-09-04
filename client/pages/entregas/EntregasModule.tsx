@@ -882,6 +882,7 @@ export default function EntregasModule() {
           return errs;
         }}
         onImport={async (records) => {
+          try { localStorage.removeItem(LOCAL_KEY); } catch {}
           const parseCentavos = (val: any): number => {
             if (val === undefined || val === null || val === "") return 0;
             if (typeof val === "number") return Math.round(val * 100);
