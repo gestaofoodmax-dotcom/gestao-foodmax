@@ -907,6 +907,7 @@ export default function FinanceiroModule() {
             "data pagamento": "data_transacao",
             data_pagamento: "data_transacao",
             descricao: "descricao",
+            "descrição": "descricao",
             ativo: "ativo",
             "data cadastro": "data_cadastro",
             data_cadastro: "data_cadastro",
