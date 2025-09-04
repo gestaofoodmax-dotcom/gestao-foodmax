@@ -160,7 +160,7 @@ export default function FinanceiroModule() {
         key: "data_cadastro",
         label: "Data Cadastro",
         sortable: true,
-        render: (v: string) => new Date(v).toLocaleDateString("pt-BR"),
+        render: (v: string) => new Date(v).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
       },
       {
         key: "acoes",
