@@ -23,7 +23,7 @@ import {
   X,
   Truck,
   FileText,
-  Wallet,
+  DollarSign,
   Users,
   Phone,
   MapPin,
@@ -156,7 +156,7 @@ export default function EntregaView({
             {/* Valores */}
             <div className="bg-white p-4 rounded-lg border">
               <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <Wallet className="w-5 h-5 text-yellow-600" />
+                <DollarSign className="w-5 h-5 text-yellow-600" />
                 <span className="text-yellow-600">Valores</span>
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
