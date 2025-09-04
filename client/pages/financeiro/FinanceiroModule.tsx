@@ -938,6 +938,13 @@ export default function FinanceiroModule() {
               return digits ? parseInt(digits, 10) : 0;
             };
 
+            const resolveTipo = (raw: any): TipoTransacao | null => {
+              const t = String(raw || "").trim().toLowerCase();
+              if (t === "receita" || t === "entrada" || t === "credito" || t === "crédito") return "Receita";
+              if (t === "despesa" || t === "saida" || t === "saída" || t === "debito" || t === "débito") return "Despesa";
+              return null;
+            };
+
             for (const r of records) {
               try {
                 const estName = (
