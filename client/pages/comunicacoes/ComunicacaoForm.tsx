@@ -173,7 +173,6 @@ export default function ComunicacaoForm({
           localStorage.getItem("fm_config_promocao_template") ||
           "Olá!\n\nConfira nossas promoções exclusivas da semana.\n\nAtenciosamente,\nEquipe FoodMax";
         reset({
-          estabelecimento_id: watched.estabelecimento_id as any,
           tipo_comunicacao: "Promoção",
           assunto: "Promoção",
           mensagem: template,
@@ -181,7 +180,7 @@ export default function ComunicacaoForm({
           destinatarios_text: "",
           email_enviado: false,
           status: "Pendente",
-        });
+        } as any);
         setSelectedClientes([]);
         setSelectedFornecedores([]);
       }
@@ -252,7 +251,7 @@ export default function ComunicacaoForm({
         <form onSubmit={handleSubmit(save)} className="space-y-6">
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-1">
-              <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg>
+              <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M12 12H8"/><path d="M16 16H8"/></svg>
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -349,53 +348,6 @@ export default function ComunicacaoForm({
                       ))}
                     </div>
                   )}
-
-                  <div className="mt-4">
-                    <Label>Assunto *</Label>
-                    <Input {...register('assunto')} className="foodmax-input" />
-                    {errors.assunto && (
-                      <span className="text-sm text-red-600">{errors.assunto.message}</span>
-                    )}
-                  </div>
-                  <div className="mt-3">
-                    <Label>Mensagem *</Label>
-                    <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
-                  </div>
-
-                  <div className="mt-4">
-                    <Label>Destinatários *</Label>
-                    <Select
-                      value={watched.destinatarios_tipo as any}
-                      onValueChange={(v) => setValue('destinatarios_tipo', v as any)}
-                    >
-                      <SelectTrigger className="foodmax-input">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="TodosFornecedores">Todos os fornecedores</SelectItem>
-                        <SelectItem value="FornecedoresEspecificos">Fornecedores específicos</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {watched.destinatarios_tipo === 'FornecedoresEspecificos' && (
-                      <div className="mt-3 max-h-48 overflow-auto border rounded p-2 bg-gray-50">
-                        {fornecedores.map((f) => (
-                          <label key={f.id} className="flex items-center gap-2 py-1">
-                            <input
-                              type="checkbox"
-                              checked={selectedFornecedores.includes(f.id)}
-                              onChange={(e) =>
-                                setSelectedFornecedores((prev) =>
-                                  e.target.checked ? [...prev, f.id] : prev.filter((id) => id !== f.id),
-                                )
-                              }
-                            />
-                            <span>{f.nome}</span>
-                            <span className="text-xs text-gray-500">{f.email}</span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 </div>
               )}
 
@@ -435,42 +387,6 @@ export default function ComunicacaoForm({
                         ))}
                       </div>
                     )}
-
-                    <div className="mt-4">
-                      <Label>Assunto *</Label>
-                      <Input {...register('assunto')} className="foodmax-input" />
-                      {errors.assunto && (
-                        <span className="text-sm text-red-600">{errors.assunto.message}</span>
-                      )}
-                    </div>
-                    <div className="mt-3">
-                      <Label>Template de Email de Promoção</Label>
-                      <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
-                      {promoImages.length > 0 && (
-                        <div className="mt-3">
-                          <div className="text-sm font-medium mb-2">Pré-visualização de Imagens</div>
-                          <div className="flex flex-wrap gap-3">
-                            {promoImages.map((src, idx) => (
-                              <div key={idx} className="w-24 h-24 rounded border overflow-hidden bg-gray-50">
-                                <img src={src} alt={`Imagem ${idx + 1}`} className="w-full h-full object-cover" />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      <div className="mt-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <span>Editar texto em</span>
-                          <button
-                            type="button"
-                            onClick={() => window.open('/configuracoes', '_blank')}
-                            className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
-                          >
-                            <LinkIcon className="w-3 h-3" /> Configurações
-                          </button>
-                        </div>
-                      </div>
-                    </div>
                   </div>
                 )}
 
@@ -484,16 +400,51 @@ export default function ComunicacaoForm({
                       rows={3}
                       placeholder="Digite emails separados por vírgula, ponto e vírgula ou espaço"
                     />
-                    <div className="mt-4">
-                      <Label>Assunto *</Label>
-                      <Input {...register('assunto')} className="foodmax-input" />
-                      {errors.assunto && (
-                        <span className="text-sm text-red-600">{errors.assunto.message}</span>
-                      )}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-1">
+              <svg className="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
+              <h3 className="font-semibold text-indigo-600">Email</h3>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <Label>Assunto *</Label>
+                <Input {...register('assunto')} className="foodmax-input" />
+                {errors.assunto && (
+                  <span className="text-sm text-red-600">{errors.assunto.message}</span>
+                )}
+              </div>
+              <div>
+                <Label>{watched.tipo_comunicacao === 'Promoção' ? 'Template de Email de Promoção' : 'Mensagem *'}</Label>
+                <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
+                {watched.tipo_comunicacao === 'Promoção' && promoImages.length > 0 && (
+                  <div className="mt-3">
+                    <div className="text-sm font-medium mb-2">Pré-visualização de Imagens</div>
+                    <div className="flex flex-wrap gap-3">
+                      {promoImages.map((src, idx) => (
+                        <div key={idx} className="w-24 h-24 rounded border overflow-hidden bg-gray-50">
+                          <img src={src} alt={`Imagem ${idx + 1}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
                     </div>
-                    <div className="mt-3">
-                      <Label>Mensagem *</Label>
-                      <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
+                  </div>
+                )}
+                {watched.tipo_comunicacao === 'Promoção' && (
+                  <div className="mt-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span>Editar texto em</span>
+                      <button
+                        type="button"
+                        onClick={() => window.open('/configuracoes', '_blank')}
+                        className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                      >
+                        <LinkIcon className="w-3 h-3" /> Configurações
+                      </button>
                     </div>
                   </div>
                 )}
