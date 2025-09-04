@@ -5,6 +5,16 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { DataGrid } from "@/components/data-grid";
 import { toast } from "@/hooks/use-toast";
 import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
@@ -29,7 +39,9 @@ import {
   Edit,
   Upload,
   Download,
+  Mail,
   Send,
+  X,
 } from "lucide-react";
 import ComunicacaoForm from "./ComunicacaoForm";
 import ComunicacaoView from "./ComunicacaoView";
@@ -89,6 +101,11 @@ export default function ComunicacoesModule() {
     mensagem: string;
     destinatarios: string[];
   }>({ assunto: "", mensagem: "", destinatarios: [] });
+  const [sendForm, setSendForm] = useState({
+    destinatarios: "",
+    assunto: "",
+    mensagem: "",
+  });
 
   useEffect(() => setSidebarOpen(!isMobile), [isMobile]);
 
@@ -309,7 +326,7 @@ export default function ComunicacoesModule() {
         });
         toast({
           title: "Criado",
-          description: "Comunicação criada com sucesso",
+          description: "Comunicaç��o criada com sucesso",
         });
       }
       await loadRows();
@@ -402,6 +419,11 @@ export default function ComunicacoesModule() {
     setSendProgress(0);
     const destinatarios = await getRecipientsForPreview(r);
     setSendPreview({ assunto: r.assunto, mensagem: r.mensagem, destinatarios });
+    setSendForm({
+      assunto: r.assunto || "",
+      mensagem: r.mensagem || "",
+      destinatarios: destinatarios.join(", "),
+    });
     setSendModalOpen(true);
   };
 
@@ -409,9 +431,24 @@ export default function ComunicacoesModule() {
     if (!current) return;
     setSendLoading(true);
     try {
-      // fake progress animation while server marks as sent
+      // Atualiza o registro com eventuais alterações de assunto/mensagem/destinatários (para "Outro")
+      const updatePayload: any = {
+        assunto: sendForm.assunto,
+        mensagem: sendForm.mensagem,
+      };
+      if (current.tipo_comunicacao === "Outro") {
+        updatePayload.destinatarios_text = sendForm.destinatarios;
+      }
+      try {
+        await makeRequest(`/api/comunicacoes/${current.id}`, {
+          method: "PUT",
+          body: JSON.stringify(updatePayload),
+        });
+      } catch {}
+
+      // Envia
       setSendProgress(20);
-      const res = await makeRequest(`/api/comunicacoes/${current.id}/send`, {
+      await makeRequest(`/api/comunicacoes/${current.id}/send`, {
         method: "POST",
       });
       setSendProgress(90);
@@ -689,6 +726,10 @@ export default function ComunicacoesModule() {
           setCurrent(null);
         }}
         comunicacao={current}
+        onEdit={(c) => {
+          setShowView(false);
+          handleEdit(c as any);
+        }}
       />
 
       <DeleteAlert
@@ -850,59 +891,96 @@ export default function ComunicacoesModule() {
         }}
       />
 
-      {sendModalOpen && current && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6">
-            <h3 className="text-lg font-semibold mb-4">Enviar Email</h3>
-            <div className="space-y-3 max-h-[60vh] overflow-auto">
-              <div>
-                <div className="text-sm text-gray-600">Destinatários</div>
-                <div className="text-sm bg-gray-50 rounded border p-2 whitespace-pre-wrap break-words">
-                  {sendPreview.destinatarios.length > 0
-                    ? sendPreview.destinatarios.join(", ")
-                    : "-"}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Assunto</div>
-                <div className="text-sm font-medium">{sendPreview.assunto}</div>
-              </div>
-              <div>
-                <div className="text-sm text-gray-600">Mensagem</div>
-                <div className="text-sm bg-gray-50 rounded border p-2 whitespace-pre-line">
-                  {sendPreview.mensagem}
-                </div>
-              </div>
-              {sendLoading && (
-                <div className="mt-2">
-                  <div className="w-full bg-gray-200 rounded h-2 overflow-hidden">
-                    <div
-                      className="bg-green-500 h-2"
-                      style={{ width: `${sendProgress}%` }}
-                    />
-                  </div>
-                  <div className="text-xs text-gray-600 mt-1">
-                    Enviando email...
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="mt-6 flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setSendModalOpen(false)}>
-                Cancelar
-              </Button>
-              <Button
-                onClick={confirmSend}
-                disabled={sendLoading}
-                className="bg-foodmax-orange hover:bg-orange-600"
-              >
-                <Send className="w-4 h-4 mr-2" />{" "}
-                {sendLoading ? "Enviando..." : "Enviar"}
-              </Button>
-            </div>
+      <Dialog
+        open={sendModalOpen}
+        onOpenChange={(o) => !sendLoading && setSendModalOpen(o)}
+      >
+        <DialogContent className="max-w-3xl h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
+              Enviar Email
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
+            <p>
+              Confira os Destinatários, Assunto e Mensagem antes de enviar o
+              email.
+            </p>
           </div>
-        </div>
-      )}
+
+          <div className="bg-white p-4 rounded-lg border space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Mail className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Email</h3>
+            </div>
+
+            <div>
+              <Label>Destinatários</Label>
+              <Input
+                value={sendForm.destinatarios}
+                onChange={(e) =>
+                  setSendForm((f) => ({ ...f, destinatarios: e.target.value }))
+                }
+                placeholder="email1@dominio.com, email2@dominio.com"
+                className="foodmax-input"
+                disabled={sendLoading || current?.tipo_comunicacao !== "Outro"}
+              />
+            </div>
+            <div>
+              <Label>Assunto do Email</Label>
+              <Input
+                value={sendForm.assunto}
+                onChange={(e) =>
+                  setSendForm((f) => ({ ...f, assunto: e.target.value }))
+                }
+                className="foodmax-input"
+                disabled={sendLoading}
+              />
+            </div>
+            <div>
+              <Label>Mensagem do Email</Label>
+              <Textarea
+                rows={8}
+                value={sendForm.mensagem}
+                onChange={(e) =>
+                  setSendForm((f) => ({ ...f, mensagem: e.target.value }))
+                }
+                className="foodmax-input"
+                disabled={sendLoading}
+              />
+            </div>
+
+            {sendLoading && (
+              <div>
+                <Progress value={sendProgress} />
+                <div className="mt-1 text-xs text-gray-600">
+                  Enviando email...
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setSendModalOpen(false)}
+              disabled={sendLoading}
+            >
+              <X className="w-4 h-4 mr-2" />
+              Cancelar
+            </Button>
+            <Button
+              className="bg-foodmax-orange text-white hover:bg-orange-600"
+              disabled={sendLoading}
+              onClick={confirmSend}
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {sendLoading ? "Enviando..." : "Enviar Email"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

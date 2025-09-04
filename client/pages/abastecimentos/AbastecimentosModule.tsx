@@ -17,7 +17,8 @@ import {
   Edit,
   CheckCircle2,
   Send,
-  ShoppingBag,
+  Mail,
+  X,
   Download,
   Upload,
 } from "lucide-react";
@@ -245,13 +246,13 @@ export default function AbastecimentosModule() {
               className={`h-8 w-8 p-0 rounded-full border ${
                 r.email_enviado
                   ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50"
-                  : "bg-gray-50 hover:bg-gray-100 border-gray-200"
+                  : "bg-yellow-50 hover:bg-yellow-100 border-yellow-200"
               }`}
               title={r.email_enviado ? "Email já enviado" : "Enviar Email"}
             >
               <Send
                 className={`w-4 h-4 ${
-                  r.email_enviado ? "text-gray-400" : "text-gray-700"
+                  r.email_enviado ? "text-gray-400" : "text-yellow-700"
                 }`}
               />
             </Button>
@@ -1124,79 +1125,94 @@ export default function AbastecimentosModule() {
           !emailSending && !emailLoading && setShowEmailModal(o)
         }
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foodmax-orange">
-              <ShoppingBag className="w-5 h-5 text-foodmax-orange" />
-              Realizar Pedido Compra
+            <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
+              Enviar Email
             </DialogTitle>
-            <p className="text-xs text-black">
-              Enviar Email para Fornecedor(es)
-            </p>
           </DialogHeader>
 
-          {emailLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-foodmax-orange mr-2"></div>
-              <span className="text-sm text-gray-600">Carregando dados...</span>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <Label>Destinatários</Label>
-                <Input
-                  value={emailForm.destinatarios}
-                  onChange={(e) =>
-                    setEmailForm((f) => ({
-                      ...f,
-                      destinatarios: e.target.value,
-                    }))
-                  }
-                  placeholder="email1@dominio.com, email2@dominio.com"
-                  className="foodmax-input"
-                  disabled={emailSending || emailLoading}
-                />
-              </div>
-              <div>
-                <Label>Assunto do Email</Label>
-                <Input
-                  value={emailForm.assunto}
-                  onChange={(e) =>
-                    setEmailForm((f) => ({ ...f, assunto: e.target.value }))
-                  }
-                  className="foodmax-input"
-                  disabled={emailSending || emailLoading}
-                />
-              </div>
-              <div>
-                <Label>Mensagem do Email</Label>
-                <Textarea
-                  rows={10}
-                  value={emailForm.mensagem}
-                  onChange={(e) =>
-                    setEmailForm((f) => ({ ...f, mensagem: e.target.value }))
-                  }
-                  className="foodmax-input"
-                  disabled={emailSending || emailLoading}
-                />
-              </div>
-
-              {emailSending && (
-                <div>
-                  <Progress
-                    value={
-                      emailProgress.total
-                        ? (emailProgress.sent / emailProgress.total) * 100
-                        : 0
-                    }
-                  />
-                  <div className="mt-1 text-xs text-gray-600">
-                    Enviados {emailProgress.sent} de {emailProgress.total}
-                  </div>
-                </div>
-              )}
+          {!emailLoading && (
+            <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
+              <p>
+                Confira os Destinatários, Assunto e Mensagem antes de enviar o
+                email.
+              </p>
             </div>
           )}
+
+          <div className="bg-white p-4 rounded-lg border">
+            {emailLoading ? (
+              <div className="flex flex-col items-center justify-center py-10">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foodmax-orange mb-2"></div>
+                <span className="text-sm text-gray-600">
+                  Carregando dados...
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Mail className="w-5 h-5 text-foodmax-orange" />
+                  <h3 className="font-semibold text-foodmax-orange">
+                    Pedido de Compra
+                  </h3>
+                </div>
+                <div>
+                  <Label>Destinatários</Label>
+                  <Input
+                    value={emailForm.destinatarios}
+                    onChange={(e) =>
+                      setEmailForm((f) => ({
+                        ...f,
+                        destinatarios: e.target.value,
+                      }))
+                    }
+                    placeholder="email1@dominio.com, email2@dominio.com"
+                    className="foodmax-input"
+                    disabled={emailSending || emailLoading}
+                  />
+                </div>
+                <div>
+                  <Label>Assunto do Email</Label>
+                  <Input
+                    value={emailForm.assunto}
+                    onChange={(e) =>
+                      setEmailForm((f) => ({ ...f, assunto: e.target.value }))
+                    }
+                    className="foodmax-input"
+                    disabled={emailSending || emailLoading}
+                  />
+                </div>
+                <div>
+                  <Label>Mensagem do Email</Label>
+                  <Textarea
+                    rows={8}
+                    value={emailForm.mensagem}
+                    onChange={(e) =>
+                      setEmailForm((f) => ({ ...f, mensagem: e.target.value }))
+                    }
+                    className="foodmax-input"
+                    disabled={emailSending || emailLoading}
+                  />
+                </div>
+
+                {emailSending && (
+                  <div>
+                    <Progress
+                      value={
+                        emailProgress.total
+                          ? (emailProgress.sent / emailProgress.total) * 100
+                          : 0
+                      }
+                    />
+                    <div className="mt-1 text-xs text-gray-600">
+                      Enviados {emailProgress.sent} de {emailProgress.total}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <DialogFooter>
             <Button
@@ -1204,6 +1220,7 @@ export default function AbastecimentosModule() {
               onClick={() => setShowEmailModal(false)}
               disabled={emailSending || emailLoading}
             >
+              <X className="w-4 h-4 mr-2" />
               Cancelar
             </Button>
             <Button
@@ -1276,6 +1293,7 @@ export default function AbastecimentosModule() {
                 }
               }}
             >
+              <Send className="w-4 h-4 mr-2" />
               Enviar Email
             </Button>
           </DialogFooter>

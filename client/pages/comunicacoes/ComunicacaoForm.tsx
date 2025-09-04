@@ -371,12 +371,14 @@ export default function ComunicacaoForm({
                       setValue("destinatarios_tipo", "TodosClientes" as any);
                     } else if (v === "Fornecedor") {
                       setValue("assunto", "");
+                      setValue("mensagem", "");
                       setValue(
                         "destinatarios_tipo",
                         "TodosFornecedores" as any,
                       );
                     } else {
                       setValue("assunto", "");
+                      setValue("mensagem", "");
                       setValue("destinatarios_tipo", "Outros" as any);
                     }
                   }}
