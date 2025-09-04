@@ -639,6 +639,15 @@ export default function EntregasModule() {
                   />
                 </div>
                 <div className="flex items-center gap-2 w-full md:w-auto md:ml-auto flex-wrap">
+                  {selectedIds.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setShowBulkDelete(true)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" /> Excluir Selecionados ({selectedIds.length})
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
