@@ -455,7 +455,10 @@ export function ImportModal({
             <div className="mt-3 text-xs text-blue-600">
               <p>• Limite: 1000 registros por arquivo</p>
               <p>• Registros duplicados serão ignorados</p>
-              <p>• Formato de data: dd/mm/yyyy</p>
+              <p>
+                • Formato de data: dd/mm/yyyy (as datas são interpretadas no
+                fuso horário de Brasília/DF - UTC-03, preservando o dia)
+              </p>
             </div>
           </div>
 
@@ -508,9 +511,7 @@ export function ImportModal({
                   {Math.round(progress)}% CONCLUÍDO
                 </div>
               </div>
-              <div
-                className={`text-sm font-medium text-gray-700`}
-              >
+              <div className={`text-sm font-medium text-gray-700`}>
                 {!isImporting && "Clique em 'Enviar' para iniciar a importação"}
                 {isImporting && progress < 20 && "📄 ANALISANDO ARQUIVO CSV..."}
                 {isImporting &&

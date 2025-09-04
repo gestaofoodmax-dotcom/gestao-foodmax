@@ -120,7 +120,11 @@ export default function FinanceiroModule() {
         label: "Data Transação",
         sortable: true,
         render: (v: string | null) =>
-          v ? new Date(v).toLocaleDateString("pt-BR") : "-",
+          v
+            ? new Date(v).toLocaleDateString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
+              })
+            : "-",
       },
       {
         key: "tipo",
@@ -158,7 +162,10 @@ export default function FinanceiroModule() {
         key: "data_cadastro",
         label: "Data Cadastro",
         sortable: true,
-        render: (v: string) => new Date(v).toLocaleDateString("pt-BR"),
+        render: (v: string) =>
+          new Date(v).toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          }),
       },
       {
         key: "acoes",
@@ -330,11 +337,15 @@ export default function FinanceiroModule() {
           categoria: t.categoria,
           valor: (t.valor / 100).toFixed(2),
           data_transacao: t.data_transacao
-            ? new Date(t.data_transacao).toISOString().split("T")[0]
+            ? new Date(t.data_transacao).toLocaleDateString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
+              })
             : "",
           descricao: t.descricao || "",
           ativo: t.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
+          data_cadastro: new Date(t.data_cadastro).toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          }),
         }));
         setExportData(mapped);
       } catch {
@@ -347,11 +358,15 @@ export default function FinanceiroModule() {
           categoria: t.categoria,
           valor: (t.valor / 100).toFixed(2),
           data_transacao: t.data_transacao
-            ? new Date(t.data_transacao).toISOString().split("T")[0]
+            ? new Date(t.data_transacao).toLocaleDateString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
+              })
             : "",
           descricao: t.descricao || "",
           ativo: t.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
+          data_cadastro: new Date(t.data_cadastro).toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          }),
         }));
         setExportData(mapped);
       }
@@ -842,13 +857,16 @@ export default function FinanceiroModule() {
                 categoria: t.categoria,
                 valor: (t.valor / 100).toFixed(2),
                 data_transacao: t.data_transacao
-                  ? new Date(t.data_transacao).toISOString().split("T")[0]
+                  ? new Date(t.data_transacao).toLocaleDateString("pt-BR", {
+                      timeZone: "America/Sao_Paulo",
+                    })
                   : "",
                 descricao: t.descricao || "",
                 ativo: t.ativo ? "Ativo" : "Inativo",
-                data_cadastro: new Date(t.data_cadastro)
-                  .toISOString()
-                  .split("T")[0],
+                data_cadastro: new Date(t.data_cadastro).toLocaleDateString(
+                  "pt-BR",
+                  { timeZone: "America/Sao_Paulo" },
+                ),
               }))
         }
         selectedIds={selectedIds}
@@ -890,14 +908,24 @@ export default function FinanceiroModule() {
           const map: Record<string, string> = {
             estabelecimento: "estabelecimento_nome",
             estabelecimento_nome: "estabelecimento_nome",
+            "estabelecimento nome": "estabelecimento_nome",
             tipo: "tipo",
             categoria: "categoria",
             valor: "valor",
+            "valor (r$)": "valor",
+            "valor r$": "valor",
+            valor_r$: "valor",
             "data transacao": "data_transacao",
             "data da transação": "data_transacao",
             "data da transacao": "data_transacao",
             data_transacao: "data_transacao",
+            data: "data_transacao",
+            "data lançamento": "data_transacao",
+            "data lancamento": "data_transacao",
+            "data pagamento": "data_transacao",
+            data_pagamento: "data_transacao",
             descricao: "descricao",
+            descrição: "descricao",
             ativo: "ativo",
             "data cadastro": "data_cadastro",
             data_cadastro: "data_cadastro",
@@ -906,9 +934,10 @@ export default function FinanceiroModule() {
         }}
         onImport={async (records) => {
           try {
-            let imported = 0,
-              remote = 0,
-              local = 0;
+            let imported = 0; // registros salvos no banco
+            let remote = 0;
+            let local = 0;
+            const total = records.length;
             const estabByName = new Map<string, Estabelecimento>();
             estabelecimentos.forEach((e) =>
               estabByName.set(e.nome.trim().toLowerCase(), e),
@@ -928,6 +957,28 @@ export default function FinanceiroModule() {
               return digits ? parseInt(digits, 10) : 0;
             };
 
+            const resolveTipo = (raw: any): TipoTransacao | null => {
+              const t = String(raw || "")
+                .trim()
+                .toLowerCase();
+              if (
+                t === "receita" ||
+                t === "entrada" ||
+                t === "credito" ||
+                t === "crédito"
+              )
+                return "Receita";
+              if (
+                t === "despesa" ||
+                t === "saida" ||
+                t === "saída" ||
+                t === "debito" ||
+                t === "débito"
+              )
+                return "Despesa";
+              return null;
+            };
+
             for (const r of records) {
               try {
                 const estName = (
@@ -940,17 +991,36 @@ export default function FinanceiroModule() {
                   .toLowerCase();
                 const est = estabByName.get(estName) || estabelecimentos[0];
                 if (!est) throw new Error("Estabelecimento inválido");
-                const tipo = String(r.tipo || "").trim();
-                const valid = tipo === "Receita" || tipo === "Despesa";
-                if (!valid) throw new Error("Tipo inválido");
+                const tipoResolved = resolveTipo(r.tipo);
+                if (!tipoResolved) throw new Error("Tipo inválido");
                 const payload: any = {
                   estabelecimento_id: est.id,
-                  tipo: tipo as any,
+                  tipo: tipoResolved,
                   categoria: String(r.categoria || "Outros").trim() || "Outros",
                   valor: parseCentavos(r.valor),
                   data_transacao: ((): string | null => {
                     const s = r.data_transacao
                       ? String(r.data_transacao).trim()
+                      : "";
+                    if (!s) return null;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) =>
+                      `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+                      const [dd, mm, yyyy] = s.split("/");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                      const [yyyy, mm, dd] = s.split("-");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    const dt = new Date(s);
+                    if (!isNaN(dt.getTime()))
+                      return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
+                    return null;
+                  })(),
+                  data_cadastro: ((): string | null => {
+                    const s = r.data_cadastro
+                      ? String(r.data_cadastro).trim()
                       : "";
                     if (!s) return null;
                     const toISOBr = (yyyy: string, mm: string, dd: string) =>
@@ -984,15 +1054,12 @@ export default function FinanceiroModule() {
                 const list = readLocal();
                 const now = new Date().toISOString();
                 const est = estabelecimentos[0];
-                const tipo =
-                  String((r as any).tipo || "Receita").trim() === "Despesa"
-                    ? "Despesa"
-                    : "Receita";
+                const tipoResolved = resolveTipo((r as any).tipo) || "Receita";
                 const novo: FinanceiroTransacao = {
-                  id: Date.now() + imported,
+                  id: Date.now() + remote + local,
                   id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
                   estabelecimento_id: est ? est.id : 0,
-                  tipo: tipo as any,
+                  tipo: tipoResolved as any,
                   categoria: String((r as any).categoria || "Outros"),
                   valor: parseCentavos((r as any).valor),
                   data_transacao: ((): string | null => {
@@ -1019,7 +1086,26 @@ export default function FinanceiroModule() {
                     typeof (r as any).ativo === "string"
                       ? (r as any).ativo.toLowerCase() !== "false"
                       : Boolean((r as any).ativo ?? true),
-                  data_cadastro: now,
+                  data_cadastro: ((): string => {
+                    const s = (r as any).data_cadastro
+                      ? String((r as any).data_cadastro).trim()
+                      : "";
+                    if (!s) return now;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) =>
+                      `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+                      const [dd, mm, yyyy] = s.split("/");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                      const [yyyy, mm, dd] = s.split("-");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    const dt = new Date(s);
+                    if (!isNaN(dt.getTime()))
+                      return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
+                    return now;
+                  })(),
                   data_atualizacao: now,
                 };
                 list.unshift(novo);
@@ -1033,10 +1119,34 @@ export default function FinanceiroModule() {
               localStorage.removeItem(LOCAL_KEY);
             } catch {}
             await loadTransacoes();
+
+            if (remote === total) {
+              return {
+                success: true,
+                message: `${remote} transações importadas com sucesso no banco de dados`,
+                imported: remote,
+              } as any;
+            }
+
+            if (remote === 0) {
+              return {
+                success: false,
+                message:
+                  "Nenhum registro foi salvo no banco. Verifique o CSV e os campos obrigatórios.",
+                imported: 0,
+                errors: [
+                  `Salvos localmente: ${local}. Ajuste o arquivo e tente novamente.`,
+                ],
+              } as any;
+            }
+
             return {
-              success: true,
-              message: `${imported} transações importadas (banco: ${remote}, local: ${local})`,
-              imported,
+              success: false,
+              message: `${remote} de ${total} registro(s) foram salvos no banco. ${total - remote} falharam.`,
+              imported: remote,
+              errors: [
+                `Registros salvos localmente: ${local}. Corrija e tente novamente.`,
+              ],
             } as any;
           } catch (e) {
             return { success: false, message: "Erro ao importar" } as any;

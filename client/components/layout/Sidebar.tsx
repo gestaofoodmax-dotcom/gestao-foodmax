@@ -15,7 +15,7 @@ import {
   ChevronUp,
   LogOut,
   Bike,
-  Banknote,
+  DollarSign,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toTitleCase } from "@/lib/utils";
@@ -86,7 +86,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
         items: [
           { icon: List, label: "Itens", route: "/itens" },
           { icon: Utensils, label: "Cardápios", route: "/cardapios" },
-          { icon: Banknote, label: "Financeiro", route: "/financeiro" },
+          { icon: DollarSign, label: "Financeiro", route: "/financeiro" },
         ],
       },
       {
