@@ -380,38 +380,38 @@ export default function FinanceiroModule() {
                       </Select>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
-                    <div className="bg-white border rounded-lg p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+                    <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
-                            <TrendingUp className="w-4 h-4 text-green-600" />
-                          </div>
-                          <div className="text-sm text-gray-600">Total Receitas</div>
+                        <div>
+                          <p className="text-sm text-gray-600">Total Receitas</p>
+                          <p className="text-2xl font-bold text-gray-800">{formatCurrencyBRL(totals.totalReceitas)}</p>
                         </div>
-                        <div className="text-lg font-semibold text-green-600">{formatCurrencyBRL(totals.totalReceitas)}</div>
+                        <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                          <TrendingUp className="w-6 h-6 text-green-600" />
+                        </div>
                       </div>
                     </div>
-                    <div className="bg-white border rounded-lg p-4">
+                    <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-red-50 border border-red-200 flex items-center justify-center">
-                            <TrendingDown className="w-4 h-4 text-red-600" />
-                          </div>
-                          <div className="text-sm text-gray-600">Total Despesas</div>
+                        <div>
+                          <p className="text-sm text-gray-600">Total Despesas</p>
+                          <p className="text-2xl font-bold text-gray-800">{formatCurrencyBRL(totals.totalDespesas)}</p>
                         </div>
-                        <div className="text-lg font-semibold text-red-600">{formatCurrencyBRL(totals.totalDespesas)}</div>
+                        <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                          <TrendingDown className="w-6 h-6 text-red-600" />
+                        </div>
                       </div>
                     </div>
-                    <div className="bg-white border rounded-lg p-4">
+                    <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-gray-500">
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center">
-                            <Wallet className={`w-4 h-4 ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`} />
-                          </div>
-                          <div className="text-sm text-gray-600">Saldo Líquido</div>
+                        <div>
+                          <p className="text-sm text-gray-600">Saldo Líquido</p>
+                          <p className={`text-2xl font-bold ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`}>{formatCurrencyBRL(totals.saldoLiquido)}</p>
                         </div>
-                        <div className={`text-lg font-semibold ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`}>{formatCurrencyBRL(totals.saldoLiquido)}</div>
+                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Wallet className={`w-6 h-6 ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`} />
+                        </div>
                       </div>
                     </div>
                   </div>
