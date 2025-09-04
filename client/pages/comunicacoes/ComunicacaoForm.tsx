@@ -310,15 +310,13 @@ export default function ComunicacaoForm({
                 </Select>
               </div>
 
-              {(watched.tipo_comunicacao === 'Fornecedor' || watched.tipo_comunicacao === 'Outro') && (
-                <div className="md:col-span-2">
-                  <Label>Assunto *</Label>
-                  <Input {...register('assunto')} className="foodmax-input" />
-                  {errors.assunto && (
-                    <span className="text-sm text-red-600">{errors.assunto.message}</span>
-                  )}
-                </div>
-              )}
+              <div className="md:col-span-2">
+                <Label>Assunto *</Label>
+                <Input {...register('assunto')} className="foodmax-input" />
+                {errors.assunto && (
+                  <span className="text-sm text-red-600">{errors.assunto.message}</span>
+                )}
+              </div>
 
               <div className="md:col-span-2">
                 <div className="flex items-center gap-2 mb-1">
