@@ -361,7 +361,6 @@ export default function ComunicacoesModule() {
             <div className="w-full">
               <div className="flex items-center gap-4 mb-3">
                 <div>
-                  <span className="text-sm text-gray-600 mr-2">Estabelecimento:</span>
                   <Select value={estabelecimentoFilter} onValueChange={(v) => setEstabelecimentoFilter(v)}>
                     <SelectTrigger className="foodmax-input inline-flex w-72">
                       <SelectValue />
