@@ -45,6 +45,7 @@ export default function App() {
             <Route path="/pedidos" element={<PedidosModule />} />
             <Route path="/abastecimentos" element={<AbastecimentosModule />} />
             <Route path="/entregas" element={<EntregasModule />} />
+            <Route path="/financeiro" element={<FinanceiroModule />} />
             <Route path="/minha-conta" element={<MinhaConta />} />
             <Route path="/PagamentoPlano" element={<PagamentoPlano />} />
             <Route path="/RenovarPlano" element={<RenovarPlano />} />
