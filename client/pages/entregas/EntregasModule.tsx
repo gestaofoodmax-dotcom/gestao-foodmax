@@ -516,11 +516,16 @@ export default function EntregasModule() {
       const cityUf = end?.cidade ? `${end.cidade}${end.uf ? `/${end.uf}` : ""}` : "";
       let enderecoStr = "";
       if (end) {
-        const cepSeg = typeof end.cep === "string" && end.cep.trim() ? end.cep.trim() : "-";
+        const hasCep = typeof end.cep === "string" && end.cep.trim() !== "";
+        const cepText = hasCep ? end.cep.trim() : "";
         const rest = [end.endereco, cityUf, end.pais].filter(
           (x) => typeof x === "string" && x.trim() !== "",
         );
-        enderecoStr = rest.length > 0 ? `${cepSeg} - ${rest.join(" - ")}` : cepSeg;
+        if (hasCep) {
+          enderecoStr = rest.length > 0 ? `${cepText} - ${rest.join(" - ")}` : cepText;
+        } else {
+          enderecoStr = rest.length > 0 ? ` - ${rest.join(" - ")}` : " - ";
+        }
       }
 
       return {
