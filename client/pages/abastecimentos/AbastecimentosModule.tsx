@@ -1125,7 +1125,7 @@ export default function AbastecimentosModule() {
           !emailSending && !emailLoading && setShowEmailModal(o)
         }
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
               Enviar Email
@@ -1134,7 +1134,6 @@ export default function AbastecimentosModule() {
 
           <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
             <p>Confira os Destinatários, Assunto e Mensagem antes de enviar o email.</p>
-            <p>Após o envio será trocado o status para Enviado.</p>
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
@@ -1146,8 +1145,8 @@ export default function AbastecimentosModule() {
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Mail className="w-5 h-5 text-green-600" />
-                  <h3 className="font-semibold text-green-600">Pedido de Compra</h3>
+                  <Mail className="w-5 h-5 text-foodmax-orange" />
+                  <h3 className="font-semibold text-foodmax-orange">Pedido de Compra</h3>
                 </div>
                 <div>
                   <Label>Destinatários</Label>
@@ -1178,7 +1177,7 @@ export default function AbastecimentosModule() {
                 <div>
                   <Label>Mensagem do Email</Label>
                   <Textarea
-                    rows={10}
+                    rows={8}
                     value={emailForm.mensagem}
                     onChange={(e) =>
                       setEmailForm((f) => ({ ...f, mensagem: e.target.value }))
