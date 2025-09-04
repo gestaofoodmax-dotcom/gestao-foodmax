@@ -25,6 +25,10 @@ import { AlertTriangle, FileText, Save, X, DollarSign, Calendar as CalendarIcon 
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Estabelecimento } from "@shared/estabelecimentos";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { ptBR } from "date-fns/locale";
+import { Button as UIButton } from "@/components/ui/button";
 import {
   FinanceiroTransacao,
   FINANCEIRO_CATEGORIAS,
