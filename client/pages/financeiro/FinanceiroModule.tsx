@@ -578,7 +578,7 @@ export default function FinanceiroModule() {
                             {formatCurrencyBRL(totals.saldoLiquido)}
                           </p>
                         </div>
-                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                           <Wallet className="w-6 h-6 text-blue-600" />
                         </div>
                       </div>
