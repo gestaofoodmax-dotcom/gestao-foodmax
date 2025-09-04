@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/dialog";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
-import { BulkDeleteAlert } from "@/components/alert-dialog-component";
+import { BulkDeleteAlert, DeleteAlert } from "@/components/alert-dialog-component";
 import {
   Entrega,
   EntregasListResponse,
