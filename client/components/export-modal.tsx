@@ -186,7 +186,9 @@ export function ExportModal({
       ...records.map((record) =>
         filteredColumns
           .map((col) => {
-            const value = formatValue(record[col.key], col.key);
+            let value = formatValue(record[col.key], col.key);
+            // Ensure single-line values
+            value = value.replace(/\r?\n+/g, " ");
             // Escape quotes and wrap in quotes if contains comma or quote
             const escaped =
               value.includes(",") || value.includes('"')

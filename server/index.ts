@@ -100,6 +100,15 @@ import {
   registrarEntregue,
   importEntregasFull,
 } from "./routes/entregas";
+import {
+  listTransacoes,
+  getTransacao,
+  createTransacao,
+  updateTransacao,
+  deleteTransacao,
+  bulkDeleteTransacoes,
+  toggleTransacaoStatus,
+} from "./routes/financeiro";
 
 export function createServer() {
   const app = express();
@@ -221,6 +230,15 @@ export function createServer() {
   app.patch("/api/entregas/:id/saida", registrarSaida);
   app.patch("/api/entregas/:id/entregue", registrarEntregue);
   app.post("/api/entregas/import-full", importEntregasFull);
+
+  // Financeiro routes
+  app.get("/api/financeiro", listTransacoes);
+  app.get("/api/financeiro/:id", getTransacao);
+  app.post("/api/financeiro", createTransacao);
+  app.put("/api/financeiro/:id", updateTransacao);
+  app.delete("/api/financeiro/:id", deleteTransacao);
+  app.post("/api/financeiro/bulk-delete", bulkDeleteTransacoes);
+  app.patch("/api/financeiro/:id/toggle-status", toggleTransacaoStatus);
 
   return app;
 }
