@@ -376,14 +376,14 @@ export default function ComunicacoesModule() {
               </div>
               <div className="w-full border-b border-gray-200">
                 <div className="flex items-center gap-6">
-                  {["Todos", "Pendente", "Enviado", "Cancelado"].map((s) => (
-                    <div key={s} className="flex items-center gap-6">
+                  {[{label:"Todos", value:"Todos"},{label:"Pendentes", value:"Pendente"},{label:"Enviados", value:"Enviado"},{label:"Cancelados", value:"Cancelado"}].map((tab) => (
+                    <div key={tab.label} className="flex items-center gap-6">
                       <button
-                        className={`relative -mb-px pb-2 pt-1 text-base ${activeStatus === (s as any) ? 'text-foodmax-orange' : 'text-gray-700 hover:text-gray-900'}`}
-                        onClick={() => setActiveStatus(s as any)}
+                        className={`relative -mb-px pb-2 pt-1 text-base ${activeStatus === (tab.value as any) ? 'text-foodmax-orange' : 'text-gray-700 hover:text-gray-900'}`}
+                        onClick={() => setActiveStatus(tab.value as any)}
                       >
-                        <span>{s}</span>
-                        {activeStatus === s && (
+                        <span>{tab.label}</span>
+                        {activeStatus === tab.value && (
                           <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                         )}
                       </button>
