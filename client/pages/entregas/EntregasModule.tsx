@@ -491,51 +491,82 @@ export default function EntregasModule() {
 
   const buildExportRows = async () => {
     const rows = await getAllForExport();
-    return rows.map((e: any) => {
-      const formatDateTimeBRNoComma = (iso: string | null | undefined) => {
-        if (!iso) return "";
-        const date = new Date(iso);
-        const parts = new Intl.DateTimeFormat("pt-BR", {
-          timeZone: "America/Sao_Paulo",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        }).formatToParts(date);
-        const get = (t: string) => parts.find((p) => p.type === t)?.value || "";
-        return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get("minute")}:${get("second")}`;
-      };
+
+    const formatDateTimeBRNoComma = (iso: string | null | undefined) => {
+      if (!iso) return "";
+      const date = new Date(iso);
+      const parts = new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).formatToParts(date);
+      const get = (t: string) => parts.find((p) => p.type === t)?.value || "";
+      return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get("minute")}:${get("second")}`;
+    };
+
+    const buildRowFromDetail = (d: any) => {
+      const end = d.endereco || null;
+      const cityUf = end?.cidade ? `${end.cidade}${end.uf ? `/${end.uf}` : ""}` : "";
+      const enderecoStr = end
+        ? [end.cep, end.endereco, cityUf, end.pais]
+            .filter((x) => typeof x === "string" && x.trim() !== "")
+            .join(" - ")
+        : "";
 
       return {
-        estabelecimento_nome: e.estabelecimento_nome || "",
-        tipo_entrega: e.tipo_entrega,
-        pedido: e.pedido_codigo || e.codigo_pedido_app || "",
-        valor_pedido: (e.valor_pedido ?? 0) / 100,
-        taxa_extra: (e.taxa_extra ?? 0) / 100,
-        valor_entrega: (e.valor_entrega ?? 0) / 100,
-        forma_pagamento: e.forma_pagamento,
-        cliente_nome: e.cliente_nome || "",
-        ddi: e.ddi || "",
-        telefone: e.telefone || "",
-        data_hora_saida: formatDateTimeBRNoComma(e.data_hora_saida),
-        data_hora_entregue: formatDateTimeBRNoComma(e.data_hora_entregue),
-        observacao: e.observacao || "",
-        status: e.status,
-        entrega_endereco: e.endereco
-          ? [
-              e.endereco.cep,
-              e.endereco.endereco,
-              [e.endereco.cidade, e.endereco.uf].filter(Boolean).join("/"),
-              e.endereco.pais,
-            ]
-              .filter((x: any) => typeof x === "string" && x.trim() !== "")
-              .join(" - ")
-          : "",
-      };
-    });
+        estabelecimento_nome: d.estabelecimento_nome || "",
+        tipo_entrega: d.tipo_entrega,
+        pedido: d.pedido_codigo || d.codigo_pedido_app || "",
+        valor_pedido: (d.valor_pedido ?? 0) / 100,
+        taxa_extra: (d.taxa_extra ?? 0) / 100,
+        valor_entrega: (d.valor_entrega ?? 0) / 100,
+        forma_pagamento: d.forma_pagamento,
+        cliente_nome: d.cliente_nome || "",
+        ddi: d.ddi || "",
+        telefone: d.telefone || "",
+        data_hora_saida: formatDateTimeBRNoComma(d.data_hora_saida),
+        data_hora_entregue: formatDateTimeBRNoComma(d.data_hora_entregue),
+        observacao: d.observacao || "",
+        status: d.status,
+        entrega_endereco: enderecoStr,
+      } as any;
+    };
+
+    const chunkSize = 10;
+    const exportRows: any[] = [];
+
+    for (let i = 0; i < rows.length; i += chunkSize) {
+      const chunk = rows.slice(i, i + chunkSize);
+      const results = await Promise.all(
+        chunk.map(async (e: any) => {
+          const fetchOnce = async () =>
+            await makeRequest(`/api/entregas/${e.id}?_t=${Date.now()}`);
+          let det: any = null;
+          try {
+            det = await fetchOnce();
+          } catch {
+            try {
+              await new Promise((r) => setTimeout(r, 150));
+              det = await fetchOnce();
+            } catch {
+              det = null;
+            }
+          }
+
+          if (det) return buildRowFromDetail(det);
+
+          return buildRowFromDetail(e);
+        }),
+      );
+      exportRows.push(...results);
+    }
+
+    return exportRows;
   };
 
   return (
