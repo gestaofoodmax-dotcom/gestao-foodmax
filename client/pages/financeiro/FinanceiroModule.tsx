@@ -923,31 +923,37 @@ export default function FinanceiroModule() {
         }}
       />
 
-      {/* Simple delete confirm inline to match style */}
-      {showDeleteAlert && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-4 w-full max-w-sm border">
-            <div className="flex items-center gap-2 text-red-700 mb-2">
-              <AlertTriangle className="w-5 h-5" />
-              <div className="font-semibold">Confirmar exclusão</div>
-            </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Tem certeza que deseja excluir este registro?
-            </p>
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteAlert(false)}
-              >
-                Cancelar
-              </Button>
-              <Button variant="destructive" onClick={handleDeleteConfirmed}>
-                Excluir
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteAlert
+        isOpen={showDeleteAlert}
+        onClose={() => setShowDeleteAlert(false)}
+        onConfirm={handleDeleteConfirmed}
+        itemName={currentItem?.categoria}
+        isLoading={false}
+      />
+
+      <BulkDeleteAlert
+        isOpen={showBulkDelete}
+        onClose={() => setShowBulkDelete(false)}
+        onConfirm={async () => {
+          const ids = selectedIds.slice();
+          try {
+            await makeRequest(`/api/financeiro/bulk-delete`, { method: "POST", body: JSON.stringify({ ids }) });
+            toast({ title: "Registros excluídos", description: `${ids.length} registro(s) excluído(s)` });
+            try { localStorage.removeItem(LOCAL_KEY); } catch {}
+            await loadTransacoes();
+            setSelectedIds([]);
+            setShowBulkDelete(false);
+          } catch {
+            const list = readLocal().filter((e) => !ids.includes(e.id));
+            writeLocal(list);
+            setTransacoes(list);
+            toast({ title: "Exclusão local", description: `${ids.length} registro(s) removido(s)` });
+            setSelectedIds([]);
+            setShowBulkDelete(false);
+          }
+        }}
+        selectedCount={selectedIds.length}
+      />
     </div>
   );
 }
