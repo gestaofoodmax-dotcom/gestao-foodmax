@@ -1005,7 +1005,7 @@ export default function FinanceiroModule() {
                   id: Date.now() + remote + local,
                   id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
                   estabelecimento_id: est ? est.id : 0,
-                  tipo: tipo as any,
+                  tipo: tipoResolved as any,
                   categoria: String((r as any).categoria || "Outros"),
                   valor: parseCentavos((r as any).valor),
                   data_transacao: ((): string | null => {
