@@ -829,7 +829,7 @@ export default function EntregasModule() {
 
           const full = records.map((r) => {
             const endRaw = String(
-              r.endereco || r["Cliente Endereço"] || "",
+              r.endereco || r["Cliente Endereço"] || r["Entrega Endereço"] || "",
             ).trim();
             let endereco: any = null;
             if (endRaw) {
