@@ -309,7 +309,7 @@ export default function FinanceiroForm({
                   Data da Transação *
                 </Label>
                 <input type="hidden" {...register("data_transacao")} />
-                <Popover>
+                <Popover open={openCalendar} onOpenChange={setOpenCalendar}>
                   <PopoverTrigger asChild>
                     <UIButton
                       variant="outline"
@@ -327,6 +327,7 @@ export default function FinanceiroForm({
                         setSelectedDate(date || undefined);
                         const formatted = date ? formatDateBR(date) : "";
                         setValue("data_transacao", formatted, { shouldDirty: true });
+                        if (date) setOpenCalendar(false);
                       }}
                       initialFocus
                       locale={ptBR}
