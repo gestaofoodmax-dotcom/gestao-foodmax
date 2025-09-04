@@ -334,11 +334,28 @@ export default function FinanceiroModule() {
 
   const handleSave = async (data: any) => {
     setFormLoading(true);
+    const toISO = (s: any): string | null => {
+      if (!s) return null;
+      if (typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        return new Date(`${s}T00:00:00.000Z`).toISOString();
+      }
+      const d = new Date(s);
+      return isNaN(d.getTime()) ? null : d.toISOString();
+    };
+    const payload = {
+      estabelecimento_id: Number(data.estabelecimento_id),
+      tipo: data.tipo,
+      categoria: String(data.categoria),
+      valor: Number(data.valor) || 0,
+      data_transacao: toISO(data.data_transacao),
+      descricao: data.descricao ?? "",
+      ativo: Boolean(data.ativo ?? true),
+    };
     try {
       if (isEditing && currentItem) {
         await makeRequest(`/api/financeiro/${currentItem.id}`, {
           method: "PUT",
-          body: JSON.stringify(data),
+          body: JSON.stringify(payload),
         });
         toast({
           title: "Transação atualizada",
@@ -347,7 +364,7 @@ export default function FinanceiroModule() {
       } else {
         await makeRequest(`/api/financeiro`, {
           method: "POST",
-          body: JSON.stringify(data),
+          body: JSON.stringify(payload),
         });
         toast({ title: "Transação criada", description: "Criada com sucesso" });
       }
@@ -362,7 +379,7 @@ export default function FinanceiroModule() {
       if (isEditing && currentItem) {
         const idx = list.findIndex((x) => x.id === currentItem.id);
         if (idx >= 0)
-          list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
+          list[idx] = { ...list[idx], ...payload, data_atualizacao: now } as any;
         toast({
           title: "Transação atualizada",
           description: "Atualizada com sucesso",
@@ -371,13 +388,13 @@ export default function FinanceiroModule() {
         const novo: FinanceiroTransacao = {
           id: Date.now(),
           id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
-          estabelecimento_id: data.estabelecimento_id,
-          tipo: data.tipo,
-          categoria: data.categoria,
-          valor: data.valor,
-          data_transacao: data.data_transacao || null,
-          descricao: data.descricao || null,
-          ativo: data.ativo ?? true,
+          estabelecimento_id: payload.estabelecimento_id,
+          tipo: payload.tipo as any,
+          categoria: payload.categoria,
+          valor: payload.valor,
+          data_transacao: payload.data_transacao,
+          descricao: payload.descricao || null,
+          ativo: payload.ativo,
           data_cadastro: now,
           data_atualizacao: now,
         };
