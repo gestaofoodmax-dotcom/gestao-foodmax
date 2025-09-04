@@ -496,6 +496,112 @@ export default function ComunicacoesModule() {
         selectedCount={selectedIds.length}
       />
 
+      <ExportModal
+        isOpen={showExport}
+        onClose={() => { setShowExport(false); setExportData([]); }}
+        data={exportData}
+        selectedIds={selectedIds}
+        moduleName="Comunicações"
+        columns={[
+          { key: 'estabelecimento', label: 'Estabelecimento' },
+          { key: 'tipo_comunicacao', label: 'Tipo de Comunicação' },
+          { key: 'assunto', label: 'Assunto' },
+          { key: 'mensagem', label: 'Mensagem' },
+          { key: 'destinatarios_tipo', label: 'Destinatários' },
+          { key: 'clientes_ids', label: 'Clientes IDs' },
+          { key: 'fornecedores_ids', label: 'Fornecedores IDs' },
+          { key: 'destinatarios_text', label: 'Destinatários Texto' },
+          { key: 'status', label: 'Status' },
+          { key: 'data_envio', label: 'Data de Envio' },
+          { key: 'data_cadastro', label: 'Data Cadastro' },
+        ]}
+      />
+
+      <ImportModal
+        isOpen={showImport}
+        onClose={() => setShowImport(false)}
+        moduleName="Comunicações"
+        userRole={getUserRole()}
+        hasPayment={hasPayment()}
+        columns={[
+          { key: 'estabelecimento', label: 'Estabelecimento (nome ou ID)', required: true },
+          { key: 'tipo_comunicacao', label: 'Tipo de Comunicação', required: true },
+          { key: 'assunto', label: 'Assunto', required: true },
+          { key: 'mensagem', label: 'Mensagem', required: true },
+          { key: 'destinatarios_tipo', label: 'Destinatários', required: true },
+          { key: 'clientes_ids', label: 'Clientes IDs (1,2,3)' },
+          { key: 'fornecedores_ids', label: 'Fornecedores IDs (1,2,3)' },
+          { key: 'destinatarios_text', label: 'Destinatários Texto' },
+          { key: 'status', label: 'Status' },
+        ]}
+        mapHeader={(h) => {
+          const n = h.trim().toLowerCase();
+          const map: Record<string, string> = {
+            estabelecimento: 'estabelecimento',
+            'tipo de comunicação': 'tipo_comunicacao',
+            assunto: 'assunto',
+            mensagem: 'mensagem',
+            'destinatários': 'destinatarios_tipo',
+            destinatarios: 'destinatarios_tipo',
+            'clientes ids': 'clientes_ids',
+            'fornecedores ids': 'fornecedores_ids',
+            'destinatários texto': 'destinatarios_text',
+            'destinatarios texto': 'destinatarios_text',
+            status: 'status',
+          };
+          return map[n] || n.replace(/\s+/g, '_');
+        }}
+        validateRecord={(r) => {
+          const errors: string[] = [];
+          if (!r.estabelecimento) errors.push('Estabelecimento é obrigatório');
+          if (!r.tipo_comunicacao) errors.push('Tipo de Comunicação é obrigatório');
+          if (!r.assunto) errors.push('Assunto é obrigatório');
+          if (!r.mensagem) errors.push('Mensagem é obrigatória');
+          if (!r.destinatarios_tipo) errors.push('Destinatários é obrigatório');
+          return errors;
+        }}
+        onImport={async (records) => {
+          let imported = 0;
+          for (const r of records) {
+            try {
+              let estabelecimento_id: number | null = null;
+              const v = String(r.estabelecimento || '').trim();
+              if (/^\d+$/.test(v)) {
+                estabelecimento_id = parseInt(v, 10);
+              } else {
+                const found = estabelecimentos.find((e) => e.nome.toLowerCase() === v.toLowerCase());
+                estabelecimento_id = found ? found.id : null;
+              }
+              if (!estabelecimento_id) continue;
+
+              const parseIds = (s?: string) =>
+                (String(s || '')
+                  .split(/[,;\s]+/g)
+                  .map((x) => parseInt(x.trim(), 10))
+                  .filter((n) => !isNaN(n)) as number[]);
+
+              await makeRequest(`/api/comunicacoes`, {
+                method: 'POST',
+                body: JSON.stringify({
+                  estabelecimento_id,
+                  tipo_comunicacao: r.tipo_comunicacao,
+                  assunto: r.assunto,
+                  mensagem: r.mensagem,
+                  destinatarios_tipo: r.destinatarios_tipo,
+                  clientes_ids: parseIds(r.clientes_ids),
+                  fornecedores_ids: parseIds(r.fornecedores_ids),
+                  destinatarios_text: r.destinatarios_text || '',
+                  status: r.status || 'Pendente',
+                }),
+              });
+              imported += 1;
+            } catch {}
+          }
+          await loadRows();
+          return { success: true, imported, message: `${imported} comunicação(ões) importada(s)` } as any;
+        }}
+      />
+
       {sendModalOpen && current && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6">
