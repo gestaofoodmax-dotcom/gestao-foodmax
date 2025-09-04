@@ -115,12 +115,13 @@ export default function FinanceiroForm({
           categoria: item.categoria,
           valor: item.valor,
           data_transacao: item.data_transacao
-            ? new Date(item.data_transacao).toISOString().slice(0, 10)
+            ? new Date(item.data_transacao).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
             : "",
           descricao: item.descricao || "",
           ativo: item.ativo,
         });
         setValorMask(formatInputCurrency(item.valor));
+        setSelectedDate(item.data_transacao ? new Date(item.data_transacao) : undefined);
       } else {
         // Default estabelecimento: último cadastrado ativo
         const lastActive = estabelecimentos.find((e) => e.ativo);
