@@ -28,7 +28,10 @@ import {
 } from "@/components/ui/dialog";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
-import { BulkDeleteAlert, DeleteAlert } from "@/components/alert-dialog-component";
+import {
+  BulkDeleteAlert,
+  DeleteAlert,
+} from "@/components/alert-dialog-component";
 import {
   Entrega,
   EntregasListResponse,
@@ -336,7 +339,10 @@ export default function EntregasModule() {
   const handleDelete = async (e: Entrega) => {
     try {
       await makeRequest(`/api/entregas/${e.id}`, { method: "DELETE" });
-      toast({ title: "Entrega excluída", description: "Entrega excluída com sucesso" });
+      toast({
+        title: "Entrega excluída",
+        description: "Entrega excluída com sucesso",
+      });
       await refreshAfterMutation();
     } catch {
       const list = readLocal().filter((x) => x.id !== e.id);
@@ -431,7 +437,10 @@ export default function EntregasModule() {
   const handleRegistrarSaida = async (e: Entrega) => {
     try {
       await makeRequest(`/api/entregas/${e.id}/saida`, { method: "PATCH" });
-      toast({ title: "Saída registrada", description: "Status alterado para Saiu" });
+      toast({
+        title: "Saída registrada",
+        description: "Status alterado para Saiu",
+      });
       await refreshAfterMutation();
     } catch {
       const list = readLocal();
@@ -449,7 +458,10 @@ export default function EntregasModule() {
   const handleRegistrarEntregue = async (e: Entrega) => {
     try {
       await makeRequest(`/api/entregas/${e.id}/entregue`, { method: "PATCH" });
-      toast({ title: "Entrega registrada", description: "Status alterado para Entregue" });
+      toast({
+        title: "Entrega registrada",
+        description: "Status alterado para Entregue",
+      });
       await refreshAfterMutation();
     } catch {
       const list = readLocal();
@@ -470,7 +482,10 @@ export default function EntregasModule() {
       let page = 1;
       const limit = 1000;
       while (true) {
-        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+        });
         if (activeTab !== "Todos") params.set("tipo", activeTab);
         const resp = await makeRequest(`/api/entregas?${params}`);
         const data = Array.isArray(resp?.data) ? resp.data : [];
@@ -509,7 +524,9 @@ export default function EntregasModule() {
 
     const buildRowFromDetail = (d: any) => {
       const end = d.endereco || null;
-      const cityUf = end?.cidade ? `${end.cidade}${end.uf ? `/${end.uf}` : ""}` : "";
+      const cityUf = end?.cidade
+        ? `${end.cidade}${end.uf ? `/${end.uf}` : ""}`
+        : "";
       let enderecoStr = "";
       if (end) {
         const hasCep = typeof end.cep === "string" && end.cep.trim() !== "";
@@ -518,7 +535,8 @@ export default function EntregasModule() {
           (x) => typeof x === "string" && x.trim() !== "",
         );
         if (hasCep) {
-          enderecoStr = rest.length > 0 ? `${cepText} - ${rest.join(" - ")}` : cepText;
+          enderecoStr =
+            rest.length > 0 ? `${cepText} - ${rest.join(" - ")}` : cepText;
         } else {
           enderecoStr = rest.length > 0 ? ` - ${rest.join(" - ")}` : " - ";
         }
@@ -649,7 +667,8 @@ export default function EntregasModule() {
                       size="sm"
                       onClick={() => setShowBulkDelete(true)}
                     >
-                      <Trash2 className="w-4 h-4 mr-2" /> Excluir Selecionados ({selectedIds.length})
+                      <Trash2 className="w-4 h-4 mr-2" /> Excluir Selecionados (
+                      {selectedIds.length})
                     </Button>
                   )}
                   <Button
@@ -882,7 +901,9 @@ export default function EntregasModule() {
           return errs;
         }}
         onImport={async (records) => {
-          try { localStorage.removeItem(LOCAL_KEY); } catch {}
+          try {
+            localStorage.removeItem(LOCAL_KEY);
+          } catch {}
           const parseCentavos = (val: any): number => {
             if (val === undefined || val === null || val === "") return 0;
             if (typeof val === "number") return Math.round(val * 100);
@@ -918,7 +939,10 @@ export default function EntregasModule() {
 
           const full = records.map((r) => {
             const endRaw = String(
-              r.endereco || r["Cliente Endereço"] || r["Entrega Endereço"] || "",
+              r.endereco ||
+                r["Cliente Endereço"] ||
+                r["Entrega Endereço"] ||
+                "",
             ).trim();
             let endereco: any = null;
             if (endRaw) {

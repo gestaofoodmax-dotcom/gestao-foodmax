@@ -803,7 +803,8 @@ export default function AbastecimentosModule() {
           (x) => typeof x === "string" && x.trim() !== "",
         );
         if (hasCep) {
-          enderecoStr = rest.length > 0 ? `${cepText} - ${rest.join(" - ")}` : cepText;
+          enderecoStr =
+            rest.length > 0 ? `${cepText} - ${rest.join(" - ")}` : cepText;
         } else {
           enderecoStr = rest.length > 0 ? ` - ${rest.join(" - ")}` : " - ";
         }
