@@ -2,12 +2,36 @@ import { RequestHandler } from "express";
 import { z } from "zod";
 import { getSupabaseServiceClient } from "../supabase";
 
+const toISODate = (v: unknown): string | null => {
+  if (v === null || v === undefined || v === "") return null;
+  if (v instanceof Date && !isNaN(v.getTime()))
+    return `${v.toISOString().slice(0, 10)}T00:00:00.000Z`;
+  const s = String(v).trim();
+  if (!s) return null;
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+    const [dd, mm, yyyy] = s.split("/");
+    return `${yyyy}-${mm}-${dd}T00:00:00.000Z`;
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const [yyyy, mm, dd] = s.split("-");
+    return `${yyyy}-${mm}-${dd}T00:00:00.000Z`;
+  }
+  // Fallback: try parsing
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) return `${d.toISOString().slice(0, 10)}T00:00:00.000Z`;
+  return null;
+};
+
 const FinanceiroSchema = z.object({
   estabelecimento_id: z.number(),
   tipo: z.enum(["Receita", "Despesa"]),
   categoria: z.string().min(1),
   valor: z.number().int().nonnegative(),
-  data_transacao: z.string().datetime().optional().nullable(),
+  data_transacao: z
+    .union([z.string(), z.date(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => toISODate(v)),
   descricao: z.string().optional().nullable(),
   ativo: z.boolean().default(true),
 });
