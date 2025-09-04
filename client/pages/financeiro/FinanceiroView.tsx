@@ -88,13 +88,19 @@ export default function FinanceiroView({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DataField label="Estabelecimento" value={estabelecimentoNome} />
-              <DataField label="Tipo" value={item.tipo} />
+              <DataField label="Tipo de Transação" value={item.tipo} />
               <DataField label="Categoria" value={item.categoria} />
+            </div>
+          </div>
+
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-4">
+              <DollarSign className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Transação</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DataField label="Valor" value={formatCurrencyBRL(item.valor)} />
-              <DataField
-                label="Data da Transação"
-                value={formatDateTime(item.data_transacao)}
-              />
+              <DataField label="Data da Transação" value={formatDateTime(item.data_transacao)} />
               <div className="md:col-span-2">
                 <DataField label="Descrição" value={item.descricao || "-"} />
               </div>
@@ -104,19 +110,11 @@ export default function FinanceiroView({
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-4">
               <Info className="w-5 h-5 text-gray-600" />
-              <h3 className="font-semibold text-gray-600">
-                Detalhes do Cadastro
-              </h3>
+              <h3 className="font-semibold text-gray-600">Detalhes do Cadastro</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DataField
-                label="Data de Cadastro"
-                value={formatDateTime(item.data_cadastro)}
-              />
-              <DataField
-                label="Data de Atualização"
-                value={formatDateTime(item.data_atualizacao)}
-              />
+              <DataField label="Data de Cadastro" value={formatDateTime(item.data_cadastro)} />
+              <DataField label="Data de Atualização" value={formatDateTime(item.data_atualizacao)} />
               <DataField label="Ativo" value={item.ativo ? "Sim" : "Não"} />
             </div>
           </div>
