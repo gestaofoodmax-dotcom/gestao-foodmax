@@ -623,3 +623,29 @@ DROP TRIGGER IF EXISTS trg_entregas_enderecos_updated_at ON entregas_enderecos;
 CREATE TRIGGER trg_entregas_enderecos_updated_at
 BEFORE UPDATE ON entregas_enderecos
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- Financeiro (transações financeiras)
+CREATE TABLE IF NOT EXISTS financeiro_transacoes (
+  id SERIAL PRIMARY KEY,
+  id_usuario INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  estabelecimento_id INTEGER NOT NULL REFERENCES estabelecimentos(id) ON DELETE RESTRICT,
+  tipo TEXT NOT NULL CHECK (tipo IN ('Receita','Despesa')),
+  categoria TEXT NOT NULL,
+  valor INTEGER NOT NULL CHECK (valor >= 0), -- centavos
+  data_transacao TIMESTAMPTZ NULL,
+  descricao TEXT NULL,
+  ativo BOOLEAN NOT NULL DEFAULT TRUE,
+  data_cadastro TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  data_atualizacao TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_fin_usuario ON financeiro_transacoes(id_usuario);
+CREATE INDEX IF NOT EXISTS idx_fin_estabelecimento ON financeiro_transacoes(estabelecimento_id);
+CREATE INDEX IF NOT EXISTS idx_fin_tipo ON financeiro_transacoes(tipo);
+CREATE INDEX IF NOT EXISTS idx_fin_categoria ON financeiro_transacoes(categoria);
+CREATE INDEX IF NOT EXISTS idx_fin_data_transacao ON financeiro_transacoes(data_transacao);
+
+DROP TRIGGER IF EXISTS trg_financeiro_transacoes_set_timestamp ON financeiro_transacoes;
+CREATE TRIGGER trg_financeiro_transacoes_set_timestamp
+BEFORE UPDATE ON financeiro_transacoes
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
