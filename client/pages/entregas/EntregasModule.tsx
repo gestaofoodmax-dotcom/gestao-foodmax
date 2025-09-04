@@ -701,7 +701,7 @@ export default function EntregasModule() {
           { key: "data_hora_entregue", label: "Data/Hora Entregue" },
           { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
-          { key: "cliente_endereco", label: "Cliente Endereço" },
+          { key: "entrega_endereco", label: "Entrega Endereço" },
         ]}
       />
 
