@@ -917,8 +917,8 @@ export default function FinanceiroModule() {
         onImport={async (records) => {
           try {
             let imported = 0; // registros salvos no banco
-              remote = 0,
-              local = 0;
+            let remote = 0;
+            let local = 0;
             const total = records.length;
             const estabByName = new Map<string, Estabelecimento>();
             estabelecimentos.forEach((e) =>
@@ -966,12 +966,9 @@ export default function FinanceiroModule() {
                   categoria: String(r.categoria || "Outros").trim() || "Outros",
                   valor: parseCentavos(r.valor),
                   data_transacao: ((): string | null => {
-                    const s = r.data_transacao
-                      ? String(r.data_transacao).trim()
-                      : "";
+                    const s = r.data_transacao ? String(r.data_transacao).trim() : "";
                     if (!s) return null;
-                    const toISOBr = (yyyy: string, mm: string, dd: string) =>
-                      `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
                     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
                       const [dd, mm, yyyy] = s.split("/");
                       return toISOBr(yyyy, mm, dd);
@@ -981,8 +978,23 @@ export default function FinanceiroModule() {
                       return toISOBr(yyyy, mm, dd);
                     }
                     const dt = new Date(s);
-                    if (!isNaN(dt.getTime()))
-                      return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
+                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
+                    return null;
+                  })(),
+                  data_cadastro: ((): string | null => {
+                    const s = r.data_cadastro ? String(r.data_cadastro).trim() : "";
+                    if (!s) return null;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+                      const [dd, mm, yyyy] = s.split("/");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                      const [yyyy, mm, dd] = s.split("-");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    const dt = new Date(s);
+                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
                     return null;
                   })(),
                   descricao: r.descricao ? String(r.descricao) : "",
@@ -1013,8 +1025,7 @@ export default function FinanceiroModule() {
                     const v = (r as any).data_transacao;
                     const s = v ? String(v).trim() : "";
                     if (!s) return null;
-                    const toISOBr = (yyyy: string, mm: string, dd: string) =>
-                      `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
                     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
                       const [dd, mm, yyyy] = s.split("/");
                       return toISOBr(yyyy, mm, dd);
@@ -1024,8 +1035,7 @@ export default function FinanceiroModule() {
                       return toISOBr(yyyy, mm, dd);
                     }
                     const dt = new Date(s);
-                    if (!isNaN(dt.getTime()))
-                      return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
+                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
                     return null;
                   })(),
                   descricao: (r as any).descricao || "",
@@ -1033,7 +1043,22 @@ export default function FinanceiroModule() {
                     typeof (r as any).ativo === "string"
                       ? (r as any).ativo.toLowerCase() !== "false"
                       : Boolean((r as any).ativo ?? true),
-                  data_cadastro: now,
+                  data_cadastro: ((): string => {
+                    const s = (r as any).data_cadastro ? String((r as any).data_cadastro).trim() : "";
+                    if (!s) return now;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+                      const [dd, mm, yyyy] = s.split("/");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                      const [yyyy, mm, dd] = s.split("-");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    const dt = new Date(s);
+                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
+                    return now;
+                  })(),
                   data_atualizacao: now,
                 };
                 list.unshift(novo);
