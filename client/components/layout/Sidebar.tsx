@@ -86,7 +86,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
         items: [
           { icon: List, label: "Itens", route: "/itens" },
           { icon: Utensils, label: "Cardápios", route: "/cardapios" },
-          { icon: Banknote, label: "Financeiro", route: "/financeiro" },
+          { icon: DollarSign, label: "Financeiro", route: "/financeiro" },
         ],
       },
       {
