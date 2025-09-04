@@ -12,7 +12,7 @@ import { Estabelecimento } from "@shared/estabelecimentos";
 import { formatCurrencyBRL } from "@shared/itens";
 import FinanceiroForm from "./FinanceiroForm";
 import FinanceiroView from "./FinanceiroView";
-import { Menu, Search, Plus, Trash2, Eye, Edit, Power, Upload, Download, AlertTriangle } from "lucide-react";
+import { Menu, Search, Plus, Trash2, Eye, Edit, Power, Upload, Download, AlertTriangle, TrendingUp, TrendingDown, Wallet } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
@@ -353,11 +353,11 @@ export default function FinanceiroModule() {
               <div>
                 <h2 className="text-2xl font-semibold text-gray-800">Financeiro</h2>
                 <p className="text-gray-600 mt-1">Gerencie suas receitas e despesas.</p>
-                <div className="mt-3 flex flex-col gap-3">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
-                    <div>
+                <div className="mt-3 flex flex-col gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                    <div className="min-w-[320px] md:min-w-[420px] w-full">
                       <Select value={selectedEstabelecimento} onValueChange={(v) => { setSelectedEstabelecimento(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="foodmax-input">
+                        <SelectTrigger className="foodmax-input h-11">
                           <SelectValue placeholder="Selecione o estabelecimento" />
                         </SelectTrigger>
                         <SelectContent>
@@ -367,9 +367,9 @@ export default function FinanceiroModule() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div>
+                    <div className="min-w-[260px] md:min-w-[340px] w-full">
                       <Select value={period} onValueChange={(v) => { setPeriod(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="foodmax-input">
+                        <SelectTrigger className="foodmax-input h-11">
                           <SelectValue placeholder="Período" />
                         </SelectTrigger>
                         <SelectContent>
@@ -380,18 +380,39 @@ export default function FinanceiroModule() {
                       </Select>
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
-                    <div className="bg-white border rounded-lg p-3 text-center">
-                      <div className="text-xs text-gray-500">Total Receitas</div>
-                      <div className="text-lg font-semibold text-green-600">{formatCurrencyBRL(totals.totalReceitas)}</div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
+                    <div className="bg-white border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-green-50 border border-green-200 flex items-center justify-center">
+                            <TrendingUp className="w-4 h-4 text-green-600" />
+                          </div>
+                          <div className="text-sm text-gray-600">Total Receitas</div>
+                        </div>
+                        <div className="text-lg font-semibold text-green-600">{formatCurrencyBRL(totals.totalReceitas)}</div>
+                      </div>
                     </div>
-                    <div className="bg-white border rounded-lg p-3 text-center">
-                      <div className="text-xs text-gray-500">Total Despesas</div>
-                      <div className="text-lg font-semibold text-red-600">{formatCurrencyBRL(totals.totalDespesas)}</div>
+                    <div className="bg-white border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-red-50 border border-red-200 flex items-center justify-center">
+                            <TrendingDown className="w-4 h-4 text-red-600" />
+                          </div>
+                          <div className="text-sm text-gray-600">Total Despesas</div>
+                        </div>
+                        <div className="text-lg font-semibold text-red-600">{formatCurrencyBRL(totals.totalDespesas)}</div>
+                      </div>
                     </div>
-                    <div className="bg-white border rounded-lg p-3 text-center">
-                      <div className="text-xs text-gray-500">Saldo Líquido</div>
-                      <div className={`text-lg font-semibold ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`}>{formatCurrencyBRL(totals.saldoLiquido)}</div>
+                    <div className="bg-white border rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center">
+                            <Wallet className={`w-4 h-4 ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`} />
+                          </div>
+                          <div className="text-sm text-gray-600">Saldo Líquido</div>
+                        </div>
+                        <div className={`text-lg font-semibold ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`}>{formatCurrencyBRL(totals.saldoLiquido)}</div>
+                      </div>
                     </div>
                   </div>
                 </div>
