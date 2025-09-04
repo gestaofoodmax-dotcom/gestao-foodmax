@@ -215,6 +215,12 @@ export default function RelatoriosModule() {
     const pageHeight = pdf.internal.pageSize.getHeight();
     let pageIndex = 0;
 
+    // Header title on first page
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(18);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text("Gestão Gastronômica", pageWidth / 2, 32, { align: "center" });
+
     for (let i = 0; i < elements.length; i++) {
       const el = elements[i];
       const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
@@ -226,7 +232,7 @@ export default function RelatoriosModule() {
         pdf.addPage();
         pageIndex++;
       }
-      const y = imgHeight > pageHeight - 80 ? 20 : (pageHeight - imgHeight) / 2;
+      const y = i === 0 ? 60 : (imgHeight > pageHeight - 80 ? 20 : (pageHeight - imgHeight) / 2);
       pdf.addImage(imgData, "PNG", 20, y, imgWidth, imgHeight);
     }
 
@@ -322,10 +328,8 @@ export default function RelatoriosModule() {
                 className="foodmax-card border border-gray-200 p-4"
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <BarChart3 className="w-5 h-5 text-blue-700" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-800">Relatório Financeiro</h3>
+                  <BarChart3 className="w-5 h-5 text-blue-700" />
+                  <h3 className="text-lg font-semibold text-blue-700">Relatório de Transaç��es</h3>
                 </div>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
@@ -347,10 +351,8 @@ export default function RelatoriosModule() {
                 className="foodmax-card border border-gray-200 p-4"
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-9 h-9 rounded-lg bg-orange-100 flex items-center justify-center">
-                    <PieIcon className="w-5 h-5 text-orange-700" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-800">Relatório de Pedidos</h3>
+                  <PieIcon className="w-5 h-5 text-orange-700" />
+                  <h3 className="text-lg font-semibold text-orange-700">Relatório de Pedidos</h3>
                 </div>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
