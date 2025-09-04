@@ -957,12 +957,11 @@ export default function FinanceiroModule() {
                   .toLowerCase();
                 const est = estabByName.get(estName) || estabelecimentos[0];
                 if (!est) throw new Error("Estabelecimento inválido");
-                const tipo = String(r.tipo || "").trim();
-                const valid = tipo === "Receita" || tipo === "Despesa";
-                if (!valid) throw new Error("Tipo inválido");
+                const tipoResolved = resolveTipo(r.tipo);
+                if (!tipoResolved) throw new Error("Tipo inválido");
                 const payload: any = {
                   estabelecimento_id: est.id,
-                  tipo: tipo as any,
+                  tipo: tipoResolved,
                   categoria: String(r.categoria || "Outros").trim() || "Outros",
                   valor: parseCentavos(r.valor),
                   data_transacao: ((): string | null => {
