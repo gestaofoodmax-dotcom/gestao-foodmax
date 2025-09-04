@@ -310,49 +310,25 @@ export default function ComunicacaoForm({
                 </Select>
               </div>
 
-              <div className="md:col-span-2">
-                <Label>Assunto *</Label>
-                <Input {...register('assunto')} className="foodmax-input" />
-                {errors.assunto && (
-                  <span className="text-sm text-red-600">{errors.assunto.message}</span>
-                )}
-              </div>
 
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-2 mb-1">
-                  <svg className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7l-2-2H3v16h18V6z"/></svg>
-                  <h3 className="font-semibold text-green-600">Conteúdo</h3>
-                </div>
-                <Label>{watched.tipo_comunicacao === 'Promoção' ? 'Template de Email de Promoção' : 'Mensagem *'}</Label>
-                <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
-                {watched.tipo_comunicacao === 'Promoção' && (
-                  <div className="mt-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span>Editar texto em</span>
-                      <button
-                        type="button"
-                        onClick={() => window.open('/configuracoes', '_blank')}
-                        className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
-                      >
-                        <LinkIcon className="w-3 h-3" /> Configurações
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {watched.tipo_comunicacao === 'Promoção' && promoImages.length > 0 && (
+              {watched.tipo_comunicacao === 'Fornecedor' && (
                 <div className="md:col-span-2">
-                  <div className="text-sm font-medium mb-2">Pré-visualização de Imagens</div>
-                  <div className="flex flex-wrap gap-3">
-                    {promoImages.map((src, idx) => (
-                      <div key={idx} className="w-24 h-24 rounded border overflow-hidden bg-gray-50">
-                        <img src={src} alt={`Imagem ${idx + 1}`} className="w-full h-full object-cover" />
-                      </div>
-                    ))}
+                  <div className="flex items-center gap-2 mb-1">
+                    <svg className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7l-2-2H3v16h18V6z"/></svg>
+                    <h3 className="font-semibold text-green-600">Conteúdo</h3>
+                  </div>
+                  <Label>Assunto *</Label>
+                  <Input {...register('assunto')} className="foodmax-input" />
+                  {errors.assunto && (
+                    <span className="text-sm text-red-600">{errors.assunto.message}</span>
+                  )}
+                  <div className="mt-3">
+                    <Label>Mensagem *</Label>
+                    <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
                   </div>
                 </div>
               )}
+
 
               <div className="md:col-span-2">
                 <div className="flex items-center gap-2 mb-1">
@@ -393,6 +369,42 @@ export default function ComunicacaoForm({
                         ))}
                       </div>
                     )}
+
+                    <div className="mt-4">
+                      <Label>Assunto *</Label>
+                      <Input {...register('assunto')} className="foodmax-input" />
+                      {errors.assunto && (
+                        <span className="text-sm text-red-600">{errors.assunto.message}</span>
+                      )}
+                    </div>
+                    <div className="mt-3">
+                      <Label>Template de Email de Promoção</Label>
+                      <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
+                      <div className="mt-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span>Editar texto em</span>
+                          <button
+                            type="button"
+                            onClick={() => window.open('/configuracoes', '_blank')}
+                            className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                          >
+                            <LinkIcon className="w-3 h-3" /> Configurações
+                          </button>
+                        </div>
+                      </div>
+                      {promoImages.length > 0 && (
+                        <div className="mt-3">
+                          <div className="text-sm font-medium mb-2">Pré-visualização de Imagens</div>
+                          <div className="flex flex-wrap gap-3">
+                            {promoImages.map((src, idx) => (
+                              <div key={idx} className="w-24 h-24 rounded border overflow-hidden bg-gray-50">
+                                <img src={src} alt={`Imagem ${idx + 1}`} className="w-full h-full object-cover" />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -442,6 +454,17 @@ export default function ComunicacaoForm({
                       rows={3}
                       placeholder="Digite emails separados por vírgula, ponto e vírgula ou espaço"
                     />
+                    <div className="mt-4">
+                      <Label>Assunto *</Label>
+                      <Input {...register('assunto')} className="foodmax-input" />
+                      {errors.assunto && (
+                        <span className="text-sm text-red-600">{errors.assunto.message}</span>
+                      )}
+                    </div>
+                    <div className="mt-3">
+                      <Label>Mensagem *</Label>
+                      <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
+                    </div>
                   </div>
                 )}
               </div>
