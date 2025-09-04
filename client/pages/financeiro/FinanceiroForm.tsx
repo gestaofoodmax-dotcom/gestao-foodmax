@@ -21,14 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertTriangle, FileText, Save, X, DollarSign, Calendar as CalendarIcon } from "lucide-react";
+import { AlertTriangle, FileText, Save, X, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Estabelecimento } from "@shared/estabelecimentos";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { ptBR } from "date-fns/locale";
-import { Button as UIButton } from "@/components/ui/button";
 import {
   FinanceiroTransacao,
   FINANCEIRO_CATEGORIAS,
@@ -93,9 +89,6 @@ export default function FinanceiroForm({
   const watchedTipo = watch("tipo");
 
   const [valorMask, setValorMask] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-  const formatDateBR = (d?: Date) =>
-    d ? d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "";
 
   const parseCurrencyToCentavos = (val: string) => {
     const digits = val.replace(/[^0-9]/g, "");
@@ -115,15 +108,12 @@ export default function FinanceiroForm({
           categoria: item.categoria,
           valor: item.valor,
           data_transacao: item.data_transacao
-            ? new Date(item.data_transacao).toLocaleDateString("pt-BR")
+            ? new Date(item.data_transacao).toISOString().slice(0, 10)
             : "",
           descricao: item.descricao || "",
           ativo: item.ativo,
         });
         setValorMask(formatInputCurrency(item.valor));
-        setSelectedDate(
-          item.data_transacao ? new Date(item.data_transacao) : undefined,
-        );
       } else {
         // Default estabelecimento: último cadastrado ativo
         const lastActive = estabelecimentos.find((e) => e.ativo);
@@ -139,7 +129,6 @@ export default function FinanceiroForm({
           ativo: true,
         } as any);
         setValorMask("");
-        setSelectedDate(undefined);
       }
     }
   }, [isOpen, item, reset, estabelecimentos]);
@@ -309,31 +298,13 @@ export default function FinanceiroForm({
                 <Label htmlFor="data" className="text-sm font-medium">
                   Data da Transação *
                 </Label>
-                <input type="hidden" {...register("data_transacao")} />
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <UIButton
-                      variant="outline"
-                      className={`w-full justify-start text-left font-normal foodmax-input ${errors.data_transacao ? "border-red-500" : ""}`}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? formatDateBR(selectedDate) : "dd/mm/aaaa"}
-                    </UIButton>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => {
-                        setSelectedDate(date || undefined);
-                        const formatted = date ? formatDateBR(date) : "";
-                        setValue("data_transacao", formatted, { shouldDirty: true });
-                      }}
-                      initialFocus
-                      locale={ptBR}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <Input
+                  id="data"
+                  type="date"
+                  placeholder="dd/mm/aaaa"
+                  {...register("data_transacao")}
+                  className={`foodmax-input ${errors.data_transacao ? "border-red-500" : ""}`}
+                />
               </div>
               <div className="md:col-span-2">
                 <Label htmlFor="descricao" className="text-sm font-medium">
