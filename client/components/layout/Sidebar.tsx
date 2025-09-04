@@ -16,6 +16,7 @@ import {
   LogOut,
   Bike,
   DollarSign,
+  BarChart3,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toTitleCase } from "@/lib/utils";
@@ -78,6 +79,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
           },
           { icon: Users, label: "Clientes", route: "/clientes" },
           { icon: Truck, label: "Fornecedores", route: "/fornecedores" },
+          { icon: BarChart3, label: "Relatórios", route: "/relatorios" },
         ],
       },
       {

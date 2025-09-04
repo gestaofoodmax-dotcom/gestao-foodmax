@@ -4,13 +4,15 @@ export function getSupabaseServiceClient() {
   const url = process.env.SUPABASE_URL;
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  console.log("Supabase Environment Check:");
-  console.log("SUPABASE_URL exists:", !!url);
-  console.log("SUPABASE_SERVICE_ROLE_KEY exists:", !!serviceKey);
-  console.log(
-    "SUPABASE_URL value:",
-    url ? `${url.substring(0, 30)}...` : "NOT SET",
-  );
+  if (!(globalThis as any).__SUPABASE_ENV_LOGGED__) {
+    (globalThis as any).__SUPABASE_ENV_LOGGED__ = true;
+    const maskedUrl = url ? `${url.substring(0, 30)}...` : "NOT SET";
+    console.log("Supabase env ok:", {
+      hasUrl: !!url,
+      hasKey: !!serviceKey,
+      url: maskedUrl,
+    });
+  }
 
   if (!url || !serviceKey) {
     console.error("Missing Supabase environment variables");
@@ -22,7 +24,6 @@ export function getSupabaseServiceClient() {
       auth: { persistSession: false },
       db: { schema: "public" },
     });
-    console.log("Supabase client created successfully");
     return client;
   } catch (error) {
     console.error("Error creating Supabase client:", error);

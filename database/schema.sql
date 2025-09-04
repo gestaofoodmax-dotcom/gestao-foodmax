@@ -649,3 +649,26 @@ DROP TRIGGER IF EXISTS trg_financeiro_transacoes_set_timestamp ON financeiro_tra
 CREATE TRIGGER trg_financeiro_transacoes_set_timestamp
 BEFORE UPDATE ON financeiro_transacoes
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- Relatórios (novo módulo)
+CREATE TABLE IF NOT EXISTS relatorios (
+  id BIGSERIAL PRIMARY KEY,
+  id_usuario BIGINT NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  estabelecimento_id BIGINT NULL REFERENCES estabelecimentos(id) ON DELETE SET NULL,
+  titulo TEXT,
+  tipo TEXT NOT NULL DEFAULT 'Geral',
+  filtros JSONB NOT NULL DEFAULT '{}'::jsonb,
+  data_referencia_de DATE NULL,
+  data_referencia_ate DATE NULL,
+  arquivo_url TEXT NULL,
+  data_cadastro TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  data_atualizacao TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_relatorios_usuario ON relatorios(id_usuario);
+CREATE INDEX IF NOT EXISTS idx_relatorios_estabelecimento ON relatorios(estabelecimento_id);
+
+DROP TRIGGER IF EXISTS trg_relatorios_set_timestamp ON relatorios;
+CREATE TRIGGER trg_relatorios_set_timestamp
+BEFORE UPDATE ON relatorios
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();

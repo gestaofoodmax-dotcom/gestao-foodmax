@@ -21,6 +21,7 @@ import PagamentoPlano from "./pages/PagamentoPlano";
 import RenovarPlano from "./pages/RenovarPlano";
 import EntregasModule from "./pages/entregas/EntregasModule";
 import FinanceiroModule from "./pages/financeiro/FinanceiroModule";
+import RelatoriosModule from "./pages/relatorios/RelatoriosModule";
 
 export default function App() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
             <Route path="/abastecimentos" element={<AbastecimentosModule />} />
             <Route path="/entregas" element={<EntregasModule />} />
             <Route path="/financeiro" element={<FinanceiroModule />} />
+            <Route path="/relatorios" element={<RelatoriosModule />} />
             <Route path="/minha-conta" element={<MinhaConta />} />
             <Route path="/PagamentoPlano" element={<PagamentoPlano />} />
             <Route path="/RenovarPlano" element={<RenovarPlano />} />
