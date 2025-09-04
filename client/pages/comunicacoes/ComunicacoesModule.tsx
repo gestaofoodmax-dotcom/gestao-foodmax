@@ -315,7 +315,7 @@ export default function ComunicacoesModule() {
         });
         toast({
           title: "Criado",
-          description: "Comunicação criada com sucesso",
+          description: "Comunicaç��o criada com sucesso",
         });
       }
       await loadRows();
@@ -877,7 +877,7 @@ export default function ComunicacoesModule() {
         open={sendModalOpen}
         onOpenChange={(o) => !sendLoading && setSendModalOpen(o)}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-3xl h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
               Enviar Email
@@ -885,7 +885,8 @@ export default function ComunicacoesModule() {
           </DialogHeader>
 
           <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
-            Confira os destinatários, assunto e mensagem antes de enviar. O envio marcará a comunicação como "Enviado".
+            <p>Confira os Destinatários, Assunto e Mensagem antes de enviar o email.</p>
+            <p>Após o envio será trocado o status para Enviado.</p>
           </div>
 
           <div className="bg-white p-4 rounded-lg border space-y-4">
