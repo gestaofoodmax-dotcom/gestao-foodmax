@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertTriangle, FileText, Save, X, DollarSign } from "lucide-react";
+import { AlertTriangle, FileText, Save, X, DollarSign, Calendar as CalendarIcon } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Estabelecimento } from "@shared/estabelecimentos";
