@@ -438,6 +438,7 @@ export default function FinanceiroModule() {
 
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [showBulkDelete, setShowBulkDelete] = useState(false);
 
   const handleDeleteConfirmed = async () => {
     if (!currentItem) return;
@@ -460,7 +461,7 @@ export default function FinanceiroModule() {
       writeLocal(list);
       setTransacoes(list);
       toast({
-        title: "Transação excluída",
+        title: "Transa��ão excluída",
         description: "Excluída localmente",
       });
       setSelectedIds([]);
