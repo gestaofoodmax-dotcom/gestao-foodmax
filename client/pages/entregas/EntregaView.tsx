@@ -22,6 +22,7 @@ import {
   Edit,
   X,
   Bike,
+  Motorcycle,
   FileText,
   DollarSign,
   Users,
