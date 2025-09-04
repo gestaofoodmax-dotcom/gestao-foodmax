@@ -157,6 +157,17 @@ export default function ComunicacaoForm({
   }, [isOpen, watched.estabelecimento_id]);
 
   useEffect(() => {
+    if (!isOpen) return;
+    if (comunicacao) return;
+    if (estabelecimentos.length === 0) return;
+    if (watched.estabelecimento_id != null) return;
+    const lastActive = [...estabelecimentos].sort((a,b)=> (a.data_cadastro < b.data_cadastro ? 1 : -1)).find(e=> e.ativo);
+    if (lastActive) {
+      setValue('estabelecimento_id', lastActive.id, { shouldDirty: false, shouldValidate: true });
+    }
+  }, [isOpen, comunicacao, estabelecimentos, watched.estabelecimento_id, setValue]);
+
+  useEffect(() => {
     if (isOpen) {
       if (comunicacao) {
         reset({
