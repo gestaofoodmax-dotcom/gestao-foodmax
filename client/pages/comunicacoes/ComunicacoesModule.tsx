@@ -448,14 +448,14 @@ export default function ComunicacoesModule() {
 
             <DataGrid
               columns={gridColumns}
-              data={rows}
+              data={filteredRows}
               loading={loading}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
               searchTerm={searchTerm}
               currentPage={currentPage}
               pageSize={pageSize}
-              totalRecords={rows.length}
+              totalRecords={filteredRows.length}
               onPageChange={setCurrentPage}
               showActions={false}
             />
