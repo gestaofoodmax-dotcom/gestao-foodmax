@@ -380,11 +380,20 @@ export default function FinanceiroModule() {
     setFormLoading(true);
     const toISO = (s: any): string | null => {
       if (!s) return null;
-      if (typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s)) {
-        return new Date(`${s}T00:00:00.000Z`).toISOString();
+      if (typeof s === "string") {
+        const t = s.trim();
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(t)) {
+          const [dd, mm, yyyy] = t.split("/");
+          return `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(t)) {
+          const [yyyy, mm, dd] = t.split("-");
+          return `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+        }
       }
       const d = new Date(s);
-      return isNaN(d.getTime()) ? null : d.toISOString();
+      if (!isNaN(d.getTime())) return `${d.toISOString().slice(0,10)}T00:00:00-03:00`;
+      return null;
     };
     const payload = {
       estabelecimento_id: Number(data.estabelecimento_id),
