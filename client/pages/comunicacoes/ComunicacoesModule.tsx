@@ -405,9 +405,11 @@ export default function ComunicacoesModule() {
                       <Trash2 className="w-4 h-4 mr-2" /> Excluir Selecionados ({selectedIds.length})
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" onClick={handleBulkSend}>
-                    <Send className="w-4 h-4 mr-2" /> Enviar para Selecionados ({selectedIds.length || 0})
-                  </Button>
+                  {selectedIds.length > 0 && (
+                    <Button size="sm" onClick={handleBulkSend} className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Send className="w-4 h-4 mr-2" /> Enviar para Selecionados ({selectedIds.length})
+                    </Button>
+                  )}
                   <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
                     <Upload className="w-4 h-4 mr-2" /> Importar
                   </Button>
