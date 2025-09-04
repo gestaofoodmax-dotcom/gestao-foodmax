@@ -15,6 +15,7 @@ import {
   ChevronUp,
   LogOut,
   Bike,
+  Motorcycle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toTitleCase } from "@/lib/utils";
