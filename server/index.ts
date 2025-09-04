@@ -100,6 +100,15 @@ import {
   registrarEntregue,
   importEntregasFull,
 } from "./routes/entregas";
+import {
+  listTransacoes,
+  getTransacao,
+  createTransacao,
+  updateTransacao,
+  deleteTransacao,
+  bulkDeleteTransacoes,
+  toggleTransacaoStatus,
+} from "./routes/financeiro";
 
 export function createServer() {
   const app = express();
