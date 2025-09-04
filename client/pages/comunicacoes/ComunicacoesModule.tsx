@@ -214,6 +214,7 @@ export default function ComunicacoesModule() {
   };
 
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [showBulkDelete, setShowBulkDelete] = useState(false);
   const handleDeleteConfirmed = async () => {
     if (!current) return;
     try {
