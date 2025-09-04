@@ -401,15 +401,35 @@ export default function ComunicacoesModule() {
                 </div>
                 <div className="flex items-center gap-2 w-full md:w-auto md:ml-auto flex-wrap">
                   {selectedIds.length > 0 && (
-                    <>
-                      <Button variant="outline" size="sm" onClick={handleBulkSend}>
-                        <Send className="w-4 h-4 mr-2" /> Enviar para Selecionados ({selectedIds.length})
-                      </Button>
-                      <Button variant="destructive" size="sm" onClick={() => setShowBulkDelete(true)}>
-                        <Trash2 className="w-4 h-4 mr-2" /> Excluir Selecionados ({selectedIds.length})
-                      </Button>
-                    </>
+                    <Button variant="destructive" size="sm" onClick={() => setShowBulkDelete(true)}>
+                      <Trash2 className="w-4 h-4 mr-2" /> Excluir Selecionados ({selectedIds.length})
+                    </Button>
                   )}
+                  <Button variant="outline" size="sm" onClick={handleBulkSend}>
+                    <Send className="w-4 h-4 mr-2" /> Enviar para Selecionados ({selectedIds.length || 0})
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
+                    <Upload className="w-4 h-4 mr-2" /> Importar
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    const data = (filteredRows || rows).map((r) => ({
+                      estabelecimento: estabelecimentosMap.get(r.estabelecimento_id) || r.estabelecimento_id,
+                      tipo_comunicacao: r.tipo_comunicacao,
+                      assunto: r.assunto,
+                      mensagem: r.mensagem,
+                      destinatarios_tipo: r.destinatarios_tipo,
+                      clientes_ids: (r.clientes_ids || []).join(','),
+                      fornecedores_ids: (r.fornecedores_ids || []).join(','),
+                      destinatarios_text: r.destinatarios_text || '',
+                      status: r.status,
+                      data_envio: r.data_envio ? new Date(r.data_envio).toLocaleString('pt-BR') : '',
+                      data_cadastro: new Date(r.data_cadastro).toLocaleString('pt-BR'),
+                    }));
+                    setExportData(data);
+                    setShowExport(true);
+                  }}>
+                    <Download className="w-4 h-4 mr-2" /> Exportar
+                  </Button>
                   <Button onClick={handleNew} className="bg-foodmax-orange text-white hover:bg-orange-600">
                     <Plus className="w-4 h-4 mr-2" /> Novo
                   </Button>
