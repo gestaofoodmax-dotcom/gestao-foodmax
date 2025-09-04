@@ -220,7 +220,10 @@ export default function EntregasModule() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleDelete(r)}
+              onClick={() => {
+                setEntregaToDelete(r);
+                setShowDeleteAlert(true);
+              }}
               className="h-8 w-8 p-0 rounded-full border bg-red-50 hover:bg-red-100 border-red-200"
               title="Excluir"
             >
