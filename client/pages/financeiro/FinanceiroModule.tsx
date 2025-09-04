@@ -120,7 +120,9 @@ export default function FinanceiroModule() {
         label: "Data Transação",
         sortable: true,
         render: (v: string | null) =>
-          v ? new Date(v).toLocaleDateString("pt-BR") : "-",
+          v
+            ? new Date(v).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
+            : "-",
       },
       {
         key: "tipo",
