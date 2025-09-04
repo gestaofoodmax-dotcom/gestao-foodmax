@@ -20,6 +20,7 @@ import MinhaConta from "./pages/MinhaConta";
 import PagamentoPlano from "./pages/PagamentoPlano";
 import RenovarPlano from "./pages/RenovarPlano";
 import EntregasModule from "./pages/entregas/EntregasModule";
+import FinanceiroModule from "./pages/financeiro/FinanceiroModule";
 
 export default function App() {
   return (
