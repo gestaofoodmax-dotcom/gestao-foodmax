@@ -18,6 +18,7 @@ import {
   CheckCircle2,
   Send,
   Mail,
+  X,
   Download,
   Upload,
 } from "lucide-react";
@@ -1131,12 +1132,12 @@ export default function AbastecimentosModule() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-2">
-              <Mail className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-green-600">Email</h3>
-            </div>
+          <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
+            <p>Confira os Destinatários, Assunto e Mensagem antes de enviar o email.</p>
+            <p>Após o envio será trocado o status para Enviado.</p>
+          </div>
 
+          <div className="bg-white p-4 rounded-lg border">
             {emailLoading ? (
               <div className="flex items-center justify-center py-8">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-foodmax-orange mr-2"></div>
@@ -1144,6 +1145,10 @@ export default function AbastecimentosModule() {
               </div>
             ) : (
               <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Mail className="w-5 h-5 text-green-600" />
+                  <h3 className="font-semibold text-green-600">Pedido de Compra</h3>
+                </div>
                 <div>
                   <Label>Destinatários</Label>
                   <Input
@@ -1206,7 +1211,8 @@ export default function AbastecimentosModule() {
               variant="outline"
               onClick={() => setShowEmailModal(false)}
               disabled={emailSending || emailLoading}
-            >
+>
+              <X className="w-4 h-4 mr-2" />
               Cancelar
             </Button>
             <Button
@@ -1278,7 +1284,8 @@ export default function AbastecimentosModule() {
                   setEmailSending(false);
                 }
               }}
-            >
+>
+              <Send className="w-4 h-4 mr-2" />
               Enviar Email
             </Button>
           </DialogFooter>
