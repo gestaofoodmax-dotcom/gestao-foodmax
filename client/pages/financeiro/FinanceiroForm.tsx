@@ -137,6 +137,7 @@ export default function FinanceiroForm({
           ativo: true,
         } as any);
         setValorMask("");
+        setSelectedDate(undefined);
       }
     }
   }, [isOpen, item, reset, estabelecimentos]);
