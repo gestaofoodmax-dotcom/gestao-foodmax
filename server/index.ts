@@ -109,6 +109,16 @@ import {
   bulkDeleteTransacoes,
   toggleTransacaoStatus,
 } from "./routes/financeiro";
+import {
+  listComunicacoes,
+  getComunicacao,
+  createComunicacao,
+  updateComunicacao,
+  deleteComunicacao,
+  bulkDeleteComunicacoes,
+  sendComunicacao,
+  sendComunicacoesBulk,
+} from "./routes/comunicacoes";
 
 export function createServer() {
   const app = express();
