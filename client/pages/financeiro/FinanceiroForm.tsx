@@ -307,13 +307,31 @@ export default function FinanceiroForm({
                 <Label htmlFor="data" className="text-sm font-medium">
                   Data da Transação *
                 </Label>
-                <Input
-                  id="data"
-                  type="date"
-                  placeholder="dd/mm/aaaa"
-                  {...register("data_transacao")}
-                  className={`foodmax-input ${errors.data_transacao ? "border-red-500" : ""}`}
-                />
+                <input type="hidden" {...register("data_transacao")} />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <UIButton
+                      variant="outline"
+                      className={`w-full justify-start text-left font-normal foodmax-input ${errors.data_transacao ? "border-red-500" : ""}`}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {selectedDate ? formatDateBR(selectedDate) : "dd/mm/aaaa"}
+                    </UIButton>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={(date) => {
+                        setSelectedDate(date || undefined);
+                        const formatted = date ? formatDateBR(date) : "";
+                        setValue("data_transacao", formatted, { shouldDirty: true });
+                      }}
+                      initialFocus
+                      locale={ptBR}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="md:col-span-2">
                 <Label htmlFor="descricao" className="text-sm font-medium">
