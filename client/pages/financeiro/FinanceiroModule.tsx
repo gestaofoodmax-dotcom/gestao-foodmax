@@ -405,7 +405,7 @@ export default function FinanceiroModule() {
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
                 <div className="flex items-center gap-6">
-                  {[{k:"todos",label:"Todos"},{k:"receitas",label:"Receitas"},{k:"despesas",label:"Despesas"}] as const].map((t) => (
+                  {[{ k: "todos", label: "Todos" }, { k: "receitas", label: "Receitas" }, { k: "despesas", label: "Despesas" }].map((t) => (
                     <button
                       key={t.k}
                       className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${activeTab === t.k ? "text-foodmax-orange" : "text-gray-700 hover:text-gray-900"}`}
