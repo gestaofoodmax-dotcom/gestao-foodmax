@@ -190,7 +190,15 @@ export default function FinanceiroForm({
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+          </div>
 
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <DollarSign className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Transação</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="valor" className="text-sm font-medium">Valor (R$) *</Label>
                 <Input
@@ -205,12 +213,10 @@ export default function FinanceiroForm({
                   placeholder=""
                 />
               </div>
-
               <div>
                 <Label htmlFor="data" className="text-sm font-medium">Data da Transação</Label>
                 <Input id="data" type="date" {...register("data_transacao")} className="foodmax-input" />
               </div>
-
               <div className="md:col-span-2">
                 <Label htmlFor="descricao" className="text-sm font-medium">Descrição</Label>
                 <Textarea id="descricao" {...register("descricao")} className="foodmax-input min-h-[100px]" placeholder="Descrição opcional" />
