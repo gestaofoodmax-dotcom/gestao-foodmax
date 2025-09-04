@@ -22,7 +22,6 @@ import {
   TIPOS_ENTREGA,
   FORMAS_PAGAMENTO_ENTREGA,
   STATUS_ENTREGA,
-  parseCurrencyToCentavos,
   formatCurrencyBRL,
 } from "@shared/entregas";
 import { Estabelecimento } from "@shared/estabelecimentos";
@@ -226,6 +225,12 @@ export default function EntregaForm({
   const [valorPedidoMask, setValorPedidoMask] = useState<string>("");
   const [taxaExtraMask, setTaxaExtraMask] = useState<string>("");
   const [valorEntregaMask, setValorEntregaMask] = useState<string>("");
+
+  // Parser identical to ItemForm: keep only digits and interpret as centavos
+  const parseCurrencyDigitsToCentavos = (val: string) => {
+    const digits = String(val || "").replace(/[^0-9]/g, "");
+    return digits ? parseInt(digits, 10) : 0;
+  };
 
   useEffect(() => {
     if (entrega) {
@@ -565,7 +570,7 @@ export default function EntregaForm({
                 <Input
                   value={valorPedidoMask}
                   onChange={(e) => {
-                    const cents = parseCurrencyToCentavos(e.target.value);
+                    const cents = parseCurrencyDigitsToCentavos(e.target.value);
                     setValorPedidoMask(e.target.value === "" ? "" : formatCurrencyBRL(cents));
                     setValue("valor_pedido", cents, { shouldDirty: true });
                   }}
@@ -578,7 +583,7 @@ export default function EntregaForm({
                 <Input
                   value={taxaExtraMask}
                   onChange={(e) => {
-                    const cents = parseCurrencyToCentavos(e.target.value);
+                    const cents = parseCurrencyDigitsToCentavos(e.target.value);
                     setTaxaExtraMask(e.target.value === "" ? "" : formatCurrencyBRL(cents));
                     setValue("taxa_extra", cents, { shouldDirty: true });
                   }}
@@ -591,7 +596,7 @@ export default function EntregaForm({
                 <Input
                   value={valorEntregaMask}
                   onChange={(e) => {
-                    const cents = parseCurrencyToCentavos(e.target.value);
+                    const cents = parseCurrencyDigitsToCentavos(e.target.value);
                     setValorEntregaMask(e.target.value === "" ? "" : formatCurrencyBRL(cents));
                     setValue("valor_entrega", cents, { shouldDirty: true });
                   }}
