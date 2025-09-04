@@ -49,6 +49,9 @@ export default function ComunicacoesModule() {
   const [activeStatus, setActiveStatus] = useState<StatusComunicacao | "Todos">("Todos");
   const [estabelecimentos, setEstabelecimentos] = useState<Estabelecimento[]>([]);
   const [estabelecimentoFilter, setEstabelecimentoFilter] = useState<string>("todos");
+  const [showExport, setShowExport] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [exportData, setExportData] = useState<any[]>([]);
 
   const [rows, setRows] = useState<Comunicacao[]>([]);
   const [loading, setLoading] = useState(false);
