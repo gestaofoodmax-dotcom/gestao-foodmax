@@ -40,7 +40,7 @@ const schema = z.object({
   }),
   categoria: z.string().min(1, "Categoria é obrigatória"),
   valor: z.number().int().min(0, "Valor deve ser >= 0"),
-  data_transacao: z.string().optional().or(z.literal("")).or(z.null()),
+  data_transacao: z.string().min(1, "Data da Transação é obrigatória"),
   descricao: z.string().optional(),
   ativo: z.boolean().default(true),
 });
