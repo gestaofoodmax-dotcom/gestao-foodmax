@@ -76,6 +76,7 @@ export default function FinanceiroModule() {
   });
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [exportData, setExportData] = useState<any[]>([]);
 
   const LOCAL_KEY = "fm_financeiro";
   const readLocal = (): FinanceiroTransacao[] => {
