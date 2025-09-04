@@ -304,7 +304,9 @@ export default function FinanceiroForm({
                   placeholder="dd/mm/aaaa"
                   {...register("data_transacao")}
                   onChange={(e) => {
-                    const raw = e.target.value.replace(/[^0-9]/g, "").slice(0, 8);
+                    const raw = e.target.value
+                      .replace(/[^0-9]/g, "")
+                      .slice(0, 8);
                     const dd = raw.slice(0, 2);
                     const mm = raw.slice(2, 4);
                     const yyyy = raw.slice(4, 8);

@@ -313,17 +313,25 @@ export default function FinanceiroModule() {
     const fetchAllForExport = async () => {
       try {
         const params = new URLSearchParams({ page: "1", limit: "10000" });
-        if (activeTab !== "todos") params.set("tipo", activeTab === "receitas" ? "Receita" : "Despesa");
-        if (selectedEstabelecimento !== "all") params.set("estabelecimento_id", selectedEstabelecimento);
+        if (activeTab !== "todos")
+          params.set("tipo", activeTab === "receitas" ? "Receita" : "Despesa");
+        if (selectedEstabelecimento !== "all")
+          params.set("estabelecimento_id", selectedEstabelecimento);
         if (period) params.set("period", period);
         if (searchTerm) params.set("search", searchTerm);
-        const res: FinanceiroListResponse = await makeRequest(`/api/financeiro?${params}`);
+        const res: FinanceiroListResponse = await makeRequest(
+          `/api/financeiro?${params}`,
+        );
         const mapped = (res.data || []).map((t) => ({
-          estabelecimento_nome: estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome || "",
+          estabelecimento_nome:
+            estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome ||
+            "",
           tipo: t.tipo,
           categoria: t.categoria,
           valor: (t.valor / 100).toFixed(2),
-          data_transacao: t.data_transacao ? new Date(t.data_transacao).toISOString().split("T")[0] : "",
+          data_transacao: t.data_transacao
+            ? new Date(t.data_transacao).toISOString().split("T")[0]
+            : "",
           descricao: t.descricao || "",
           ativo: t.ativo ? "Ativo" : "Inativo",
           data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
@@ -332,11 +340,15 @@ export default function FinanceiroModule() {
       } catch {
         const local = readLocal();
         const mapped = local.map((t) => ({
-          estabelecimento_nome: estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome || "",
+          estabelecimento_nome:
+            estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome ||
+            "",
           tipo: t.tipo,
           categoria: t.categoria,
           valor: (t.valor / 100).toFixed(2),
-          data_transacao: t.data_transacao ? new Date(t.data_transacao).toISOString().split("T")[0] : "",
+          data_transacao: t.data_transacao
+            ? new Date(t.data_transacao).toISOString().split("T")[0]
+            : "",
           descricao: t.descricao || "",
           ativo: t.ativo ? "Ativo" : "Inativo",
           data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
@@ -346,7 +358,15 @@ export default function FinanceiroModule() {
     };
     if (showExport) fetchAllForExport();
     else setExportData([]);
-  }, [showExport, activeTab, selectedEstabelecimento, period, searchTerm, estabelecimentos, makeRequest]);
+  }, [
+    showExport,
+    activeTab,
+    selectedEstabelecimento,
+    period,
+    searchTerm,
+    estabelecimentos,
+    makeRequest,
+  ]);
 
   const [showForm, setShowForm] = useState(false);
   const [showView, setShowView] = useState(false);
@@ -392,7 +412,8 @@ export default function FinanceiroModule() {
         }
       }
       const d = new Date(s);
-      if (!isNaN(d.getTime())) return `${d.toISOString().slice(0,10)}T00:00:00-03:00`;
+      if (!isNaN(d.getTime()))
+        return `${d.toISOString().slice(0, 10)}T00:00:00-03:00`;
       return null;
     };
     const payload = {
@@ -810,19 +831,26 @@ export default function FinanceiroModule() {
       <ExportModal
         isOpen={showExport}
         onClose={() => setShowExport(false)}
-        data={(exportData && exportData.length
-          ? exportData
-          : transacoes.map((t) => ({
-              estabelecimento_nome:
-                estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome || "",
-              tipo: t.tipo,
-              categoria: t.categoria,
-              valor: (t.valor / 100).toFixed(2),
-              data_transacao: t.data_transacao ? new Date(t.data_transacao).toISOString().split("T")[0] : "",
-              descricao: t.descricao || "",
-              ativo: t.ativo ? "Ativo" : "Inativo",
-              data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
-            })))}
+        data={
+          exportData && exportData.length
+            ? exportData
+            : transacoes.map((t) => ({
+                estabelecimento_nome:
+                  estabelecimentos.find((e) => e.id === t.estabelecimento_id)
+                    ?.nome || "",
+                tipo: t.tipo,
+                categoria: t.categoria,
+                valor: (t.valor / 100).toFixed(2),
+                data_transacao: t.data_transacao
+                  ? new Date(t.data_transacao).toISOString().split("T")[0]
+                  : "",
+                descricao: t.descricao || "",
+                ativo: t.ativo ? "Ativo" : "Inativo",
+                data_cadastro: new Date(t.data_cadastro)
+                  .toISOString()
+                  .split("T")[0],
+              }))
+        }
         selectedIds={selectedIds}
         moduleName={"Financeiro"}
         columns={[
@@ -844,7 +872,11 @@ export default function FinanceiroModule() {
         userRole={getUserRole()}
         hasPayment={hasPayment()}
         columns={[
-          { key: "estabelecimento_nome", label: "Estabelecimento", required: true },
+          {
+            key: "estabelecimento_nome",
+            label: "Estabelecimento",
+            required: true,
+          },
           { key: "tipo", label: "Tipo", required: true },
           { key: "categoria", label: "Categoria", required: true },
           { key: "valor", label: "Valor", required: true },
@@ -917,9 +949,12 @@ export default function FinanceiroModule() {
                   categoria: String(r.categoria || "Outros").trim() || "Outros",
                   valor: parseCentavos(r.valor),
                   data_transacao: ((): string | null => {
-                    const s = r.data_transacao ? String(r.data_transacao).trim() : "";
+                    const s = r.data_transacao
+                      ? String(r.data_transacao).trim()
+                      : "";
                     if (!s) return null;
-                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) =>
+                      `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
                     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
                       const [dd, mm, yyyy] = s.split("/");
                       return toISOBr(yyyy, mm, dd);
@@ -929,7 +964,8 @@ export default function FinanceiroModule() {
                       return toISOBr(yyyy, mm, dd);
                     }
                     const dt = new Date(s);
-                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0,10)}T00:00:00-03:00`;
+                    if (!isNaN(dt.getTime()))
+                      return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
                     return null;
                   })(),
                   descricao: r.descricao ? String(r.descricao) : "",
@@ -963,7 +999,8 @@ export default function FinanceiroModule() {
                     const v = (r as any).data_transacao;
                     const s = v ? String(v).trim() : "";
                     if (!s) return null;
-                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) =>
+                      `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
                     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
                       const [dd, mm, yyyy] = s.split("/");
                       return toISOBr(yyyy, mm, dd);
@@ -973,7 +1010,8 @@ export default function FinanceiroModule() {
                       return toISOBr(yyyy, mm, dd);
                     }
                     const dt = new Date(s);
-                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0,10)}T00:00:00-03:00`;
+                    if (!isNaN(dt.getTime()))
+                      return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
                     return null;
                   })(),
                   descricao: (r as any).descricao || "",
