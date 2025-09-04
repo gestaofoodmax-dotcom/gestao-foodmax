@@ -14,16 +14,30 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { AlertTriangle, FileText, Save, X, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Estabelecimento } from "@shared/estabelecimentos";
-import { FinanceiroTransacao, FINANCEIRO_CATEGORIAS, TipoTransacao } from "@shared/financeiro";
+import {
+  FinanceiroTransacao,
+  FINANCEIRO_CATEGORIAS,
+  TipoTransacao,
+} from "@shared/financeiro";
 
 const schema = z.object({
-  estabelecimento_id: z.number({ invalid_type_error: "Estabelecimento é obrigatório" }),
-  tipo: z.enum(["Receita", "Despesa"], { required_error: "Tipo é obrigatório" }),
+  estabelecimento_id: z.number({
+    invalid_type_error: "Estabelecimento é obrigatório",
+  }),
+  tipo: z.enum(["Receita", "Despesa"], {
+    required_error: "Tipo é obrigatório",
+  }),
   categoria: z.string().min(1, "Categoria é obrigatória"),
   valor: z.number().int().min(0, "Valor deve ser >= 0"),
   data_transacao: z.string().optional().or(z.literal("")).or(z.null()),
@@ -50,7 +64,14 @@ export default function FinanceiroForm({
 }) {
   const isEditing = !!item;
 
-  const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<any>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<any>({
     resolver: zodResolver(schema),
     defaultValues: {
       estabelecimento_id: undefined as unknown as number,
@@ -86,7 +107,9 @@ export default function FinanceiroForm({
           tipo: item.tipo,
           categoria: item.categoria,
           valor: item.valor,
-          data_transacao: item.data_transacao ? item.data_transacao.split("T")[0] : "",
+          data_transacao: item.data_transacao
+            ? item.data_transacao.split("T")[0]
+            : "",
           descricao: item.descricao || "",
           ativo: item.ativo,
         });
@@ -95,7 +118,9 @@ export default function FinanceiroForm({
         // Default estabelecimento: último cadastrado ativo
         const lastActive = estabelecimentos.find((e) => e.ativo);
         reset({
-          estabelecimento_id: lastActive ? lastActive.id : (undefined as unknown as number),
+          estabelecimento_id: lastActive
+            ? lastActive.id
+            : (undefined as unknown as number),
           tipo: undefined as unknown as TipoTransacao,
           categoria: "",
           valor: 0,
@@ -117,15 +142,29 @@ export default function FinanceiroForm({
     };
     const labels = Object.keys(formErrors).map((k) => labelsMap[k] || k);
     if (labels.length > 0) {
-      toast({ title: "Preencha os campos obrigatórios", description: labels.join(", "), variant: "destructive" });
+      toast({
+        title: "Preencha os campos obrigatórios",
+        description: labels.join(", "),
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="w-[85vw] h-[90vh] max-w-none overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
+      <DialogContent
+        className="w-[85vw] h-[90vh] max-w-none overflow-y-auto"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl font-normal py-2">{isEditing ? "Editar Transação" : "Nova Transação"}</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
+            {isEditing ? "Editar Transação" : "Nova Transação"}
+          </DialogTitle>
         </DialogHeader>
 
         {estabelecimentos.length === 0 && (
@@ -133,14 +172,26 @@ export default function FinanceiroForm({
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-4 h-4" />
               <p>
-                Antes de cadastrar, é necessário ter pelo menos um Estabelecimento. {""}
-                <Link to="/estabelecimentos" className="underline text-yellow-900">Ir para Estabelecimentos</Link>
+                Antes de cadastrar, é necessário ter pelo menos um
+                Estabelecimento. {""}
+                <Link
+                  to="/estabelecimentos"
+                  className="underline text-yellow-900"
+                >
+                  Ir para Estabelecimentos
+                </Link>
               </p>
             </div>
           </div>
         )}
 
-        <form onSubmit={handleSubmit(async (d) => { await onSave(d); onClose(); }, onInvalid)} className="space-y-6">
+        <form
+          onSubmit={handleSubmit(async (d) => {
+            await onSave(d);
+            onClose();
+          }, onInvalid)}
+          className="space-y-6"
+        >
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
               <FileText className="w-5 h-5 text-blue-600" />
@@ -149,25 +200,43 @@ export default function FinanceiroForm({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label className="text-sm font-medium">Estabelecimento *</Label>
-                <Select value={watchedEstId ? String(watchedEstId) : undefined} onValueChange={(v) => setValue("estabelecimento_id", Number(v))}>
-                  <SelectTrigger className={`foodmax-input ${errors.estabelecimento_id ? "border-red-500" : ""}`}>
+                <Select
+                  value={watchedEstId ? String(watchedEstId) : undefined}
+                  onValueChange={(v) =>
+                    setValue("estabelecimento_id", Number(v))
+                  }
+                >
+                  <SelectTrigger
+                    className={`foodmax-input ${errors.estabelecimento_id ? "border-red-500" : ""}`}
+                  >
                     <SelectValue placeholder="Selecione o estabelecimento" />
                   </SelectTrigger>
                   <SelectContent>
                     {estabelecimentos
                       .slice()
-                      .sort((a, b) => (a.data_cadastro < b.data_cadastro ? 1 : -1))
+                      .sort((a, b) =>
+                        a.data_cadastro < b.data_cadastro ? 1 : -1,
+                      )
                       .map((e) => (
-                        <SelectItem key={e.id} value={String(e.id)}>{e.nome}</SelectItem>
+                        <SelectItem key={e.id} value={String(e.id)}>
+                          {e.nome}
+                        </SelectItem>
                       ))}
                   </SelectContent>
                 </Select>
               </div>
 
               <div>
-                <Label className="text-sm font-medium">Tipo de Transação *</Label>
-                <Select value={watchedTipo as any} onValueChange={(v) => setValue("tipo", v as any)}>
-                  <SelectTrigger className={`foodmax-input ${errors.tipo ? "border-red-500" : ""}`}>
+                <Label className="text-sm font-medium">
+                  Tipo de Transação *
+                </Label>
+                <Select
+                  value={watchedTipo as any}
+                  onValueChange={(v) => setValue("tipo", v as any)}
+                >
+                  <SelectTrigger
+                    className={`foodmax-input ${errors.tipo ? "border-red-500" : ""}`}
+                  >
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
@@ -179,13 +248,20 @@ export default function FinanceiroForm({
 
               <div>
                 <Label className="text-sm font-medium">Categoria *</Label>
-                <Select value={watch("categoria") as any} onValueChange={(v) => setValue("categoria", v)}>
-                  <SelectTrigger className={`foodmax-input ${errors.categoria ? "border-red-500" : ""}`}>
+                <Select
+                  value={watch("categoria") as any}
+                  onValueChange={(v) => setValue("categoria", v)}
+                >
+                  <SelectTrigger
+                    className={`foodmax-input ${errors.categoria ? "border-red-500" : ""}`}
+                  >
                     <SelectValue placeholder="Selecione a categoria" />
                   </SelectTrigger>
                   <SelectContent>
                     {FINANCEIRO_CATEGORIAS.map((c) => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -200,13 +276,17 @@ export default function FinanceiroForm({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="valor" className="text-sm font-medium">Valor (R$) *</Label>
+                <Label htmlFor="valor" className="text-sm font-medium">
+                  Valor (R$) *
+                </Label>
                 <Input
                   id="valor"
                   value={valorMask}
                   onChange={(e) => {
                     const cents = parseCurrencyToCentavos(e.target.value);
-                    setValorMask(e.target.value === "" ? "" : formatInputCurrency(cents));
+                    setValorMask(
+                      e.target.value === "" ? "" : formatInputCurrency(cents),
+                    );
                     setValue("valor", cents);
                   }}
                   className={`foodmax-input ${errors.valor ? "border-red-500" : ""}`}
@@ -214,32 +294,65 @@ export default function FinanceiroForm({
                 />
               </div>
               <div>
-                <Label htmlFor="data" className="text-sm font-medium">Data da Transação</Label>
-                <Input id="data" type="date" {...register("data_transacao")} className="foodmax-input" />
+                <Label htmlFor="data" className="text-sm font-medium">
+                  Data da Transação
+                </Label>
+                <Input
+                  id="data"
+                  type="date"
+                  {...register("data_transacao")}
+                  className="foodmax-input"
+                />
               </div>
               <div className="md:col-span-2">
-                <Label htmlFor="descricao" className="text-sm font-medium">Descrição</Label>
-                <Textarea id="descricao" {...register("descricao")} className="foodmax-input min-h-[100px]" placeholder="Descrição opcional" />
+                <Label htmlFor="descricao" className="text-sm font-medium">
+                  Descrição
+                </Label>
+                <Textarea
+                  id="descricao"
+                  {...register("descricao")}
+                  className="foodmax-input min-h-[100px]"
+                  placeholder="Descrição opcional"
+                />
               </div>
             </div>
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-3">
-              <Switch id="ativo" checked={watchedAtivo} onCheckedChange={(c) => setValue("ativo", c)} />
+              <Switch
+                id="ativo"
+                checked={watchedAtivo}
+                onCheckedChange={(c) => setValue("ativo", c)}
+              />
               <div>
-                <Label htmlFor="ativo" className="text-sm font-medium">Ativo</Label>
-                <p className="text-sm text-gray-600">{watchedAtivo ? "Sim" : "Não"}</p>
+                <Label htmlFor="ativo" className="text-sm font-medium">
+                  Ativo
+                </Label>
+                <p className="text-sm text-gray-600">
+                  {watchedAtivo ? "Sim" : "Não"}
+                </p>
               </div>
             </div>
           </div>
 
           <DialogFooter className="flex-row gap-2 sm:gap-0">
-            <Button type="button" variant="outline" onClick={onClose} disabled={isLoading} className="flex-1 sm:flex-none">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1 sm:flex-none"
+            >
               <X className="w-4 h-4 mr-2" />
               Cancelar
             </Button>
-            <Button type="submit" disabled={isLoading} variant="orange" className="flex-1 sm:flex-none">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              variant="orange"
+              className="flex-1 sm:flex-none"
+            >
               <Save className="w-4 h-4 mr-2" />
               Salvar
             </Button>

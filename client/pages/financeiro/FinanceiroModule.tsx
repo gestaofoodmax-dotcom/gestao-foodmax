@@ -7,13 +7,38 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DataGrid } from "@/components/data-grid";
 import { toast } from "@/hooks/use-toast";
-import { FINANCEIRO_CATEGORIAS, FinanceiroTransacao, FinanceiroListResponse, TipoTransacao } from "@shared/financeiro";
+import {
+  FINANCEIRO_CATEGORIAS,
+  FinanceiroTransacao,
+  FinanceiroListResponse,
+  TipoTransacao,
+} from "@shared/financeiro";
 import { Estabelecimento } from "@shared/estabelecimentos";
 import { formatCurrencyBRL } from "@shared/itens";
 import FinanceiroForm from "./FinanceiroForm";
 import FinanceiroView from "./FinanceiroView";
-import { Menu, Search, Plus, Trash2, Eye, Edit, Power, Upload, Download, AlertTriangle, TrendingUp, TrendingDown, Wallet } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Menu,
+  Search,
+  Plus,
+  Trash2,
+  Eye,
+  Edit,
+  Power,
+  Upload,
+  Download,
+  AlertTriangle,
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
 
@@ -23,10 +48,15 @@ export default function FinanceiroModule() {
   const { isLoading, getUserRole, hasPayment } = useAuth();
   const { makeRequest } = useAuthenticatedRequest();
 
-  const [activeTab, setActiveTab] = useState<"todos" | "receitas" | "despesas">("todos");
+  const [activeTab, setActiveTab] = useState<"todos" | "receitas" | "despesas">(
+    "todos",
+  );
 
-  const [estabelecimentos, setEstabelecimentos] = useState<Estabelecimento[]>([]);
-  const [selectedEstabelecimento, setSelectedEstabelecimento] = useState<string>("all");
+  const [estabelecimentos, setEstabelecimentos] = useState<Estabelecimento[]>(
+    [],
+  );
+  const [selectedEstabelecimento, setSelectedEstabelecimento] =
+    useState<string>("all");
   const [period, setPeriod] = useState<string>("all");
 
   const [transacoes, setTransacoes] = useState<FinanceiroTransacao[]>([]);
@@ -35,111 +65,145 @@ export default function FinanceiroModule() {
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
   const [totalRecords, setTotalRecords] = useState(0);
-  const [totals, setTotals] = useState({ totalReceitas: 0, totalDespesas: 0, saldoLiquido: 0 });
+  const [totals, setTotals] = useState({
+    totalReceitas: 0,
+    totalDespesas: 0,
+    saldoLiquido: 0,
+  });
   const [showExport, setShowExport] = useState(false);
   const [showImport, setShowImport] = useState(false);
 
   const LOCAL_KEY = "fm_financeiro";
   const readLocal = (): FinanceiroTransacao[] => {
-    try { const raw = localStorage.getItem(LOCAL_KEY); return raw ? JSON.parse(raw) : []; } catch { return []; }
+    try {
+      const raw = localStorage.getItem(LOCAL_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
   };
-  const writeLocal = (list: FinanceiroTransacao[]) => localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
+  const writeLocal = (list: FinanceiroTransacao[]) =>
+    localStorage.setItem(LOCAL_KEY, JSON.stringify(list));
 
-  useEffect(() => { try { localStorage.removeItem(LOCAL_KEY); } catch {} }, []);
+  useEffect(() => {
+    try {
+      localStorage.removeItem(LOCAL_KEY);
+    } catch {}
+  }, []);
 
-  useEffect(() => { setSidebarOpen(!isMobile); }, [isMobile]);
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
 
-  const gridColumns = useMemo(() => [
-    {
-      key: "estabelecimento_nome",
-      label: "Estabelecimento",
-      sortable: true,
-      render: (_: any, r: any) => r.estabelecimento_nome || "-",
-    },
-    { key: "categoria", label: "Categoria", sortable: true },
-    {
-      key: "valor",
-      label: "Valor",
-      sortable: true,
-      render: (v: number) => formatCurrencyBRL(v),
-    },
-    {
-      key: "data_transacao",
-      label: "Data Transação",
-      sortable: true,
-      render: (v: string | null) => (v ? new Date(v).toLocaleDateString("pt-BR") : "-"),
-    },
-    {
-      key: "tipo",
-      label: "Tipo",
-      sortable: true,
-      render: (value: TipoTransacao) => (
-        <Badge className={value === "Receita" ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}>
-          {value}
-        </Badge>
-      ),
-    },
-    {
-      key: "ativo",
-      label: "Status",
-      sortable: true,
-      render: (value: boolean) => (
-        <Badge className={value ? "bg-green-50 text-green-700 border border-green-200" : "bg-red-50 text-red-700 border border-red-200"}>
-          {value ? "Ativo" : "Inativo"}
-        </Badge>
-      ),
-    },
-    {
-      key: "data_cadastro",
-      label: "Data Cadastro",
-      sortable: true,
-      render: (v: string) => new Date(v).toLocaleDateString("pt-BR"),
-    },
-    {
-      key: "acoes",
-      label: "Ações",
-      render: (_: any, r: FinanceiroTransacao) => (
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleToggleStatus(r)}
-            className={`h-8 w-8 p-0 rounded-full border ${r.ativo ? "bg-green-50 hover:bg-green-100 border-green-200" : "bg-gray-50 hover:bg-gray-100 border-gray-200"}`}
-            title={r.ativo ? "Desativar" : "Ativar"}
+  const gridColumns = useMemo(
+    () => [
+      {
+        key: "estabelecimento_nome",
+        label: "Estabelecimento",
+        sortable: true,
+        render: (_: any, r: any) => r.estabelecimento_nome || "-",
+      },
+      { key: "categoria", label: "Categoria", sortable: true },
+      {
+        key: "valor",
+        label: "Valor",
+        sortable: true,
+        render: (v: number) => formatCurrencyBRL(v),
+      },
+      {
+        key: "data_transacao",
+        label: "Data Transação",
+        sortable: true,
+        render: (v: string | null) =>
+          v ? new Date(v).toLocaleDateString("pt-BR") : "-",
+      },
+      {
+        key: "tipo",
+        label: "Tipo",
+        sortable: true,
+        render: (value: TipoTransacao) => (
+          <Badge
+            className={
+              value === "Receita"
+                ? "bg-green-50 text-green-700 border border-green-200"
+                : "bg-red-50 text-red-700 border border-red-200"
+            }
           >
-            <Power className={`w-4 h-4 ${r.ativo ? "text-green-600" : "text-gray-500"}`} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleView(r)}
-            className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
-            title="Visualizar"
+            {value}
+          </Badge>
+        ),
+      },
+      {
+        key: "ativo",
+        label: "Status",
+        sortable: true,
+        render: (value: boolean) => (
+          <Badge
+            className={
+              value
+                ? "bg-green-50 text-green-700 border border-green-200"
+                : "bg-red-50 text-red-700 border border-red-200"
+            }
           >
-            <Eye className="w-4 h-4 text-blue-700" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleEdit(r)}
-            className="h-8 w-8 p-0 rounded-full border bg-yellow-50 hover:bg-yellow-100 border-yellow-200"
-            title="Editar"
-          >
-            <Edit className="w-4 h-4 text-yellow-700" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleDelete(r)}
-            className="h-8 w-8 p-0 rounded-full border bg-red-50 hover:bg-red-100 border-red-200"
-            title="Excluir"
-          >
-            <Trash2 className="w-4 h-4 text-red-700" />
-          </Button>
-        </div>
-      ),
-    },
-  ], [estabelecimentos]);
+            {value ? "Ativo" : "Inativo"}
+          </Badge>
+        ),
+      },
+      {
+        key: "data_cadastro",
+        label: "Data Cadastro",
+        sortable: true,
+        render: (v: string) => new Date(v).toLocaleDateString("pt-BR"),
+      },
+      {
+        key: "acoes",
+        label: "Ações",
+        render: (_: any, r: FinanceiroTransacao) => (
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleToggleStatus(r)}
+              className={`h-8 w-8 p-0 rounded-full border ${r.ativo ? "bg-green-50 hover:bg-green-100 border-green-200" : "bg-gray-50 hover:bg-gray-100 border-gray-200"}`}
+              title={r.ativo ? "Desativar" : "Ativar"}
+            >
+              <Power
+                className={`w-4 h-4 ${r.ativo ? "text-green-600" : "text-gray-500"}`}
+              />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleView(r)}
+              className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
+              title="Visualizar"
+            >
+              <Eye className="w-4 h-4 text-blue-700" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleEdit(r)}
+              className="h-8 w-8 p-0 rounded-full border bg-yellow-50 hover:bg-yellow-100 border-yellow-200"
+              title="Editar"
+            >
+              <Edit className="w-4 h-4 text-yellow-700" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleDelete(r)}
+              className="h-8 w-8 p-0 rounded-full border bg-red-50 hover:bg-red-100 border-red-200"
+              title="Excluir"
+            >
+              <Trash2 className="w-4 h-4 text-red-700" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [estabelecimentos],
+  );
 
   const loadEstabelecimentos = useCallback(async () => {
     try {
@@ -168,8 +232,10 @@ export default function FinanceiroModule() {
         limit: String(pageSize),
         ...(searchTerm && { search: searchTerm }),
       });
-      if (activeTab !== "todos") params.set("tipo", activeTab === "receitas" ? "Receita" : "Despesa");
-      if (selectedEstabelecimento !== "all") params.set("estabelecimento_id", selectedEstabelecimento);
+      if (activeTab !== "todos")
+        params.set("tipo", activeTab === "receitas" ? "Receita" : "Despesa");
+      if (selectedEstabelecimento !== "all")
+        params.set("estabelecimento_id", selectedEstabelecimento);
       if (period) params.set("period", period);
 
       let response: FinanceiroListResponse | null = null;
@@ -185,21 +251,48 @@ export default function FinanceiroModule() {
       } else {
         const local = readLocal();
         const filtered = local.filter((t) => {
-          const byTipo = activeTab === "todos" ? true : t.tipo === (activeTab === "receitas" ? "Receita" : "Despesa");
-          const byEst = selectedEstabelecimento === "all" ? true : t.estabelecimento_id === Number(selectedEstabelecimento);
-          const bySearch = searchTerm ? (t.categoria?.toLowerCase().includes(searchTerm.toLowerCase()) || (t.descricao || "").toLowerCase().includes(searchTerm.toLowerCase())) : true;
+          const byTipo =
+            activeTab === "todos"
+              ? true
+              : t.tipo === (activeTab === "receitas" ? "Receita" : "Despesa");
+          const byEst =
+            selectedEstabelecimento === "all"
+              ? true
+              : t.estabelecimento_id === Number(selectedEstabelecimento);
+          const bySearch = searchTerm
+            ? t.categoria?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              (t.descricao || "")
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase())
+            : true;
           return byTipo && byEst && bySearch;
         });
         setTransacoes(filtered);
         setTotalRecords(filtered.length);
-        const totalReceitas = filtered.filter((f) => f.tipo === "Receita").reduce((s, r) => s + r.valor, 0);
-        const totalDespesas = filtered.filter((f) => f.tipo === "Despesa").reduce((s, r) => s + r.valor, 0);
-        setTotals({ totalReceitas, totalDespesas, saldoLiquido: totalReceitas - totalDespesas });
+        const totalReceitas = filtered
+          .filter((f) => f.tipo === "Receita")
+          .reduce((s, r) => s + r.valor, 0);
+        const totalDespesas = filtered
+          .filter((f) => f.tipo === "Despesa")
+          .reduce((s, r) => s + r.valor, 0);
+        setTotals({
+          totalReceitas,
+          totalDespesas,
+          saldoLiquido: totalReceitas - totalDespesas,
+        });
       }
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize, searchTerm, activeTab, selectedEstabelecimento, period, makeRequest]);
+  }, [
+    currentPage,
+    pageSize,
+    searchTerm,
+    activeTab,
+    selectedEstabelecimento,
+    period,
+    makeRequest,
+  ]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -213,7 +306,9 @@ export default function FinanceiroModule() {
 
   const [showForm, setShowForm] = useState(false);
   const [showView, setShowView] = useState(false);
-  const [currentItem, setCurrentItem] = useState<FinanceiroTransacao | null>(null);
+  const [currentItem, setCurrentItem] = useState<FinanceiroTransacao | null>(
+    null,
+  );
   const [formLoading, setFormLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
@@ -241,13 +336,24 @@ export default function FinanceiroModule() {
     setFormLoading(true);
     try {
       if (isEditing && currentItem) {
-        await makeRequest(`/api/financeiro/${currentItem.id}`, { method: "PUT", body: JSON.stringify(data) });
-        toast({ title: "Transação atualizada", description: "Atualizada com sucesso" });
+        await makeRequest(`/api/financeiro/${currentItem.id}`, {
+          method: "PUT",
+          body: JSON.stringify(data),
+        });
+        toast({
+          title: "Transação atualizada",
+          description: "Atualizada com sucesso",
+        });
       } else {
-        await makeRequest(`/api/financeiro`, { method: "POST", body: JSON.stringify(data) });
+        await makeRequest(`/api/financeiro`, {
+          method: "POST",
+          body: JSON.stringify(data),
+        });
         toast({ title: "Transação criada", description: "Criada com sucesso" });
       }
-      try { localStorage.removeItem(LOCAL_KEY); } catch {}
+      try {
+        localStorage.removeItem(LOCAL_KEY);
+      } catch {}
       await loadTransacoes();
       setShowForm(false);
     } catch {
@@ -255,8 +361,12 @@ export default function FinanceiroModule() {
       const now = new Date().toISOString();
       if (isEditing && currentItem) {
         const idx = list.findIndex((x) => x.id === currentItem.id);
-        if (idx >= 0) list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
-        toast({ title: "Transação atualizada", description: "Atualizada com sucesso" });
+        if (idx >= 0)
+          list[idx] = { ...list[idx], ...data, data_atualizacao: now } as any;
+        toast({
+          title: "Transação atualizada",
+          description: "Atualizada com sucesso",
+        });
       } else {
         const novo: FinanceiroTransacao = {
           id: Date.now(),
@@ -284,8 +394,13 @@ export default function FinanceiroModule() {
 
   const handleToggleStatus = async (t: FinanceiroTransacao) => {
     try {
-      await makeRequest(`/api/financeiro/${t.id}/toggle-status`, { method: "PATCH" });
-      toast({ title: `Transação ${t.ativo ? "desativada" : "ativada"}`, description: "Status atualizado" });
+      await makeRequest(`/api/financeiro/${t.id}/toggle-status`, {
+        method: "PATCH",
+      });
+      toast({
+        title: `Transação ${t.ativo ? "desativada" : "ativada"}`,
+        description: "Status atualizado",
+      });
       loadTransacoes();
     } catch {
       const list = readLocal();
@@ -295,7 +410,10 @@ export default function FinanceiroModule() {
         list[idx].data_atualizacao = new Date().toISOString();
         writeLocal(list);
         setTransacoes(list);
-        toast({ title: "Status atualizado", description: "Atualizado localmente" });
+        toast({
+          title: "Status atualizado",
+          description: "Atualizado localmente",
+        });
       }
     }
   };
@@ -306,9 +424,16 @@ export default function FinanceiroModule() {
   const handleDeleteConfirmed = async () => {
     if (!currentItem) return;
     try {
-      await makeRequest(`/api/financeiro/${currentItem.id}`, { method: "DELETE" });
-      toast({ title: "Transação excluída", description: "Excluída com sucesso" });
-      try { localStorage.removeItem(LOCAL_KEY); } catch {}
+      await makeRequest(`/api/financeiro/${currentItem.id}`, {
+        method: "DELETE",
+      });
+      toast({
+        title: "Transação excluída",
+        description: "Excluída com sucesso",
+      });
+      try {
+        localStorage.removeItem(LOCAL_KEY);
+      } catch {}
       setSelectedIds([]);
       await loadTransacoes();
       setShowDeleteAlert(false);
@@ -316,14 +441,20 @@ export default function FinanceiroModule() {
       const list = readLocal().filter((e) => e.id !== currentItem.id);
       writeLocal(list);
       setTransacoes(list);
-      toast({ title: "Transação excluída", description: "Excluída localmente" });
+      toast({
+        title: "Transação excluída",
+        description: "Excluída localmente",
+      });
       setSelectedIds([]);
       setShowDeleteAlert(false);
     }
   };
 
   const estabOptions = useMemo(() => {
-    const opts = estabelecimentos.map((e) => ({ value: String(e.id), label: e.nome }));
+    const opts = estabelecimentos.map((e) => ({
+      value: String(e.id),
+      label: e.nome,
+    }));
     opts.push({ value: "all", label: "Todos Estabelecimentos" });
     return opts;
   }, [estabelecimentos]);
@@ -340,41 +471,67 @@ export default function FinanceiroModule() {
     <div className="flex h-screen bg-foodmax-gray-bg">
       <Sidebar
         open={sidebarOpen}
-        onToggle={(next) => setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)}
+        onToggle={(next) =>
+          setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)
+        }
       />
 
       <div className="flex-1 flex flex-col">
         <header className="bg-foodmax-gray-bg px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden p-2 mr-3 rounded-lg border bg-white" aria-label="Abrir menu">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="md:hidden p-2 mr-3 rounded-lg border bg-white"
+                aria-label="Abrir menu"
+              >
                 <Menu className="w-5 h-5" />
               </button>
               <div>
-                <h2 className="text-2xl font-semibold text-gray-800">Financeiro</h2>
-                <p className="text-gray-600 mt-1">Gerencie suas receitas e despesas.</p>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Financeiro
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Gerencie suas receitas e despesas.
+                </p>
                 <div className="mt-3 flex flex-col gap-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                     <div className="min-w-[320px] md:min-w-[420px] w-full">
-                      <Select value={selectedEstabelecimento} onValueChange={(v) => { setSelectedEstabelecimento(v); setCurrentPage(1); }}>
+                      <Select
+                        value={selectedEstabelecimento}
+                        onValueChange={(v) => {
+                          setSelectedEstabelecimento(v);
+                          setCurrentPage(1);
+                        }}
+                      >
                         <SelectTrigger className="foodmax-input h-11">
                           <SelectValue placeholder="Selecione o estabelecimento" />
                         </SelectTrigger>
                         <SelectContent>
                           {estabOptions.map((o) => (
-                            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                            <SelectItem key={o.value} value={o.value}>
+                              {o.label}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="min-w-[260px] md:min-w-[340px] w-full">
-                      <Select value={period} onValueChange={(v) => { setPeriod(v); setCurrentPage(1); }}>
+                      <Select
+                        value={period}
+                        onValueChange={(v) => {
+                          setPeriod(v);
+                          setCurrentPage(1);
+                        }}
+                      >
                         <SelectTrigger className="foodmax-input h-11">
                           <SelectValue placeholder="Período" />
                         </SelectTrigger>
                         <SelectContent>
                           {periodoOptions.map((o) => (
-                            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                            <SelectItem key={o.value} value={o.value}>
+                              {o.label}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -384,8 +541,12 @@ export default function FinanceiroModule() {
                     <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-gray-600">Total Receitas</p>
-                          <p className="text-2xl font-bold text-gray-800">{formatCurrencyBRL(totals.totalReceitas)}</p>
+                          <p className="text-sm text-gray-600">
+                            Total Receitas
+                          </p>
+                          <p className="text-2xl font-bold text-gray-800">
+                            {formatCurrencyBRL(totals.totalReceitas)}
+                          </p>
                         </div>
                         <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                           <TrendingUp className="w-6 h-6 text-green-600" />
@@ -395,8 +556,12 @@ export default function FinanceiroModule() {
                     <div className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500">
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="text-sm text-gray-600">Total Despesas</p>
-                          <p className="text-2xl font-bold text-gray-800">{formatCurrencyBRL(totals.totalDespesas)}</p>
+                          <p className="text-sm text-gray-600">
+                            Total Despesas
+                          </p>
+                          <p className="text-2xl font-bold text-gray-800">
+                            {formatCurrencyBRL(totals.totalDespesas)}
+                          </p>
                         </div>
                         <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                           <TrendingDown className="w-6 h-6 text-red-600" />
@@ -407,7 +572,11 @@ export default function FinanceiroModule() {
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm text-gray-600">Saldo Líquido</p>
-                          <p className={`text-2xl font-bold ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`}>{formatCurrencyBRL(totals.saldoLiquido)}</p>
+                          <p
+                            className={`text-2xl font-bold ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`}
+                          >
+                            {formatCurrencyBRL(totals.saldoLiquido)}
+                          </p>
                         </div>
                         <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
                           <Wallet className="w-6 h-6 text-blue-600" />
@@ -426,15 +595,30 @@ export default function FinanceiroModule() {
             <div className="w-full">
               <div className="w-full border-b border-gray-200">
                 <div className="flex items-center gap-6">
-                  {[{ k: "todos", label: "Todos" }, { k: "receitas", label: "Receitas" }, { k: "despesas", label: "Despesas" }].map((t) => (
+                  {[
+                    { k: "todos", label: "Todos" },
+                    { k: "receitas", label: "Receitas" },
+                    { k: "despesas", label: "Despesas" },
+                  ].map((t) => (
                     <button
                       key={t.k}
                       className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${activeTab === t.k ? "text-foodmax-orange" : "text-gray-700 hover:text-gray-900"}`}
-                      onClick={() => { setActiveTab(t.k); setCurrentPage(1); }}
+                      onClick={() => {
+                        setActiveTab(t.k);
+                        setCurrentPage(1);
+                      }}
                     >
                       <span>{t.label}</span>
-                      <span className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === t.k ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}>
-                        {t.k === "todos" ? totalRecords : transacoes.filter((x) => x.tipo === (t.k === "receitas" ? "Receita" : "Despesa")).length}
+                      <span
+                        className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === t.k ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
+                      >
+                        {t.k === "todos"
+                          ? totalRecords
+                          : transacoes.filter(
+                              (x) =>
+                                x.tipo ===
+                                (t.k === "receitas" ? "Receita" : "Despesa"),
+                            ).length}
                       </span>
                       {activeTab === t.k && (
                         <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
@@ -452,7 +636,10 @@ export default function FinanceiroModule() {
                   <Input
                     placeholder="Buscar registros..."
                     value={searchTerm}
-                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="foodmax-input pl-10"
                   />
                 </div>
@@ -463,16 +650,29 @@ export default function FinanceiroModule() {
                       size="sm"
                       onClick={async () => {
                         try {
-                          await makeRequest(`/api/financeiro/bulk-delete`, { method: "POST", body: JSON.stringify({ ids: selectedIds }) });
-                          toast({ title: "Registros excluídos", description: `${selectedIds.length} registro(s) excluído(s)` });
-                          try { localStorage.removeItem(LOCAL_KEY); } catch {}
+                          await makeRequest(`/api/financeiro/bulk-delete`, {
+                            method: "POST",
+                            body: JSON.stringify({ ids: selectedIds }),
+                          });
+                          toast({
+                            title: "Registros excluídos",
+                            description: `${selectedIds.length} registro(s) excluído(s)`,
+                          });
+                          try {
+                            localStorage.removeItem(LOCAL_KEY);
+                          } catch {}
                           await loadTransacoes();
                           setSelectedIds([]);
                         } catch {
-                          const list = readLocal().filter((e) => !selectedIds.includes(e.id));
+                          const list = readLocal().filter(
+                            (e) => !selectedIds.includes(e.id),
+                          );
                           writeLocal(list);
                           setTransacoes(list);
-                          toast({ title: "Exclusão local", description: `${selectedIds.length} registro(s) removido(s)` });
+                          toast({
+                            title: "Exclusão local",
+                            description: `${selectedIds.length} registro(s) removido(s)`,
+                          });
                           setSelectedIds([]);
                         }
                       }}
@@ -481,15 +681,26 @@ export default function FinanceiroModule() {
                       Excluir Selecionados ({selectedIds.length})
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowImport(true)}
+                  >
                     <Upload className="w-4 h-4 mr-2" />
                     Importar
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => setShowExport(true)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowExport(true)}
+                  >
                     <Download className="w-4 h-4 mr-2" />
                     Exportar
                   </Button>
-                  <Button onClick={handleNew} className="bg-foodmax-orange text-white hover:bg-orange-600">
+                  <Button
+                    onClick={handleNew}
+                    className="bg-foodmax-orange text-white hover:bg-orange-600"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Novo
                   </Button>
@@ -501,7 +712,9 @@ export default function FinanceiroModule() {
               columns={gridColumns}
               data={transacoes.map((t) => ({
                 ...t,
-                estabelecimento_nome: estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome || "-",
+                estabelecimento_nome:
+                  estabelecimentos.find((e) => e.id === t.estabelecimento_id)
+                    ?.nome || "-",
               }))}
               loading={loading}
               selectedIds={selectedIds}
@@ -519,7 +732,11 @@ export default function FinanceiroModule() {
 
       <FinanceiroForm
         isOpen={showForm}
-        onClose={() => { setShowForm(false); setCurrentItem(null); setIsEditing(false); }}
+        onClose={() => {
+          setShowForm(false);
+          setCurrentItem(null);
+          setIsEditing(false);
+        }}
         onSave={handleSave}
         item={currentItem}
         isLoading={formLoading}
@@ -527,9 +744,18 @@ export default function FinanceiroModule() {
       />
       <FinanceiroView
         isOpen={showView}
-        onClose={() => { setShowView(false); setCurrentItem(null); }}
+        onClose={() => {
+          setShowView(false);
+          setCurrentItem(null);
+        }}
         item={currentItem}
-        estabelecimentoNome={currentItem ? (estabelecimentos.find((e) => e.id === currentItem.estabelecimento_id)?.nome || null) : null}
+        estabelecimentoNome={
+          currentItem
+            ? estabelecimentos.find(
+                (e) => e.id === currentItem.estabelecimento_id,
+              )?.nome || null
+            : null
+        }
         onEdit={(t) => handleEdit(t)}
       />
 
@@ -537,11 +763,15 @@ export default function FinanceiroModule() {
         isOpen={showExport}
         onClose={() => setShowExport(false)}
         data={transacoes.map((t) => ({
-          estabelecimento_nome: estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome || "",
+          estabelecimento_nome:
+            estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome ||
+            "",
           tipo: t.tipo,
           categoria: t.categoria,
           valor: (t.valor / 100).toFixed(2),
-          data_transacao: t.data_transacao ? t.data_transacao.split("T")[0] : "",
+          data_transacao: t.data_transacao
+            ? t.data_transacao.split("T")[0]
+            : "",
           descricao: t.descricao || "",
           ativo: t.ativo ? "Ativo" : "Inativo",
           data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
@@ -567,7 +797,11 @@ export default function FinanceiroModule() {
         userRole={getUserRole()}
         hasPayment={hasPayment()}
         columns={[
-          { key: "estabelecimento_nome", label: "Estabelecimento", required: true },
+          {
+            key: "estabelecimento_nome",
+            label: "Estabelecimento",
+            required: true,
+          },
           { key: "tipo", label: "Tipo", required: true },
           { key: "categoria", label: "Categoria", required: true },
           { key: "valor", label: "Valor", required: true },
@@ -592,15 +826,21 @@ export default function FinanceiroModule() {
         }}
         onImport={async (records) => {
           try {
-            let imported = 0, remote = 0, local = 0;
+            let imported = 0,
+              remote = 0,
+              local = 0;
             const estabByName = new Map<string, Estabelecimento>();
-            estabelecimentos.forEach((e) => estabByName.set(e.nome.trim().toLowerCase(), e));
+            estabelecimentos.forEach((e) =>
+              estabByName.set(e.nome.trim().toLowerCase(), e),
+            );
 
             const parseCentavos = (val: any): number => {
               if (val === undefined || val === null || val === "") return 0;
               if (typeof val === "number") return Math.round(val * 100);
               const s = String(val).trim();
-              const clean = s.replace(/[^0-9,.-]/g, "").replace(/\.(?=\d{3}(,|$))/g, "");
+              const clean = s
+                .replace(/[^0-9,.-]/g, "")
+                .replace(/\.(?=\d{3}(,|$))/g, "");
               const dot = clean.replace(",", ".");
               const n = Number(dot);
               if (!isNaN(n)) return Math.round(n * 100);
@@ -610,7 +850,14 @@ export default function FinanceiroModule() {
 
             for (const r of records) {
               try {
-                const estName = (r.estabelecimento_nome || r.estabelecimento || "").toString().trim().toLowerCase();
+                const estName = (
+                  r.estabelecimento_nome ||
+                  r.estabelecimento ||
+                  ""
+                )
+                  .toString()
+                  .trim()
+                  .toLowerCase();
                 const est = estabByName.get(estName) || estabelecimentos[0];
                 if (!est) throw new Error("Estabelecimento inválido");
                 const tipo = String(r.tipo || "").trim();
@@ -621,17 +868,29 @@ export default function FinanceiroModule() {
                   tipo: tipo as any,
                   categoria: String(r.categoria || "Outros").trim() || "Outros",
                   valor: parseCentavos(r.valor),
-                  data_transacao: r.data_transacao ? new Date(r.data_transacao).toISOString() : null,
+                  data_transacao: r.data_transacao
+                    ? new Date(r.data_transacao).toISOString()
+                    : null,
                   descricao: r.descricao ? String(r.descricao) : "",
-                  ativo: typeof r.ativo === "string" ? r.ativo.toLowerCase() !== "false" : Boolean(r.ativo ?? true),
+                  ativo:
+                    typeof r.ativo === "string"
+                      ? r.ativo.toLowerCase() !== "false"
+                      : Boolean(r.ativo ?? true),
                 };
-                await makeRequest(`/api/financeiro`, { method: "POST", body: JSON.stringify(payload) });
-                imported++; remote++;
+                await makeRequest(`/api/financeiro`, {
+                  method: "POST",
+                  body: JSON.stringify(payload),
+                });
+                imported++;
+                remote++;
               } catch {
                 const list = readLocal();
                 const now = new Date().toISOString();
                 const est = estabelecimentos[0];
-                const tipo = (String((r as any).tipo || "Receita").trim() === "Despesa") ? "Despesa" : "Receita";
+                const tipo =
+                  String((r as any).tipo || "Receita").trim() === "Despesa"
+                    ? "Despesa"
+                    : "Receita";
                 const novo: FinanceiroTransacao = {
                   id: Date.now() + imported,
                   id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
@@ -639,21 +898,33 @@ export default function FinanceiroModule() {
                   tipo: tipo as any,
                   categoria: String((r as any).categoria || "Outros"),
                   valor: parseCentavos((r as any).valor),
-                  data_transacao: (r as any).data_transacao ? new Date((r as any).data_transacao).toISOString() : null,
+                  data_transacao: (r as any).data_transacao
+                    ? new Date((r as any).data_transacao).toISOString()
+                    : null,
                   descricao: (r as any).descricao || "",
-                  ativo: typeof (r as any).ativo === "string" ? (r as any).ativo.toLowerCase() !== "false" : Boolean((r as any).ativo ?? true),
+                  ativo:
+                    typeof (r as any).ativo === "string"
+                      ? (r as any).ativo.toLowerCase() !== "false"
+                      : Boolean((r as any).ativo ?? true),
                   data_cadastro: now,
                   data_atualizacao: now,
                 };
                 list.unshift(novo);
                 writeLocal(list);
                 setTransacoes(list);
-                imported++; local++;
+                imported++;
+                local++;
               }
             }
-            try { localStorage.removeItem(LOCAL_KEY); } catch {}
+            try {
+              localStorage.removeItem(LOCAL_KEY);
+            } catch {}
             await loadTransacoes();
-            return { success: true, message: `${imported} transações importadas (banco: ${remote}, local: ${local})`, imported } as any;
+            return {
+              success: true,
+              message: `${imported} transações importadas (banco: ${remote}, local: ${local})`,
+              imported,
+            } as any;
           } catch (e) {
             return { success: false, message: "Erro ao importar" } as any;
           }
@@ -668,10 +939,19 @@ export default function FinanceiroModule() {
               <AlertTriangle className="w-5 h-5" />
               <div className="font-semibold">Confirmar exclusão</div>
             </div>
-            <p className="text-sm text-gray-600 mb-4">Tem certeza que deseja excluir este registro?</p>
+            <p className="text-sm text-gray-600 mb-4">
+              Tem certeza que deseja excluir este registro?
+            </p>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowDeleteAlert(false)}>Cancelar</Button>
-              <Button variant="destructive" onClick={handleDeleteConfirmed}>Excluir</Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteAlert(false)}
+              >
+                Cancelar
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteConfirmed}>
+                Excluir
+              </Button>
             </div>
           </div>
         </div>

@@ -78,9 +78,7 @@ export const listTransacoes: RequestHandler = async (req, res) => {
       base = base.gte("data_transacao", dateFrom.toISOString());
     }
     if (search) {
-      base = base.or(
-        `categoria.ilike.%${search}%,descricao.ilike.%${search}%`,
-      );
+      base = base.or(`categoria.ilike.%${search}%,descricao.ilike.%${search}%`);
     }
 
     const { data, error, count } = await base
@@ -95,14 +93,25 @@ export const listTransacoes: RequestHandler = async (req, res) => {
         .from("financeiro_transacoes")
         .select("valor, tipo")
         .eq("id_usuario", userId);
-      if (estabelecimentoId) tQuery = tQuery.eq("estabelecimento_id", estabelecimentoId);
-      if (dateFrom) tQuery = tQuery.gte("data_transacao", dateFrom.toISOString());
-      if (search) tQuery = tQuery.or(`categoria.ilike.%${search}%,descricao.ilike.%${search}%`);
+      if (estabelecimentoId)
+        tQuery = tQuery.eq("estabelecimento_id", estabelecimentoId);
+      if (dateFrom)
+        tQuery = tQuery.gte("data_transacao", dateFrom.toISOString());
+      if (search)
+        tQuery = tQuery.or(
+          `categoria.ilike.%${search}%,descricao.ilike.%${search}%`,
+        );
       const { data: all } = await tQuery.limit(10000);
       const rec = (all || []).filter((r: any) => r.tipo === "Receita");
       const desp = (all || []).filter((r: any) => r.tipo === "Despesa");
-      totals.totalReceitas = rec.reduce((sum: number, r: any) => sum + (r.valor || 0), 0);
-      totals.totalDespesas = desp.reduce((sum: number, r: any) => sum + (r.valor || 0), 0);
+      totals.totalReceitas = rec.reduce(
+        (sum: number, r: any) => sum + (r.valor || 0),
+        0,
+      );
+      totals.totalDespesas = desp.reduce(
+        (sum: number, r: any) => sum + (r.valor || 0),
+        0,
+      );
       totals.saldoLiquido = totals.totalReceitas - totals.totalDespesas;
     } catch {}
 

@@ -24,7 +24,8 @@ export interface CreateFinanceiroTransacaoRequest {
   ativo?: boolean;
 }
 
-export interface UpdateFinanceiroTransacaoRequest extends Partial<CreateFinanceiroTransacaoRequest> {}
+export interface UpdateFinanceiroTransacaoRequest
+  extends Partial<CreateFinanceiroTransacaoRequest> {}
 
 export interface FinanceiroListResponse {
   data: FinanceiroTransacao[];
@@ -57,5 +58,5 @@ export const FINANCEIRO_CATEGORIAS: string[] = [
   "Marketing",
   "Manutenção",
   "Transporte",
-  "Outros"
+  "Outros",
 ];
