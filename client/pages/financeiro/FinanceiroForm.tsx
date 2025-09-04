@@ -139,6 +139,7 @@ export default function FinanceiroForm({
       tipo: "Tipo de Transação",
       categoria: "Categoria",
       valor: "Valor",
+      data_transacao: "Data da Transação",
     };
     const labels = Object.keys(formErrors).map((k) => labelsMap[k] || k);
     if (labels.length > 0) {
@@ -295,7 +296,7 @@ export default function FinanceiroForm({
               </div>
               <div>
                 <Label htmlFor="data" className="text-sm font-medium">
-                  Data da Transação
+                  Data da Transação *
                 </Label>
                 <Input
                   id="data"

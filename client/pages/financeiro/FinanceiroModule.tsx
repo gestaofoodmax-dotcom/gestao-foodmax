@@ -486,7 +486,7 @@ export default function FinanceiroModule() {
   }, [estabelecimentos]);
 
   const periodoOptions = [
-    { value: "all", label: "Todos" },
+    { value: "all", label: "Todos Períodos" },
     { value: "7d", label: "Últimos 7 dias" },
     { value: "30d", label: "Últimos 30 dias" },
     { value: "month", label: "Este mês" },
