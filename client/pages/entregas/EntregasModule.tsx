@@ -972,7 +972,7 @@ export default function EntregasModule() {
               method: "POST",
               body: JSON.stringify({ records: full }),
             });
-            await Promise.all([loadEntregas(), loadCounts()]);
+            await refreshAfterMutation();
             return {
               success: true,
               imported: response?.imported ?? full.length,
