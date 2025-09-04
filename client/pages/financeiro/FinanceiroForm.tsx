@@ -93,6 +93,9 @@ export default function FinanceiroForm({
   const watchedTipo = watch("tipo");
 
   const [valorMask, setValorMask] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const formatDateBR = (d?: Date) =>
+    d ? d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : "";
 
   const parseCurrencyToCentavos = (val: string) => {
     const digits = val.replace(/[^0-9]/g, "");
