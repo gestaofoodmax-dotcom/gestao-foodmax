@@ -33,6 +33,7 @@ import {
   Edit,
   Upload,
   Download,
+  Mail,
   Send,
 } from "lucide-react";
 import ComunicacaoForm from "./ComunicacaoForm";
@@ -707,6 +708,10 @@ export default function ComunicacoesModule() {
           setCurrent(null);
         }}
         comunicacao={current}
+        onEdit={(c) => {
+          setShowView(false);
+          handleEdit(c as any);
+        }}
       />
 
       <DeleteAlert
@@ -874,14 +879,21 @@ export default function ComunicacoesModule() {
       >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-foodmax-orange">
-              <Send className="w-5 h-5 text-foodmax-orange" />
+            <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
               Enviar Email
             </DialogTitle>
-            <p className="text-xs text-black">Revise e edite os dados antes do envio</p>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
+            Confira os destinatários, assunto e mensagem antes de enviar. O envio marcará a comunicação como "Enviado".
+          </div>
+
+          <div className="bg-white p-4 rounded-lg border space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Mail className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Email</h3>
+            </div>
+
             <div>
               <Label>Destinatários</Label>
               <Input
