@@ -449,10 +449,6 @@ export default function ComunicacaoForm({
           </div>
 
           <div className="bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-1">
-              <svg className="w-5 h-5 text-orange-600" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3L1 14h7v7l11-11h-7z"/></svg>
-              <h3 className="font-semibold text-orange-600">Status e Envio</h3>
-            </div>
             <div className="grid grid-cols-1 gap-2">
               <div>
                 <Label>Status</Label>
