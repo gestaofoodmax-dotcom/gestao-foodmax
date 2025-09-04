@@ -73,8 +73,8 @@ export default function EntregaView({
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="w-[85vw] h-[90vh] max-w-none overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Eye className="w-5 h-5" /> Detalhes da Entrega
+          <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
+            Visualizar Entrega
           </DialogTitle>
         </DialogHeader>
         {loading && !det && (
@@ -133,12 +133,8 @@ export default function EntregaView({
                   </div>
                 </div>
                 <div>
-                  <Label>Tipo</Label>
-                  <div className="text-sm">
-                    <Badge className={getTipoEntregaColor(det.tipo_entrega)}>
-                      {det.tipo_entrega}
-                    </Badge>
-                  </div>
+                  <Label>Tipo de Entrega</Label>
+                  <div className="text-sm">{det.tipo_entrega}</div>
                 </div>
                 <div>
                   <Label>Pedido</Label>
@@ -147,8 +143,8 @@ export default function EntregaView({
                   </div>
                 </div>
                 <div>
-                  <Label>Forma de Pagamento</Label>
-                  <div className="text-sm">{det.forma_pagamento}</div>
+                  <Label>Cliente</Label>
+                  <div className="text-sm">{det.cliente_nome || "Não Cliente"}</div>
                 </div>
               </div>
             </div>
@@ -162,21 +158,19 @@ export default function EntregaView({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Valor Pedido</Label>
-                  <div className="text-sm">
-                    {formatCurrencyBRL(det.valor_pedido)}
-                  </div>
+                  <div className="text-sm">{formatCurrencyBRL(det.valor_pedido)}</div>
                 </div>
                 <div>
                   <Label>Taxa Extra</Label>
-                  <div className="text-sm">
-                    {formatCurrencyBRL(det.taxa_extra)}
-                  </div>
+                  <div className="text-sm">{formatCurrencyBRL(det.taxa_extra)}</div>
                 </div>
                 <div>
                   <Label>Valor Entrega</Label>
-                  <div className="text-sm">
-                    {formatCurrencyBRL(det.valor_entrega)}
-                  </div>
+                  <div className="text-sm">{formatCurrencyBRL(det.valor_entrega)}</div>
+                </div>
+                <div>
+                  <Label>Forma de Pagamento</Label>
+                  <div className="text-sm">{det.forma_pagamento}</div>
                 </div>
               </div>
             </div>
@@ -244,23 +238,6 @@ export default function EntregaView({
               </div>
             )}
 
-            {/* Datas */}
-            <div className="bg-white p-4 rounded-lg border">
-              <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-indigo-600" />
-                <span className="text-indigo-600">Datas</span>
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Data/Hora Saída</Label>
-                  <div className="text-sm">{formatDateTimeBR(det.data_hora_saida)}</div>
-                </div>
-                <div>
-                  <Label>Data/Hora Entregue</Label>
-                  <div className="text-sm">{formatDateTimeBR(det.data_hora_entregue)}</div>
-                </div>
-              </div>
-            </div>
 
             {/* Detalhes do Cadastro */}
             <div className="bg-white rounded-lg p-4 border">
@@ -272,20 +249,22 @@ export default function EntregaView({
                 <div>
                   <Label>Data de Cadastro</Label>
                   <div className="text-sm">
-                    {new Date(det.data_cadastro).toLocaleString("pt-BR", {
-                      timeZone: "America/Sao_Paulo",
-                      hour12: false,
-                    })}
+                    {new Date(det.data_cadastro).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour12: false })}
                   </div>
                 </div>
                 <div>
                   <Label>Última Atualização</Label>
                   <div className="text-sm">
-                    {new Date(det.data_atualizacao).toLocaleString("pt-BR", {
-                      timeZone: "America/Sao_Paulo",
-                      hour12: false,
-                    })}
+                    {new Date(det.data_atualizacao).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour12: false })}
                   </div>
+                </div>
+                <div>
+                  <Label>Data/Hora Saída</Label>
+                  <div className="text-sm">{formatDateTimeBR(det.data_hora_saida)}</div>
+                </div>
+                <div>
+                  <Label>Data/Hora Entregue</Label>
+                  <div className="text-sm">{formatDateTimeBR(det.data_hora_entregue)}</div>
                 </div>
               </div>
             </div>
