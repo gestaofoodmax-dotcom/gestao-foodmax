@@ -246,13 +246,13 @@ export default function AbastecimentosModule() {
               className={`h-8 w-8 p-0 rounded-full border ${
                 r.email_enviado
                   ? "bg-gray-50 border-gray-200 cursor-not-allowed opacity-50"
-                  : "bg-gray-50 hover:bg-gray-100 border-gray-200"
+                  : "bg-yellow-50 hover:bg-yellow-100 border-yellow-200"
               }`}
               title={r.email_enviado ? "Email já enviado" : "Enviar Email"}
             >
               <Send
                 className={`w-4 h-4 ${
-                  r.email_enviado ? "text-gray-400" : "text-gray-700"
+                  r.email_enviado ? "text-gray-400" : "text-foodmax-orange"
                 }`}
               />
             </Button>
@@ -1132,14 +1132,16 @@ export default function AbastecimentosModule() {
             </DialogTitle>
           </DialogHeader>
 
-          <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
-            <p>Confira os Destinatários, Assunto e Mensagem antes de enviar o email.</p>
-          </div>
+          {!emailLoading && (
+            <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
+              <p>Confira os Destinatários, Assunto e Mensagem antes de enviar o email.</p>
+            </div>
+          )}
 
           <div className="bg-white p-4 rounded-lg border">
             {emailLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-foodmax-orange mr-2"></div>
+              <div className="flex flex-col items-center justify-center py-10">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foodmax-orange mb-2"></div>
                 <span className="text-sm text-gray-600">Carregando dados...</span>
               </div>
             ) : (
