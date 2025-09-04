@@ -94,6 +94,8 @@ export default function EntregasModule() {
   const [exportData, setExportData] = useState<any[]>([]);
   const [showImport, setShowImport] = useState(false);
   const [showBulkDelete, setShowBulkDelete] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [entregaToDelete, setEntregaToDelete] = useState<Entrega | null>(null);
 
   const LOCAL_KEY = "fm_entregas";
   const readLocal = (): Entrega[] => {
