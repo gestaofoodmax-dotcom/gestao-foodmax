@@ -35,6 +35,7 @@ import {
   Download,
   Mail,
   Send,
+  X,
 } from "lucide-react";
 import ComunicacaoForm from "./ComunicacaoForm";
 import ComunicacaoView from "./ComunicacaoView";
@@ -886,7 +887,6 @@ export default function ComunicacoesModule() {
 
           <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
             <p>Confira os Destinatários, Assunto e Mensagem antes de enviar o email.</p>
-            <p>Após o envio será trocado o status para Enviado.</p>
           </div>
 
           <div className="bg-white p-4 rounded-lg border space-y-4">
@@ -919,7 +919,7 @@ export default function ComunicacoesModule() {
             <div>
               <Label>Mensagem do Email</Label>
               <Textarea
-                rows={10}
+                rows={8}
                 value={sendForm.mensagem}
                 onChange={(e) => setSendForm((f) => ({ ...f, mensagem: e.target.value }))}
                 className="foodmax-input"
@@ -941,6 +941,7 @@ export default function ComunicacoesModule() {
               onClick={() => setSendModalOpen(false)}
               disabled={sendLoading}
             >
+              <X className="w-4 h-4 mr-2" />
               Cancelar
             </Button>
             <Button
