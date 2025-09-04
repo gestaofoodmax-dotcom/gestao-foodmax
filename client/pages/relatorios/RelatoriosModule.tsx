@@ -264,43 +264,45 @@ export default function RelatoriosModule() {
               <div>
                 <h2 className="text-2xl font-semibold text-gray-800">Relatórios</h2>
                 <p className="text-gray-600 mt-1">Gere gráficos financeiros e de pedidos.</p>
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                  <div className="min-w-[320px] md:min-w-[420px] w-full">
-                    <Select value={selectedEstabelecimento} onValueChange={setSelectedEstabelecimento}>
-                      <SelectTrigger className="foodmax-input h-11">
-                        <SelectValue placeholder="Selecione o estabelecimento" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {estabOptions.map((o) => (
-                          <SelectItem key={o.value} value={o.value}>
-                            {o.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="min-w-[260px] md:min-w-[340px] w-full">
-                    <Select value={period} onValueChange={setPeriod}>
-                      <SelectTrigger className="foodmax-input h-11">
-                        <SelectValue placeholder="Período" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {periodoOptions.map((o) => (
-                          <SelectItem key={o.value} value={o.value}>
-                            {o.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center md:justify-end">
-                    <Button
-                      onClick={exportToPDF}
-                      className="bg-green-600 hover:bg-green-700 text-white h-11 px-5"
-                      title="Exportar gráficos para PDF"
-                    >
-                      Exportar Relatório
-                    </Button>
+                <div className="mt-3 w-full">
+                  <div className="flex flex-col md:flex-row md:items-center">
+                    <div className="min-w-[320px] md:min-w-[420px] w-full md:mr-3">
+                      <Select value={selectedEstabelecimento} onValueChange={setSelectedEstabelecimento}>
+                        <SelectTrigger className="foodmax-input h-11">
+                          <SelectValue placeholder="Selecione o estabelecimento" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {estabOptions.map((o) => (
+                            <SelectItem key={o.value} value={o.value}>
+                              {o.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="min-w-[260px] md:min-w-[340px] w-full md:mr-3 mt-3 md:mt-0">
+                      <Select value={period} onValueChange={setPeriod}>
+                        <SelectTrigger className="foodmax-input h-11">
+                          <SelectValue placeholder="Período" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {periodoOptions.map((o) => (
+                            <SelectItem key={o.value} value={o.value}>
+                              {o.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="mt-3 md:mt-0">
+                      <Button
+                        onClick={exportToPDF}
+                        className="bg-green-600 hover:bg-green-700 text-white h-11 px-5"
+                        title="Exportar gráficos para PDF"
+                      >
+                        Exportar Relatório
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -329,7 +331,7 @@ export default function RelatoriosModule() {
               >
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart3 className="w-5 h-5 text-blue-700" />
-                  <h3 className="text-lg font-semibold text-blue-700">Relatório de Transaç��es</h3>
+                  <h3 className="text-lg font-semibold text-blue-700">Relatório de Transações</h3>
                 </div>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
