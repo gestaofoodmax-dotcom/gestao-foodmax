@@ -18,7 +18,8 @@ const toISODate = (v: unknown): string | null => {
   }
   // Fallback: try parsing
   const d = new Date(s);
-  if (!isNaN(d.getTime())) return `${d.toISOString().slice(0, 10)}T03:00:00.000Z`;
+  if (!isNaN(d.getTime()))
+    return `${d.toISOString().slice(0, 10)}T03:00:00.000Z`;
   return null;
 };
 

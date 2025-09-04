@@ -21,11 +21,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertTriangle, FileText, Save, X, DollarSign, Calendar as CalendarIcon } from "lucide-react";
+import {
+  AlertTriangle,
+  FileText,
+  Save,
+  X,
+  DollarSign,
+  Calendar as CalendarIcon,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Estabelecimento } from "@shared/estabelecimentos";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ptBR } from "date-fns/locale";
 import { Button as UIButton } from "@/components/ui/button";
@@ -116,13 +127,17 @@ export default function FinanceiroForm({
           categoria: item.categoria,
           valor: item.valor,
           data_transacao: item.data_transacao
-            ? new Date(item.data_transacao).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
+            ? new Date(item.data_transacao).toLocaleDateString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
+              })
             : "",
           descricao: item.descricao || "",
           ativo: item.ativo,
         });
         setValorMask(formatInputCurrency(item.valor));
-        setSelectedDate(item.data_transacao ? new Date(item.data_transacao) : undefined);
+        setSelectedDate(
+          item.data_transacao ? new Date(item.data_transacao) : undefined,
+        );
       } else {
         // Default estabelecimento: último cadastrado ativo
         const lastActive = estabelecimentos.find((e) => e.ativo);
@@ -326,7 +341,9 @@ export default function FinanceiroForm({
                       onSelect={(date) => {
                         setSelectedDate(date || undefined);
                         const formatted = date ? formatDateBR(date) : "";
-                        setValue("data_transacao", formatted, { shouldDirty: true });
+                        setValue("data_transacao", formatted, {
+                          shouldDirty: true,
+                        });
                         if (date) setOpenCalendar(false);
                       }}
                       initialFocus

@@ -121,7 +121,9 @@ export default function FinanceiroModule() {
         sortable: true,
         render: (v: string | null) =>
           v
-            ? new Date(v).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
+            ? new Date(v).toLocaleDateString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
+              })
             : "-",
       },
       {
@@ -160,7 +162,10 @@ export default function FinanceiroModule() {
         key: "data_cadastro",
         label: "Data Cadastro",
         sortable: true,
-        render: (v: string) => new Date(v).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+        render: (v: string) =>
+          new Date(v).toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          }),
       },
       {
         key: "acoes",
@@ -332,11 +337,15 @@ export default function FinanceiroModule() {
           categoria: t.categoria,
           valor: (t.valor / 100).toFixed(2),
           data_transacao: t.data_transacao
-            ? new Date(t.data_transacao).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
+            ? new Date(t.data_transacao).toLocaleDateString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
+              })
             : "",
           descricao: t.descricao || "",
           ativo: t.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(t.data_cadastro).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+          data_cadastro: new Date(t.data_cadastro).toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          }),
         }));
         setExportData(mapped);
       } catch {
@@ -349,11 +358,15 @@ export default function FinanceiroModule() {
           categoria: t.categoria,
           valor: (t.valor / 100).toFixed(2),
           data_transacao: t.data_transacao
-            ? new Date(t.data_transacao).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
+            ? new Date(t.data_transacao).toLocaleDateString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
+              })
             : "",
           descricao: t.descricao || "",
           ativo: t.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(t.data_cadastro).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+          data_cadastro: new Date(t.data_cadastro).toLocaleDateString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+          }),
         }));
         setExportData(mapped);
       }
@@ -844,11 +857,16 @@ export default function FinanceiroModule() {
                 categoria: t.categoria,
                 valor: (t.valor / 100).toFixed(2),
                 data_transacao: t.data_transacao
-                  ? new Date(t.data_transacao).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
+                  ? new Date(t.data_transacao).toLocaleDateString("pt-BR", {
+                      timeZone: "America/Sao_Paulo",
+                    })
                   : "",
                 descricao: t.descricao || "",
                 ativo: t.ativo ? "Ativo" : "Inativo",
-                data_cadastro: new Date(t.data_cadastro).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
+                data_cadastro: new Date(t.data_cadastro).toLocaleDateString(
+                  "pt-BR",
+                  { timeZone: "America/Sao_Paulo" },
+                ),
               }))
         }
         selectedIds={selectedIds}
@@ -896,7 +914,7 @@ export default function FinanceiroModule() {
             valor: "valor",
             "valor (r$)": "valor",
             "valor r$": "valor",
-            "valor_r$": "valor",
+            valor_r$: "valor",
             "data transacao": "data_transacao",
             "data da transação": "data_transacao",
             "data da transacao": "data_transacao",
@@ -907,7 +925,7 @@ export default function FinanceiroModule() {
             "data pagamento": "data_transacao",
             data_pagamento: "data_transacao",
             descricao: "descricao",
-            "descrição": "descricao",
+            descrição: "descricao",
             ativo: "ativo",
             "data cadastro": "data_cadastro",
             data_cadastro: "data_cadastro",
@@ -940,9 +958,24 @@ export default function FinanceiroModule() {
             };
 
             const resolveTipo = (raw: any): TipoTransacao | null => {
-              const t = String(raw || "").trim().toLowerCase();
-              if (t === "receita" || t === "entrada" || t === "credito" || t === "crédito") return "Receita";
-              if (t === "despesa" || t === "saida" || t === "saída" || t === "debito" || t === "débito") return "Despesa";
+              const t = String(raw || "")
+                .trim()
+                .toLowerCase();
+              if (
+                t === "receita" ||
+                t === "entrada" ||
+                t === "credito" ||
+                t === "crédito"
+              )
+                return "Receita";
+              if (
+                t === "despesa" ||
+                t === "saida" ||
+                t === "saída" ||
+                t === "debito" ||
+                t === "débito"
+              )
+                return "Despesa";
               return null;
             };
 
@@ -966,9 +999,12 @@ export default function FinanceiroModule() {
                   categoria: String(r.categoria || "Outros").trim() || "Outros",
                   valor: parseCentavos(r.valor),
                   data_transacao: ((): string | null => {
-                    const s = r.data_transacao ? String(r.data_transacao).trim() : "";
+                    const s = r.data_transacao
+                      ? String(r.data_transacao).trim()
+                      : "";
                     if (!s) return null;
-                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) =>
+                      `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
                     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
                       const [dd, mm, yyyy] = s.split("/");
                       return toISOBr(yyyy, mm, dd);
@@ -978,13 +1014,17 @@ export default function FinanceiroModule() {
                       return toISOBr(yyyy, mm, dd);
                     }
                     const dt = new Date(s);
-                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
+                    if (!isNaN(dt.getTime()))
+                      return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
                     return null;
                   })(),
                   data_cadastro: ((): string | null => {
-                    const s = r.data_cadastro ? String(r.data_cadastro).trim() : "";
+                    const s = r.data_cadastro
+                      ? String(r.data_cadastro).trim()
+                      : "";
                     if (!s) return null;
-                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) =>
+                      `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
                     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
                       const [dd, mm, yyyy] = s.split("/");
                       return toISOBr(yyyy, mm, dd);
@@ -994,7 +1034,8 @@ export default function FinanceiroModule() {
                       return toISOBr(yyyy, mm, dd);
                     }
                     const dt = new Date(s);
-                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
+                    if (!isNaN(dt.getTime()))
+                      return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
                     return null;
                   })(),
                   descricao: r.descricao ? String(r.descricao) : "",
@@ -1025,7 +1066,8 @@ export default function FinanceiroModule() {
                     const v = (r as any).data_transacao;
                     const s = v ? String(v).trim() : "";
                     if (!s) return null;
-                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) =>
+                      `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
                     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
                       const [dd, mm, yyyy] = s.split("/");
                       return toISOBr(yyyy, mm, dd);
@@ -1035,7 +1077,8 @@ export default function FinanceiroModule() {
                       return toISOBr(yyyy, mm, dd);
                     }
                     const dt = new Date(s);
-                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
+                    if (!isNaN(dt.getTime()))
+                      return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
                     return null;
                   })(),
                   descricao: (r as any).descricao || "",
@@ -1044,9 +1087,12 @@ export default function FinanceiroModule() {
                       ? (r as any).ativo.toLowerCase() !== "false"
                       : Boolean((r as any).ativo ?? true),
                   data_cadastro: ((): string => {
-                    const s = (r as any).data_cadastro ? String((r as any).data_cadastro).trim() : "";
+                    const s = (r as any).data_cadastro
+                      ? String((r as any).data_cadastro).trim()
+                      : "";
                     if (!s) return now;
-                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) =>
+                      `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
                     if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
                       const [dd, mm, yyyy] = s.split("/");
                       return toISOBr(yyyy, mm, dd);
@@ -1056,7 +1102,8 @@ export default function FinanceiroModule() {
                       return toISOBr(yyyy, mm, dd);
                     }
                     const dt = new Date(s);
-                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
+                    if (!isNaN(dt.getTime()))
+                      return `${dt.toISOString().slice(0, 10)}T00:00:00-03:00`;
                     return now;
                   })(),
                   data_atualizacao: now,
