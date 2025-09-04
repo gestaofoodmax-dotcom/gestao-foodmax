@@ -782,6 +782,17 @@ export default function EntregasModule() {
         selectedCount={selectedIds.length}
       />
 
+      <DeleteAlert
+        isOpen={showDeleteAlert}
+        onClose={() => setShowDeleteAlert(false)}
+        onConfirm={async () => {
+          if (entregaToDelete) await handleDelete(entregaToDelete);
+          setShowDeleteAlert(false);
+          setEntregaToDelete(null);
+        }}
+        itemName="esta entrega"
+      />
+
       <ImportModal
         isOpen={showImport}
         onClose={() => setShowImport(false)}
