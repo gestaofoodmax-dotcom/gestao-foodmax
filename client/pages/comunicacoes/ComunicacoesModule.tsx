@@ -128,7 +128,7 @@ export default function ComunicacoesModule() {
   }, [estabelecimentos]);
 
   const gridColumns = useMemo(() => [
-    { key: "estabelecimento_id", label: "Estabelecimento", render: (v: number) => estabelecimentosMap.get(v) || v },
+    { key: "estabelecimento_id", label: "Estabelecimento", sortable: true, render: (v: number) => estabelecimentosMap.get(v) || v },
     { key: "assunto", label: "Assunto", sortable: true },
     {
       key: "destinatarios_tipo",
