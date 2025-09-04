@@ -22,7 +22,6 @@ import {
   Edit,
   X,
   Bike,
-  Motorcycle,
   FileText,
   DollarSign,
   Users,
@@ -109,7 +108,7 @@ export default function EntregaView({
             {/* Header with status */}
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <Motorcycle className="w-6 h-6 text-foodmax-orange" />
+                <Bike className="w-6 h-6 text-foodmax-orange" />
                 <div>
                   <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
                     {det.pedido_codigo ||
