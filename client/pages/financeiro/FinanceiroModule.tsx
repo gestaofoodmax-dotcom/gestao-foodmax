@@ -41,6 +41,7 @@ import {
 } from "@/components/ui/select";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
+import { DeleteAlert, BulkDeleteAlert } from "@/components/alert-dialog-component";
 
 export default function FinanceiroModule() {
   const isMobile = useIsMobile();
