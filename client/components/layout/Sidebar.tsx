@@ -17,6 +17,7 @@ import {
   Bike,
   DollarSign,
   BarChart3,
+  Mail,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toTitleCase } from "@/lib/utils";
@@ -88,6 +89,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
         items: [
           { icon: List, label: "Itens", route: "/itens" },
           { icon: Utensils, label: "Cardápios", route: "/cardapios" },
+          { icon: Mail, label: "Comunicação", route: "/comunicacoes" },
           { icon: DollarSign, label: "Financeiro", route: "/financeiro" },
         ],
       },

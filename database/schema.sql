@@ -672,3 +672,32 @@ DROP TRIGGER IF EXISTS trg_relatorios_set_timestamp ON relatorios;
 CREATE TRIGGER trg_relatorios_set_timestamp
 BEFORE UPDATE ON relatorios
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- Comunicações (novo módulo)
+CREATE TABLE IF NOT EXISTS comunicacoes (
+  id SERIAL PRIMARY KEY,
+  id_usuario INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  estabelecimento_id INTEGER NOT NULL REFERENCES estabelecimentos(id) ON DELETE RESTRICT,
+  tipo_comunicacao TEXT NOT NULL CHECK (tipo_comunicacao IN ('Promoção','Fornecedor','Outro')),
+  assunto TEXT NOT NULL,
+  mensagem TEXT NOT NULL,
+  destinatarios_tipo TEXT NOT NULL CHECK (destinatarios_tipo IN ('TodosClientes','ClientesEspecificos','TodosFornecedores','FornecedoresEspecificos','Outros')),
+  clientes_ids INTEGER[] NOT NULL DEFAULT '{}',
+  fornecedores_ids INTEGER[] NOT NULL DEFAULT '{}',
+  destinatarios_text TEXT NULL,
+  email_enviado BOOLEAN NOT NULL DEFAULT FALSE,
+  status TEXT NOT NULL DEFAULT 'Pendente' CHECK (status IN ('Pendente','Enviado','Cancelado')),
+  data_envio TIMESTAMPTZ NULL,
+  data_cadastro TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  data_atualizacao TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_comunicacoes_usuario ON comunicacoes(id_usuario);
+CREATE INDEX IF NOT EXISTS idx_comunicacoes_estabelecimento ON comunicacoes(estabelecimento_id);
+CREATE INDEX IF NOT EXISTS idx_comunicacoes_status ON comunicacoes(status);
+CREATE INDEX IF NOT EXISTS idx_comunicacoes_data_cadastro ON comunicacoes(data_cadastro);
+
+DROP TRIGGER IF EXISTS trg_comunicacoes_set_timestamp ON comunicacoes;
+CREATE TRIGGER trg_comunicacoes_set_timestamp
+BEFORE UPDATE ON comunicacoes
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
