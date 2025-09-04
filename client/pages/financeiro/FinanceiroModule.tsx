@@ -1000,12 +1000,9 @@ export default function FinanceiroModule() {
                 const list = readLocal();
                 const now = new Date().toISOString();
                 const est = estabelecimentos[0];
-                const tipo =
-                  String((r as any).tipo || "Receita").trim() === "Despesa"
-                    ? "Despesa"
-                    : "Receita";
+                const tipoResolved = resolveTipo((r as any).tipo) || "Receita";
                 const novo: FinanceiroTransacao = {
-                  id: Date.now() + imported,
+                  id: Date.now() + remote + local,
                   id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
                   estabelecimento_id: est ? est.id : 0,
                   tipo: tipo as any,
