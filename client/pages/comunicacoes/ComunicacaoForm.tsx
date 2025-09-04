@@ -225,7 +225,7 @@ export default function ComunicacaoForm({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[85vw] h-[90vh] max-w-none overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-normal">
             {comunicacao ? "Editar Comunicação" : "Nova Comunicação"}
