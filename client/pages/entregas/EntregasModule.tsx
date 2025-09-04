@@ -468,10 +468,20 @@ export default function EntregasModule() {
 
   const getAllForExport = async () => {
     try {
-      const params = new URLSearchParams({ page: "1", limit: "1000" });
-      if (activeTab !== "Todos") params.set("tipo", activeTab);
-      const resp = await makeRequest(`/api/entregas?${params}`);
-      return Array.isArray(resp?.data) ? resp.data : [];
+      const all: any[] = [];
+      let page = 1;
+      const limit = 1000;
+      while (true) {
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+        if (activeTab !== "Todos") params.set("tipo", activeTab);
+        const resp = await makeRequest(`/api/entregas?${params}`);
+        const data = Array.isArray(resp?.data) ? resp.data : [];
+        all.push(...data);
+        const totalPages = resp?.pagination?.totalPages;
+        if (totalPages ? page >= totalPages : data.length < limit) break;
+        page += 1;
+      }
+      return all;
     } catch {
       return readLocal().filter(
         (e) => activeTab === "Todos" || e.tipo_entrega === activeTab,
