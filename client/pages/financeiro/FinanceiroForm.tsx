@@ -15,7 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertTriangle, FileText, Save, X } from "lucide-react";
+import { AlertTriangle, FileText, Save, X, DollarSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import { Estabelecimento } from "@shared/estabelecimentos";
