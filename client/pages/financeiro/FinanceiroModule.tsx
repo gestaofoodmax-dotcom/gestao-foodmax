@@ -461,7 +461,7 @@ export default function FinanceiroModule() {
       writeLocal(list);
       setTransacoes(list);
       toast({
-        title: "Transa��ão excluída",
+        title: "Transação excluída",
         description: "Excluída localmente",
       });
       setSelectedIds([]);
@@ -667,34 +667,7 @@ export default function FinanceiroModule() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={async () => {
-                        try {
-                          await makeRequest(`/api/financeiro/bulk-delete`, {
-                            method: "POST",
-                            body: JSON.stringify({ ids: selectedIds }),
-                          });
-                          toast({
-                            title: "Registros excluídos",
-                            description: `${selectedIds.length} registro(s) excluído(s)`,
-                          });
-                          try {
-                            localStorage.removeItem(LOCAL_KEY);
-                          } catch {}
-                          await loadTransacoes();
-                          setSelectedIds([]);
-                        } catch {
-                          const list = readLocal().filter(
-                            (e) => !selectedIds.includes(e.id),
-                          );
-                          writeLocal(list);
-                          setTransacoes(list);
-                          toast({
-                            title: "Exclusão local",
-                            description: `${selectedIds.length} registro(s) removido(s)`,
-                          });
-                          setSelectedIds([]);
-                        }
-                      }}
+                      onClick={() => setShowBulkDelete(true)}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Excluir Selecionados ({selectedIds.length})
