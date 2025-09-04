@@ -449,10 +449,7 @@ export default function EntregasModule() {
   const handleRegistrarEntregue = async (e: Entrega) => {
     try {
       await makeRequest(`/api/entregas/${e.id}/entregue`, { method: "PATCH" });
-      toast({
-        title: "Entrega registrada",
-        description: "Status alterado para Entregue",
-      });
+      toast({ title: "Entrega registrada", description: "Status alterado para Entregue" });
       await refreshAfterMutation();
     } catch {
       const list = readLocal();
@@ -462,8 +459,8 @@ export default function EntregasModule() {
         list[idx].data_hora_entregue = new Date().toISOString();
         writeLocal(list);
         setEntregas(list);
-        await loadCounts();
       }
+      await refreshAfterMutation();
     }
   };
 
