@@ -100,7 +100,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
         label: "Venda",
         items: [
           { icon: ShoppingBag, label: "Pedidos", route: "/pedidos" },
-          { icon: Bike, label: "Entregas", route: "/entregas" },
+          { icon: Motorcycle, label: "Entregas", route: "/entregas" },
         ],
       },
     ],
