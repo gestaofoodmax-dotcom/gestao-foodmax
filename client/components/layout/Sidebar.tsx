@@ -15,7 +15,7 @@ import {
   ChevronUp,
   LogOut,
   Bike,
-  Banknote,
+  DollarSign,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toTitleCase } from "@/lib/utils";
