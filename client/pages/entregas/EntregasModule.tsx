@@ -29,6 +29,10 @@ import {
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
 import {
+  BulkDeleteAlert,
+  DeleteAlert,
+} from "@/components/alert-dialog-component";
+import {
   Entrega,
   EntregasListResponse,
   TipoEntrega,
@@ -92,6 +96,9 @@ export default function EntregasModule() {
   const [showExport, setShowExport] = useState(false);
   const [exportData, setExportData] = useState<any[]>([]);
   const [showImport, setShowImport] = useState(false);
+  const [showBulkDelete, setShowBulkDelete] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [entregaToDelete, setEntregaToDelete] = useState<Entrega | null>(null);
 
   const LOCAL_KEY = "fm_entregas";
   const readLocal = (): Entrega[] => {
@@ -216,7 +223,10 @@ export default function EntregasModule() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => handleDelete(r)}
+              onClick={() => {
+                setEntregaToDelete(r);
+                setShowDeleteAlert(true);
+              }}
               className="h-8 w-8 p-0 rounded-full border bg-red-50 hover:bg-red-100 border-red-200"
               title="Excluir"
             >
@@ -333,13 +343,13 @@ export default function EntregasModule() {
         title: "Entrega excluída",
         description: "Entrega excluída com sucesso",
       });
-      await Promise.all([loadEntregas(), loadCounts()]);
+      await refreshAfterMutation();
     } catch {
       const list = readLocal().filter((x) => x.id !== e.id);
       writeLocal(list);
       setEntregas(list);
       toast({ title: "Entrega excluída", description: "Entrega excluída" });
-      await loadCounts();
+      await refreshAfterMutation();
     }
   };
 
@@ -440,8 +450,8 @@ export default function EntregasModule() {
         list[idx].data_hora_saida = new Date().toISOString();
         writeLocal(list);
         setEntregas(list);
-        await loadCounts();
       }
+      await refreshAfterMutation();
     }
   };
 
@@ -461,17 +471,30 @@ export default function EntregasModule() {
         list[idx].data_hora_entregue = new Date().toISOString();
         writeLocal(list);
         setEntregas(list);
-        await loadCounts();
       }
+      await refreshAfterMutation();
     }
   };
 
   const getAllForExport = async () => {
     try {
-      const params = new URLSearchParams({ page: "1", limit: "1000" });
-      if (activeTab !== "Todos") params.set("tipo", activeTab);
-      const resp = await makeRequest(`/api/entregas?${params}`);
-      return Array.isArray(resp?.data) ? resp.data : [];
+      const all: any[] = [];
+      let page = 1;
+      const limit = 1000;
+      while (true) {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+        });
+        if (activeTab !== "Todos") params.set("tipo", activeTab);
+        const resp = await makeRequest(`/api/entregas?${params}`);
+        const data = Array.isArray(resp?.data) ? resp.data : [];
+        all.push(...data);
+        const totalPages = resp?.pagination?.totalPages;
+        if (totalPages ? page >= totalPages : data.length < limit) break;
+        page += 1;
+      }
+      return all;
     } catch {
       return readLocal().filter(
         (e) => activeTab === "Todos" || e.tipo_entrega === activeTab,
@@ -481,51 +504,94 @@ export default function EntregasModule() {
 
   const buildExportRows = async () => {
     const rows = await getAllForExport();
-    return rows.map((e: any) => {
-      const formatDateTimeBRNoComma = (iso: string | null | undefined) => {
-        if (!iso) return "";
-        const date = new Date(iso);
-        const parts = new Intl.DateTimeFormat("pt-BR", {
-          timeZone: "America/Sao_Paulo",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        }).formatToParts(date);
-        const get = (t: string) => parts.find((p) => p.type === t)?.value || "";
-        return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get("minute")}:${get("second")}`;
-      };
+
+    const formatDateTimeBRNoComma = (iso: string | null | undefined) => {
+      if (!iso) return "";
+      const date = new Date(iso);
+      const parts = new Intl.DateTimeFormat("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      }).formatToParts(date);
+      const get = (t: string) => parts.find((p) => p.type === t)?.value || "";
+      return `${get("day")}/${get("month")}/${get("year")} ${get("hour")}:${get("minute")}:${get("second")}`;
+    };
+
+    const buildRowFromDetail = (d: any) => {
+      const end = d.endereco || null;
+      const cityUf = end?.cidade
+        ? `${end.cidade}${end.uf ? `/${end.uf}` : ""}`
+        : "";
+      let enderecoStr = "";
+      if (end) {
+        const hasCep = typeof end.cep === "string" && end.cep.trim() !== "";
+        const cepText = hasCep ? end.cep.trim() : "";
+        const rest = [end.endereco, cityUf, end.pais].filter(
+          (x) => typeof x === "string" && x.trim() !== "",
+        );
+        if (hasCep) {
+          enderecoStr =
+            rest.length > 0 ? `${cepText} - ${rest.join(" - ")}` : cepText;
+        } else {
+          enderecoStr = rest.length > 0 ? ` - ${rest.join(" - ")}` : " - ";
+        }
+      }
 
       return {
-        estabelecimento_nome: e.estabelecimento_nome || "",
-        tipo_entrega: e.tipo_entrega,
-        pedido: e.pedido_codigo || e.codigo_pedido_app || "",
-        valor_pedido: (e.valor_pedido ?? 0) / 100,
-        taxa_extra: (e.taxa_extra ?? 0) / 100,
-        valor_entrega: (e.valor_entrega ?? 0) / 100,
-        forma_pagamento: e.forma_pagamento,
-        cliente_nome: e.cliente_nome || "",
-        ddi: e.ddi || "",
-        telefone: e.telefone || "",
-        data_hora_saida: formatDateTimeBRNoComma(e.data_hora_saida),
-        data_hora_entregue: formatDateTimeBRNoComma(e.data_hora_entregue),
-        observacao: e.observacao || "",
-        status: e.status,
-        cliente_endereco: e.endereco
-          ? [
-              e.endereco.cep,
-              e.endereco.endereco,
-              [e.endereco.cidade, e.endereco.uf].filter(Boolean).join("/"),
-              e.endereco.pais,
-            ]
-              .filter((x: any) => typeof x === "string" && x.trim() !== "")
-              .join(" - ")
-          : "",
-      };
-    });
+        id: d.id,
+        estabelecimento_nome: d.estabelecimento_nome || "",
+        tipo_entrega: d.tipo_entrega,
+        pedido: d.pedido_codigo || d.codigo_pedido_app || "",
+        valor_pedido: (d.valor_pedido ?? 0) / 100,
+        taxa_extra: (d.taxa_extra ?? 0) / 100,
+        valor_entrega: (d.valor_entrega ?? 0) / 100,
+        forma_pagamento: d.forma_pagamento,
+        cliente_nome: d.cliente_nome || "",
+        ddi: d.ddi || "",
+        telefone: d.telefone || "",
+        data_hora_saida: formatDateTimeBRNoComma(d.data_hora_saida),
+        data_hora_entregue: formatDateTimeBRNoComma(d.data_hora_entregue),
+        observacao: d.observacao || "",
+        status: d.status,
+        entrega_endereco: enderecoStr,
+      } as any;
+    };
+
+    const chunkSize = 10;
+    const exportRows: any[] = [];
+
+    for (let i = 0; i < rows.length; i += chunkSize) {
+      const chunk = rows.slice(i, i + chunkSize);
+      const results = await Promise.all(
+        chunk.map(async (e: any) => {
+          const fetchOnce = async () =>
+            await makeRequest(`/api/entregas/${e.id}?_t=${Date.now()}`);
+          let det: any = null;
+          try {
+            det = await fetchOnce();
+          } catch {
+            try {
+              await new Promise((r) => setTimeout(r, 150));
+              det = await fetchOnce();
+            } catch {
+              det = null;
+            }
+          }
+
+          if (det) return buildRowFromDetail(det);
+
+          return buildRowFromDetail(e);
+        }),
+      );
+      exportRows.push(...results);
+    }
+
+    return exportRows;
   };
 
   return (
@@ -595,6 +661,16 @@ export default function EntregasModule() {
                   />
                 </div>
                 <div className="flex items-center gap-2 w-full md:w-auto md:ml-auto flex-wrap">
+                  {selectedIds.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => setShowBulkDelete(true)}
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" /> Excluir Selecionados (
+                      {selectedIds.length})
+                    </Button>
+                  )}
                   <Button
                     variant="outline"
                     size="sm"
@@ -691,8 +767,49 @@ export default function EntregasModule() {
           { key: "data_hora_entregue", label: "Data/Hora Entregue" },
           { key: "observacao", label: "Observação" },
           { key: "status", label: "Status" },
-          { key: "cliente_endereco", label: "Cliente Endereço" },
+          { key: "entrega_endereco", label: "Entrega Endereço" },
         ]}
+      />
+
+      <BulkDeleteAlert
+        isOpen={showBulkDelete}
+        onClose={() => setShowBulkDelete(false)}
+        onConfirm={async () => {
+          try {
+            await makeRequest(`/api/entregas/bulk-delete`, {
+              method: "POST",
+              body: JSON.stringify({ ids: selectedIds }),
+            });
+            toast({
+              title: "Entregas excluídas",
+              description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
+            });
+            await refreshAfterMutation();
+            setShowBulkDelete(false);
+          } catch (error: any) {
+            const list = readLocal().filter((e) => !selectedIds.includes(e.id));
+            writeLocal(list);
+            setEntregas(list);
+            toast({
+              title: "Exclusão concluída localmente",
+              description: `${selectedIds.length} registro(s) removido(s)`,
+            });
+            await refreshAfterMutation();
+            setShowBulkDelete(false);
+          }
+        }}
+        selectedCount={selectedIds.length}
+      />
+
+      <DeleteAlert
+        isOpen={showDeleteAlert}
+        onClose={() => setShowDeleteAlert(false)}
+        onConfirm={async () => {
+          if (entregaToDelete) await handleDelete(entregaToDelete);
+          setShowDeleteAlert(false);
+          setEntregaToDelete(null);
+        }}
+        itemName="esta entrega"
       />
 
       <ImportModal
@@ -729,7 +846,7 @@ export default function EntregasModule() {
           { key: "status", label: "Status" },
           {
             key: "endereco",
-            label: "Cliente Endereço (CEP - Endereço - Cidade/UF - País)",
+            label: "Entrega Endereço (CEP - Endereço - Cidade/UF - País)",
           },
         ]}
         mapHeader={(h) => {
@@ -751,6 +868,7 @@ export default function EntregasModule() {
             Observação: "observacao",
             Status: "status",
             "Cliente Endereço": "endereco",
+            "Entrega Endereço": "endereco",
           };
           if (exact[original]) return exact[original];
           const lower: Record<string, string> = {
@@ -783,6 +901,9 @@ export default function EntregasModule() {
           return errs;
         }}
         onImport={async (records) => {
+          try {
+            localStorage.removeItem(LOCAL_KEY);
+          } catch {}
           const parseCentavos = (val: any): number => {
             if (val === undefined || val === null || val === "") return 0;
             if (typeof val === "number") return Math.round(val * 100);
@@ -818,7 +939,10 @@ export default function EntregasModule() {
 
           const full = records.map((r) => {
             const endRaw = String(
-              r.endereco || r["Cliente Endereço"] || "",
+              r.endereco ||
+                r["Cliente Endereço"] ||
+                r["Entrega Endereço"] ||
+                "",
             ).trim();
             let endereco: any = null;
             if (endRaw) {
@@ -872,7 +996,7 @@ export default function EntregasModule() {
               method: "POST",
               body: JSON.stringify({ records: full }),
             });
-            await Promise.all([loadEntregas(), loadCounts()]);
+            await refreshAfterMutation();
             return {
               success: true,
               imported: response?.imported ?? full.length,

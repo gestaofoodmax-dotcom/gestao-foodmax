@@ -795,11 +795,20 @@ export default function AbastecimentosModule() {
       const cityUf = end?.cidade
         ? `${end.cidade}${end.uf ? `/${end.uf}` : ""}`
         : "";
-      const enderecoStr = end
-        ? [end.cep, end.endereco, cityUf, end.pais]
-            .filter((x) => typeof x === "string" && x.trim() !== "")
-            .join(" - ")
-        : "";
+      let enderecoStr = "";
+      if (end) {
+        const hasCep = typeof end.cep === "string" && end.cep.trim() !== "";
+        const cepText = hasCep ? end.cep.trim() : "";
+        const rest = [end.endereco, cityUf, end.pais].filter(
+          (x) => typeof x === "string" && x.trim() !== "",
+        );
+        if (hasCep) {
+          enderecoStr =
+            rest.length > 0 ? `${cepText} - ${rest.join(" - ")}` : cepText;
+        } else {
+          enderecoStr = rest.length > 0 ? ` - ${rest.join(" - ")}` : " - ";
+        }
+      }
 
       const fornecedoresStr = Array.isArray(abastecimento.fornecedores_nomes)
         ? abastecimento.fornecedores_nomes.filter((n: string) => !!n).join("; ")
