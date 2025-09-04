@@ -353,8 +353,8 @@ export default function FinanceiroModule() {
               <div>
                 <h2 className="text-2xl font-semibold text-gray-800">Financeiro</h2>
                 <p className="text-gray-600 mt-1">Gerencie suas receitas e despesas.</p>
-                <div className="mt-3 flex flex-col md:flex-row md:items-center gap-3">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
+                <div className="mt-3 flex flex-col gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
                     <div>
                       <Select value={selectedEstabelecimento} onValueChange={(v) => { setSelectedEstabelecimento(v); setCurrentPage(1); }}>
                         <SelectTrigger className="foodmax-input">
@@ -379,19 +379,19 @@ export default function FinanceiroModule() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="bg-white border rounded-lg p-3 text-center">
-                        <div className="text-xs text-gray-500">Total Receitas</div>
-                        <div className="text-lg font-semibold text-green-600">{formatCurrencyBRL(totals.totalReceitas)}</div>
-                      </div>
-                      <div className="bg-white border rounded-lg p-3 text-center">
-                        <div className="text-xs text-gray-500">Total Despesas</div>
-                        <div className="text-lg font-semibold text-red-600">{formatCurrencyBRL(totals.totalDespesas)}</div>
-                      </div>
-                      <div className="bg-white border rounded-lg p-3 text-center">
-                        <div className="text-xs text-gray-500">Saldo Líquido</div>
-                        <div className={`text-lg font-semibold ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`}>{formatCurrencyBRL(totals.saldoLiquido)}</div>
-                      </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full">
+                    <div className="bg-white border rounded-lg p-3 text-center">
+                      <div className="text-xs text-gray-500">Total Receitas</div>
+                      <div className="text-lg font-semibold text-green-600">{formatCurrencyBRL(totals.totalReceitas)}</div>
+                    </div>
+                    <div className="bg-white border rounded-lg p-3 text-center">
+                      <div className="text-xs text-gray-500">Total Despesas</div>
+                      <div className="text-lg font-semibold text-red-600">{formatCurrencyBRL(totals.totalDespesas)}</div>
+                    </div>
+                    <div className="bg-white border rounded-lg p-3 text-center">
+                      <div className="text-xs text-gray-500">Saldo Líquido</div>
+                      <div className={`text-lg font-semibold ${totals.saldoLiquido >= 0 ? "text-green-700" : "text-red-700"}`}>{formatCurrencyBRL(totals.saldoLiquido)}</div>
                     </div>
                   </div>
                 </div>
