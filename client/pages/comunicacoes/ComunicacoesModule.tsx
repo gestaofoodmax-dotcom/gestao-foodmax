@@ -37,6 +37,8 @@ import { DeleteAlert, BulkDeleteAlert } from "@/components/alert-dialog-componen
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Cliente } from "@shared/clientes";
 import { Fornecedor } from "@shared/fornecedores";
+import { ExportModal } from "@/components/export-modal";
+import { ImportModal } from "@/components/import-modal";
 
 export default function ComunicacoesModule() {
   const isMobile = useIsMobile();
