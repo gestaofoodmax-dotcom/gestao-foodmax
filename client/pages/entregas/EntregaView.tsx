@@ -49,11 +49,17 @@ export default function EntregaView({
   useEffect(() => {
     const load = async () => {
       if (!entrega?.id) return;
-      try { setDet(null); } catch {}
+      try {
+        setDet(null);
+      } catch {}
       setLoading(true);
       try {
-        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 5000));
-        const dataPromise = makeRequest(`/api/entregas/${entrega.id}?_t=${Date.now()}`);
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("timeout")), 5000),
+        );
+        const dataPromise = makeRequest(
+          `/api/entregas/${entrega.id}?_t=${Date.now()}`,
+        );
         const data = (await Promise.race([dataPromise, timeoutPromise])) as any;
         setDet(data);
       } catch {
@@ -66,12 +72,18 @@ export default function EntregaView({
   }, [isOpen, entrega?.id, makeRequest]);
 
   useEffect(() => {
-    if (!isOpen) { setDet(null); setLoading(false); }
+    if (!isOpen) {
+      setDet(null);
+      setLoading(false);
+    }
   }, [isOpen]);
 
   return (
     <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="w-[85vw] h-[90vh] max-w-none overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent
+        className="w-[85vw] h-[90vh] max-w-none overflow-y-auto"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
             Visualizar Entrega
@@ -144,7 +156,9 @@ export default function EntregaView({
                 </div>
                 <div>
                   <Label>Cliente</Label>
-                  <div className="text-sm">{det.cliente_nome || "Não Cliente"}</div>
+                  <div className="text-sm">
+                    {det.cliente_nome || "Não Cliente"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -158,15 +172,21 @@ export default function EntregaView({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label>Valor Pedido</Label>
-                  <div className="text-sm">{formatCurrencyBRL(det.valor_pedido)}</div>
+                  <div className="text-sm">
+                    {formatCurrencyBRL(det.valor_pedido)}
+                  </div>
                 </div>
                 <div>
                   <Label>Taxa Extra</Label>
-                  <div className="text-sm">{formatCurrencyBRL(det.taxa_extra)}</div>
+                  <div className="text-sm">
+                    {formatCurrencyBRL(det.taxa_extra)}
+                  </div>
                 </div>
                 <div>
                   <Label>Valor Entrega</Label>
-                  <div className="text-sm">{formatCurrencyBRL(det.valor_entrega)}</div>
+                  <div className="text-sm">
+                    {formatCurrencyBRL(det.valor_entrega)}
+                  </div>
                 </div>
                 <div>
                   <Label>Forma de Pagamento</Label>
@@ -211,11 +231,17 @@ export default function EntregaView({
                   </div>
                   <div>
                     <Label>Endereço</Label>
-                    <div className="text-sm">{det.endereco.endereco || "-"}</div>
+                    <div className="text-sm">
+                      {det.endereco.endereco || "-"}
+                    </div>
                   </div>
                   <div>
                     <Label>Cidade/UF</Label>
-                    <div className="text-sm">{det.endereco.cidade ? `${det.endereco.cidade}${det.endereco.uf ? `/${det.endereco.uf}` : ""}` : "-"}</div>
+                    <div className="text-sm">
+                      {det.endereco.cidade
+                        ? `${det.endereco.cidade}${det.endereco.uf ? `/${det.endereco.uf}` : ""}`
+                        : "-"}
+                    </div>
                   </div>
                   <div>
                     <Label>País</Label>
@@ -234,10 +260,11 @@ export default function EntregaView({
                   <FileText className="w-5 h-5 text-red-600" />
                   <span className="text-red-600">Observação</span>
                 </h3>
-                <div className="text-sm whitespace-pre-wrap">{det.observacao}</div>
+                <div className="text-sm whitespace-pre-wrap">
+                  {det.observacao}
+                </div>
               </div>
             )}
-
 
             {/* Detalhes do Cadastro */}
             <div className="bg-white rounded-lg p-4 border">
@@ -249,22 +276,32 @@ export default function EntregaView({
                 <div>
                   <Label>Data de Cadastro</Label>
                   <div className="text-sm">
-                    {new Date(det.data_cadastro).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour12: false })}
+                    {new Date(det.data_cadastro).toLocaleString("pt-BR", {
+                      timeZone: "America/Sao_Paulo",
+                      hour12: false,
+                    })}
                   </div>
                 </div>
                 <div>
                   <Label>Última Atualização</Label>
                   <div className="text-sm">
-                    {new Date(det.data_atualizacao).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour12: false })}
+                    {new Date(det.data_atualizacao).toLocaleString("pt-BR", {
+                      timeZone: "America/Sao_Paulo",
+                      hour12: false,
+                    })}
                   </div>
                 </div>
                 <div>
                   <Label>Data/Hora Saída</Label>
-                  <div className="text-sm">{formatDateTimeBR(det.data_hora_saida)}</div>
+                  <div className="text-sm">
+                    {formatDateTimeBR(det.data_hora_saida)}
+                  </div>
                 </div>
                 <div>
                   <Label>Data/Hora Entregue</Label>
-                  <div className="text-sm">{formatDateTimeBR(det.data_hora_entregue)}</div>
+                  <div className="text-sm">
+                    {formatDateTimeBR(det.data_hora_entregue)}
+                  </div>
                 </div>
               </div>
             </div>
