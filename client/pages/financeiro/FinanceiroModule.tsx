@@ -761,20 +761,19 @@ export default function FinanceiroModule() {
       <ExportModal
         isOpen={showExport}
         onClose={() => setShowExport(false)}
-        data={transacoes.map((t) => ({
-          estabelecimento_nome:
-            estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome ||
-            "",
-          tipo: t.tipo,
-          categoria: t.categoria,
-          valor: (t.valor / 100).toFixed(2),
-          data_transacao: t.data_transacao
-            ? t.data_transacao.split("T")[0]
-            : "",
-          descricao: t.descricao || "",
-          ativo: t.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
-        }))}
+        data={(exportData && exportData.length
+          ? exportData
+          : transacoes.map((t) => ({
+              estabelecimento_nome:
+                estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome || "",
+              tipo: t.tipo,
+              categoria: t.categoria,
+              valor: (t.valor / 100).toFixed(2),
+              data_transacao: t.data_transacao ? new Date(t.data_transacao).toISOString().split("T")[0] : "",
+              descricao: t.descricao || "",
+              ativo: t.ativo ? "Ativo" : "Inativo",
+              data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
+            })))}
         selectedIds={selectedIds}
         moduleName={"Financeiro"}
         columns={[
@@ -782,10 +781,10 @@ export default function FinanceiroModule() {
           { key: "tipo", label: "Tipo" },
           { key: "categoria", label: "Categoria" },
           { key: "valor", label: "Valor" },
-          { key: "data_transacao", label: "Data Transação" },
+          { key: "data_transacao", label: "Data da Transação" },
           { key: "descricao", label: "Descrição" },
           { key: "ativo", label: "Ativo" },
-          { key: "data_cadastro", label: "Data Cadastro" },
+          { key: "data_cadastro", label: "Data de Cadastro" },
         ]}
       />
 
@@ -796,17 +795,14 @@ export default function FinanceiroModule() {
         userRole={getUserRole()}
         hasPayment={hasPayment()}
         columns={[
-          {
-            key: "estabelecimento_nome",
-            label: "Estabelecimento",
-            required: true,
-          },
+          { key: "estabelecimento_nome", label: "Estabelecimento", required: true },
           { key: "tipo", label: "Tipo", required: true },
           { key: "categoria", label: "Categoria", required: true },
           { key: "valor", label: "Valor", required: true },
-          { key: "data_transacao", label: "Data Transação" },
+          { key: "data_transacao", label: "Data da Transação", required: true },
           { key: "descricao", label: "Descrição" },
           { key: "ativo", label: "Ativo" },
+          { key: "data_cadastro", label: "Data de Cadastro" },
         ]}
         mapHeader={(h) => {
           const n = h.trim().toLowerCase();
@@ -818,8 +814,12 @@ export default function FinanceiroModule() {
             valor: "valor",
             "data transacao": "data_transacao",
             "data da transação": "data_transacao",
+            "data da transacao": "data_transacao",
+            data_transacao: "data_transacao",
             descricao: "descricao",
             ativo: "ativo",
+            "data cadastro": "data_cadastro",
+            data_cadastro: "data_cadastro",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
@@ -867,9 +867,22 @@ export default function FinanceiroModule() {
                   tipo: tipo as any,
                   categoria: String(r.categoria || "Outros").trim() || "Outros",
                   valor: parseCentavos(r.valor),
-                  data_transacao: r.data_transacao
-                    ? new Date(r.data_transacao).toISOString()
-                    : null,
+                  data_transacao: ((): string | null => {
+                    const s = r.data_transacao ? String(r.data_transacao).trim() : "";
+                    if (!s) return null;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+                      const [dd, mm, yyyy] = s.split("/");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                      const [yyyy, mm, dd] = s.split("-");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    const dt = new Date(s);
+                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0,10)}T00:00:00-03:00`;
+                    return null;
+                  })(),
                   descricao: r.descricao ? String(r.descricao) : "",
                   ativo:
                     typeof r.ativo === "string"
@@ -897,9 +910,23 @@ export default function FinanceiroModule() {
                   tipo: tipo as any,
                   categoria: String((r as any).categoria || "Outros"),
                   valor: parseCentavos((r as any).valor),
-                  data_transacao: (r as any).data_transacao
-                    ? new Date((r as any).data_transacao).toISOString()
-                    : null,
+                  data_transacao: ((): string | null => {
+                    const v = (r as any).data_transacao;
+                    const s = v ? String(v).trim() : "";
+                    if (!s) return null;
+                    const toISOBr = (yyyy: string, mm: string, dd: string) => `${yyyy}-${mm}-${dd}T00:00:00-03:00`;
+                    if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+                      const [dd, mm, yyyy] = s.split("/");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+                      const [yyyy, mm, dd] = s.split("-");
+                      return toISOBr(yyyy, mm, dd);
+                    }
+                    const dt = new Date(s);
+                    if (!isNaN(dt.getTime())) return `${dt.toISOString().slice(0,10)}T00:00:00-03:00`;
+                    return null;
+                  })(),
                   descricao: (r as any).descricao || "",
                   ativo:
                     typeof (r as any).ativo === "string"
