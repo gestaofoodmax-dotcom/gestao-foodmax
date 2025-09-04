@@ -102,7 +102,7 @@ export default function ComunicacaoForm({
       try {
         const params = new URLSearchParams({ page: "1", limit: "100" });
         const res = await makeRequest(`/api/estabelecimentos?${params}`);
-        data = (res.data || []) as Estabelecimento[];
+        data = (res?.data || []) as Estabelecimento[];
       } catch {
         const raw = localStorage.getItem("fm_estabelecimentos");
         data = raw ? (JSON.parse(raw) as Estabelecimento[]) : [];
@@ -111,7 +111,9 @@ export default function ComunicacaoForm({
       setEstabelecimentos(data);
       if (!comunicacao) {
         const lastActive = data.find((e) => e.ativo);
-        if (lastActive) setValue("estabelecimento_id", lastActive.id);
+        if (lastActive) {
+          setValue("estabelecimento_id", lastActive.id, { shouldDirty: false, shouldValidate: true });
+        }
       }
     } catch (e) {
       console.error(e);
@@ -143,6 +145,7 @@ export default function ComunicacaoForm({
 
   useEffect(() => {
     if (!isOpen) return;
+    try { localStorage.removeItem('fm_estabelecimentos'); } catch {}
     loadEstabelecimentos();
   }, [isOpen]);
 
@@ -312,10 +315,6 @@ export default function ComunicacaoForm({
 
               {watched.tipo_comunicacao === 'Fornecedor' && (
                 <div className="md:col-span-2">
-                  <div className="flex items-center gap-2 mb-1">
-                    <svg className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7l-2-2H3v16h18V6z"/></svg>
-                    <h3 className="font-semibold text-green-600">Conteúdo</h3>
-                  </div>
                   <Label>Destinatários *</Label>
                   <Select
                     value={watched.destinatarios_tipo as any}
@@ -408,8 +407,8 @@ export default function ComunicacaoForm({
 
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-1">
-              <svg className="w-5 h-5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
-              <h3 className="font-semibold text-indigo-600">Email</h3>
+              <svg className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16v16H4z"/><path d="m22 6-10 7L2 6"/></svg>
+              <h3 className="font-semibold text-green-600">Email</h3>
             </div>
             <div className="grid grid-cols-1 gap-3">
               <div>
