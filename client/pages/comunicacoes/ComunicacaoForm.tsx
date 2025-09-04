@@ -442,42 +442,6 @@ export default function ComunicacaoForm({
                   </div>
                 )}
 
-                {watched.tipo_comunicacao === 'Fornecedor' && (
-                  <div>
-                    <Label>Destinatários *</Label>
-                    <Select
-                      value={watched.destinatarios_tipo as any}
-                      onValueChange={(v) => setValue('destinatarios_tipo', v as any)}
-                    >
-                      <SelectTrigger className="foodmax-input">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="TodosFornecedores">Todos os fornecedores</SelectItem>
-                        <SelectItem value="FornecedoresEspecificos">Fornecedores específicos</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {watched.destinatarios_tipo === 'FornecedoresEspecificos' && (
-                      <div className="mt-3 max-h-48 overflow-auto border rounded p-2 bg-gray-50">
-                        {fornecedores.map((f) => (
-                          <label key={f.id} className="flex items-center gap-2 py-1">
-                            <input
-                              type="checkbox"
-                              checked={selectedFornecedores.includes(f.id)}
-                              onChange={(e) =>
-                                setSelectedFornecedores((prev) =>
-                                  e.target.checked ? [...prev, f.id] : prev.filter((id) => id !== f.id),
-                                )
-                              }
-                            />
-                            <span>{f.nome}</span>
-                            <span className="text-xs text-gray-500">{f.email}</span>
-                          </label>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 {watched.tipo_comunicacao === 'Outro' && (
                   <div>
