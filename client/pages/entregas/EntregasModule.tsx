@@ -519,6 +519,7 @@ export default function EntregasModule() {
         : "";
 
       return {
+        id: d.id,
         estabelecimento_nome: d.estabelecimento_nome || "",
         tipo_entrega: d.tipo_entrega,
         pedido: d.pedido_codigo || d.codigo_pedido_app || "",
