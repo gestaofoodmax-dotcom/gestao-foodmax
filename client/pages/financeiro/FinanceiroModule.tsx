@@ -1046,10 +1046,34 @@ export default function FinanceiroModule() {
               localStorage.removeItem(LOCAL_KEY);
             } catch {}
             await loadTransacoes();
+
+            if (remote === total) {
+              return {
+                success: true,
+                message: `${remote} transações importadas com sucesso no banco de dados`,
+                imported: remote,
+              } as any;
+            }
+
+            if (remote === 0) {
+              return {
+                success: false,
+                message:
+                  "Nenhum registro foi salvo no banco. Verifique o CSV e os campos obrigatórios.",
+                imported: 0,
+                errors: [
+                  `Salvos localmente: ${local}. Ajuste o arquivo e tente novamente.`,
+                ],
+              } as any;
+            }
+
             return {
-              success: true,
-              message: `${imported} transações importadas (banco: ${remote}, local: ${local})`,
-              imported,
+              success: false,
+              message: `${remote} de ${total} registro(s) foram salvos no banco. ${total - remote} falharam.`,
+              imported: remote,
+              errors: [
+                `Registros salvos localmente: ${local}. Corrija e tente novamente.`,
+              ],
             } as any;
           } catch (e) {
             return { success: false, message: "Erro ao importar" } as any;
