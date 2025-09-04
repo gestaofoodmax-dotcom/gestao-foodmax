@@ -514,11 +514,14 @@ export default function EntregasModule() {
     const buildRowFromDetail = (d: any) => {
       const end = d.endereco || null;
       const cityUf = end?.cidade ? `${end.cidade}${end.uf ? `/${end.uf}` : ""}` : "";
-      const enderecoStr = end
-        ? [end.cep, end.endereco, cityUf, end.pais]
-            .filter((x) => typeof x === "string" && x.trim() !== "")
-            .join(" - ")
-        : "";
+      let enderecoStr = "";
+      if (end) {
+        const cepSeg = typeof end.cep === "string" && end.cep.trim() ? end.cep.trim() : "-";
+        const rest = [end.endereco, cityUf, end.pais].filter(
+          (x) => typeof x === "string" && x.trim() !== "",
+        );
+        enderecoStr = rest.length > 0 ? `${cepSeg} - ${rest.join(" - ")}` : cepSeg;
+      }
 
       return {
         id: d.id,
