@@ -259,8 +259,8 @@ export default function ComunicacaoForm({
               <div>
                 <Label>Estabelecimento *</Label>
                 <Select
-                  value={watched.estabelecimento_id as any}
-                  onValueChange={(v) => setValue('estabelecimento_id', parseInt(v))}
+                  value={watched.estabelecimento_id != null ? String(watched.estabelecimento_id) : undefined}
+                  onValueChange={(v) => setValue('estabelecimento_id', parseInt(v, 10))}
                 >
                   <SelectTrigger className="foodmax-input">
                     <SelectValue placeholder="Selecione" />
