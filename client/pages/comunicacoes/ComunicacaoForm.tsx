@@ -321,6 +321,10 @@ export default function ComunicacaoForm({
               )}
 
               <div className="md:col-span-2">
+                <div className="flex items-center gap-2 mb-1">
+                  <svg className="w-5 h-5 text-green-600" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-7l-2-2H3v16h18V6z"/></svg>
+                  <h3 className="font-semibold text-green-600">Conteúdo</h3>
+                </div>
                 <Label>{watched.tipo_comunicacao === 'Promoção' ? 'Template de Email de Promoção' : 'Mensagem *'}</Label>
                 <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
                 {watched.tipo_comunicacao === 'Promoção' && (
