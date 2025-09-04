@@ -414,18 +414,6 @@ export default function ComunicacaoForm({
                     <div className="mt-3">
                       <Label>Template de Email de Promoção</Label>
                       <Textarea rows={5} {...register('mensagem')} className="foodmax-input resize-none" />
-                      <div className="mt-2 text-sm">
-                        <div className="flex items-center gap-2">
-                          <span>Editar texto em</span>
-                          <button
-                            type="button"
-                            onClick={() => window.open('/configuracoes', '_blank')}
-                            className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
-                          >
-                            <LinkIcon className="w-3 h-3" /> Configurações
-                          </button>
-                        </div>
-                      </div>
                       {promoImages.length > 0 && (
                         <div className="mt-3">
                           <div className="text-sm font-medium mb-2">Pré-visualização de Imagens</div>
@@ -438,6 +426,18 @@ export default function ComunicacaoForm({
                           </div>
                         </div>
                       )}
+                      <div className="mt-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span>Editar texto em</span>
+                          <button
+                            type="button"
+                            onClick={() => window.open('/configuracoes', '_blank')}
+                            className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                          >
+                            <LinkIcon className="w-3 h-3" /> Configurações
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
