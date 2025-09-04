@@ -143,9 +143,9 @@ export default function ComunicacoesModule() {
         return `Outros (${(r.destinatarios_text || '').split(/[;,\\s]+/g).filter(Boolean).length})`;
       }
     },
-    { key: "data_envio", label: "Data de Envio", render: (v: string) => (v ? new Date(v).toLocaleString('pt-BR') : '-') },
-    { key: "status", label: "Status", render: (v: StatusComunicacao) => <Badge className={getStatusBadgeColor(v)}>{v}</Badge> },
-    { key: "data_cadastro", label: "Data Cadastro", render: (v: string) => new Date(v).toLocaleDateString('pt-BR') },
+    { key: "data_envio", label: "Data de Envio", sortable: true, render: (v: string) => (v ? new Date(v).toLocaleString('pt-BR') : '-') },
+    { key: "status", label: "Status", sortable: true, render: (v: StatusComunicacao) => <Badge className={getStatusBadgeColor(v)}>{v}</Badge> },
+    { key: "data_cadastro", label: "Data Cadastro", sortable: true, render: (v: string) => new Date(v).toLocaleDateString('pt-BR') },
     {
       key: "acoes",
       label: "Ações",
