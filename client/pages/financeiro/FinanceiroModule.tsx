@@ -844,13 +844,11 @@ export default function FinanceiroModule() {
                 categoria: t.categoria,
                 valor: (t.valor / 100).toFixed(2),
                 data_transacao: t.data_transacao
-                  ? new Date(t.data_transacao).toISOString().split("T")[0]
+                  ? new Date(t.data_transacao).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })
                   : "",
                 descricao: t.descricao || "",
                 ativo: t.ativo ? "Ativo" : "Inativo",
-                data_cadastro: new Date(t.data_cadastro)
-                  .toISOString()
-                  .split("T")[0],
+                data_cadastro: new Date(t.data_cadastro).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
               }))
         }
         selectedIds={selectedIds}
