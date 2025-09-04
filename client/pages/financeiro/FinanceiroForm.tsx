@@ -300,8 +300,9 @@ export default function FinanceiroForm({
                 <Input
                   id="data"
                   type="date"
+                  required
                   {...register("data_transacao")}
-                  className="foodmax-input"
+                  className={`foodmax-input ${errors.data_transacao ? "border-red-500" : ""}`}
                 />
               </div>
               <div className="md:col-span-2">
