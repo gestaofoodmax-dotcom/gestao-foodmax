@@ -231,5 +231,14 @@ export function createServer() {
   app.patch("/api/entregas/:id/entregue", registrarEntregue);
   app.post("/api/entregas/import-full", importEntregasFull);
 
+  // Financeiro routes
+  app.get("/api/financeiro", listTransacoes);
+  app.get("/api/financeiro/:id", getTransacao);
+  app.post("/api/financeiro", createTransacao);
+  app.put("/api/financeiro/:id", updateTransacao);
+  app.delete("/api/financeiro/:id", deleteTransacao);
+  app.post("/api/financeiro/bulk-delete", bulkDeleteTransacoes);
+  app.patch("/api/financeiro/:id/toggle-status", toggleTransacaoStatus);
+
   return app;
 }
