@@ -761,6 +761,7 @@ export default function EntregasModule() {
             Observação: "observacao",
             Status: "status",
             "Cliente Endereço": "endereco",
+            "Entrega Endereço": "endereco",
           };
           if (exact[original]) return exact[original];
           const lower: Record<string, string> = {
