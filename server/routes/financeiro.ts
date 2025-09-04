@@ -32,6 +32,11 @@ const FinanceiroSchema = z.object({
     .optional()
     .nullable()
     .transform((v) => toISODate(v)),
+  data_cadastro: z
+    .union([z.string(), z.date(), z.number()])
+    .optional()
+    .nullable()
+    .transform((v) => toISODate(v)),
   descricao: z.string().optional().nullable(),
   ativo: z.boolean().default(true),
 });
@@ -215,7 +220,7 @@ export const updateTransacao: RequestHandler = async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-    res.json({ message: "Transaç��o atualizada com sucesso", data });
+    res.json({ message: "Transação atualizada com sucesso", data });
   } catch (e: any) {
     if (e instanceof z.ZodError) {
       return res
