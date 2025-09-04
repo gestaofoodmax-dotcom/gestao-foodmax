@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
@@ -13,11 +12,10 @@ import { Estabelecimento } from "@shared/estabelecimentos";
 import { formatCurrencyBRL } from "@shared/itens";
 import FinanceiroForm from "./FinanceiroForm";
 import FinanceiroView from "./FinanceiroView";
-import { useLocation } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import { useAuthenticatedRequest as useAuthReq } from "@/hooks/use-auth";
-import { Menu, Search, Plus, Trash2, Eye, Edit, Power, Upload, Download, Banknote, AlertTriangle } from "lucide-react";
+import { Menu, Search, Plus, Trash2, Eye, Edit, Power, Upload, Download, AlertTriangle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ExportModal } from "@/components/export-modal";
+import { ImportModal } from "@/components/import-modal";
 
 export default function FinanceiroModule() {
   const isMobile = useIsMobile();
@@ -38,6 +36,8 @@ export default function FinanceiroModule() {
   const pageSize = 10;
   const [totalRecords, setTotalRecords] = useState(0);
   const [totals, setTotals] = useState({ totalReceitas: 0, totalDespesas: 0, saldoLiquido: 0 });
+  const [showExport, setShowExport] = useState(false);
+  const [showImport, setShowImport] = useState(false);
 
   const LOCAL_KEY = "fm_financeiro";
   const readLocal = (): FinanceiroTransacao[] => {
@@ -361,16 +361,9 @@ export default function FinanceiroModule() {
                           <SelectValue placeholder="Selecione o estabelecimento" />
                         </SelectTrigger>
                         <SelectContent>
-                          {estabOptions
-                            .slice()
-                            .sort((a, b) => {
-                              const ai = a.value === "all" ? Number.MIN_SAFE_INTEGER : estabelecimentos.find((e) => String(e.id) === a.value)?.data_cadastro as any;
-                              const bi = b.value === "all" ? Number.MIN_SAFE_INTEGER : estabelecimentos.find((e) => String(e.id) === b.value)?.data_cadastro as any;
-                              return 0; // options already ordered above
-                            })
-                            .map((o) => (
-                              <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
-                            ))}
+                          {estabOptions.map((o) => (
+                            <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -467,11 +460,11 @@ export default function FinanceiroModule() {
                       Excluir Selecionados ({selectedIds.length})
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" onClick={() => toast({ title: "Importar", description: "Funcionalidade em breve" })}>
+                  <Button variant="outline" size="sm" onClick={() => setShowImport(true)}>
                     <Upload className="w-4 h-4 mr-2" />
                     Importar
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => toast({ title: "Exportar", description: "Funcionalidade em breve" })}>
+                  <Button variant="outline" size="sm" onClick={() => setShowExport(true)}>
                     <Download className="w-4 h-4 mr-2" />
                     Exportar
                   </Button>
@@ -517,6 +510,133 @@ export default function FinanceiroModule() {
         item={currentItem}
         estabelecimentoNome={currentItem ? (estabelecimentos.find((e) => e.id === currentItem.estabelecimento_id)?.nome || null) : null}
         onEdit={(t) => handleEdit(t)}
+      />
+
+      <ExportModal
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={transacoes.map((t) => ({
+          estabelecimento_nome: estabelecimentos.find((e) => e.id === t.estabelecimento_id)?.nome || "",
+          tipo: t.tipo,
+          categoria: t.categoria,
+          valor: (t.valor / 100).toFixed(2),
+          data_transacao: t.data_transacao ? t.data_transacao.split("T")[0] : "",
+          descricao: t.descricao || "",
+          ativo: t.ativo ? "Ativo" : "Inativo",
+          data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
+        }))}
+        selectedIds={selectedIds}
+        moduleName={"Financeiro"}
+        columns={[
+          { key: "estabelecimento_nome", label: "Estabelecimento" },
+          { key: "tipo", label: "Tipo" },
+          { key: "categoria", label: "Categoria" },
+          { key: "valor", label: "Valor" },
+          { key: "data_transacao", label: "Data Transação" },
+          { key: "descricao", label: "Descrição" },
+          { key: "ativo", label: "Ativo" },
+          { key: "data_cadastro", label: "Data Cadastro" },
+        ]}
+      />
+
+      <ImportModal
+        isOpen={showImport}
+        onClose={() => setShowImport(false)}
+        moduleName={"Financeiro"}
+        userRole={getUserRole()}
+        hasPayment={hasPayment()}
+        columns={[
+          { key: "estabelecimento_nome", label: "Estabelecimento", required: true },
+          { key: "tipo", label: "Tipo", required: true },
+          { key: "categoria", label: "Categoria", required: true },
+          { key: "valor", label: "Valor", required: true },
+          { key: "data_transacao", label: "Data Transação" },
+          { key: "descricao", label: "Descrição" },
+          { key: "ativo", label: "Ativo" },
+        ]}
+        mapHeader={(h) => {
+          const n = h.trim().toLowerCase();
+          const map: Record<string, string> = {
+            estabelecimento: "estabelecimento_nome",
+            estabelecimento_nome: "estabelecimento_nome",
+            tipo: "tipo",
+            categoria: "categoria",
+            valor: "valor",
+            "data transacao": "data_transacao",
+            "data da transação": "data_transacao",
+            descricao: "descricao",
+            ativo: "ativo",
+          };
+          return map[n] || n.replace(/\s+/g, "_");
+        }}
+        onImport={async (records) => {
+          try {
+            let imported = 0, remote = 0, local = 0;
+            const estabByName = new Map<string, Estabelecimento>();
+            estabelecimentos.forEach((e) => estabByName.set(e.nome.trim().toLowerCase(), e));
+
+            const parseCentavos = (val: any): number => {
+              if (val === undefined || val === null || val === "") return 0;
+              if (typeof val === "number") return Math.round(val * 100);
+              const s = String(val).trim();
+              const clean = s.replace(/[^0-9,.-]/g, "").replace(/\.(?=\d{3}(,|$))/g, "");
+              const dot = clean.replace(",", ".");
+              const n = Number(dot);
+              if (!isNaN(n)) return Math.round(n * 100);
+              const digits = s.replace(/\D/g, "");
+              return digits ? parseInt(digits, 10) : 0;
+            };
+
+            for (const r of records) {
+              try {
+                const estName = (r.estabelecimento_nome || r.estabelecimento || "").toString().trim().toLowerCase();
+                const est = estabByName.get(estName) || estabelecimentos[0];
+                if (!est) throw new Error("Estabelecimento inválido");
+                const tipo = String(r.tipo || "").trim();
+                const valid = tipo === "Receita" || tipo === "Despesa";
+                if (!valid) throw new Error("Tipo inválido");
+                const payload: any = {
+                  estabelecimento_id: est.id,
+                  tipo: tipo as any,
+                  categoria: String(r.categoria || "Outros").trim() || "Outros",
+                  valor: parseCentavos(r.valor),
+                  data_transacao: r.data_transacao ? new Date(r.data_transacao).toISOString() : null,
+                  descricao: r.descricao ? String(r.descricao) : "",
+                  ativo: typeof r.ativo === "string" ? r.ativo.toLowerCase() !== "false" : Boolean(r.ativo ?? true),
+                };
+                await makeRequest(`/api/financeiro`, { method: "POST", body: JSON.stringify(payload) });
+                imported++; remote++;
+              } catch {
+                const list = readLocal();
+                const now = new Date().toISOString();
+                const est = estabelecimentos[0];
+                const tipo = (String((r as any).tipo || "Receita").trim() === "Despesa") ? "Despesa" : "Receita";
+                const novo: FinanceiroTransacao = {
+                  id: Date.now() + imported,
+                  id_usuario: Number(localStorage.getItem("fm_user_id") || 1),
+                  estabelecimento_id: est ? est.id : 0,
+                  tipo: tipo as any,
+                  categoria: String((r as any).categoria || "Outros"),
+                  valor: parseCentavos((r as any).valor),
+                  data_transacao: (r as any).data_transacao ? new Date((r as any).data_transacao).toISOString() : null,
+                  descricao: (r as any).descricao || "",
+                  ativo: typeof (r as any).ativo === "string" ? (r as any).ativo.toLowerCase() !== "false" : Boolean((r as any).ativo ?? true),
+                  data_cadastro: now,
+                  data_atualizacao: now,
+                };
+                list.unshift(novo);
+                writeLocal(list);
+                setTransacoes(list);
+                imported++; local++;
+              }
+            }
+            try { localStorage.removeItem(LOCAL_KEY); } catch {}
+            await loadTransacoes();
+            return { success: true, message: `${imported} transações importadas (banco: ${remote}, local: ${local})`, imported } as any;
+          } catch (e) {
+            return { success: false, message: "Erro ao importar" } as any;
+          }
+        }}
       />
 
       {/* Simple delete confirm inline to match style */}
