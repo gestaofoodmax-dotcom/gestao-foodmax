@@ -70,7 +70,11 @@ export default function ComunicacaoView({
                 {comunicacao.status}
               </Badge>
               <p className="text-xs text-gray-500 mt-1">
-                Cadastrado em {new Date(comunicacao.data_cadastro).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour12: false })}
+                Cadastrado em{" "}
+                {new Date(comunicacao.data_cadastro).toLocaleString("pt-BR", {
+                  timeZone: "America/Sao_Paulo",
+                  hour12: false,
+                })}
               </p>
             </div>
           </div>
@@ -81,10 +85,19 @@ export default function ComunicacaoView({
               <span className="text-blue-600">Dados Básicos</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <DataField label="Estabelecimento" value={comunicacao.estabelecimento_id} />
-              <DataField label="Tipo de Comunicação" value={comunicacao.tipo_comunicacao} />
+              <DataField
+                label="Estabelecimento"
+                value={comunicacao.estabelecimento_id}
+              />
+              <DataField
+                label="Tipo de Comunicação"
+                value={comunicacao.tipo_comunicacao}
+              />
               <DataField label="Destinatários" value={destinatariosResumo()} />
-              <DataField label="Email Enviado" value={comunicacao.email_enviado ? "Sim" : "Não"} />
+              <DataField
+                label="Email Enviado"
+                value={comunicacao.email_enviado ? "Sim" : "Não"}
+              />
             </div>
           </div>
 
@@ -97,7 +110,9 @@ export default function ComunicacaoView({
               <DataField label="Assunto" value={comunicacao.assunto} />
             </div>
             <div className="mt-3">
-              <div className="text-sm font-medium text-gray-600 mb-1">Mensagem</div>
+              <div className="text-sm font-medium text-gray-600 mb-1">
+                Mensagem
+              </div>
               <div className="p-3 bg-gray-50 rounded border whitespace-pre-wrap text-sm">
                 {comunicacao.mensagem || "-"}
               </div>
@@ -112,14 +127,24 @@ export default function ComunicacaoView({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <DataField
                 label="Data de Cadastro"
-                value={new Date(comunicacao.data_cadastro).toLocaleString("pt-BR", {
-                  timeZone: "America/Sao_Paulo",
-                  hour12: false,
-                })}
+                value={new Date(comunicacao.data_cadastro).toLocaleString(
+                  "pt-BR",
+                  {
+                    timeZone: "America/Sao_Paulo",
+                    hour12: false,
+                  },
+                )}
               />
               <DataField
                 label="Data de Envio"
-                value={comunicacao.data_envio ? new Date(comunicacao.data_envio).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", hour12: false }) : "-"}
+                value={
+                  comunicacao.data_envio
+                    ? new Date(comunicacao.data_envio).toLocaleString("pt-BR", {
+                        timeZone: "America/Sao_Paulo",
+                        hour12: false,
+                      })
+                    : "-"
+                }
               />
               <DataField label="Status" value={comunicacao.status} />
             </div>

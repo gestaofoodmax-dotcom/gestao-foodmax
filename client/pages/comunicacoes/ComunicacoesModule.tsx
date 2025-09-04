@@ -7,7 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { DataGrid } from "@/components/data-grid";
 import { toast } from "@/hooks/use-toast";
@@ -95,7 +101,11 @@ export default function ComunicacoesModule() {
     mensagem: string;
     destinatarios: string[];
   }>({ assunto: "", mensagem: "", destinatarios: [] });
-  const [sendForm, setSendForm] = useState({ destinatarios: "", assunto: "", mensagem: "" });
+  const [sendForm, setSendForm] = useState({
+    destinatarios: "",
+    assunto: "",
+    mensagem: "",
+  });
 
   useEffect(() => setSidebarOpen(!isMobile), [isMobile]);
 
@@ -409,7 +419,11 @@ export default function ComunicacoesModule() {
     setSendProgress(0);
     const destinatarios = await getRecipientsForPreview(r);
     setSendPreview({ assunto: r.assunto, mensagem: r.mensagem, destinatarios });
-    setSendForm({ assunto: r.assunto || "", mensagem: r.mensagem || "", destinatarios: destinatarios.join(", ") });
+    setSendForm({
+      assunto: r.assunto || "",
+      mensagem: r.mensagem || "",
+      destinatarios: destinatarios.join(", "),
+    });
     setSendModalOpen(true);
   };
 
@@ -418,7 +432,10 @@ export default function ComunicacoesModule() {
     setSendLoading(true);
     try {
       // Atualiza o registro com eventuais alterações de assunto/mensagem/destinatários (para "Outro")
-      const updatePayload: any = { assunto: sendForm.assunto, mensagem: sendForm.mensagem };
+      const updatePayload: any = {
+        assunto: sendForm.assunto,
+        mensagem: sendForm.mensagem,
+      };
       if (current.tipo_comunicacao === "Outro") {
         updatePayload.destinatarios_text = sendForm.destinatarios;
       }
@@ -886,7 +903,10 @@ export default function ComunicacoesModule() {
           </DialogHeader>
 
           <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
-            <p>Confira os Destinatários, Assunto e Mensagem antes de enviar o email.</p>
+            <p>
+              Confira os Destinatários, Assunto e Mensagem antes de enviar o
+              email.
+            </p>
           </div>
 
           <div className="bg-white p-4 rounded-lg border space-y-4">
@@ -904,14 +924,16 @@ export default function ComunicacoesModule() {
                 }
                 placeholder="email1@dominio.com, email2@dominio.com"
                 className="foodmax-input"
-                disabled={sendLoading || (current?.tipo_comunicacao !== "Outro")}
+                disabled={sendLoading || current?.tipo_comunicacao !== "Outro"}
               />
             </div>
             <div>
               <Label>Assunto do Email</Label>
               <Input
                 value={sendForm.assunto}
-                onChange={(e) => setSendForm((f) => ({ ...f, assunto: e.target.value }))}
+                onChange={(e) =>
+                  setSendForm((f) => ({ ...f, assunto: e.target.value }))
+                }
                 className="foodmax-input"
                 disabled={sendLoading}
               />
@@ -921,7 +943,9 @@ export default function ComunicacoesModule() {
               <Textarea
                 rows={8}
                 value={sendForm.mensagem}
-                onChange={(e) => setSendForm((f) => ({ ...f, mensagem: e.target.value }))}
+                onChange={(e) =>
+                  setSendForm((f) => ({ ...f, mensagem: e.target.value }))
+                }
                 className="foodmax-input"
                 disabled={sendLoading}
               />
@@ -930,7 +954,9 @@ export default function ComunicacoesModule() {
             {sendLoading && (
               <div>
                 <Progress value={sendProgress} />
-                <div className="mt-1 text-xs text-gray-600">Enviando email...</div>
+                <div className="mt-1 text-xs text-gray-600">
+                  Enviando email...
+                </div>
               </div>
             )}
           </div>

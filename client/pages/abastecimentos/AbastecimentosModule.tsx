@@ -1134,7 +1134,10 @@ export default function AbastecimentosModule() {
 
           {!emailLoading && (
             <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded p-3 text-sm">
-              <p>Confira os Destinatários, Assunto e Mensagem antes de enviar o email.</p>
+              <p>
+                Confira os Destinatários, Assunto e Mensagem antes de enviar o
+                email.
+              </p>
             </div>
           )}
 
@@ -1142,13 +1145,17 @@ export default function AbastecimentosModule() {
             {emailLoading ? (
               <div className="flex flex-col items-center justify-center py-10">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foodmax-orange mb-2"></div>
-                <span className="text-sm text-gray-600">Carregando dados...</span>
+                <span className="text-sm text-gray-600">
+                  Carregando dados...
+                </span>
               </div>
             ) : (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Mail className="w-5 h-5 text-foodmax-orange" />
-                  <h3 className="font-semibold text-foodmax-orange">Pedido de Compra</h3>
+                  <h3 className="font-semibold text-foodmax-orange">
+                    Pedido de Compra
+                  </h3>
                 </div>
                 <div>
                   <Label>Destinatários</Label>
@@ -1212,7 +1219,7 @@ export default function AbastecimentosModule() {
               variant="outline"
               onClick={() => setShowEmailModal(false)}
               disabled={emailSending || emailLoading}
->
+            >
               <X className="w-4 h-4 mr-2" />
               Cancelar
             </Button>
@@ -1285,7 +1292,7 @@ export default function AbastecimentosModule() {
                   setEmailSending(false);
                 }
               }}
->
+            >
               <Send className="w-4 h-4 mr-2" />
               Enviar Email
             </Button>
