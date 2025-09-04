@@ -252,7 +252,7 @@ export default function AbastecimentosModule() {
             >
               <Send
                 className={`w-4 h-4 ${
-                  r.email_enviado ? "text-gray-400" : "text-foodmax-orange"
+                  r.email_enviado ? "text-gray-400" : "text-yellow-700"
                 }`}
               />
             </Button>
