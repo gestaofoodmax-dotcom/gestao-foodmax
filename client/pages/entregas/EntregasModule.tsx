@@ -739,7 +739,7 @@ export default function EntregasModule() {
           { key: "status", label: "Status" },
           {
             key: "endereco",
-            label: "Cliente Endereço (CEP - Endereço - Cidade/UF - País)",
+            label: "Entrega Endereço (CEP - Endereço - Cidade/UF - País)",
           },
         ]}
         mapHeader={(h) => {
