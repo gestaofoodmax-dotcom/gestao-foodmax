@@ -149,7 +149,7 @@ export default function ComunicacaoForm({
   useEffect(() => {
     if (!isOpen) return;
     const estId = watched.estabelecimento_id;
-    if (estId) loadClientes(estId);
+    loadClientes(estId as any);
     loadFornecedores();
   }, [isOpen, watched.estabelecimento_id]);
 
@@ -252,7 +252,7 @@ export default function ComunicacaoForm({
         <form onSubmit={handleSubmit(save)} className="space-y-6">
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-1">
-              <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h18v2H3V5zm0 6h18v2H3v-2zm0 6h18v2H3v-2z"/></svg>
+              <svg className="w-5 h-5 text-blue-600" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/></svg>
               <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -401,10 +401,6 @@ export default function ComunicacaoForm({
 
 
               <div className="md:col-span-2">
-                <div className="flex items-center gap-2 mb-1">
-                  <svg className="w-5 h-5 text-purple-600" viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0C9.66 11 11 9.66 11 8S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
-                  <h3 className="font-semibold text-purple-600">Destinatários</h3>
-                </div>
                 {watched.tipo_comunicacao === 'Promoção' && (
                   <div>
                     <Label>Destinatários *</Label>
