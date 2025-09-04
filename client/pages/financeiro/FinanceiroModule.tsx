@@ -336,7 +336,7 @@ export default function FinanceiroModule() {
             : "",
           descricao: t.descricao || "",
           ativo: t.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
+          data_cadastro: new Date(t.data_cadastro).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
         }));
         setExportData(mapped);
       } catch {
@@ -353,7 +353,7 @@ export default function FinanceiroModule() {
             : "",
           descricao: t.descricao || "",
           ativo: t.ativo ? "Ativo" : "Inativo",
-          data_cadastro: new Date(t.data_cadastro).toISOString().split("T")[0],
+          data_cadastro: new Date(t.data_cadastro).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }),
         }));
         setExportData(mapped);
       }
