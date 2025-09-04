@@ -195,6 +195,19 @@ export default function ComunicacoesModule() {
 
   const handleNew = () => { setCurrent(null); setIsEditing(false); setShowForm(true); };
   const handleEdit = (r: Comunicacao) => { setCurrent(r); setIsEditing(true); setShowForm(true); };
+
+  const filteredRows = useMemo(() => {
+    if (!searchTerm) return rows;
+    const s = searchTerm.toLowerCase();
+    return rows.filter((r) => {
+      const est = (estabelecimentosMap.get(r.estabelecimento_id) || "").toLowerCase();
+      const assunto = (r.assunto || "").toLowerCase();
+      const msg = (r.mensagem || "").toLowerCase();
+      const dest = (r.destinatarios_text || "").toLowerCase();
+      const status = (r.status || "").toLowerCase();
+      return [est, assunto, msg, dest, status].some((v) => v.includes(s));
+    });
+  }, [rows, searchTerm, estabelecimentosMap]);
   const handleView = (r: Comunicacao) => { setCurrent(r); setShowView(true); };
   const handleDelete = (r: Comunicacao) => { setCurrent(r); setShowDeleteAlert(true); };
 
