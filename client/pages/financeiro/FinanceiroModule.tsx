@@ -915,9 +915,10 @@ export default function FinanceiroModule() {
         }}
         onImport={async (records) => {
           try {
-            let imported = 0,
+            let imported = 0; // registros salvos no banco
               remote = 0,
               local = 0;
+            const total = records.length;
             const estabByName = new Map<string, Estabelecimento>();
             estabelecimentos.forEach((e) =>
               estabByName.set(e.nome.trim().toLowerCase(), e),
