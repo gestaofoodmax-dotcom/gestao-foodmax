@@ -128,7 +128,8 @@ export default function EntregasModule() {
         key: "pedido",
         label: "Pedido",
         sortable: true,
-        render: (_: any, r: any) => r.pedido || r.pedido_codigo || r.codigo_pedido_app || "-",
+        render: (_: any, r: any) =>
+          r.pedido || r.pedido_codigo || r.codigo_pedido_app || "-",
       },
       {
         key: "tipo_entrega",
@@ -294,12 +295,12 @@ export default function EntregasModule() {
         setEntregas(mapped as any);
       } else {
         const local = readLocal();
-        const filtered = local.filter(
-          (e) => activeTab === "Todos" || e.tipo_entrega === activeTab,
-        ).map((e: any) => ({
-          ...e,
-          pedido: e.pedido || e.pedido_codigo || e.codigo_pedido_app || "",
-        }));
+        const filtered = local
+          .filter((e) => activeTab === "Todos" || e.tipo_entrega === activeTab)
+          .map((e: any) => ({
+            ...e,
+            pedido: e.pedido || e.pedido_codigo || e.codigo_pedido_app || "",
+          }));
         setEntregas(filtered as any);
       }
     } finally {
