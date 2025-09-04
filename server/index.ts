@@ -250,5 +250,15 @@ export function createServer() {
   app.post("/api/financeiro/bulk-delete", bulkDeleteTransacoes);
   app.patch("/api/financeiro/:id/toggle-status", toggleTransacaoStatus);
 
+  // Comunicações routes
+  app.get("/api/comunicacoes", listComunicacoes);
+  app.get("/api/comunicacoes/:id", getComunicacao);
+  app.post("/api/comunicacoes", createComunicacao);
+  app.put("/api/comunicacoes/:id", updateComunicacao);
+  app.delete("/api/comunicacoes/:id", deleteComunicacao);
+  app.post("/api/comunicacoes/bulk-delete", bulkDeleteComunicacoes);
+  app.post("/api/comunicacoes/:id/send", sendComunicacao);
+  app.post("/api/comunicacoes/send-bulk", sendComunicacoesBulk);
+
   return app;
 }
