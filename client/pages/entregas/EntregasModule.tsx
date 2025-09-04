@@ -748,6 +748,36 @@ export default function EntregasModule() {
         ]}
       />
 
+      <BulkDeleteAlert
+        isOpen={showBulkDelete}
+        onClose={() => setShowBulkDelete(false)}
+        onConfirm={async () => {
+          try {
+            await makeRequest(`/api/entregas/bulk-delete`, {
+              method: "POST",
+              body: JSON.stringify({ ids: selectedIds }),
+            });
+            toast({
+              title: "Entregas excluídas",
+              description: `${selectedIds.length} registro(s) excluído(s) com sucesso`,
+            });
+            await refreshAfterMutation();
+            setShowBulkDelete(false);
+          } catch (error: any) {
+            const list = readLocal().filter((e) => !selectedIds.includes(e.id));
+            writeLocal(list);
+            setEntregas(list);
+            toast({
+              title: "Exclusão concluída localmente",
+              description: `${selectedIds.length} registro(s) removido(s)`,
+            });
+            await refreshAfterMutation();
+            setShowBulkDelete(false);
+          }
+        }}
+        selectedCount={selectedIds.length}
+      />
+
       <ImportModal
         isOpen={showImport}
         onClose={() => setShowImport(false)}
