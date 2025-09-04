@@ -186,10 +186,17 @@ export const createTransacao: RequestHandler = async (req, res) => {
     if (!userId)
       return res.status(401).json({ error: "Usuário não autenticado" });
     const input = FinanceiroSchema.parse(req.body);
+    const now = new Date().toISOString();
+    const row = {
+      ...input,
+      id_usuario: userId,
+      data_cadastro: input.data_cadastro || now,
+      data_atualizacao: now,
+    } as any;
     const supabase = getSupabaseServiceClient();
     const { data, error } = await supabase
       .from("financeiro_transacoes")
-      .insert({ ...input, id_usuario: userId })
+      .insert(row)
       .select()
       .single();
     if (error) throw error;
@@ -212,10 +219,12 @@ export const updateTransacao: RequestHandler = async (req, res) => {
       return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     const input = UpdateFinanceiroSchema.parse(req.body);
+    const now = new Date().toISOString();
+    const updates = { ...input, data_atualizacao: now } as any;
     const supabase = getSupabaseServiceClient();
     const { data, error } = await supabase
       .from("financeiro_transacoes")
-      .update(input)
+      .update(updates)
       .eq("id", id)
       .select()
       .single();
