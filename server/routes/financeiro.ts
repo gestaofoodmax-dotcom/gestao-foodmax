@@ -5,20 +5,20 @@ import { getSupabaseServiceClient } from "../supabase";
 const toISODate = (v: unknown): string | null => {
   if (v === null || v === undefined || v === "") return null;
   if (v instanceof Date && !isNaN(v.getTime()))
-    return `${v.toISOString().slice(0, 10)}T00:00:00.000Z`;
+    return `${v.toISOString().slice(0, 10)}T03:00:00.000Z`;
   const s = String(v).trim();
   if (!s) return null;
   if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
     const [dd, mm, yyyy] = s.split("/");
-    return `${yyyy}-${mm}-${dd}T00:00:00.000Z`;
+    return `${yyyy}-${mm}-${dd}T03:00:00.000Z`;
   }
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
     const [yyyy, mm, dd] = s.split("-");
-    return `${yyyy}-${mm}-${dd}T00:00:00.000Z`;
+    return `${yyyy}-${mm}-${dd}T03:00:00.000Z`;
   }
   // Fallback: try parsing
   const d = new Date(s);
-  if (!isNaN(d.getTime())) return `${d.toISOString().slice(0, 10)}T00:00:00.000Z`;
+  if (!isNaN(d.getTime())) return `${d.toISOString().slice(0, 10)}T03:00:00.000Z`;
   return null;
 };
 
@@ -215,7 +215,7 @@ export const updateTransacao: RequestHandler = async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-    res.json({ message: "Transação atualizada com sucesso", data });
+    res.json({ message: "Transaç��o atualizada com sucesso", data });
   } catch (e: any) {
     if (e instanceof z.ZodError) {
       return res
