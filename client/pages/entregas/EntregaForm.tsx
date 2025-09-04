@@ -569,7 +569,7 @@ export default function EntregaForm({
                     setValorPedidoMask(e.target.value === "" ? "" : formatCurrencyBRL(cents));
                     setValue("valor_pedido", cents, { shouldDirty: true });
                   }}
-                  placeholder="R$ 0,00"
+                  placeholder=""
                   className="foodmax-input"
                 />
               </div>
@@ -582,7 +582,7 @@ export default function EntregaForm({
                     setTaxaExtraMask(e.target.value === "" ? "" : formatCurrencyBRL(cents));
                     setValue("taxa_extra", cents, { shouldDirty: true });
                   }}
-                  placeholder="R$ 0,00"
+                  placeholder=""
                   className="foodmax-input"
                 />
               </div>
@@ -595,7 +595,7 @@ export default function EntregaForm({
                     setValorEntregaMask(e.target.value === "" ? "" : formatCurrencyBRL(cents));
                     setValue("valor_entrega", cents, { shouldDirty: true });
                   }}
-                  placeholder="R$ 0,00"
+                  placeholder=""
                   className={cn("foodmax-input", (!values.valor_entrega && values.valor_entrega !== 0) && "border-red-500")}
                 />
               </div>
