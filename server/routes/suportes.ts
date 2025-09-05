@@ -354,7 +354,7 @@ export const listRespostasSuporte: RequestHandler = async (req, res) => {
     if (userIds.length > 0) {
       const { data: usersData } = await supabase
         .from("usuarios")
-        .select("id, email")
+        .select("id, email, role")
         .in("id", userIds);
       users = usersData || [];
     }
