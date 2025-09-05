@@ -257,7 +257,9 @@ export function SuporteForm({
               </div>
 
               <div>
-                <Label>Nome</Label>
+                <Label>
+                  Nome <span className="text-black">*</span>
+                </Label>
                 <Input
                   {...register("nome_usuario")}
                   className={`${getInputClassName("nome_usuario")} text-black`}
@@ -266,7 +268,9 @@ export function SuporteForm({
               </div>
 
               <div>
-                <Label>Email</Label>
+                <Label>
+                  Email <span className="text-black">*</span>
+                </Label>
                 <Input
                   type="email"
                   {...register("email_usuario")}
