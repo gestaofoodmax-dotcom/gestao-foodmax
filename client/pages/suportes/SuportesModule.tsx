@@ -9,7 +9,8 @@ import { DataGrid } from "@/components/data-grid";
 import { SuporteForm } from "./SuporteForm";
 import { SuporteView } from "./SuporteView";
 import { toast } from "@/hooks/use-toast";
-import { Menu, Search, Plus, Eye, Trash2, LifeBuoy } from "lucide-react";
+import { ExportModal } from "@/components/export-modal";
+import { Menu, Search, Plus, Trash2, LifeBuoy, Download } from "lucide-react";
 import {
   Suporte,
   SuportesListResponse,
@@ -36,6 +37,8 @@ function SuportesModule() {
   const pageSize = 10;
 
   const [statusTab, setStatusTab] = useState<string>("Todos");
+  const [showExport, setShowExport] = useState(false);
+  const [exportData, setExportData] = useState<any[]>([]);
 
   useEffect(() => {
     setSidebarOpen(!isMobile);
@@ -167,24 +170,36 @@ function SuportesModule() {
 
         <main className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-6">
-            <div className="bg-white rounded-xl border p-4 space-y-4">
-              {/* Tabs */}
-              <div className="flex items-center gap-2">
-                {SUPORTE_STATUS_TABS.map((tab) => (
-                  <Button
-                    key={tab.key}
-                    variant={statusTab === tab.key ? "orange" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      setStatusTab(tab.key);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    {tab.label}
-                  </Button>
-                ))}
+            {/* Tabs outside search box (Cardápios style) */}
+            <div className="w-full">
+              <div className="w-full border-b border-gray-200">
+                <div className="flex items-center gap-6">
+                  {SUPORTE_STATUS_TABS.map((tab) => {
+                    const count = tab.key === "Todos" ? totalRecords : suportes.filter((s) => s.status === tab.key).length;
+                    return (
+                      <div key={tab.key} className="flex items-center gap-6">
+                        <button
+                          className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
+                            statusTab === tab.key ? "text-foodmax-orange" : "text-gray-700 hover:text-gray-900"
+                          }`}
+                          onClick={() => { setStatusTab(tab.key); setCurrentPage(1); }}
+                        >
+                          <span>{tab.label}</span>
+                          <span className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
+                            statusTab === tab.key ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"
+                          }`}>{count}</span>
+                          {statusTab === tab.key && (
+                            <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
+            </div>
 
+            <div className="bg-white rounded-xl border p-4">
               <div className="flex flex-col md:flex-row md:items-center gap-4">
                 <div className="relative md:flex-1 md:max-w-md">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
@@ -210,7 +225,24 @@ function SuportesModule() {
                     </Button>
                   )}
 
-                  {/* Excluir Import button explicitly as requested */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        const params = new URLSearchParams({ page: "1", limit: "1000", ...(statusTab !== "Todos" ? { status: statusTab } : {}) });
+                        const resp: SuportesListResponse = await makeRequest(`/api/suportes?${params}`);
+                        setExportData(resp?.data || []);
+                        setShowExport(true);
+                      } catch {
+                        setExportData(suportes);
+                        setShowExport(true);
+                      }
+                    }}
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Exportar
+                  </Button>
 
                   <Button onClick={handleNew} className="bg-foodmax-orange text-white hover:bg-orange-600">
                     <Plus className="w-4 h-4 mr-2" />
@@ -250,6 +282,15 @@ function SuportesModule() {
           setCurrent(updated);
           loadData();
         }}
+      />
+
+      <ExportModal
+        isOpen={showExport}
+        onClose={() => setShowExport(false)}
+        data={exportData}
+        selectedIds={selectedIds}
+        moduleName="Suportes"
+        columns={SUPORTE_EXPORT_COLUMNS}
       />
     </div>
   );
