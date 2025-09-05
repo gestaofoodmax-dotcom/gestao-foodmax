@@ -7,6 +7,7 @@ export interface User {
   ativo: boolean;
   onboarding: boolean;
   data_cadastro: string;
+  nome?: string;
 }
 
 export interface UserContact {

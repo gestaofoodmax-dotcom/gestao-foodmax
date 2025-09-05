@@ -67,6 +67,19 @@ export const getCurrentUser: RequestHandler = async (req, res) => {
       return res.status(401).json({ error: "Usuário inativo" });
     }
 
+    // Try to fetch user's full name from usuarios_contatos
+    let fullName: string | null = null;
+    try {
+      const { data: contact } = await supabase
+        .from("usuarios_contatos")
+        .select("nome")
+        .eq("usuario_id", userId)
+        .order("id", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      fullName = (contact as any)?.nome || null;
+    } catch {}
+
     res.json({
       user: {
         id: user.id,
@@ -76,6 +89,7 @@ export const getCurrentUser: RequestHandler = async (req, res) => {
         onboarding: user.onboarding,
         data_cadastro: user.data_cadastro,
         hasPayment: !!user.data_pagamento,
+        nome: fullName || undefined,
       },
     });
   } catch (error) {

@@ -219,7 +219,10 @@ export function SuporteView({
               </div>
               <div className="space-y-3">
                 {respostas.map((r) => (
-                  <div key={r.id} className="border rounded p-3">
+                  <div
+                    key={r.id}
+                    className={`border rounded p-3 ${r.role === "admin" ? "bg-gray-50" : "bg-white"}`}
+                  >
                     <div className="text-sm text-gray-900 whitespace-pre-wrap">
                       {r.resposta}
                     </div>
