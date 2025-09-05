@@ -1164,7 +1164,15 @@ export default function PedidosModule() {
                         }`}
                         onClick={() => setActiveTab(st as any)}
                       >
-                        <span>{st === "Pendente" ? "Pendentes" : st === "Finalizado" ? "Finalizados" : st === "Cancelado" ? "Cancelados" : st}</span>
+                        <span>
+                          {st === "Pendente"
+                            ? "Pendentes"
+                            : st === "Finalizado"
+                              ? "Finalizados"
+                              : st === "Cancelado"
+                                ? "Cancelados"
+                                : st}
+                        </span>
                         <span
                           className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
                             activeTab === (st as any)

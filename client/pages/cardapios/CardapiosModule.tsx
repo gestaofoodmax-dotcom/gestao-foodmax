@@ -585,8 +585,8 @@ export default function CardapiosModule() {
                           setActiveTab(tipo as TipoCardapio | "Todos")
                         }
                       >
-                        <span>{
-                          tipo === "Café"
+                        <span>
+                          {tipo === "Café"
                             ? "Cafés"
                             : tipo === "Almoço"
                               ? "Almoços"
@@ -598,8 +598,8 @@ export default function CardapiosModule() {
                                     ? "Bebidas"
                                     : tipo === "Outro"
                                       ? "Outros"
-                                      : tipo
-                        }</span>
+                                      : tipo}
+                        </span>
                         <span
                           className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${activeTab === tipo ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"}`}
                         >
