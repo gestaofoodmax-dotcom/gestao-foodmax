@@ -23,8 +23,20 @@ export interface Suporte {
   status: SuporteStatus;
   resposta_admin?: string | null;
   data_resposta_admin?: string | null;
+  data_hora_resolvido?: string | null;
+  data_hora_fechado?: string | null;
   data_cadastro: string;
   data_atualizacao: string;
+}
+
+export interface SuporteResposta {
+  id: number;
+  suporte_id: number;
+  id_usuario: number;
+  resposta: string;
+  data_cadastro: string;
+  data_atualizacao: string;
+  nome_usuario?: string;
 }
 
 export interface CreateSuporteRequest {

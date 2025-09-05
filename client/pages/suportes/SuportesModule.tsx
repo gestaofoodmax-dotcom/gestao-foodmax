@@ -10,7 +10,21 @@ import { SuporteForm } from "./SuporteForm";
 import { SuporteView } from "./SuporteView";
 import { toast } from "@/hooks/use-toast";
 import { ExportModal } from "@/components/export-modal";
-import { Menu, Search, Plus, Trash2, LifeBuoy, Download } from "lucide-react";
+import {
+  Menu,
+  Search,
+  Plus,
+  Trash2,
+  LifeBuoy,
+  Download,
+  Eye,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
+import {
+  DeleteAlert,
+  BulkDeleteAlert,
+} from "@/components/alert-dialog-component";
 import {
   Suporte,
   SuportesListResponse,
@@ -30,15 +44,25 @@ function SuportesModule() {
 
   const [suportes, setSuportes] = useState<Suporte[]>([]);
   const [loading, setLoading] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
   const pageSize = 10;
 
   const [statusTab, setStatusTab] = useState<string>("Todos");
+  const [tabState, setTabState] = useState<
+    Record<string, { search: string; page: number; selected: number[] }>
+  >({
+    Todos: { search: "", page: 1, selected: [] },
+  });
+  const currentSearch = tabState[statusTab]?.search ?? "";
+  const currentPage = tabState[statusTab]?.page ?? 1;
+  const selectedIds = tabState[statusTab]?.selected ?? [];
+
   const [showExport, setShowExport] = useState(false);
   const [exportData, setExportData] = useState<any[]>([]);
+
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [showBulkDeleteAlert, setShowBulkDeleteAlert] = useState(false);
+  const [recordToDelete, setRecordToDelete] = useState<Suporte | null>(null);
 
   useEffect(() => {
     setSidebarOpen(!isMobile);
@@ -78,8 +102,59 @@ function SuportesModule() {
         sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString("pt-BR"),
       },
+      {
+        key: "acoes",
+        label: "Ações",
+        render: (_: any, r: Suporte) => {
+          const isResolved = r.status === "Resolvido";
+          const isClosed = r.status === "Fechado";
+          const canChange = isAdmin && !isClosed && !isResolved;
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleMarkResolvido(r)}
+                className="h-8 w-8 p-0 rounded-full border bg-green-50 hover:bg-green-100 border-green-200"
+                title="Resolvido"
+                disabled={!isAdmin || isResolved || isClosed}
+              >
+                <CheckCircle2 className="w-4 h-4 text-green-700" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleMarkFechado(r)}
+                className="h-8 w-8 p-0 rounded-full border bg-gray-50 hover:bg-gray-100 border-gray-200"
+                title="Fechar"
+                disabled={!isAdmin || isClosed}
+              >
+                <XCircle className="w-4 h-4 text-gray-700" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleView(r)}
+                className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
+                title="Visualizar"
+              >
+                <Eye className="w-4 h-4 text-blue-700" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDelete(r)}
+                className="h-8 w-8 p-0 rounded-full border bg-red-50 hover:bg-red-100 border-red-200"
+                title="Excluir"
+              >
+                <Trash2 className="w-4 h-4 text-red-700" />
+              </Button>
+            </div>
+          );
+        },
+      },
     ],
-    [],
+    [isAdmin],
   );
 
   const loadData = useCallback(async () => {
@@ -88,7 +163,7 @@ function SuportesModule() {
       const params = new URLSearchParams({
         page: String(currentPage),
         limit: String(pageSize),
-        ...(searchTerm && { search: searchTerm }),
+        ...(currentSearch && { search: currentSearch }),
         ...(statusTab && statusTab !== "Todos" ? { status: statusTab } : {}),
       });
       const response: SuportesListResponse = await makeRequest(
@@ -107,7 +182,7 @@ function SuportesModule() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, pageSize, searchTerm, statusTab, makeRequest]);
+  }, [currentPage, pageSize, currentSearch, statusTab, makeRequest]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -125,17 +200,93 @@ function SuportesModule() {
     setShowForm(true);
   };
 
+  const setTabSearch = (val: string) =>
+    setTabState((s) => ({
+      ...s,
+      [statusTab]: {
+        ...(s[statusTab] || { search: "", page: 1, selected: [] }),
+        search: val,
+        page: 1,
+      },
+    }));
+  const setTabPage = (page: number) =>
+    setTabState((s) => ({
+      ...s,
+      [statusTab]: {
+        ...(s[statusTab] || { search: "", page: 1, selected: [] }),
+        page,
+      },
+    }));
+  const setTabSelected = (ids: number[]) =>
+    setTabState((s) => ({
+      ...s,
+      [statusTab]: {
+        ...(s[statusTab] || { search: "", page: 1, selected: [] }),
+        selected: ids,
+      },
+    }));
+
   const handleView = (rec: Suporte) => {
     setCurrent(rec);
     setShowView(true);
   };
 
-  const handleDelete = async (rec: Suporte) => {
+  const handleMarkResolvido = async (rec: Suporte) => {
+    try {
+      await makeRequest(`/api/suportes/${rec.id}/resolver`, {
+        method: "PATCH",
+      });
+      toast({ title: "Ticket marcado como Resolvido" });
+      loadData();
+    } catch (e: any) {
+      toast({
+        title: "Erro ao marcar Resolvido",
+        description: e.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleMarkFechado = async (rec: Suporte) => {
+    try {
+      await makeRequest(`/api/suportes/${rec.id}/fechar`, { method: "PATCH" });
+      toast({ title: "Ticket marcado como Fechado" });
+      loadData();
+    } catch (e: any) {
+      toast({
+        title: "Erro ao fechar ticket",
+        description: e.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEdit = (rec: Suporte) => {
+    setCurrent(rec);
+    setShowView(false);
+    setShowForm(true);
+  };
+
+  const handleDelete = (rec: Suporte) => {
+    setRecordToDelete(rec);
+    setShowDeleteAlert(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!recordToDelete) return;
     setDeleteLoading(true);
     try {
-      await makeRequest(`/api/suportes/${rec.id}`, { method: "DELETE" });
+      await makeRequest(`/api/suportes/${recordToDelete.id}`, {
+        method: "DELETE",
+      });
       toast({ title: "Registro excluído" });
-      setSelectedIds([]);
+      try {
+        localStorage.removeItem("fm_grid_cache");
+        localStorage.removeItem("fm_suportes");
+      } catch {}
+      setTabSelected([]);
+      setShowDeleteAlert(false);
+      setRecordToDelete(null);
       loadData();
     } catch (e: any) {
       toast({
@@ -230,7 +381,14 @@ function SuportesModule() {
                           }`}
                           onClick={() => {
                             setStatusTab(tab.key);
-                            setCurrentPage(1);
+                            setTabState((s) => ({
+                              ...s,
+                              [tab.key]: s[tab.key] || {
+                                search: "",
+                                page: 1,
+                                selected: [],
+                              },
+                            }));
                           }}
                         >
                           <span>{tab.label}</span>
@@ -260,10 +418,9 @@ function SuportesModule() {
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                   <Input
                     placeholder="Buscar registros..."
-                    value={searchTerm}
+                    value={currentSearch}
                     onChange={(e) => {
-                      setSearchTerm(e.target.value);
-                      setCurrentPage(1);
+                      setTabSearch(e.target.value);
                     }}
                     className="foodmax-input pl-10"
                   />
@@ -274,24 +431,7 @@ function SuportesModule() {
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={async () => {
-                        try {
-                          for (const id of selectedIds) {
-                            await makeRequest(`/api/suportes/${id}`, {
-                              method: "DELETE",
-                            });
-                          }
-                          toast({ title: "Registros excluídos" });
-                          setSelectedIds([]);
-                          loadData();
-                        } catch (e: any) {
-                          toast({
-                            title: "Erro ao excluir",
-                            description: e.message,
-                            variant: "destructive",
-                          });
-                        }
-                      }}
+                      onClick={() => setShowBulkDeleteAlert(true)}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Excluir Selecionados ({selectedIds.length})
@@ -341,21 +481,15 @@ function SuportesModule() {
               data={suportes}
               loading={loading}
               selectedIds={selectedIds}
-              onSelectionChange={setSelectedIds}
+              onSelectionChange={setTabSelected}
               onView={handleView}
               onDelete={handleDelete}
-              searchTerm={searchTerm}
+              searchTerm={currentSearch}
               currentPage={currentPage}
               pageSize={pageSize}
               totalRecords={totalRecords}
-              onPageChange={setCurrentPage}
-              showActions={true}
-              actionButtons={{
-                view: true,
-                edit: false,
-                delete: true,
-                toggle: false,
-              }}
+              onPageChange={setTabPage}
+              showActions={false}
             />
           </div>
         </main>
@@ -373,6 +507,9 @@ function SuportesModule() {
         isOpen={showView}
         onClose={() => setShowView(false)}
         suporte={current}
+        onEdit={(rec) => {
+          handleEdit(rec);
+        }}
         onReplied={(updated) => {
           setCurrent(updated);
           loadData();
@@ -386,6 +523,45 @@ function SuportesModule() {
         selectedIds={selectedIds}
         moduleName="Suportes"
         columns={SUPORTE_EXPORT_COLUMNS}
+      />
+
+      <DeleteAlert
+        isOpen={showDeleteAlert}
+        onClose={() => setShowDeleteAlert(false)}
+        onConfirm={confirmDelete}
+        itemName={recordToDelete?.titulo}
+        isLoading={deleteLoading}
+      />
+
+      <BulkDeleteAlert
+        isOpen={showBulkDeleteAlert}
+        onClose={() => setShowBulkDeleteAlert(false)}
+        onConfirm={async () => {
+          setDeleteLoading(true);
+          try {
+            for (const id of selectedIds) {
+              await makeRequest(`/api/suportes/${id}`, { method: "DELETE" });
+            }
+            toast({ title: "Registros excluídos" });
+            try {
+              localStorage.removeItem("fm_grid_cache");
+              localStorage.removeItem("fm_suportes");
+            } catch {}
+            setTabSelected([]);
+            setShowBulkDeleteAlert(false);
+            loadData();
+          } catch (e: any) {
+            toast({
+              title: "Erro ao excluir",
+              description: e.message,
+              variant: "destructive",
+            });
+          } finally {
+            setDeleteLoading(false);
+          }
+        }}
+        selectedCount={selectedIds.length}
+        isLoading={deleteLoading}
       />
     </div>
   );

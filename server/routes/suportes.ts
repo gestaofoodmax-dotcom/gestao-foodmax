@@ -1,4 +1,3 @@
-import type { RequestHandler } from "express";
 import { z } from "zod";
 import { getSupabaseServiceClient } from "../supabase";
 
@@ -38,6 +37,12 @@ async function getUserRoleAndEmail(userId: number) {
   const role = String(user.role || "user").toLowerCase() as "admin" | "user";
   return { role, email: user.email as string };
 }
+
+const nameFromEmail = (email?: string | null) => {
+  if (!email) return "Usuário";
+  const [n] = String(email).split("@");
+  return n || "Usuário";
+};
 
 export const listSuportes: RequestHandler = async (req, res) => {
   try {
@@ -224,7 +229,7 @@ export const updateSuporte: RequestHandler = async (req, res) => {
       role === "admin" &&
       typeof input.resposta_admin !== "undefined" &&
       (input.resposta_admin || "").trim() &&
-      input.resposta_admin !== existing.resposta_admin
+      input.resposta_admin !== (existing as any).resposta_admin
     ) {
       await supabase.from("suportes_eventos").insert({
         suporte_id: id,
@@ -265,7 +270,7 @@ export const deleteSuporte: RequestHandler = async (req, res) => {
     if (exErr || !existing)
       return res.status(404).json({ error: "Registro não encontrado" });
 
-    if (role !== "admin" && existing.id_usuario !== userId) {
+    if (role !== "admin" && (existing as any).id_usuario !== userId) {
       return res.status(403).json({ error: "Acesso negado" });
     }
 
@@ -279,6 +284,7 @@ export const deleteSuporte: RequestHandler = async (req, res) => {
   }
 };
 
+// Legacy admin-only responder (kept for backward compatibility)
 export const responderSuporte: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -313,7 +319,13 @@ export const responderSuporte: RequestHandler = async (req, res) => {
       resposta_admin: resposta,
       data_resposta_admin: new Date().toISOString(),
     };
-    if (status) update.status = status;
+    if (status) {
+      update.status = status;
+      if (status === "Resolvido")
+        update.data_hora_resolvido = new Date().toISOString();
+      if (status === "Fechado")
+        update.data_hora_fechado = new Date().toISOString();
+    }
 
     const { data, error } = await supabase
       .from("suportes")
@@ -337,6 +349,230 @@ export const responderSuporte: RequestHandler = async (req, res) => {
         .json({ error: "Dados inválidos", details: error.errors });
     }
     console.error("Error responding suporte:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
+
+// New: respostas history
+export const listRespostasSuporte: RequestHandler = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    const id = parseInt(req.params.id);
+    if (!id) return res.status(400).json({ error: "ID inválido" });
+
+    const supabase = getSupabaseServiceClient();
+    const { role } = await getUserRoleAndEmail(userId);
+
+    const { data: suporte, error: errSup } = await supabase
+      .from("suportes")
+      .select("id, id_usuario")
+      .eq("id", id)
+      .maybeSingle();
+    if (errSup || !suporte)
+      return res.status(404).json({ error: "Registro não encontrado" });
+
+    if (role !== "admin" && (suporte as any).id_usuario !== userId) {
+      return res.status(403).json({ error: "Acesso negado" });
+    }
+
+    const { data: respostas, error } = await supabase
+      .from("suportes_respostas")
+      .select("*")
+      .eq("suporte_id", id)
+      .order("data_cadastro", { ascending: true });
+    if (error) throw error;
+
+    const userIds = Array.from(
+      new Set((respostas || []).map((r: any) => r.id_usuario)),
+    );
+    let users: any[] = [];
+    if (userIds.length > 0) {
+      const { data: usersData } = await supabase
+        .from("usuarios")
+        .select("id, email")
+        .in("id", userIds);
+      users = usersData || [];
+    }
+
+    const data = (respostas || []).map((r: any) => {
+      const u = users.find((x) => x.id === r.id_usuario);
+      return {
+        ...r,
+        nome_usuario: nameFromEmail(u?.email || null),
+      };
+    });
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("Error listing respostas suporte:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
+
+export const addRespostaSuporte: RequestHandler = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    const id = parseInt(req.params.id);
+    if (!id) return res.status(400).json({ error: "ID inválido" });
+
+    const body = z
+      .object({
+        resposta: z.string().min(1),
+        status: z
+          .enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"])
+          .optional(),
+      })
+      .parse(req.body);
+
+    const supabase = getSupabaseServiceClient();
+    const { role } = await getUserRoleAndEmail(userId);
+
+    const { data: suporte, error: errSup } = await supabase
+      .from("suportes")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (errSup || !suporte)
+      return res.status(404).json({ error: "Registro não encontrado" });
+
+    if (role !== "admin" && (suporte as any).id_usuario !== userId) {
+      return res.status(403).json({ error: "Acesso negado" });
+    }
+
+    const { error: insErr } = await supabase.from("suportes_respostas").insert({
+      suporte_id: id,
+      id_usuario: userId,
+      resposta: body.resposta,
+    });
+    if (insErr) throw insErr;
+
+    // Optionally update status when admin provided
+    if (role === "admin" && body.status) {
+      const update: any = { status: body.status };
+      if (body.status === "Resolvido")
+        update.data_hora_resolvido = new Date().toISOString();
+      if (body.status === "Fechado")
+        update.data_hora_fechado = new Date().toISOString();
+      await supabase.from("suportes").update(update).eq("id", id);
+    }
+
+    await supabase.from("suportes_eventos").insert({
+      suporte_id: id,
+      tipo_evento: role === "admin" ? "resposta_admin" : "resposta_usuario",
+      detalhes:
+        role === "admin"
+          ? "Resposta enviada ao usuário"
+          : "Resposta enviada ao admin",
+    });
+
+    const { data: updated } = await supabase
+      .from("suportes")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    res.json({ success: true, data: updated });
+  } catch (error: any) {
+    if (error?.name === "ZodError") {
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
+    }
+    console.error("Error adding resposta suporte:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
+
+export const resolverSuporte: RequestHandler = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    const id = parseInt(req.params.id);
+    if (!id) return res.status(400).json({ error: "ID inválido" });
+
+    const supabase = getSupabaseServiceClient();
+    const { role } = await getUserRoleAndEmail(userId);
+    if (role !== "admin")
+      return res.status(403).json({ error: "Apenas admin" });
+
+    const { data: existing } = await supabase
+      .from("suportes")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (!existing)
+      return res.status(404).json({ error: "Registro não encontrado" });
+
+    const { data, error } = await supabase
+      .from("suportes")
+      .update({
+        status: "Resolvido",
+        data_hora_resolvido: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+
+    await supabase.from("suportes_eventos").insert({
+      suporte_id: id,
+      tipo_evento: "status_resolvido",
+      detalhes: "Ticket marcado como Resolvido",
+    });
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("Error resolving suporte:", error);
+    res.status(500).json({ error: "Erro interno do servidor" });
+  }
+};
+
+export const fecharSuporte: RequestHandler = async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
+    const id = parseInt(req.params.id);
+    if (!id) return res.status(400).json({ error: "ID inválido" });
+
+    const supabase = getSupabaseServiceClient();
+    const { role } = await getUserRoleAndEmail(userId);
+    if (role !== "admin")
+      return res.status(403).json({ error: "Apenas admin" });
+
+    const { data: existing } = await supabase
+      .from("suportes")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (!existing)
+      return res.status(404).json({ error: "Registro não encontrado" });
+
+    const { data, error } = await supabase
+      .from("suportes")
+      .update({
+        status: "Fechado",
+        data_hora_fechado: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+    if (error) throw error;
+
+    await supabase.from("suportes_eventos").insert({
+      suporte_id: id,
+      tipo_evento: "status_fechado",
+      detalhes: "Ticket marcado como Fechado",
+    });
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("Error closing suporte:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
   }
 };

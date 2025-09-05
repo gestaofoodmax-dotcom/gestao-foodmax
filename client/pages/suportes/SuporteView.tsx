@@ -9,17 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Eye,
-  Info,
-  Mail,
-  MessageSquare,
-  User as UserIcon,
-  Calendar,
-  X,
-  Send,
-  LifeBuoy,
-} from "lucide-react";
+import { X, Send, LifeBuoy, FileText, Headphones } from "lucide-react";
 import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -27,8 +17,9 @@ import {
   STATUS_BADGE_STYLES,
   PRIORIDADE_BADGE_STYLES,
   SuporteStatus,
+  SuporteResposta,
 } from "@shared/suportes";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -42,6 +33,7 @@ interface SuporteViewProps {
   onClose: () => void;
   suporte: Suporte | null;
   onReplied?: (updated: Suporte) => void;
+  onEdit?: (s: Suporte) => void;
 }
 
 export function SuporteView({
@@ -49,6 +41,7 @@ export function SuporteView({
   onClose,
   suporte,
   onReplied,
+  onEdit,
 }: SuporteViewProps) {
   const { getUserRole } = useAuth();
   const isAdmin = getUserRole() === "admin";
@@ -58,6 +51,25 @@ export function SuporteView({
   const [selectedStatus, setSelectedStatus] = useState<SuporteStatus>(
     (suporte?.status as SuporteStatus) || "Aberto",
   );
+  const [respostas, setRespostas] = useState<SuporteResposta[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      if (!isOpen || !suporte) return;
+      try {
+        const resp = await makeRequest(`/api/suportes/${suporte.id}/respostas`);
+        if (!active) return;
+        setRespostas(resp.data || []);
+      } catch {
+        setRespostas([]);
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
+  }, [isOpen, suporte?.id]);
 
   if (!suporte) return null;
 
@@ -76,11 +88,13 @@ export function SuporteView({
     if (!resposta.trim()) return;
     setSending(true);
     try {
+      const payload: any = { resposta };
+      if (isAdmin) payload.status = selectedStatus;
       const updated = await makeRequest(
-        `/api/suportes/${suporte.id}/responder`,
+        `/api/suportes/${suporte.id}/respostas`,
         {
           method: "POST",
-          body: JSON.stringify({ resposta, status: selectedStatus }),
+          body: JSON.stringify(payload),
         },
       );
       onReplied && onReplied(updated.data);
@@ -116,9 +130,8 @@ export function SuporteView({
               <LifeBuoy className="w-6 h-6 text-foodmax-orange" />
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
-                  Suporte
+                  {suporte.titulo}
                 </h2>
-                <div className="text-sm text-gray-900">{suporte.titulo}</div>
               </div>
             </div>
             <div className="text-right">
@@ -133,15 +146,17 @@ export function SuporteView({
             </div>
           </div>
 
-          {/* Dados do Ticket */}
+          {/* Dados Básicos */}
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
-              <Info className="w-5 h-5 text-blue-600" />
-              <h3 className="font-semibold text-blue-600">Dados do Ticket</h3>
+              <FileText className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-sm font-medium text-gray-600">Tipo</div>
+                <div className="text-sm font-medium text-gray-600">
+                  Tipo de Suporte
+                </div>
                 <div className="text-sm text-gray-900">{suporte.tipo}</div>
               </div>
               <div>
@@ -168,6 +183,20 @@ export function SuporteView({
                   {suporte.email_usuario}
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Ticket */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <Headphones className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Ticket</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <div className="text-sm font-medium text-gray-600">Título</div>
+                <div className="text-sm text-gray-900">{suporte.titulo}</div>
+              </div>
               <div className="col-span-2">
                 <div className="text-sm font-medium text-gray-600">
                   Descrição
@@ -179,61 +208,51 @@ export function SuporteView({
             </div>
           </div>
 
-          {/* Detalhes do Cadastro */}
-          <div className="bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-3">
-              <Info className="w-5 h-5 text-gray-600" />
-              <h3 className="font-semibold text-gray-600">
-                Detalhes do Cadastro
-              </h3>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-sm font-medium text-gray-600">
-                  Data de Cadastro
-                </div>
-                <div className="text-sm text-gray-900">
-                  {formatDate(suporte.data_cadastro)}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-600">
-                  Data de Atualização
-                </div>
-                <div className="text-sm text-gray-900">
-                  {formatDate(suporte.data_atualizacao)}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-600">Status</div>
-                <div className="text-sm text-gray-900">{suporte.status}</div>
-              </div>
-              {suporte.resposta_admin && (
-                <div className="col-span-2">
-                  <div className="text-sm font-medium text-gray-600">
-                    Resposta Admin
-                  </div>
-                  <div className="text-sm text-gray-900 whitespace-pre-wrap">
-                    {suporte.resposta_admin}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {isAdmin && (
+          {/* Histórico de Resposta */}
+          {respostas.length > 0 && (
             <div className="bg-white p-4 rounded-lg border">
-              <div className="text-sm font-medium text-gray-700 mb-1">
-                Resposta Admin
+              <div className="flex items-center gap-2 mb-3">
+                <LifeBuoy className="w-5 h-5 text-purple-600" />
+                <h3 className="font-semibold text-purple-600">
+                  Histórico de Resposta
+                </h3>
+              </div>
+              <div className="space-y-3">
+                {respostas.map((r) => (
+                  <div key={r.id} className="border rounded p-3">
+                    <div className="text-sm text-gray-900 whitespace-pre-wrap">
+                      {r.resposta}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-2">
+                      {r.nome_usuario} - {formatDate(r.data_cadastro)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Responder Ticket (hidden when Fechado) */}
+          {suporte.status !== "Fechado" && (
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="flex items-center gap-2 mb-3">
+                <Headphones className="w-5 h-5 text-orange-600" />
+                <h3 className="font-semibold text-orange-600">
+                  Responder Ticket
+                </h3>
               </div>
               <Textarea
                 rows={4}
                 value={resposta}
                 onChange={(e) => setResposta(e.target.value)}
-                placeholder="Escreva sua resposta ao usuário"
+                placeholder={
+                  isAdmin
+                    ? "Escreva sua resposta ao usuário"
+                    : "Escreva sua resposta ao administrador"
+                }
               />
-              <div className="flex items-center justify-between gap-3 mt-3">
-                <div className="w-64">
+              {isAdmin && (
+                <div className="w-64 mt-3">
                   <div className="text-sm font-medium text-gray-700 mb-1">
                     Status
                   </div>
@@ -260,46 +279,29 @@ export function SuporteView({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex items-center gap-2 ml-auto">
-                  <Button variant="outline" onClick={onClose}>
-                    <X className="w-4 h-4 mr-2" />
-                    Fechar
-                  </Button>
-                  <Button
-                    onClick={handleEnviar}
-                    disabled={sending || !resposta.trim()}
-                    variant="orange"
-                  >
-                    {sending ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Enviando...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 mr-2" />
-                        Enviar
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
+              )}
             </div>
           )}
         </div>
 
-        {!isAdmin && (
-          <DialogFooter className="flex-row gap-2 sm:gap-0">
-            <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 sm:flex-none"
-            >
-              <X className="w-4 h-4 mr-2" />
-              Fechar
-            </Button>
-          </DialogFooter>
-        )}
+        <DialogFooter className="flex-row gap-2 sm:gap-0">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 sm:flex-none"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Fechar
+          </Button>
+          <Button
+            onClick={handleEnviar}
+            disabled={sending || !resposta.trim()}
+            className="flex-1 sm:flex-none bg-foodmax-orange hover:bg-orange-600"
+          >
+            <Send className="w-4 h-4 mr-2" />
+            Enviar
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
