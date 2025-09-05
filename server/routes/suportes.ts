@@ -195,6 +195,14 @@ export const updateSuporte: RequestHandler = async (req, res) => {
       .single();
     if (error) throw error;
 
+    if (role === "admin" && typeof input.resposta_admin !== "undefined" && (input.resposta_admin || "").trim() && input.resposta_admin !== existing.resposta_admin) {
+      await supabase.from("suportes_eventos").insert({
+        suporte_id: id,
+        tipo_evento: "resposta_admin",
+        detalhes: "Resposta enviada ao usuário criador do ticket (via formulário)",
+      });
+    }
+
     res.json({ success: true, data });
   } catch (error: any) {
     if (error?.name === "ZodError") {
