@@ -21,6 +21,7 @@ import {
   LifeBuoy,
 } from "lucide-react";
 import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
+import { toast } from "@/hooks/use-toast";
 import {
   Suporte,
   STATUS_BADGE_STYLES,
@@ -28,6 +29,7 @@ import {
   SuporteStatus,
 } from "@shared/suportes";
 import { useMemo, useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SuporteViewProps {
   isOpen: boolean;
@@ -42,6 +44,7 @@ export function SuporteView({ isOpen, onClose, suporte, onReplied }: SuporteView
   const { makeRequest } = useAuthenticatedRequest();
   const [resposta, setResposta] = useState("");
   const [sending, setSending] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<SuporteStatus>((suporte?.status as SuporteStatus) || "Aberto");
 
   if (!suporte) return null;
 
@@ -62,9 +65,10 @@ export function SuporteView({ isOpen, onClose, suporte, onReplied }: SuporteView
     try {
       const updated = await makeRequest(`/api/suportes/${suporte.id}/responder`, {
         method: "POST",
-        body: JSON.stringify({ resposta, status: suporte.status as SuporteStatus }),
+        body: JSON.stringify({ resposta, status: selectedStatus }),
       });
       onReplied && onReplied(updated.data);
+      toast({ title: "Resposta enviada", description: resposta });
       setResposta("");
       onClose();
     } finally {
@@ -157,29 +161,41 @@ export function SuporteView({ isOpen, onClose, suporte, onReplied }: SuporteView
 
           {isAdmin && (
             <div className="bg-white p-4 rounded-lg border">
-              <div className="flex items-center gap-2 mb-3">
-                <MessageSquare className="w-5 h-5 text-foodmax-orange" />
-                <h3 className="font-semibold text-foodmax-orange">Responder</h3>
-              </div>
+              <div className="text-sm font-medium text-gray-700 mb-1">Resposta Admin</div>
               <Textarea rows={4} value={resposta} onChange={(e) => setResposta(e.target.value)} placeholder="Escreva sua resposta ao usuário" />
-              <div className="flex justify-end gap-2 mt-3">
-                <Button variant="outline" onClick={onClose}>
-                  <X className="w-4 h-4 mr-2" />
-                  Fechar
-                </Button>
-                <Button onClick={handleEnviar} disabled={sending || !resposta.trim()} variant="orange">
-                  {sending ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4 mr-2" />
-                      Enviar
-                    </>
-                  )}
-                </Button>
+              <div className="flex items-center justify-between gap-3 mt-3">
+                <div className="w-64">
+                  <div className="text-sm font-medium text-gray-700 mb-1">Status</div>
+                  <Select value={selectedStatus} onValueChange={(v) => setSelectedStatus(v as SuporteStatus)}>
+                    <SelectTrigger className="foodmax-input">
+                      <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(["Aberto", "Em Andamento", "Resolvido", "Fechado"] as SuporteStatus[]).map((s) => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2 ml-auto">
+                  <Button variant="outline" onClick={onClose}>
+                    <X className="w-4 h-4 mr-2" />
+                    Fechar
+                  </Button>
+                  <Button onClick={handleEnviar} disabled={sending || !resposta.trim()} variant="orange">
+                    {sending ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4 mr-2" />
+                        Enviar
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
