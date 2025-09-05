@@ -474,7 +474,7 @@ function SuportesModule() {
                                 `/api/suportes/${s.id}/respostas`,
                               );
                               const respostas: any[] = r?.data || [];
-                              const respostasStr = respostas
+                              const respostasStrRaw = respostas
                                 .map((it) => {
                                   const dt = new Date(
                                     it.data_cadastro,
@@ -488,6 +488,10 @@ function SuportesModule() {
                                   return `${it.nome_usuario} - ${dt}`;
                                 })
                                 .join("; ");
+                              const respostasStr = respostasStrRaw.replace(
+                                /[",]/g,
+                                "",
+                              );
                               return { ...s, respostas: respostasStr };
                             } catch {
                               return { ...s, respostas: "" };
@@ -507,7 +511,7 @@ function SuportesModule() {
                                   `/api/suportes/${s.id}/respostas`,
                                 );
                                 const respostas: any[] = r?.data || [];
-                                const respostasStr = respostas
+                                const respostasStrRaw = respostas
                                   .map((it) => {
                                     const dt = new Date(
                                       it.data_cadastro,
@@ -521,6 +525,10 @@ function SuportesModule() {
                                     return `${it.nome_usuario} - ${dt}`;
                                   })
                                   .join("; ");
+                                const respostasStr = respostasStrRaw.replace(
+                                  /[",]/g,
+                                  "",
+                                );
                                 return { ...s, respostas: respostasStr };
                               } catch {
                                 return { ...s, respostas: "" };

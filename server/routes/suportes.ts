@@ -43,6 +43,16 @@ const nameFromEmail = (email?: string | null) => {
   return n || "Usuário";
 };
 
+const toTitleCase = (input: string): string => {
+  const s = String(input || "").trim();
+  if (!s) return "";
+  return s
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+    .join(" ");
+};
+
 export const listSuportes: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
@@ -351,19 +361,36 @@ export const listRespostasSuporte: RequestHandler = async (req, res) => {
       new Set((respostas || []).map((r: any) => r.id_usuario)),
     );
     let users: any[] = [];
+    let contacts: any[] = [];
     if (userIds.length > 0) {
       const { data: usersData } = await supabase
         .from("usuarios")
-        .select("id, email")
+        .select("id, email, role")
         .in("id", userIds);
       users = usersData || [];
+
+      const { data: contactsData } = await supabase
+        .from("usuarios_contatos")
+        .select("usuario_id, nome")
+        .in("usuario_id", userIds);
+      contacts = contactsData || [];
     }
+    const contactMap = Object.fromEntries(
+      contacts.map((c: any) => [c.usuario_id, c.nome]),
+    );
 
     const data = (respostas || []).map((r: any) => {
       const u = users.find((x) => x.id === r.id_usuario);
+      const role = String((u as any)?.role || "user").toLowerCase();
+      const contactName = contactMap[r.id_usuario];
+      const nome =
+        contactName && String(contactName).trim()
+          ? toTitleCase(String(contactName))
+          : toTitleCase(nameFromEmail(u?.email || null));
       return {
         ...r,
-        nome_usuario: nameFromEmail(u?.email || null),
+        nome_usuario: nome,
+        role,
       };
     });
 

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, X, FileText, Headphones } from "lucide-react";
+import { toTitleCase } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import {
   Suporte,
@@ -95,12 +96,18 @@ export function SuporteForm({
     if (!isOpen) return;
 
     const defaultName = (() => {
+      const uName = (user as any)?.nome;
+      if (uName && String(uName).trim()) return toTitleCase(String(uName));
       try {
         const n = localStorage.getItem("fm_user_name");
-        if (n && n.trim()) return n;
+        if (n && n.trim()) return toTitleCase(n);
       } catch {}
-      const email = user?.email || "";
-      return email.split("@")[0] || "Usuário";
+      let email = user?.email || "";
+      try {
+        if (!email) email = localStorage.getItem("fm_user_email") || "";
+      } catch {}
+      const base = email.split("@")[0] || "Usuário";
+      return toTitleCase(base);
     })();
 
     if (suporte) {

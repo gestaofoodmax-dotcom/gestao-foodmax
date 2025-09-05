@@ -35,6 +35,7 @@ export interface SuporteResposta {
   data_cadastro: string;
   data_atualizacao: string;
   nome_usuario?: string;
+  role?: "admin" | "user";
 }
 
 export interface CreateSuporteRequest {

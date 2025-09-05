@@ -117,9 +117,21 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
   const displayName = useMemo(() => {
     try {
       const stored = localStorage.getItem("fm_user_name");
-      if (stored && stored.trim()) return toTitleCase(stored.trim());
+      if (stored && stored.trim()) {
+        const full = toTitleCase(stored.trim());
+        const first = full.split(/\s+/)[0];
+        return first || full;
+      }
     } catch {}
-    const email = user?.email || "";
+    const email =
+      user?.email ||
+      (() => {
+        try {
+          return localStorage.getItem("fm_user_email") || "";
+        } catch {
+          return "";
+        }
+      })();
     const base = email.split("@")[0] || "Usuário";
     return toTitleCase(base);
   }, [user?.email]);
@@ -230,7 +242,16 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
                 <div className="text-sm font-medium text-gray-800">
                   {displayName}
                 </div>
-                <div className="text-xs text-gray-500">{user?.email}</div>
+                <div className="text-xs text-gray-500">
+                  {user?.email ||
+                    (() => {
+                      try {
+                        return localStorage.getItem("fm_user_email") || "";
+                      } catch {
+                        return "";
+                      }
+                    })()}
+                </div>
               </Link>
               <button
                 onClick={() => {

@@ -75,13 +75,14 @@ export function SuporteView({
 
   const formatDate = (dateString?: string | null) => {
     if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const d = new Date(dateString);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const dd = pad(d.getDate());
+    const mm = pad(d.getMonth() + 1);
+    const yyyy = d.getFullYear();
+    const hh = pad(d.getHours());
+    const min = pad(d.getMinutes());
+    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
   };
 
   const handleEnviar = async () => {
@@ -219,7 +220,10 @@ export function SuporteView({
               </div>
               <div className="space-y-3">
                 {respostas.map((r) => (
-                  <div key={r.id} className="border rounded p-3">
+                  <div
+                    key={r.id}
+                    className={`border rounded p-3 ${r.role === "admin" ? "bg-gray-50" : "bg-white"}`}
+                  >
                     <div className="text-sm text-gray-900 whitespace-pre-wrap">
                       {r.resposta}
                     </div>
