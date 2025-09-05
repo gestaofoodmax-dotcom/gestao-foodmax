@@ -124,6 +124,17 @@ export function ClienteView({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <DataField
+                label="Telefone"
+                value={
+                  <a
+                    href={`tel:${cliente.ddi}${cliente.telefone}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {formatTelefone(cliente.ddi, cliente.telefone)}
+                  </a>
+                }
+              />
+              <DataField
                 label="Email"
                 value={
                   cliente.email ? (
@@ -134,17 +145,6 @@ export function ClienteView({
                       {cliente.email}
                     </a>
                   ) : null
-                }
-              />
-              <DataField
-                label="Telefone"
-                value={
-                  <a
-                    href={`tel:${cliente.ddi}${cliente.telefone}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {formatTelefone(cliente.ddi, cliente.telefone)}
-                  </a>
                 }
               />
             </div>

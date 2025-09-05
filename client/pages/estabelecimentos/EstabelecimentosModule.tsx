@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -233,6 +233,29 @@ function EstabelecimentosModule() {
     if (isLoading) return;
     loadEstabelecimentos();
   }, [loadEstabelecimentos, isLoading]);
+
+  // Data prepared for export (flatten address fields)
+  const exportData = useMemo(() => {
+    return estabelecimentos.map((e) => ({
+      id: e.id,
+      id_usuario: e.id_usuario,
+      nome: e.nome,
+      razao_social: e.razao_social,
+      cnpj: e.cnpj,
+      tipo_estabelecimento: e.tipo_estabelecimento,
+      email: e.email,
+      ddi: e.ddi,
+      telefone: e.telefone,
+      cep: e.endereco?.cep || "",
+      endereco: e.endereco?.endereco || "",
+      cidade: e.endereco?.cidade || "",
+      uf: e.endereco?.uf || "",
+      pais: e.endereco?.pais || "",
+      ativo: e.ativo,
+      data_cadastro: e.data_cadastro,
+      data_atualizacao: e.data_atualizacao,
+    }));
+  }, [estabelecimentos]);
 
   // Event handlers
   const handleSearch = (value: string) => {
@@ -802,7 +825,7 @@ function EstabelecimentosModule() {
       <ExportModal
         isOpen={showExport}
         onClose={() => setShowExport(false)}
-        data={estabelecimentos}
+        data={exportData}
         selectedIds={selectedIds}
         moduleName="Estabelecimentos"
         columns={ESTABELECIMENTO_EXPORT_COLUMNS}

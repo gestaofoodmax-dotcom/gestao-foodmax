@@ -24,6 +24,7 @@ import FinanceiroModule from "./pages/financeiro/FinanceiroModule";
 import RelatoriosModule from "./pages/relatorios/RelatoriosModule";
 import ComunicacoesModule from "./pages/comunicacoes/ComunicacoesModule";
 import ConfiguracoesModule from "./pages/configuracoes/ConfiguracoesModule";
+import SuportesModule from "./pages/suportes/SuportesModule";
 
 export default function App() {
   return (
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/financeiro" element={<FinanceiroModule />} />
             <Route path="/relatorios" element={<RelatoriosModule />} />
             <Route path="/comunicacoes" element={<ComunicacoesModule />} />
+            <Route path="/suportes" element={<SuportesModule />} />
             <Route path="/configuracoes" element={<ConfiguracoesModule />} />
             <Route path="/minha-conta" element={<MinhaConta />} />
             <Route path="/PagamentoPlano" element={<PagamentoPlano />} />

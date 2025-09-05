@@ -365,23 +365,6 @@ export function ClienteForm({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...register("email")}
-                  className={getInputClassName("email")}
-                  placeholder="email@exemplo.com"
-                />
-                {getFieldError("email") && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {getFieldError("email")}
-                  </p>
-                )}
-              </div>
-              <div>
                 <Label htmlFor="telefone" className="text-sm font-medium">
                   Telefone *
                 </Label>
@@ -403,6 +386,23 @@ export function ClienteForm({
                 {(getFieldError("ddi") || getFieldError("telefone")) && (
                   <p className="text-sm text-red-600 mt-1">
                     {getFieldError("ddi") || getFieldError("telefone")}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register("email")}
+                  className={getInputClassName("email")}
+                  placeholder="email@exemplo.com"
+                />
+                {getFieldError("email") && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {getFieldError("email")}
                   </p>
                 )}
               </div>
@@ -493,23 +493,6 @@ export function ClienteForm({
               <div className="flex items-center justify-start">
                 <div className="flex items-center gap-3">
                   <Switch
-                    id="ativo"
-                    checked={watchedAtivo}
-                    onCheckedChange={(c) => setValue("ativo", c)}
-                  />
-                  <div>
-                    <Label htmlFor="ativo" className="text-sm font-medium">
-                      Ativo
-                    </Label>
-                    <p className="text-sm text-gray-600">
-                      {watchedAtivo ? "Sim" : "Não"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-start">
-                <div className="flex items-center gap-3">
-                  <Switch
                     id="aceita_promocao_email"
                     checked={watchedAceita}
                     onCheckedChange={(c) =>
@@ -525,6 +508,23 @@ export function ClienteForm({
                     </Label>
                     <p className="text-sm text-gray-600">
                       {watchedAceita ? "Sim" : "Não"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-start">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    id="ativo"
+                    checked={watchedAtivo}
+                    onCheckedChange={(c) => setValue("ativo", c)}
+                  />
+                  <div>
+                    <Label htmlFor="ativo" className="text-sm font-medium">
+                      Ativo
+                    </Label>
+                    <p className="text-sm text-gray-600">
+                      {watchedAtivo ? "Sim" : "Não"}
                     </p>
                   </div>
                 </div>

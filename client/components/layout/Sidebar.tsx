@@ -18,6 +18,7 @@ import {
   DollarSign,
   BarChart3,
   Mail,
+  LifeBuoy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toTitleCase } from "@/lib/utils";
@@ -90,6 +91,7 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
           { icon: List, label: "Itens", route: "/itens" },
           { icon: Utensils, label: "Cardápios", route: "/cardapios" },
           { icon: Mail, label: "Comunicação", route: "/comunicacoes" },
+          { icon: LifeBuoy, label: "Suporte", route: "/suportes" },
           { icon: DollarSign, label: "Financeiro", route: "/financeiro" },
         ],
       },

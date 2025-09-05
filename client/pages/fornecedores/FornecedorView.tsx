@@ -127,17 +127,6 @@ export function FornecedorView({
             </div>
             <div className="grid grid-cols-2 gap-4">
               <DataField
-                label="Email"
-                value={
-                  <a
-                    href={`mailto:${fornecedor.email}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {fornecedor.email}
-                  </a>
-                }
-              />
-              <DataField
                 label="Telefone"
                 value={
                   <a
@@ -145,6 +134,17 @@ export function FornecedorView({
                     className="text-blue-600 hover:underline"
                   >
                     {formatTelefone(fornecedor.ddi, fornecedor.telefone)}
+                  </a>
+                }
+              />
+              <DataField
+                label="Email"
+                value={
+                  <a
+                    href={`mailto:${fornecedor.email}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {fornecedor.email}
                   </a>
                 }
               />

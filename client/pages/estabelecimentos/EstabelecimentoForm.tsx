@@ -368,23 +368,6 @@ export function EstabelecimentoForm({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email *
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...register("email")}
-                  className={getInputClassName("email")}
-                  placeholder="email@exemplo.com"
-                />
-                {getFieldError("email") && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {getFieldError("email")}
-                  </p>
-                )}
-              </div>
-              <div>
                 <Label htmlFor="telefone" className="text-sm font-medium">
                   Telefone *
                 </Label>
@@ -406,6 +389,23 @@ export function EstabelecimentoForm({
                 {(getFieldError("ddi") || getFieldError("telefone")) && (
                   <p className="text-sm text-red-600 mt-1">
                     {getFieldError("ddi") || getFieldError("telefone")}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email *
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register("email")}
+                  className={getInputClassName("email")}
+                  placeholder="email@exemplo.com"
+                />
+                {getFieldError("email") && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {getFieldError("email")}
                   </p>
                 )}
               </div>

@@ -119,6 +119,14 @@ import {
   sendComunicacao,
   sendComunicacoesBulk,
 } from "./routes/comunicacoes";
+import {
+  listSuportes,
+  getSuporte,
+  createSuporte,
+  updateSuporte,
+  deleteSuporte,
+  responderSuporte,
+} from "./routes/suportes";
 
 export function createServer() {
   const app = express();
@@ -259,6 +267,14 @@ export function createServer() {
   app.post("/api/comunicacoes/bulk-delete", bulkDeleteComunicacoes);
   app.post("/api/comunicacoes/:id/send", sendComunicacao);
   app.post("/api/comunicacoes/send-bulk", sendComunicacoesBulk);
+
+  // Suportes routes
+  app.get("/api/suportes", listSuportes);
+  app.get("/api/suportes/:id", getSuporte);
+  app.post("/api/suportes", createSuporte);
+  app.put("/api/suportes/:id", updateSuporte);
+  app.delete("/api/suportes/:id", deleteSuporte);
+  app.post("/api/suportes/:id/responder", responderSuporte);
 
   return app;
 }
