@@ -131,7 +131,7 @@ export function SuporteView({
               <LifeBuoy className="w-6 h-6 text-foodmax-orange" />
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
-                  {suporte.titulo}
+                  {(suporte as any).codigo || suporte.titulo}
                 </h2>
               </div>
             </div>
@@ -193,19 +193,17 @@ export function SuporteView({
               <Headphones className="w-5 h-5 text-green-600" />
               <h3 className="font-semibold text-green-600">Ticket</h3>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
                 <div className="text-sm font-medium text-gray-600">Código do Ticket</div>
                 <div className="text-sm text-gray-900">{(suporte as any).codigo || '-'}</div>
               </div>
-              <div className="col-span-2">
+              <div>
                 <div className="text-sm font-medium text-gray-600">Título</div>
                 <div className="text-sm text-gray-900">{suporte.titulo}</div>
               </div>
-              <div className="col-span-2">
-                <div className="text-sm font-medium text-gray-600">
-                  Descrição
-                </div>
+              <div className="md:col-span-2">
+                <div className="text-sm font-medium text-gray-600">Descrição</div>
                 <div className="text-sm text-gray-900 whitespace-pre-wrap">
                   {suporte.descricao}
                 </div>
