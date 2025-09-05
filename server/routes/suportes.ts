@@ -383,9 +383,10 @@ export const listRespostasSuporte: RequestHandler = async (req, res) => {
       const u = users.find((x) => x.id === r.id_usuario);
       const role = String((u as any)?.role || "user").toLowerCase();
       const contactName = contactMap[r.id_usuario];
-      const nome = contactName && String(contactName).trim()
-        ? toTitleCase(String(contactName))
-        : toTitleCase(nameFromEmail(u?.email || null));
+      const nome =
+        contactName && String(contactName).trim()
+          ? toTitleCase(String(contactName))
+          : toTitleCase(nameFromEmail(u?.email || null));
       return {
         ...r,
         nome_usuario: nome,

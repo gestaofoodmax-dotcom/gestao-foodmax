@@ -123,13 +123,15 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
         return first || full;
       }
     } catch {}
-    const email = user?.email || (() => {
-      try {
-        return localStorage.getItem("fm_user_email") || "";
-      } catch {
-        return "";
-      }
-    })();
+    const email =
+      user?.email ||
+      (() => {
+        try {
+          return localStorage.getItem("fm_user_email") || "";
+        } catch {
+          return "";
+        }
+      })();
     const base = email.split("@")[0] || "Usuário";
     return toTitleCase(base);
   }, [user?.email]);
@@ -241,7 +243,14 @@ export function Sidebar({ open, onToggle }: SidebarProps) {
                   {displayName}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {user?.email || (() => { try { return localStorage.getItem("fm_user_email") || ""; } catch { return ""; } })()}
+                  {user?.email ||
+                    (() => {
+                      try {
+                        return localStorage.getItem("fm_user_email") || "";
+                      } catch {
+                        return "";
+                      }
+                    })()}
                 </div>
               </Link>
               <button
