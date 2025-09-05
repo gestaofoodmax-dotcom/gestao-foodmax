@@ -718,6 +718,8 @@ export default function ClientesModule() {
         isOpen={showExport}
         onClose={() => setShowExport(false)}
         data={clientes.map((cliente) => ({
+          id: cliente.id,
+          id_usuario: cliente.id_usuario,
           estabelecimento_nome:
             estabelecimentos.find((e) => e.id === cliente.estabelecimento_id)
               ?.nome ||
@@ -734,8 +736,8 @@ export default function ClientesModule() {
           cidade: cliente.endereco?.cidade || "",
           uf: cliente.endereco?.uf || "",
           pais: cliente.endereco?.pais || "",
-          aceita_promocao_email: cliente.aceita_promocao_email ? "Sim" : "Não",
-          ativo: cliente.ativo ? "Ativo" : "Inativo",
+          aceita_promocao_email: !!cliente.aceita_promocao_email,
+          ativo: !!cliente.ativo,
           data_cadastro: cliente.data_cadastro,
         }))}
         selectedIds={selectedIds}
