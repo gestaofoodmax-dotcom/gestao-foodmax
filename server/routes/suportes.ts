@@ -361,9 +361,11 @@ export const listRespostasSuporte: RequestHandler = async (req, res) => {
 
     const data = (respostas || []).map((r: any) => {
       const u = users.find((x) => x.id === r.id_usuario);
+      const role = String((u as any)?.role || "user").toLowerCase();
       return {
         ...r,
         nome_usuario: nameFromEmail(u?.email || null),
+        role,
       };
     });
 
