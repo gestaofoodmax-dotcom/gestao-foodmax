@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { X, Save, Smartphone, MapPin, FileText } from "lucide-react";
+import { X, Save, Phone, MapPin, FileText } from "lucide-react";
 import { DDISelect } from "@/components/ddi-select";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -310,7 +310,7 @@ export function FornecedorForm({
           {/* Contato */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
-              <Smartphone className="w-5 h-5 text-green-600" />
+              <Phone className="w-5 h-5 text-green-600" />
               <h3 className="font-semibold text-green-600">Contato</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
