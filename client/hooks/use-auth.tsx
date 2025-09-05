@@ -71,10 +71,22 @@ export function AuthProvider({ children }: AuthProviderProps) {
               setUser(userData.user);
               setHasPaymentFlag(!!userData.user?.hasPayment);
               try {
-                const existingName = localStorage.getItem("fm_user_name");
-                if (!existingName && userData?.user?.email) {
-                  const fallback = String(userData.user.email).split("@")[0];
-                  localStorage.setItem("fm_user_name", fallback);
+                if (userData?.user?.email) {
+                  localStorage.setItem("fm_user_email", userData.user.email);
+                }
+                const serverName = (userData?.user as any)?.nome;
+                if (serverName && String(serverName).trim()) {
+                  const mod = await import("@/lib/utils");
+                  localStorage.setItem(
+                    "fm_user_name",
+                    mod.toTitleCase(String(serverName).trim()),
+                  );
+                } else {
+                  const existingName = localStorage.getItem("fm_user_name");
+                  if (!existingName && userData?.user?.email) {
+                    const fallback = String(userData.user.email).split("@")[0];
+                    localStorage.setItem("fm_user_name", fallback);
+                  }
                 }
               } catch {}
             } else {
