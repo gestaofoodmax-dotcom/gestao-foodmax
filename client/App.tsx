@@ -24,6 +24,7 @@ import FinanceiroModule from "./pages/financeiro/FinanceiroModule";
 import RelatoriosModule from "./pages/relatorios/RelatoriosModule";
 import ComunicacoesModule from "./pages/comunicacoes/ComunicacoesModule";
 import ConfiguracoesModule from "./pages/configuracoes/ConfiguracoesModule";
+import SuportesModule from "./pages/suportes/SuportesModule";
 
 export default function App() {
   return (
