@@ -38,8 +38,10 @@ const getUserId = (req: any): number | null => {
 };
 
 function generateCodigo(): string {
-  const part = () => Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `${part()}-${part()}`;
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "";
+  for (let i = 0; i < 10; i++) out += chars.charAt(Math.floor(Math.random() * chars.length));
+  return out;
 }
 
 export const listPedidos: RequestHandler = async (req, res) => {
