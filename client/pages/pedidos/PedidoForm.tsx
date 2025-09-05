@@ -162,11 +162,12 @@ export default function PedidoForm({
   }, [isOpen]);
 
   const generateCodigo = () => {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let out = "";
-  for (let i = 0; i < 10; i++) out += chars.charAt(Math.floor(Math.random() * chars.length));
-  return out;
-};
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let out = "";
+    for (let i = 0; i < 10; i++)
+      out += chars.charAt(Math.floor(Math.random() * chars.length));
+    return out;
+  };
 
   useEffect(() => {
     if (isOpen && !pedido) {

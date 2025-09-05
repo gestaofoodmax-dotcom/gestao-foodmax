@@ -40,7 +40,8 @@ const getUserId = (req: any): number | null => {
 function generateCodigo(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let out = "";
-  for (let i = 0; i < 10; i++) out += chars.charAt(Math.floor(Math.random() * chars.length));
+  for (let i = 0; i < 10; i++)
+    out += chars.charAt(Math.floor(Math.random() * chars.length));
   return out;
 }
 
