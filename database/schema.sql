@@ -1,4 +1,3 @@
--- Enable extensions if needed
 -- create extension if not exists pgcrypto;
 
 -- Users table
@@ -718,6 +717,8 @@ CREATE TABLE IF NOT EXISTS suportes (
   status VARCHAR(20) NOT NULL DEFAULT 'Aberto' CHECK (status IN ('Aberto','Em Andamento','Resolvido','Fechado')),
   resposta_admin TEXT,
   data_resposta_admin TIMESTAMP WITH TIME ZONE,
+  data_hora_resolvido TIMESTAMP WITH TIME ZONE,
+  data_hora_fechado TIMESTAMP WITH TIME ZONE,
   data_cadastro TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
   data_atualizacao TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
@@ -737,6 +738,18 @@ CREATE TABLE IF NOT EXISTS suportes_eventos (
 );
 CREATE INDEX IF NOT EXISTS idx_suportes_eventos_suporte ON suportes_eventos(suporte_id);
 
+-- Respostas do suporte (histórico)
+CREATE TABLE IF NOT EXISTS suportes_respostas (
+  id SERIAL PRIMARY KEY,
+  suporte_id INTEGER NOT NULL REFERENCES suportes(id) ON DELETE CASCADE,
+  id_usuario INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  resposta TEXT NOT NULL,
+  data_cadastro TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  data_atualizacao TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_suportes_respostas_suporte ON suportes_respostas(suporte_id);
+CREATE INDEX IF NOT EXISTS idx_suportes_respostas_usuario ON suportes_respostas(id_usuario);
+
 -- Trigger to auto-update data_atualizacao
 CREATE OR REPLACE FUNCTION set_updated_at_suportes()
 RETURNS TRIGGER AS $$
@@ -749,5 +762,11 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_suportes_updated_at ON suportes;
 CREATE TRIGGER trg_suportes_updated_at
 BEFORE UPDATE ON suportes
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at_suportes();
+
+DROP TRIGGER IF EXISTS trg_suportes_respostas_updated_at ON suportes_respostas;
+CREATE TRIGGER trg_suportes_respostas_updated_at
+BEFORE UPDATE ON suportes_respostas
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at_suportes();
