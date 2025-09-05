@@ -119,6 +119,14 @@ import {
   sendComunicacao,
   sendComunicacoesBulk,
 } from "./routes/comunicacoes";
+import {
+  listSuportes,
+  getSuporte,
+  createSuporte,
+  updateSuporte,
+  deleteSuporte,
+  responderSuporte,
+} from "./routes/suportes";
 
 export function createServer() {
   const app = express();
