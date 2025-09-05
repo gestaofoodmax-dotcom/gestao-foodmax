@@ -736,9 +736,10 @@ export default function ClientesModule() {
           cidade: cliente.endereco?.cidade || "",
           uf: cliente.endereco?.uf || "",
           pais: cliente.endereco?.pais || "",
-          aceita_promocao_email: !!cliente.aceita_promocao_email,
+          aceita_promocao_email: cliente.aceita_promocao_email ? "Sim" : "Não",
           ativo: !!cliente.ativo,
           data_cadastro: cliente.data_cadastro,
+          data_atualizacao: cliente.data_atualizacao,
         }))}
         selectedIds={selectedIds}
         moduleName="Clientes"
