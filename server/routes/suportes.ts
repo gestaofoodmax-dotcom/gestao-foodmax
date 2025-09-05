@@ -97,12 +97,12 @@ export const getSuporte: RequestHandler = async (req, res) => {
     const supabase = getSupabaseServiceClient();
     const { role } = await getUserRoleAndEmail(userId);
 
-    let query = supabase.from("suportes").select("*").eq("id", id).maybeSingle();
+    let query = supabase.from("suportes").select("*").eq("id", id);
     if (role !== "admin") {
-      query = query.eq("id_usuario", userId) as any;
+      query = query.eq("id_usuario", userId);
     }
 
-    const { data, error } = (await query) as any;
+    const { data, error } = await query.single();
     if (error || !data) return res.status(404).json({ error: "Registro não encontrado" });
 
     res.json(data);
