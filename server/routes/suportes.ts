@@ -8,7 +8,14 @@ const getUserId = (req: any): number | null => {
 };
 
 const SuporteCreateSchema = z.object({
-  tipo: z.enum(["Técnico", "Financeiro", "Dúvida", "Sugestão", "Reclamação", "Outro"]),
+  tipo: z.enum([
+    "Técnico",
+    "Financeiro",
+    "Dúvida",
+    "Sugestão",
+    "Reclamação",
+    "Outro",
+  ]),
   prioridade: z.enum(["Baixa", "Média", "Alta"]),
   nome_usuario: z.string().min(1),
   email_usuario: z.string().email(),
@@ -35,7 +42,8 @@ async function getUserRoleAndEmail(userId: number) {
 export const listSuportes: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
 
     const supabase = getSupabaseServiceClient();
     const page = parseInt((req.query.page as string) || "1");
@@ -62,7 +70,9 @@ export const listSuportes: RequestHandler = async (req, res) => {
       query = query.eq("status", status);
     }
 
-    const countQuery = supabase.from("suportes").select("*", { count: "exact", head: true });
+    const countQuery = supabase
+      .from("suportes")
+      .select("*", { count: "exact", head: true });
     const { count } = await (role !== "admin"
       ? countQuery.eq("id_usuario", userId)
       : countQuery);
@@ -94,7 +104,8 @@ export const listSuportes: RequestHandler = async (req, res) => {
 export const getSuporte: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
 
@@ -107,7 +118,8 @@ export const getSuporte: RequestHandler = async (req, res) => {
     }
 
     const { data, error } = await query.single();
-    if (error || !data) return res.status(404).json({ error: "Registro não encontrado" });
+    if (error || !data)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     res.json(data);
   } catch (error) {
@@ -119,7 +131,8 @@ export const getSuporte: RequestHandler = async (req, res) => {
 export const createSuporte: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const input = SuporteCreateSchema.parse(req.body);
 
     const supabase = getSupabaseServiceClient();
@@ -137,7 +150,11 @@ export const createSuporte: RequestHandler = async (req, res) => {
       resposta_admin: input.resposta_admin || null,
     };
 
-    const { data, error } = await supabase.from("suportes").insert(insertData).select().single();
+    const { data, error } = await supabase
+      .from("suportes")
+      .insert(insertData)
+      .select()
+      .single();
     if (error) throw error;
 
     if (role === "user") {
@@ -160,7 +177,9 @@ export const createSuporte: RequestHandler = async (req, res) => {
     res.status(201).json({ success: true, data });
   } catch (error: any) {
     if (error?.name === "ZodError") {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
     console.error("Error creating suporte:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -170,7 +189,8 @@ export const createSuporte: RequestHandler = async (req, res) => {
 export const updateSuporte: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
 
@@ -183,7 +203,8 @@ export const updateSuporte: RequestHandler = async (req, res) => {
       .select("*")
       .eq("id", id)
       .maybeSingle();
-    if (exErr || !existing) return res.status(404).json({ error: "Registro não encontrado" });
+    if (exErr || !existing)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     if (role !== "admin" && existing.id_usuario !== userId) {
       return res.status(403).json({ error: "Acesso negado" });
@@ -199,18 +220,26 @@ export const updateSuporte: RequestHandler = async (req, res) => {
       .single();
     if (error) throw error;
 
-    if (role === "admin" && typeof input.resposta_admin !== "undefined" && (input.resposta_admin || "").trim() && input.resposta_admin !== existing.resposta_admin) {
+    if (
+      role === "admin" &&
+      typeof input.resposta_admin !== "undefined" &&
+      (input.resposta_admin || "").trim() &&
+      input.resposta_admin !== existing.resposta_admin
+    ) {
       await supabase.from("suportes_eventos").insert({
         suporte_id: id,
         tipo_evento: "resposta_admin",
-        detalhes: "Resposta enviada ao usuário criador do ticket (via formulário)",
+        detalhes:
+          "Resposta enviada ao usuário criador do ticket (via formulário)",
       });
     }
 
     res.json({ success: true, data });
   } catch (error: any) {
     if (error?.name === "ZodError") {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
     console.error("Error updating suporte:", error);
     res.status(500).json({ error: "Erro interno do servidor" });
@@ -220,7 +249,8 @@ export const updateSuporte: RequestHandler = async (req, res) => {
 export const deleteSuporte: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
 
@@ -232,7 +262,8 @@ export const deleteSuporte: RequestHandler = async (req, res) => {
       .select("id, id_usuario")
       .eq("id", id)
       .maybeSingle();
-    if (exErr || !existing) return res.status(404).json({ error: "Registro não encontrado" });
+    if (exErr || !existing)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     if (role !== "admin" && existing.id_usuario !== userId) {
       return res.status(403).json({ error: "Acesso negado" });
@@ -251,27 +282,32 @@ export const deleteSuporte: RequestHandler = async (req, res) => {
 export const responderSuporte: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
 
     const { resposta, status } = z
       .object({
         resposta: z.string().min(1),
-        status: z.enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"]).optional(),
+        status: z
+          .enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"])
+          .optional(),
       })
       .parse(req.body);
 
     const supabase = getSupabaseServiceClient();
     const { role } = await getUserRoleAndEmail(userId);
-    if (role !== "admin") return res.status(403).json({ error: "Apenas admin pode responder" });
+    if (role !== "admin")
+      return res.status(403).json({ error: "Apenas admin pode responder" });
 
     const { data: existing, error: exErr } = await supabase
       .from("suportes")
       .select("*")
       .eq("id", id)
       .single();
-    if (exErr || !existing) return res.status(404).json({ error: "Registro não encontrado" });
+    if (exErr || !existing)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     const update: any = {
       resposta_admin: resposta,
@@ -296,7 +332,9 @@ export const responderSuporte: RequestHandler = async (req, res) => {
     res.json({ success: true, data });
   } catch (error: any) {
     if (error?.name === "ZodError") {
-      return res.status(400).json({ error: "Dados inválidos", details: error.errors });
+      return res
+        .status(400)
+        .json({ error: "Dados inválidos", details: error.errors });
     }
     console.error("Error responding suporte:", error);
     res.status(500).json({ error: "Erro interno do servidor" });

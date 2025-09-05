@@ -32,8 +32,13 @@ import {
 } from "@shared/suportes";
 
 const suporteSchema = z.object({
-  tipo: z.enum(["Técnico", "Financeiro", "Dúvida", "Sugestão", "Reclamação", "Outro"], { required_error: "Tipo de suporte é obrigatório" }),
-  prioridade: z.enum(["Baixa", "Média", "Alta"], { required_error: "Prioridade é obrigatória" }),
+  tipo: z.enum(
+    ["Técnico", "Financeiro", "Dúvida", "Sugestão", "Reclamação", "Outro"],
+    { required_error: "Tipo de suporte é obrigatório" },
+  ),
+  prioridade: z.enum(["Baixa", "Média", "Alta"], {
+    required_error: "Prioridade é obrigatória",
+  }),
   nome_usuario: z.string().min(1),
   email_usuario: z.string().email(),
   titulo: z.string().min(1, "Título é obrigatório"),
@@ -52,7 +57,13 @@ interface SuporteFormProps {
   isLoading?: boolean;
 }
 
-export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = false }: SuporteFormProps) {
+export function SuporteForm({
+  isOpen,
+  onClose,
+  onSave,
+  suporte,
+  isLoading = false,
+}: SuporteFormProps) {
   const { getUserRole, user } = useAuth();
   const role = getUserRole();
   const isAdmin = role === "admin";
@@ -142,15 +153,26 @@ export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = fals
     `foodmax-input ${errors[name] ? "border-red-500 focus:ring-red-500" : ""}`;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(o) => { if (!o) onClose(); }}>
-      <DialogContent className="w-[85vw] h-[90vh] max-w-none overflow-y-auto" onInteractOutside={(e) => e.preventDefault()}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
+      <DialogContent
+        className="w-[85vw] h-[90vh] max-w-none overflow-y-auto"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
             {suporte ? "Editar Suporte" : "Novo Suporte"}
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-6">
+        <form
+          onSubmit={handleSubmit(onSubmit, onInvalid)}
+          className="space-y-6"
+        >
           {/* Dados do Ticket */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
@@ -161,13 +183,18 @@ export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = fals
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>Tipo de Suporte *</Label>
-                <Select value={watchedTipo} onValueChange={(v) => setValue("tipo", v as SuporteTipo)}>
+                <Select
+                  value={watchedTipo}
+                  onValueChange={(v) => setValue("tipo", v as SuporteTipo)}
+                >
                   <SelectTrigger className={getInputClassName("tipo")}>
                     <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
                     {SUPORTE_TIPOS.map((t) => (
-                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                      <SelectItem key={t} value={t}>
+                        {t}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -175,13 +202,20 @@ export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = fals
 
               <div>
                 <Label>Prioridade</Label>
-                <Select value={watchedPrioridade} onValueChange={(v) => setValue("prioridade", v as SuportePrioridade)}>
+                <Select
+                  value={watchedPrioridade}
+                  onValueChange={(v) =>
+                    setValue("prioridade", v as SuportePrioridade)
+                  }
+                >
                   <SelectTrigger className={getInputClassName("prioridade")}>
                     <SelectValue placeholder="Selecione a prioridade" />
                   </SelectTrigger>
                   <SelectContent>
                     {SUPORTE_PRIORIDADES.map((p) => (
-                      <SelectItem key={p} value={p}>{p}</SelectItem>
+                      <SelectItem key={p} value={p}>
+                        {p}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -189,12 +223,21 @@ export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = fals
 
               <div>
                 <Label>Nome</Label>
-                <Input {...register("nome_usuario")} className={`${getInputClassName("nome_usuario")} text-gray-500`} readOnly />
+                <Input
+                  {...register("nome_usuario")}
+                  className={`${getInputClassName("nome_usuario")} text-gray-500`}
+                  readOnly
+                />
               </div>
 
               <div>
                 <Label>Email</Label>
-                <Input type="email" {...register("email_usuario")} className={`${getInputClassName("email_usuario")} text-gray-500`} readOnly />
+                <Input
+                  type="email"
+                  {...register("email_usuario")}
+                  className={`${getInputClassName("email_usuario")} text-gray-500`}
+                  readOnly
+                />
               </div>
             </div>
           </div>
@@ -208,11 +251,20 @@ export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = fals
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Label>Título *</Label>
-                <Input {...register("titulo")} className={getInputClassName("titulo")} placeholder="Título do ticket" />
+                <Input
+                  {...register("titulo")}
+                  className={getInputClassName("titulo")}
+                  placeholder="Título do ticket"
+                />
               </div>
               <div className="md:col-span-2">
                 <Label>Descrição *</Label>
-                <Textarea {...register("descricao")} className={getInputClassName("descricao")} rows={5} placeholder="Descreva o problema ou dúvida" />
+                <Textarea
+                  {...register("descricao")}
+                  className={getInputClassName("descricao")}
+                  rows={5}
+                  placeholder="Descreva o problema ou dúvida"
+                />
               </div>
             </div>
           </div>
@@ -224,13 +276,27 @@ export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = fals
                 {isAdmin && (
                   <div>
                     <Label>Status</Label>
-                    <Select value={watchedStatus} onValueChange={(v) => setValue("status", v as SuporteStatus)}>
+                    <Select
+                      value={watchedStatus}
+                      onValueChange={(v) =>
+                        setValue("status", v as SuporteStatus)
+                      }
+                    >
                       <SelectTrigger className={getInputClassName("status")}>
                         <SelectValue placeholder="Selecione o status" />
                       </SelectTrigger>
                       <SelectContent>
-                        {(["Aberto", "Em Andamento", "Resolvido", "Fechado"] as SuporteStatus[]).map((s) => (
-                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        {(
+                          [
+                            "Aberto",
+                            "Em Andamento",
+                            "Resolvido",
+                            "Fechado",
+                          ] as SuporteStatus[]
+                        ).map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {s}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -241,11 +307,22 @@ export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = fals
           </div>
 
           <DialogFooter className="flex-row gap-2 sm:gap-0">
-            <Button type="button" variant="outline" onClick={onClose} disabled={saving || isLoading} className="flex-1 sm:flex-none">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={saving || isLoading}
+              className="flex-1 sm:flex-none"
+            >
               <X className="w-4 h-4 mr-2" />
               Cancelar
             </Button>
-            <Button type="submit" disabled={saving || isLoading} variant="orange" className="flex-1 sm:flex-none">
+            <Button
+              type="submit"
+              disabled={saving || isLoading}
+              variant="orange"
+              className="flex-1 sm:flex-none"
+            >
               {saving ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>

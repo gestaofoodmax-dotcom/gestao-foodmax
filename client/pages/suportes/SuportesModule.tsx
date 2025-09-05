@@ -53,7 +53,11 @@ function SuportesModule() {
         label: "Prioridade",
         sortable: true,
         render: (value: any) => (
-          <Badge className={`${PRIORIDADE_BADGE_STYLES[value] || "bg-gray-50 text-gray-700 border border-gray-200"}`}>{value}</Badge>
+          <Badge
+            className={`${PRIORIDADE_BADGE_STYLES[value] || "bg-gray-50 text-gray-700 border border-gray-200"}`}
+          >
+            {value}
+          </Badge>
         ),
       },
       {
@@ -61,7 +65,11 @@ function SuportesModule() {
         label: "Status",
         sortable: true,
         render: (value: any) => (
-          <Badge className={`${STATUS_BADGE_STYLES[value] || "bg-gray-50 text-gray-700 border border-gray-200"}`}>{value}</Badge>
+          <Badge
+            className={`${STATUS_BADGE_STYLES[value] || "bg-gray-50 text-gray-700 border border-gray-200"}`}
+          >
+            {value}
+          </Badge>
         ),
       },
       {
@@ -83,11 +91,17 @@ function SuportesModule() {
         ...(searchTerm && { search: searchTerm }),
         ...(statusTab && statusTab !== "Todos" ? { status: statusTab } : {}),
       });
-      const response: SuportesListResponse = await makeRequest(`/api/suportes?${params}`);
+      const response: SuportesListResponse = await makeRequest(
+        `/api/suportes?${params}`,
+      );
       setSuportes(response.data);
       setTotalRecords(response.pagination.total);
     } catch (e: any) {
-      toast({ title: "Erro ao carregar suporte", description: e.message, variant: "destructive" });
+      toast({
+        title: "Erro ao carregar suporte",
+        description: e.message,
+        variant: "destructive",
+      });
       setSuportes([]);
       setTotalRecords(0);
     } finally {
@@ -124,7 +138,11 @@ function SuportesModule() {
       setSelectedIds([]);
       loadData();
     } catch (e: any) {
-      toast({ title: "Erro ao excluir", description: e.message, variant: "destructive" });
+      toast({
+        title: "Erro ao excluir",
+        description: e.message,
+        variant: "destructive",
+      });
     } finally {
       setDeleteLoading(false);
     }
@@ -134,16 +152,26 @@ function SuportesModule() {
     setFormLoading(true);
     try {
       if (current) {
-        await makeRequest(`/api/suportes/${current.id}`, { method: "PUT", body: JSON.stringify(data) });
+        await makeRequest(`/api/suportes/${current.id}`, {
+          method: "PUT",
+          body: JSON.stringify(data),
+        });
         toast({ title: "Suporte atualizado" });
       } else {
-        await makeRequest(`/api/suportes`, { method: "POST", body: JSON.stringify(data) });
+        await makeRequest(`/api/suportes`, {
+          method: "POST",
+          body: JSON.stringify(data),
+        });
         toast({ title: "Suporte criado" });
       }
       setShowForm(false);
       loadData();
     } catch (e: any) {
-      toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" });
+      toast({
+        title: "Erro ao salvar",
+        description: e.message,
+        variant: "destructive",
+      });
     } finally {
       setFormLoading(false);
     }
@@ -151,18 +179,31 @@ function SuportesModule() {
 
   return (
     <div className="flex h-screen bg-foodmax-gray-bg">
-      <Sidebar open={sidebarOpen} onToggle={(next) => setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)} />
+      <Sidebar
+        open={sidebarOpen}
+        onToggle={(next) =>
+          setSidebarOpen(typeof next === "boolean" ? next : !sidebarOpen)
+        }
+      />
 
       <div className="flex-1 flex flex-col">
         <header className="bg-foodmax-gray-bg px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden p-2 mr-3 rounded-lg border bg-white" aria-label="Abrir menu">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="md:hidden p-2 mr-3 rounded-lg border bg-white"
+                aria-label="Abrir menu"
+              >
                 <Menu className="w-5 h-5" />
               </button>
               <div>
-                <h2 className="text-2xl font-semibold text-gray-800">Suporte</h2>
-                <p className="text-gray-600 mt-1">Abra e gerencie tickets de suporte.</p>
+                <h2 className="text-2xl font-semibold text-gray-800">
+                  Suporte
+                </h2>
+                <p className="text-gray-600 mt-1">
+                  Abra e gerencie tickets de suporte.
+                </p>
               </div>
             </div>
           </div>
@@ -175,19 +216,33 @@ function SuportesModule() {
               <div className="w-full border-b border-gray-200">
                 <div className="flex items-center gap-6">
                   {SUPORTE_STATUS_TABS.map((tab) => {
-                    const count = tab.key === "Todos" ? totalRecords : suportes.filter((s) => s.status === tab.key).length;
+                    const count =
+                      tab.key === "Todos"
+                        ? totalRecords
+                        : suportes.filter((s) => s.status === tab.key).length;
                     return (
                       <div key={tab.key} className="flex items-center gap-6">
                         <button
                           className={`relative -mb-px pb-2 pt-1 text-base flex items-center gap-2 ${
-                            statusTab === tab.key ? "text-foodmax-orange" : "text-gray-700 hover:text-gray-900"
+                            statusTab === tab.key
+                              ? "text-foodmax-orange"
+                              : "text-gray-700 hover:text-gray-900"
                           }`}
-                          onClick={() => { setStatusTab(tab.key); setCurrentPage(1); }}
+                          onClick={() => {
+                            setStatusTab(tab.key);
+                            setCurrentPage(1);
+                          }}
                         >
                           <span>{tab.label}</span>
-                          <span className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
-                            statusTab === tab.key ? "bg-orange-100 text-foodmax-orange" : "bg-gray-100 text-gray-600"
-                          }`}>{count}</span>
+                          <span
+                            className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
+                              statusTab === tab.key
+                                ? "bg-orange-100 text-foodmax-orange"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {count}
+                          </span>
                           {statusTab === tab.key && (
                             <span className="absolute -bottom-[1px] left-0 right-0 h-[3px] bg-foodmax-orange" />
                           )}
@@ -203,23 +258,41 @@ function SuportesModule() {
               <div className="flex flex-col md:flex-row md:items-center gap-4">
                 <div className="relative md:flex-1 md:max-w-md">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  <Input placeholder="Buscar registros..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="foodmax-input pl-10" />
+                  <Input
+                    placeholder="Buscar registros..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="foodmax-input pl-10"
+                  />
                 </div>
 
                 <div className="flex items-center gap-2 w-full md:w-auto md:ml-auto flex-wrap">
                   {selectedIds.length > 0 && (
-                    <Button variant="destructive" size="sm" onClick={async () => {
-                      try {
-                        for (const id of selectedIds) {
-                          await makeRequest(`/api/suportes/${id}`, { method: "DELETE" });
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          for (const id of selectedIds) {
+                            await makeRequest(`/api/suportes/${id}`, {
+                              method: "DELETE",
+                            });
+                          }
+                          toast({ title: "Registros excluídos" });
+                          setSelectedIds([]);
+                          loadData();
+                        } catch (e: any) {
+                          toast({
+                            title: "Erro ao excluir",
+                            description: e.message,
+                            variant: "destructive",
+                          });
                         }
-                        toast({ title: "Registros excluídos" });
-                        setSelectedIds([]);
-                        loadData();
-                      } catch (e: any) {
-                        toast({ title: "Erro ao excluir", description: e.message, variant: "destructive" });
-                      }
-                    }}>
+                      }}
+                    >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Excluir Selecionados ({selectedIds.length})
                     </Button>
@@ -230,8 +303,16 @@ function SuportesModule() {
                     size="sm"
                     onClick={async () => {
                       try {
-                        const params = new URLSearchParams({ page: "1", limit: "1000", ...(statusTab !== "Todos" ? { status: statusTab } : {}) });
-                        const resp: SuportesListResponse = await makeRequest(`/api/suportes?${params}`);
+                        const params = new URLSearchParams({
+                          page: "1",
+                          limit: "1000",
+                          ...(statusTab !== "Todos"
+                            ? { status: statusTab }
+                            : {}),
+                        });
+                        const resp: SuportesListResponse = await makeRequest(
+                          `/api/suportes?${params}`,
+                        );
                         setExportData(resp?.data || []);
                         setShowExport(true);
                       } catch {
@@ -244,7 +325,10 @@ function SuportesModule() {
                     Exportar
                   </Button>
 
-                  <Button onClick={handleNew} className="bg-foodmax-orange text-white hover:bg-orange-600">
+                  <Button
+                    onClick={handleNew}
+                    className="bg-foodmax-orange text-white hover:bg-orange-600"
+                  >
                     <Plus className="w-4 h-4 mr-2" />
                     Novo
                   </Button>
@@ -266,13 +350,24 @@ function SuportesModule() {
               totalRecords={totalRecords}
               onPageChange={setCurrentPage}
               showActions={true}
-              actionButtons={{ view: true, edit: false, delete: true, toggle: false }}
+              actionButtons={{
+                view: true,
+                edit: false,
+                delete: true,
+                toggle: false,
+              }}
             />
           </div>
         </main>
       </div>
 
-      <SuporteForm isOpen={showForm} onClose={() => setShowForm(false)} onSave={handleSave} suporte={current} isLoading={formLoading} />
+      <SuporteForm
+        isOpen={showForm}
+        onClose={() => setShowForm(false)}
+        onSave={handleSave}
+        suporte={current}
+        isLoading={formLoading}
+      />
 
       <SuporteView
         isOpen={showView}

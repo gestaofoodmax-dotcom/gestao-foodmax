@@ -73,7 +73,10 @@ export const SUPORTE_EXPORT_COLUMNS: { key: string; label: string }[] = [
   { key: "data_atualizacao", label: "Data de Atualização" },
 ];
 
-export const SUPORTE_STATUS_TABS: { key: "Todos" | SuporteStatus; label: string }[] = [
+export const SUPORTE_STATUS_TABS: {
+  key: "Todos" | SuporteStatus;
+  label: string;
+}[] = [
   { key: "Todos", label: "Todos" },
   { key: "Aberto", label: "Abertos" },
   { key: "Em Andamento", label: "Em Andamento" },
@@ -90,7 +93,11 @@ export const SUPORTE_TIPOS: SuporteTipo[] = [
   "Outro",
 ];
 
-export const SUPORTE_PRIORIDADES: SuportePrioridade[] = ["Baixa", "Média", "Alta"];
+export const SUPORTE_PRIORIDADES: SuportePrioridade[] = [
+  "Baixa",
+  "Média",
+  "Alta",
+];
 
 export const PRIORIDADE_BADGE_STYLES: Record<SuportePrioridade, string> = {
   Baixa: "bg-green-50 text-green-700 border border-green-200",
