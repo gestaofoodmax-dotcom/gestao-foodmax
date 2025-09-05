@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, X, FileText, Headphones } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -42,6 +43,7 @@ const suporteSchema = z.object({
   }),
   nome_usuario: z.string().min(1),
   email_usuario: z.string().email(),
+  codigo: z.string().length(10, "Código deve ter 10 caracteres"),
   titulo: z.string().min(1, "Título é obrigatório"),
   descricao: z.string().min(1, "Descrição é obrigatória"),
   status: z.enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"]).optional(),
@@ -82,6 +84,7 @@ export function SuporteForm({
       prioridade: "Média",
       nome_usuario: "",
       email_usuario: "",
+      codigo: "",
       titulo: "",
       descricao: "",
       status: "Aberto",
@@ -110,12 +113,26 @@ export function SuporteForm({
       return toTitleCase(base);
     })();
 
+    const generateTicketCode = () => {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let out = "";
+      for (let i = 0; i < 10; i++) {
+        out += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return out;
+    };
+
     if (suporte) {
       reset({
         tipo: suporte.tipo,
         prioridade: suporte.prioridade,
         nome_usuario: suporte.nome_usuario,
         email_usuario: suporte.email_usuario,
+        codigo:
+          (suporte as any).codigo &&
+          String((suporte as any).codigo).length === 10
+            ? (suporte as any).codigo
+            : generateTicketCode(),
         titulo: suporte.titulo,
         descricao: suporte.descricao,
         status: suporte.status,
@@ -126,6 +143,7 @@ export function SuporteForm({
         prioridade: "Média",
         nome_usuario: defaultName,
         email_usuario: user?.email || "",
+        codigo: generateTicketCode(),
         titulo: "",
         descricao: "",
         status: "Aberto",
@@ -146,9 +164,25 @@ export function SuporteForm({
   };
 
   const onInvalid = (formErrors: FieldErrors<SuporteFormSchema>) => {
-    const labels = Object.keys(formErrors).map((k) => k);
-    if (labels.length > 0) {
-      // prevent toast import; show simple alert-like behavior could be implemented elsewhere
+    const labelMap: Record<keyof SuporteFormSchema, string> = {
+      tipo: "Tipo de Suporte",
+      prioridade: "Prioridade",
+      nome_usuario: "Nome",
+      email_usuario: "Email",
+      codigo: "Código do Ticket",
+      titulo: "Título",
+      descricao: "Descrição",
+      status: "Status",
+    } as const;
+    const missing = Object.keys(formErrors)
+      .map((k) => labelMap[k as keyof SuporteFormSchema] || k)
+      .join(", ");
+    if (missing) {
+      toast({
+        title: "Preencha os campos obrigatórios",
+        description: missing,
+        variant: "destructive",
+      });
     }
   };
 
@@ -225,20 +259,24 @@ export function SuporteForm({
               </div>
 
               <div>
-                <Label>Nome</Label>
+                <Label>
+                  Nome <span className="text-black">*</span>
+                </Label>
                 <Input
                   {...register("nome_usuario")}
-                  className={`${getInputClassName("nome_usuario")} text-gray-500`}
+                  className={`${getInputClassName("nome_usuario")} text-black`}
                   readOnly
                 />
               </div>
 
               <div>
-                <Label>Email</Label>
+                <Label>
+                  Email <span className="text-black">*</span>
+                </Label>
                 <Input
                   type="email"
                   {...register("email_usuario")}
-                  className={`${getInputClassName("email_usuario")} text-gray-500`}
+                  className={`${getInputClassName("email_usuario")} text-black`}
                   readOnly
                 />
               </div>
@@ -252,7 +290,17 @@ export function SuporteForm({
               <h3 className="font-semibold text-green-600">Ticket</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
+              <div>
+                <Label>
+                  Código do Ticket <span className="text-black">*</span>
+                </Label>
+                <Input
+                  {...register("codigo")}
+                  className={`${getInputClassName("codigo")} text-black`}
+                  readOnly
+                />
+              </div>
+              <div>
                 <Label>Título *</Label>
                 <Input
                   {...register("titulo")}

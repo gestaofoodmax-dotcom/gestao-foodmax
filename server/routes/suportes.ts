@@ -1,3 +1,4 @@
+import { RequestHandler } from "express";
 import { z } from "zod";
 import { getSupabaseServiceClient } from "../supabase";
 
@@ -18,6 +19,7 @@ const SuporteCreateSchema = z.object({
   prioridade: z.enum(["Baixa", "Média", "Alta"]),
   nome_usuario: z.string().min(1),
   email_usuario: z.string().email(),
+  codigo: z.string().length(10),
   titulo: z.string().min(1),
   descricao: z.string().min(1),
   status: z.enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"]).optional(),
@@ -157,6 +159,7 @@ export const createSuporte: RequestHandler = async (req, res) => {
       email_usuario: input.email_usuario,
       tipo: input.tipo,
       prioridade: input.prioridade,
+      codigo: input.codigo,
       titulo: input.titulo,
       descricao: input.descricao,
       status: input.status || "Aberto",
