@@ -52,6 +52,7 @@ export default function App() {
             <Route path="/financeiro" element={<FinanceiroModule />} />
             <Route path="/relatorios" element={<RelatoriosModule />} />
             <Route path="/comunicacoes" element={<ComunicacoesModule />} />
+            <Route path="/suportes" element={<SuportesModule />} />
             <Route path="/configuracoes" element={<ConfiguracoesModule />} />
             <Route path="/minha-conta" element={<MinhaConta />} />
             <Route path="/PagamentoPlano" element={<PagamentoPlano />} />
