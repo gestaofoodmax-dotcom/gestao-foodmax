@@ -10,15 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Eye,
   Info,
-  Mail,
-  MessageSquare,
-  User as UserIcon,
-  Calendar,
   X,
   Send,
   LifeBuoy,
+  FileText,
+  Ticket,
+  Edit,
 } from "lucide-react";
 import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
 import { toast } from "@/hooks/use-toast";
@@ -42,6 +40,7 @@ interface SuporteViewProps {
   onClose: () => void;
   suporte: Suporte | null;
   onReplied?: (updated: Suporte) => void;
+  onEdit?: (s: Suporte) => void;
 }
 
 export function SuporteView({
@@ -49,6 +48,7 @@ export function SuporteView({
   onClose,
   suporte,
   onReplied,
+  onEdit,
 }: SuporteViewProps) {
   const { getUserRole } = useAuth();
   const isAdmin = getUserRole() === "admin";
@@ -116,9 +116,8 @@ export function SuporteView({
               <LifeBuoy className="w-6 h-6 text-foodmax-orange" />
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
-                  Suporte
+                  {suporte.titulo}
                 </h2>
-                <div className="text-sm text-gray-900">{suporte.titulo}</div>
               </div>
             </div>
             <div className="text-right">
@@ -133,48 +132,50 @@ export function SuporteView({
             </div>
           </div>
 
-          {/* Dados do Ticket */}
+          {/* Dados Básicos */}
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
-              <Info className="w-5 h-5 text-blue-600" />
-              <h3 className="font-semibold text-blue-600">Dados do Ticket</h3>
+              <FileText className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <div className="text-sm font-medium text-gray-600">Tipo</div>
+                <div className="text-sm font-medium text-gray-600">Tipo de Suporte</div>
                 <div className="text-sm text-gray-900">{suporte.tipo}</div>
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-600">
-                  Prioridade
-                </div>
+                <div className="text-sm font-medium text-gray-600">Prioridade</div>
                 <div>
-                  <Badge
-                    className={`${PRIORIDADE_BADGE_STYLES[suporte.prioridade]}`}
-                  >
+                  <Badge className={`${PRIORIDADE_BADGE_STYLES[suporte.prioridade]}`}>
                     {suporte.prioridade}
                   </Badge>
                 </div>
               </div>
               <div>
                 <div className="text-sm font-medium text-gray-600">Nome</div>
-                <div className="text-sm text-gray-900">
-                  {suporte.nome_usuario}
-                </div>
+                <div className="text-sm text-gray-900">{suporte.nome_usuario}</div>
               </div>
               <div>
                 <div className="text-sm font-medium text-gray-600">Email</div>
-                <div className="text-sm text-gray-900">
-                  {suporte.email_usuario}
-                </div>
+                <div className="text-sm text-gray-900">{suporte.email_usuario}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Dados do Ticket */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <Ticket className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Dados do Ticket</h3>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <div className="text-sm font-medium text-gray-600">Título</div>
+                <div className="text-sm text-gray-900">{suporte.titulo}</div>
               </div>
               <div className="col-span-2">
-                <div className="text-sm font-medium text-gray-600">
-                  Descrição
-                </div>
-                <div className="text-sm text-gray-900 whitespace-pre-wrap">
-                  {suporte.descricao}
-                </div>
+                <div className="text-sm font-medium text-gray-600">Descrição</div>
+                <div className="text-sm text-gray-900 whitespace-pre-wrap">{suporte.descricao}</div>
               </div>
             </div>
           </div>
@@ -261,10 +262,6 @@ export function SuporteView({
                   </Select>
                 </div>
                 <div className="flex items-center gap-2 ml-auto">
-                  <Button variant="outline" onClick={onClose}>
-                    <X className="w-4 h-4 mr-2" />
-                    Fechar
-                  </Button>
                   <Button
                     onClick={handleEnviar}
                     disabled={sending || !resposta.trim()}
@@ -288,18 +285,22 @@ export function SuporteView({
           )}
         </div>
 
-        {!isAdmin && (
-          <DialogFooter className="flex-row gap-2 sm:gap-0">
+        <DialogFooter className="flex-row gap-2 sm:gap-0">
+          <Button variant="outline" onClick={onClose} className="flex-1 sm:flex-none">
+            <X className="w-4 h-4 mr-2" />
+            Fechar
+          </Button>
+          {onEdit && suporte && (
             <Button
-              variant="outline"
-              onClick={onClose}
-              className="flex-1 sm:flex-none"
+              type="button"
+              onClick={() => onEdit(suporte)}
+              className="flex-1 sm:flex-none bg-foodmax-orange hover:bg-orange-600"
             >
-              <X className="w-4 h-4 mr-2" />
-              Fechar
+              <Edit className="w-4 h-4 mr-2" />
+              Editar
             </Button>
-          </DialogFooter>
-        )}
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
