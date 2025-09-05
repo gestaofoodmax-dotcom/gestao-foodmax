@@ -260,7 +260,7 @@ export function SuporteForm({
                 <Label>Nome</Label>
                 <Input
                   {...register("nome_usuario")}
-                  className={`${getInputClassName("nome_usuario")} text-gray-500`}
+                  className={`${getInputClassName("nome_usuario")} text-black`}
                   readOnly
                 />
               </div>
@@ -270,7 +270,7 @@ export function SuporteForm({
                 <Input
                   type="email"
                   {...register("email_usuario")}
-                  className={`${getInputClassName("email_usuario")} text-gray-500`}
+                  className={`${getInputClassName("email_usuario")} text-black`}
                   readOnly
                 />
               </div>
@@ -286,11 +286,11 @@ export function SuporteForm({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label>
-                  Código do Ticket <span className="text-red-500">*</span>
+                  Código do Ticket <span className="text-black">*</span>
                 </Label>
                 <Input
                   {...register("codigo")}
-                  className={`${getInputClassName("codigo")} text-gray-500`}
+                  className={`${getInputClassName("codigo")} text-black`}
                   readOnly
                 />
               </div>
