@@ -184,11 +184,11 @@ export function SuporteView({
             </div>
           </div>
 
-          {/* Dados do Ticket */}
+          {/* Ticket do Suporte */}
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
               <Ticket className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-green-600">Dados do Ticket</h3>
+              <h3 className="font-semibold text-green-600">Ticket do Suporte</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
@@ -202,49 +202,6 @@ export function SuporteView({
             </div>
           </div>
 
-          {/* Detalhes do Cadastro */}
-          <div className="bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-3">
-              <Info className="w-5 h-5 text-gray-600" />
-              <h3 className="font-semibold text-gray-600">
-                Detalhes do Cadastro
-              </h3>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="text-sm font-medium text-gray-600">
-                  Data de Cadastro
-                </div>
-                <div className="text-sm text-gray-900">
-                  {formatDate(suporte.data_cadastro)}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-600">
-                  Data de Atualização
-                </div>
-                <div className="text-sm text-gray-900">
-                  {formatDate(suporte.data_atualizacao)}
-                </div>
-              </div>
-              <div>
-                <div className="text-sm font-medium text-gray-600">Status</div>
-                <div className="text-sm text-gray-900">{suporte.status}</div>
-              </div>
-              {suporte.data_hora_resolvido && (
-                <div>
-                  <div className="text-sm font-medium text-gray-600">Resolvido em</div>
-                  <div className="text-sm text-gray-900">{formatDate(suporte.data_hora_resolvido)}</div>
-                </div>
-              )}
-              {suporte.data_hora_fechado && (
-                <div>
-                  <div className="text-sm font-medium text-gray-600">Fechado em</div>
-                  <div className="text-sm text-gray-900">{formatDate(suporte.data_hora_fechado)}</div>
-                </div>
-              )}
-            </div>
-          </div>
 
           {/* Histórico de Resposta */}
           {respostas.length > 0 && (
@@ -264,21 +221,21 @@ export function SuporteView({
             </div>
           )}
 
-          {/* Responder Ticket */}
-          <div className="bg-white p-4 rounded-lg border">
-            <div className="flex items-center gap-2 mb-3">
-              <LifeBuoy className="w-5 h-5 text-orange-600" />
-              <h3 className="font-semibold text-orange-600">Responder Ticket</h3>
-            </div>
-            <Textarea
-              rows={4}
-              value={resposta}
-              onChange={(e) => setResposta(e.target.value)}
-              placeholder={isAdmin ? "Escreva sua resposta ao usuário" : "Escreva sua resposta ao administrador"}
-            />
-            <div className="flex items-center justify-between gap-3 mt-3">
+          {/* Responder Ticket (hidden when Fechado) */}
+          {suporte.status !== "Fechado" && (
+            <div className="bg-white p-4 rounded-lg border">
+              <div className="flex items-center gap-2 mb-3">
+                <LifeBuoy className="w-5 h-5 text-orange-600" />
+                <h3 className="font-semibold text-orange-600">Responder Ticket</h3>
+              </div>
+              <Textarea
+                rows={4}
+                value={resposta}
+                onChange={(e) => setResposta(e.target.value)}
+                placeholder={isAdmin ? "Escreva sua resposta ao usuário" : "Escreva sua resposta ao administrador"}
+              />
               {isAdmin && (
-                <div className="w-64">
+                <div className="w-64 mt-3">
                   <div className="text-sm font-medium text-gray-700 mb-1">Status</div>
                   <Select
                     value={selectedStatus}
@@ -304,27 +261,8 @@ export function SuporteView({
                   </Select>
                 </div>
               )}
-              <div className="flex items-center gap-2 ml-auto">
-                <Button
-                  onClick={handleEnviar}
-                  disabled={sending || !resposta.trim()}
-                  variant="orange"
-                >
-                  {sending ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="w-4 h-4 mr-2" />
-                      Enviar
-                    </>
-                  )}
-                </Button>
-              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <DialogFooter className="flex-row gap-2 sm:gap-0">
