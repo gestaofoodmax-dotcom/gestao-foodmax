@@ -1,3 +1,4 @@
+import { RequestHandler } from "express";
 import { z } from "zod";
 import { getSupabaseServiceClient } from "../supabase";
 
