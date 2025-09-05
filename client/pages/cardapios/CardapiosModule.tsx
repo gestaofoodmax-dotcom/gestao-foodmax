@@ -359,7 +359,7 @@ export default function CardapiosModule() {
           qtde_itens,
         } as any;
         list.unshift(novo);
-        // salvar itens deste card��pio localmente para visualização
+        // salvar itens deste cardápio localmente para visualização
         const map = readLocalCardapiosItens();
         map[String(novo.id)] = data.itens || [];
         writeLocalCardapiosItens(map);
@@ -410,7 +410,7 @@ export default function CardapiosModule() {
       });
       toast({
         title: "Cardápio excluído",
-        description: "Card��pio excluído com sucesso",
+        description: "Cardápio excluído com sucesso",
       });
       try {
         localStorage.removeItem(LOCAL_CARDAPIOS);
