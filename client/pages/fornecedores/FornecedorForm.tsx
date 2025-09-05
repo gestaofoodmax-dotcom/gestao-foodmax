@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { X, Save, Phone, MapPin, FileText } from "lucide-react";
+import { X, Save, Smartphone, MapPin, FileText } from "lucide-react";
 import { DDISelect } from "@/components/ddi-select";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -310,27 +310,10 @@ export function FornecedorForm({
           {/* Contato */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
-              <Phone className="w-5 h-5 text-green-600" />
+              <Smartphone className="w-5 h-5 text-green-600" />
               <h3 className="font-semibold text-green-600">Contato</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="email" className="text-sm font-medium">
-                  Email *
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  {...register("email")}
-                  className={getInputClassName("email")}
-                  placeholder="email@exemplo.com"
-                />
-                {getFieldError("email") && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {getFieldError("email")}
-                  </p>
-                )}
-              </div>
               <div>
                 <Label htmlFor="telefone" className="text-sm font-medium">
                   Telefone *
@@ -353,6 +336,23 @@ export function FornecedorForm({
                 {(getFieldError("ddi") || getFieldError("telefone")) && (
                   <p className="text-sm text-red-600 mt-1">
                     {getFieldError("ddi") || getFieldError("telefone")}
+                  </p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="email" className="text-sm font-medium">
+                  Email *
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  {...register("email")}
+                  className={getInputClassName("email")}
+                  placeholder="email@exemplo.com"
+                />
+                {getFieldError("email") && (
+                  <p className="text-sm text-red-600 mt-1">
+                    {getFieldError("email")}
                   </p>
                 )}
               </div>
