@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Save, X, FileText, Headphones } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 import { toTitleCase } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -129,7 +130,7 @@ export function SuporteForm({
         prioridade: suporte.prioridade,
         nome_usuario: suporte.nome_usuario,
         email_usuario: suporte.email_usuario,
-        codigo: (suporte as any).codigo || "",
+        codigo: (suporte as any).codigo && String((suporte as any).codigo).length === 10 ? (suporte as any).codigo : generateTicketCode(),
         titulo: suporte.titulo,
         descricao: suporte.descricao,
         status: suporte.status,
@@ -161,9 +162,25 @@ export function SuporteForm({
   };
 
   const onInvalid = (formErrors: FieldErrors<SuporteFormSchema>) => {
-    const labels = Object.keys(formErrors).map((k) => k);
-    if (labels.length > 0) {
-      // prevent toast import; show simple alert-like behavior could be implemented elsewhere
+    const labelMap: Record<keyof SuporteFormSchema, string> = {
+      tipo: "Tipo de Suporte",
+      prioridade: "Prioridade",
+      nome_usuario: "Nome",
+      email_usuario: "Email",
+      codigo: "Código do Ticket",
+      titulo: "Título",
+      descricao: "Descrição",
+      status: "Status",
+    } as const;
+    const missing = Object.keys(formErrors)
+      .map((k) => labelMap[k as keyof SuporteFormSchema] || k)
+      .join(", ");
+    if (missing) {
+      toast({
+        title: "Preencha os campos obrigatórios",
+        description: missing,
+        variant: "destructive",
+      });
     }
   };
 
@@ -267,15 +284,17 @@ export function SuporteForm({
               <h3 className="font-semibold text-green-600">Ticket</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <Label>Código do Ticket</Label>
+              <div>
+                <Label>
+                  Código do Ticket <span className="text-red-500">*</span>
+                </Label>
                 <Input
                   {...register("codigo")}
-                  className={getInputClassName("codigo")}
+                  className={`${getInputClassName("codigo")} text-gray-500`}
                   readOnly
                 />
               </div>
-              <div className="md:col-span-2">
+              <div>
                 <Label>Título *</Label>
                 <Input
                   {...register("titulo")}
