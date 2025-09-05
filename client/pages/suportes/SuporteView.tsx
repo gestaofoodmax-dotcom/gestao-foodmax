@@ -10,13 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Info,
   X,
   Send,
   LifeBuoy,
   FileText,
   Ticket,
-  Edit,
 } from "lucide-react";
 import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
 import { toast } from "@/hooks/use-toast";
