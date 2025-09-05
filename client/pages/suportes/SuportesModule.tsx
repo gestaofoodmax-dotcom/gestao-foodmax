@@ -10,7 +10,7 @@ import { SuporteForm } from "./SuporteForm";
 import { SuporteView } from "./SuporteView";
 import { toast } from "@/hooks/use-toast";
 import { ExportModal } from "@/components/export-modal";
-import { Menu, Search, Plus, Trash2, LifeBuoy, Download } from "lucide-react";
+import { Menu, Search, Plus, Trash2, LifeBuoy, Download, Eye, CheckCircle2, XCircle } from "lucide-react";
 import { DeleteAlert, BulkDeleteAlert } from "@/components/alert-dialog-component";
 import {
   Suporte,
@@ -87,8 +87,59 @@ function SuportesModule() {
         sortable: true,
         render: (value: string) => new Date(value).toLocaleDateString("pt-BR"),
       },
+      {
+        key: "acoes",
+        label: "Ações",
+        render: (_: any, r: Suporte) => {
+          const isResolved = r.status === "Resolvido";
+          const isClosed = r.status === "Fechado";
+          const canChange = isAdmin && !isClosed && !isResolved;
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleMarkResolvido(r)}
+                className="h-8 w-8 p-0 rounded-full border bg-green-50 hover:bg-green-100 border-green-200"
+                title="Resolvido"
+                disabled={!isAdmin || isResolved || isClosed}
+              >
+                <CheckCircle2 className="w-4 h-4 text-green-700" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleMarkFechado(r)}
+                className="h-8 w-8 p-0 rounded-full border bg-gray-50 hover:bg-gray-100 border-gray-200"
+                title="Fechar"
+                disabled={!isAdmin || isClosed}
+              >
+                <XCircle className="w-4 h-4 text-gray-700" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleView(r)}
+                className="h-8 w-8 p-0 rounded-full border bg-blue-50 hover:bg-blue-100 border-blue-200"
+                title="Visualizar"
+              >
+                <Eye className="w-4 h-4 text-blue-700" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDelete(r)}
+                className="h-8 w-8 p-0 rounded-full border bg-red-50 hover:bg-red-100 border-red-200"
+                title="Excluir"
+              >
+                <Trash2 className="w-4 h-4 text-red-700" />
+              </Button>
+            </div>
+          );
+        },
+      },
     ],
-    [],
+    [isAdmin],
   );
 
   const loadData = useCallback(async () => {
@@ -153,6 +204,26 @@ function SuportesModule() {
   const handleView = (rec: Suporte) => {
     setCurrent(rec);
     setShowView(true);
+  };
+
+  const handleMarkResolvido = async (rec: Suporte) => {
+    try {
+      await makeRequest(`/api/suportes/${rec.id}/resolver`, { method: "PATCH" });
+      toast({ title: "Ticket marcado como Resolvido" });
+      loadData();
+    } catch (e: any) {
+      toast({ title: "Erro ao marcar Resolvido", description: e.message, variant: "destructive" });
+    }
+  };
+
+  const handleMarkFechado = async (rec: Suporte) => {
+    try {
+      await makeRequest(`/api/suportes/${rec.id}/fechar`, { method: "PATCH" });
+      toast({ title: "Ticket marcado como Fechado" });
+      loadData();
+    } catch (e: any) {
+      toast({ title: "Erro ao fechar ticket", description: e.message, variant: "destructive" });
+    }
   };
 
   const handleEdit = (rec: Suporte) => {
@@ -371,20 +442,13 @@ function SuportesModule() {
               selectedIds={selectedIds}
               onSelectionChange={setTabSelected}
               onView={handleView}
-              onEdit={handleEdit}
               onDelete={handleDelete}
               searchTerm={currentSearch}
               currentPage={currentPage}
               pageSize={pageSize}
               totalRecords={totalRecords}
               onPageChange={setTabPage}
-              showActions={true}
-              actionButtons={{
-                view: true,
-                edit: true,
-                delete: true,
-                toggle: false,
-              }}
+              showActions={false}
             />
           </div>
         </main>
