@@ -14,7 +14,6 @@ import {
   Send,
   LifeBuoy,
   FileText,
-  Ticket,
 } from "lucide-react";
 import { useAuth, useAuthenticatedRequest } from "@/hooks/use-auth";
 import { toast } from "@/hooks/use-toast";
@@ -182,11 +181,11 @@ export function SuporteView({
             </div>
           </div>
 
-          {/* Ticket do Suporte */}
+          {/* Ticket */}
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
-              <Ticket className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-green-600">Ticket do Suporte</h3>
+              <LifeBuoy className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Ticket</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
