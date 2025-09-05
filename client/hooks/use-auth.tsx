@@ -142,6 +142,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.setItem("fm_user_id", userId.toString());
     try {
       if (email) {
+        localStorage.setItem("fm_user_email", email);
         const base = String(email).split("@")[0];
         localStorage.setItem("fm_user_name", base);
       }
