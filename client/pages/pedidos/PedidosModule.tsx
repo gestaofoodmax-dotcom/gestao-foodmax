@@ -770,7 +770,7 @@ export default function PedidosModule() {
           }
         }
 
-        // Parse dates correctly - handles both date and datetime formats
+        // Parse dates correctly - interpret as Brasília/DF timezone
         const parseDate = (dateStr: string) => {
           console.log(
             `🔍 parseDate called with: "${dateStr}" (type: ${typeof dateStr})`,
@@ -785,12 +785,32 @@ export default function PedidosModule() {
           }
 
           try {
+            const buildISOWithBRT = (
+              y: number,
+              m: number,
+              d: number,
+              hh: number = 0,
+              mi: number = 0,
+              ss: number = 0,
+            ) => {
+              const yyyy = String(y).padStart(4, "0");
+              const mm = String(m).padStart(2, "0");
+              const dd = String(d).padStart(2, "0");
+              const H = String(hh).padStart(2, "0");
+              const M = String(mi).padStart(2, "0");
+              const S = String(ss).padStart(2, "0");
+              // Brasília/DF is UTC-03:00 (no DST currently)
+              const isoLocal = `${yyyy}-${mm}-${dd}T${H}:${M}:${S}-03:00`;
+              const dt = new Date(isoLocal);
+              if (isNaN(dt.getTime())) return null;
+              return dt.toISOString();
+            };
+
             // Handle DD/MM/YYYY HH:MM:SS or with comma
             if (
               dateStr.includes("/") &&
               (dateStr.includes(",") || dateStr.includes(" "))
             ) {
-              // Split on comma or space to separate date and time
               const sepIndex =
                 dateStr.indexOf(",") >= 0
                   ? dateStr.indexOf(",")
@@ -798,12 +818,9 @@ export default function PedidosModule() {
               const datePart = dateStr.slice(0, sepIndex).trim();
               const timePart = dateStr.slice(sepIndex + 1).trim();
               const [day, month, year] = datePart.split("/");
-
-              // Validate date components
               const dayNum = parseInt(day);
               const monthNum = parseInt(month);
               const yearNum = parseInt(year);
-
               if (
                 isNaN(dayNum) ||
                 isNaN(monthNum) ||
@@ -819,13 +836,10 @@ export default function PedidosModule() {
               }
 
               if (timePart) {
-                // Parse time component
                 const [hours, minutes, seconds] = timePart.split(":");
                 const hoursNum = parseInt(hours || "0");
                 const minutesNum = parseInt(minutes || "0");
                 const secondsNum = parseInt(seconds || "0");
-
-                // Validate time components
                 if (
                   isNaN(hoursNum) ||
                   isNaN(minutesNum) ||
@@ -840,44 +854,20 @@ export default function PedidosModule() {
                   console.log(`❌ Invalid time components in "${dateStr}"`);
                   return null;
                 }
-
-                // Use UTC to prevent timezone conversion issues
-                const parsedDate = new Date(
-                  Date.UTC(
-                    yearNum,
-                    monthNum - 1,
-                    dayNum,
-                    hoursNum,
-                    minutesNum,
-                    secondsNum,
-                  ),
+                const iso = buildISOWithBRT(
+                  yearNum,
+                  monthNum,
+                  dayNum,
+                  hoursNum,
+                  minutesNum,
+                  secondsNum,
                 );
-
-                // Validate the created date
-                if (isNaN(parsedDate.getTime())) {
-                  console.log(`❌ Invalid date created from "${dateStr}"`);
-                  return null;
-                }
-
-                const isoString = parsedDate.toISOString();
-                console.log(
-                  `✅ Parsed datetime "${dateStr}" -> "${isoString}"`,
-                );
-                return isoString;
+                if (!iso) return null;
+                console.log(`✅ Parsed datetime "${dateStr}" -> "${iso}"`);
+                return iso;
               } else {
-                // No time component, just date - use UTC
-                const parsedDate = new Date(
-                  Date.UTC(yearNum, monthNum - 1, dayNum),
-                );
-
-                // Validate the created date
-                if (isNaN(parsedDate.getTime())) {
-                  console.log(`❌ Invalid date created from "${dateStr}"`);
-                  return null;
-                }
-
-                const isoString = parsedDate.toISOString();
-                return isoString;
+                const iso = buildISOWithBRT(yearNum, monthNum, dayNum);
+                return iso;
               }
             }
             // Handle DD/MM/YYYY format (date only)
@@ -886,8 +876,6 @@ export default function PedidosModule() {
               const dayNum = parseInt(day);
               const monthNum = parseInt(month);
               const yearNum = parseInt(year);
-
-              // Validate date components
               if (
                 isNaN(dayNum) ||
                 isNaN(monthNum) ||
@@ -901,33 +889,18 @@ export default function PedidosModule() {
                 console.log(`❌ Invalid date components in "${dateStr}"`);
                 return null;
               }
-
-              const parsedDate = new Date(
-                Date.UTC(yearNum, monthNum - 1, dayNum),
-              );
-
-              // Validate the created date
-              if (isNaN(parsedDate.getTime())) {
-                console.log(`❌ Invalid date created from "${dateStr}"`);
-                return null;
-              }
-
-              const isoString = parsedDate.toISOString();
-              return isoString;
+              const iso = buildISOWithBRT(yearNum, monthNum, dayNum);
+              return iso;
             }
             // Handle other formats (ISO strings, etc.)
             const fallbackDate = new Date(dateStr);
-
-            // Validate the created date
             if (isNaN(fallbackDate.getTime())) {
               console.log(
                 `❌ Invalid date from fallback parsing: "${dateStr}"`,
               );
               return null;
             }
-
-            const isoString = fallbackDate.toISOString();
-            return isoString;
+            return fallbackDate.toISOString();
           } catch (error) {
             console.error(`❌ Error parsing date "${dateStr}":`, error);
             return null;
@@ -1297,6 +1270,7 @@ export default function PedidosModule() {
         data={exportData}
         selectedIds={selectedIds}
         moduleName="Pedidos"
+        defaultExportType="all"
         columns={[
           { key: "estabelecimento_nome", label: "Estabelecimento" },
           { key: "cliente_nome", label: "Cliente" },
@@ -1319,6 +1293,12 @@ export default function PedidosModule() {
         moduleName="Pedidos"
         userRole={getUserRole()}
         hasPayment={hasPayment()}
+        extraNotes={[
+          "Data/Hora Finalizado: dd/mm/yyyy hh:mm:ss (horário de Brasília/DF - UTC-03)",
+          "Cardápios: Nome do Cardápio - R$ Preço Total; Nome do Cardápio - R$ Preço Total",
+          "Itens Extras: Nome do Item - Categoria - Quantidade - R$ Valor Unitário; ...",
+          "Cada registro deve estar em uma única linha no arquivo CSV",
+        ]}
         columns={[
           {
             key: "estabelecimento_nome",
