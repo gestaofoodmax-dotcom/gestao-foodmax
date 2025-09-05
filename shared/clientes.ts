@@ -94,6 +94,7 @@ export const CLIENTE_EXPORT_COLUMNS: { key: string; label: string }[] = [
   { key: "aceita_promocao_email", label: "Aceita Promoção Email" },
   { key: "ativo", label: "Status" },
   { key: "data_cadastro", label: "Data de Cadastro" },
+  { key: "data_atualizacao", label: "Data de Atualização" },
 ];
 
 export const CLIENTE_IMPORT_COLUMNS: { key: string; label: string }[] = [
@@ -109,7 +110,8 @@ export const CLIENTE_IMPORT_COLUMNS: { key: string; label: string }[] = [
   { key: "cidade", label: "Cidade" },
   { key: "uf", label: "UF" },
   { key: "pais", label: "País" },
-  { key: "aceita_promocao_email", label: "Aceita Promoç��o por Email" },
+  { key: "aceita_promocao_email", label: "Aceita Promoção por Email" },
+  { key: "ativo", label: "Status" },
 ];
 
 export const formatTelefone = (ddi: string, telefone: string): string => {
