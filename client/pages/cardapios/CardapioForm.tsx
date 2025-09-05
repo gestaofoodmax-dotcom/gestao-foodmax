@@ -401,7 +401,7 @@ export default function CardapioForm({
     <>
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent
-          className="max-w-4xl max-h-[90vh] overflow-y-auto"
+          className="w-[85vw] h-[90vh] max-w-none overflow-y-auto"
           onInteractOutside={(e) => e.preventDefault()}
         >
           <DialogHeader>
@@ -435,7 +435,7 @@ export default function CardapioForm({
                         className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
                       >
                         <Link className="w-3 h-3" />
-                        (ir para m��dulo Itens)
+                        (ir para módulo Itens)
                       </button>
                     </>
                   )}

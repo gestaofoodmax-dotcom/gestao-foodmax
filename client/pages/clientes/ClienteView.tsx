@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Cliente } from "@shared/clientes";
 import { formatEndereco, formatTelefone } from "@shared/clientes";
-import { Phone, MapPin, FileText, Edit, X, User, Calendar } from "lucide-react";
+import { Phone, MapPin, FileText, Edit, X, User, Info } from "lucide-react";
 
 interface ClienteViewProps {
   isOpen: boolean;
@@ -179,7 +179,7 @@ export function ClienteView({
 
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-4">
-              <Calendar className="w-5 h-5 text-gray-600" />
+              <Info className="w-5 h-5 text-gray-600" />
               <h3 className="font-semibold text-gray-600">
                 Detalhes do Cadastro
               </h3>
@@ -194,18 +194,18 @@ export function ClienteView({
                 value={formatDate(cliente.data_atualizacao)}
               />
               <DataField
-                label="Ativo"
-                value={
-                  <span className="text-black">
-                    {cliente.ativo ? "Sim" : "Não"}
-                  </span>
-                }
-              />
-              <DataField
                 label="Aceita Promoções"
                 value={
                   <span className="text-black">
                     {cliente.aceita_promocao_email ? "Sim" : "Não"}
+                  </span>
+                }
+              />
+              <DataField
+                label="Ativo"
+                value={
+                  <span className="text-black">
+                    {cliente.ativo ? "Sim" : "Não"}
                   </span>
                 }
               />

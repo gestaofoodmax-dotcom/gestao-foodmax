@@ -484,7 +484,7 @@ export default function ClientesModule() {
       },
       {
         key: "aceita_promocoes_tag",
-        label: "Aceita Promoções",
+        label: "Aceita Promoção",
         sortable: true,
         render: (v: any, r: Cliente) => (
           <Badge
@@ -670,6 +670,7 @@ export default function ClientesModule() {
                     ?.nome ||
                   c["estabelecimento_nome"] ||
                   "-",
+                aceita_promocoes_tag: c.aceita_promocao_email ? "Sim" : "Não",
               }))}
               loading={loading}
               selectedIds={selectedIds}

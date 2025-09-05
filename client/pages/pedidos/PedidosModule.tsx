@@ -1164,7 +1164,15 @@ export default function PedidosModule() {
                         }`}
                         onClick={() => setActiveTab(st as any)}
                       >
-                        <span>{st}</span>
+                        <span>
+                          {st === "Pendente"
+                            ? "Pendentes"
+                            : st === "Finalizado"
+                              ? "Finalizados"
+                              : st === "Cancelado"
+                                ? "Cancelados"
+                                : st}
+                        </span>
                         <span
                           className={`ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-semibold ${
                             activeTab === (st as any)
@@ -1217,10 +1225,13 @@ export default function PedidosModule() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={async () => {
-                      const data = await getPedidosWithRelationsForExport();
-                      setExportData(data);
+                    onClick={() => {
+                      setExportData(filteredPedidos as any);
                       setShowExport(true);
+                      setTimeout(async () => {
+                        const data = await getPedidosWithRelationsForExport();
+                        setExportData(data);
+                      }, 0);
                     }}
                   >
                     <Download className="w-4 h-4 mr-2" />
