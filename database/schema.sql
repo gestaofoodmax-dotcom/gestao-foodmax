@@ -263,7 +263,7 @@ begin
       (p_user_id, 'Fruta', 'Frutas frescas e secas.', true),
       (p_user_id, 'Massa', 'Massas secas e frescas.', true),
       (p_user_id, 'Grão e Cereal', 'Arroz, feijão, aveia e outros grãos.', true),
-      (p_user_id, 'Pão', 'Pães, bolos e produtos de panificação.', true),
+      (p_user_id, 'Pão', 'Pães, bolos e produtos de panifica��ão.', true),
       (p_user_id, 'Sobremesa', 'Doces, tortas e sobremesas em geral.', true),
       (p_user_id, 'Tempero e Condimento', 'Ervas, especiarias e molhos prontos.', true);
   end if;
@@ -712,6 +712,7 @@ CREATE TABLE IF NOT EXISTS suportes (
   email_usuario VARCHAR(200) NOT NULL,
   tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('Técnico','Financeiro','Dúvida','Sugestão','Reclamação','Outro')),
   prioridade VARCHAR(10) NOT NULL CHECK (prioridade IN ('Baixa','Média','Alta')),
+  codigo VARCHAR(20) NOT NULL,
   titulo VARCHAR(255) NOT NULL,
   descricao TEXT NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'Aberto' CHECK (status IN ('Aberto','Em Andamento','Resolvido','Fechado')),
@@ -725,6 +726,7 @@ CREATE INDEX IF NOT EXISTS idx_suportes_usuario ON suportes(id_usuario);
 CREATE INDEX IF NOT EXISTS idx_suportes_status ON suportes(status);
 CREATE INDEX IF NOT EXISTS idx_suportes_prioridade ON suportes(prioridade);
 CREATE INDEX IF NOT EXISTS idx_suportes_tipo ON suportes(tipo);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_suportes_codigo ON suportes(codigo);
 
 
 -- Respostas do suporte (histórico)
