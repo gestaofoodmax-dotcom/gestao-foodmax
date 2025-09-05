@@ -269,11 +269,11 @@ export function SuporteForm({
             </div>
           </div>
 
-          {/* Admin-only area */}
-          <div className="space-y-4 bg-white p-4 rounded-lg border">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-              <div className="w-64">
-                {isAdmin && (
+          {/* Admin-only area (only when editing) */}
+          {isAdmin && suporte && (
+            <div className="space-y-4 bg-white p-4 rounded-lg border">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                <div className="w-64">
                   <div>
                     <Label>Status</Label>
                     <Select
@@ -301,10 +301,10 @@ export function SuporteForm({
                       </SelectContent>
                     </Select>
                   </div>
-                )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           <DialogFooter className="flex-row gap-2 sm:gap-0">
             <Button
