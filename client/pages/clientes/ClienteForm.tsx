@@ -493,23 +493,6 @@ export function ClienteForm({
               <div className="flex items-center justify-start">
                 <div className="flex items-center gap-3">
                   <Switch
-                    id="ativo"
-                    checked={watchedAtivo}
-                    onCheckedChange={(c) => setValue("ativo", c)}
-                  />
-                  <div>
-                    <Label htmlFor="ativo" className="text-sm font-medium">
-                      Ativo
-                    </Label>
-                    <p className="text-sm text-gray-600">
-                      {watchedAtivo ? "Sim" : "Não"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center justify-start">
-                <div className="flex items-center gap-3">
-                  <Switch
                     id="aceita_promocao_email"
                     checked={watchedAceita}
                     onCheckedChange={(c) =>
@@ -525,6 +508,23 @@ export function ClienteForm({
                     </Label>
                     <p className="text-sm text-gray-600">
                       {watchedAceita ? "Sim" : "Não"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center justify-start">
+                <div className="flex items-center gap-3">
+                  <Switch
+                    id="ativo"
+                    checked={watchedAtivo}
+                    onCheckedChange={(c) => setValue("ativo", c)}
+                  />
+                  <div>
+                    <Label htmlFor="ativo" className="text-sm font-medium">
+                      Ativo
+                    </Label>
+                    <p className="text-sm text-gray-600">
+                      {watchedAtivo ? "Sim" : "Não"}
                     </p>
                   </div>
                 </div>
