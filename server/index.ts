@@ -275,10 +275,14 @@ export function createServer() {
   // Suportes routes
   app.get("/api/suportes", listSuportes);
   app.get("/api/suportes/:id", getSuporte);
+  app.get("/api/suportes/:id/respostas", listRespostasSuporte);
+  app.post("/api/suportes/:id/respostas", addRespostaSuporte);
   app.post("/api/suportes", createSuporte);
   app.put("/api/suportes/:id", updateSuporte);
   app.delete("/api/suportes/:id", deleteSuporte);
   app.post("/api/suportes/:id/responder", responderSuporte);
+  app.patch("/api/suportes/:id/resolver", resolverSuporte);
+  app.patch("/api/suportes/:id/fechar", fecharSuporte);
 
   return app;
 }
