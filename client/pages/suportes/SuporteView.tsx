@@ -131,7 +131,7 @@ export function SuporteView({
               <LifeBuoy className="w-6 h-6 text-foodmax-orange" />
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold text-foodmax-orange">
-                  {(suporte as any).codigo || suporte.titulo}
+                  {(suporte as any).codigo}
                 </h2>
               </div>
             </div>
