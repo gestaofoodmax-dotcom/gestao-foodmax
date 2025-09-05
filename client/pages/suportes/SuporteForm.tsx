@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Save, X, FileText, Ticket } from "lucide-react";
+import { Save, X, FileText, LifeBuoy } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import {
   Suporte,
@@ -242,11 +242,11 @@ export function SuporteForm({
             </div>
           </div>
 
-          {/* Dados do Ticket (green) */}
+          {/* Ticket */}
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
-              <Ticket className="w-5 h-5 text-green-600" />
-              <h3 className="font-semibold text-green-600">Dados do Ticket</h3>
+              <LifeBuoy className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Ticket</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
