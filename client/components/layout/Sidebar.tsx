@@ -18,6 +18,7 @@ import {
   DollarSign,
   BarChart3,
   Mail,
+  LifeBuoy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toTitleCase } from "@/lib/utils";
