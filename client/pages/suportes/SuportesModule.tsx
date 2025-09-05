@@ -474,7 +474,7 @@ function SuportesModule() {
                                 `/api/suportes/${s.id}/respostas`,
                               );
                               const respostas: any[] = r?.data || [];
-                              const respostasStr = respostas
+                              const respostasStrRaw = respostas
                                 .map((it) => {
                                   const dt = new Date(
                                     it.data_cadastro,
@@ -488,6 +488,7 @@ function SuportesModule() {
                                   return `${it.nome_usuario} - ${dt}`;
                                 })
                                 .join("; ");
+                              const respostasStr = respostasStrRaw.replace(/[",]/g, "");
                               return { ...s, respostas: respostasStr };
                             } catch {
                               return { ...s, respostas: "" };
@@ -507,21 +508,22 @@ function SuportesModule() {
                                   `/api/suportes/${s.id}/respostas`,
                                 );
                                 const respostas: any[] = r?.data || [];
-                                const respostasStr = respostas
-                                  .map((it) => {
-                                    const dt = new Date(
-                                      it.data_cadastro,
-                                    ).toLocaleString("pt-BR", {
-                                      year: "numeric",
-                                      month: "2-digit",
-                                      day: "2-digit",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    });
-                                    return `${it.nome_usuario} - ${dt}`;
-                                  })
-                                  .join("; ");
-                                return { ...s, respostas: respostasStr };
+                                const respostasStrRaw = respostas
+                                .map((it) => {
+                                  const dt = new Date(
+                                    it.data_cadastro,
+                                  ).toLocaleString("pt-BR", {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  });
+                                  return `${it.nome_usuario} - ${dt}`;
+                                })
+                                .join("; ");
+                              const respostasStr = respostasStrRaw.replace(/[",]/g, "");
+                              return { ...s, respostas: respostasStr };
                               } catch {
                                 return { ...s, respostas: "" };
                               }
