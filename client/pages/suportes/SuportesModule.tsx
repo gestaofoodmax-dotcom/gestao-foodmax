@@ -10,8 +10,21 @@ import { SuporteForm } from "./SuporteForm";
 import { SuporteView } from "./SuporteView";
 import { toast } from "@/hooks/use-toast";
 import { ExportModal } from "@/components/export-modal";
-import { Menu, Search, Plus, Trash2, LifeBuoy, Download, Eye, CheckCircle2, XCircle } from "lucide-react";
-import { DeleteAlert, BulkDeleteAlert } from "@/components/alert-dialog-component";
+import {
+  Menu,
+  Search,
+  Plus,
+  Trash2,
+  LifeBuoy,
+  Download,
+  Eye,
+  CheckCircle2,
+  XCircle,
+} from "lucide-react";
+import {
+  DeleteAlert,
+  BulkDeleteAlert,
+} from "@/components/alert-dialog-component";
 import {
   Suporte,
   SuportesListResponse,
@@ -35,7 +48,9 @@ function SuportesModule() {
   const pageSize = 10;
 
   const [statusTab, setStatusTab] = useState<string>("Todos");
-  const [tabState, setTabState] = useState<Record<string, { search: string; page: number; selected: number[] }>>({
+  const [tabState, setTabState] = useState<
+    Record<string, { search: string; page: number; selected: number[] }>
+  >({
     Todos: { search: "", page: 1, selected: [] },
   });
   const currentSearch = tabState[statusTab]?.search ?? "";
@@ -188,17 +203,27 @@ function SuportesModule() {
   const setTabSearch = (val: string) =>
     setTabState((s) => ({
       ...s,
-      [statusTab]: { ...(s[statusTab] || { search: "", page: 1, selected: [] }), search: val, page: 1 },
+      [statusTab]: {
+        ...(s[statusTab] || { search: "", page: 1, selected: [] }),
+        search: val,
+        page: 1,
+      },
     }));
   const setTabPage = (page: number) =>
     setTabState((s) => ({
       ...s,
-      [statusTab]: { ...(s[statusTab] || { search: "", page: 1, selected: [] }), page },
+      [statusTab]: {
+        ...(s[statusTab] || { search: "", page: 1, selected: [] }),
+        page,
+      },
     }));
   const setTabSelected = (ids: number[]) =>
     setTabState((s) => ({
       ...s,
-      [statusTab]: { ...(s[statusTab] || { search: "", page: 1, selected: [] }), selected: ids },
+      [statusTab]: {
+        ...(s[statusTab] || { search: "", page: 1, selected: [] }),
+        selected: ids,
+      },
     }));
 
   const handleView = (rec: Suporte) => {
@@ -208,11 +233,17 @@ function SuportesModule() {
 
   const handleMarkResolvido = async (rec: Suporte) => {
     try {
-      await makeRequest(`/api/suportes/${rec.id}/resolver`, { method: "PATCH" });
+      await makeRequest(`/api/suportes/${rec.id}/resolver`, {
+        method: "PATCH",
+      });
       toast({ title: "Ticket marcado como Resolvido" });
       loadData();
     } catch (e: any) {
-      toast({ title: "Erro ao marcar Resolvido", description: e.message, variant: "destructive" });
+      toast({
+        title: "Erro ao marcar Resolvido",
+        description: e.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -222,7 +253,11 @@ function SuportesModule() {
       toast({ title: "Ticket marcado como Fechado" });
       loadData();
     } catch (e: any) {
-      toast({ title: "Erro ao fechar ticket", description: e.message, variant: "destructive" });
+      toast({
+        title: "Erro ao fechar ticket",
+        description: e.message,
+        variant: "destructive",
+      });
     }
   };
 
@@ -241,7 +276,9 @@ function SuportesModule() {
     if (!recordToDelete) return;
     setDeleteLoading(true);
     try {
-      await makeRequest(`/api/suportes/${recordToDelete.id}`, { method: "DELETE" });
+      await makeRequest(`/api/suportes/${recordToDelete.id}`, {
+        method: "DELETE",
+      });
       toast({ title: "Registro excluído" });
       try {
         localStorage.removeItem("fm_grid_cache");
@@ -346,7 +383,11 @@ function SuportesModule() {
                             setStatusTab(tab.key);
                             setTabState((s) => ({
                               ...s,
-                              [tab.key]: s[tab.key] || { search: "", page: 1, selected: [] },
+                              [tab.key]: s[tab.key] || {
+                                search: "",
+                                page: 1,
+                                selected: [],
+                              },
                             }));
                           }}
                         >
@@ -510,7 +551,11 @@ function SuportesModule() {
             setShowBulkDeleteAlert(false);
             loadData();
           } catch (e: any) {
-            toast({ title: "Erro ao excluir", description: e.message, variant: "destructive" });
+            toast({
+              title: "Erro ao excluir",
+              description: e.message,
+              variant: "destructive",
+            });
           } finally {
             setDeleteLoading(false);
           }

@@ -321,8 +321,10 @@ export const responderSuporte: RequestHandler = async (req, res) => {
     };
     if (status) {
       update.status = status;
-      if (status === "Resolvido") update.data_hora_resolvido = new Date().toISOString();
-      if (status === "Fechado") update.data_hora_fechado = new Date().toISOString();
+      if (status === "Resolvido")
+        update.data_hora_resolvido = new Date().toISOString();
+      if (status === "Fechado")
+        update.data_hora_fechado = new Date().toISOString();
     }
 
     const { data, error } = await supabase
@@ -364,8 +366,12 @@ export const listRespostasSuporte: RequestHandler = async (req, res) => {
     const { role } = await getUserRoleAndEmail(userId);
 
     const { data: suporte, error: errSup } = await supabase
-      .from("suportes").select("id, id_usuario").eq("id", id).maybeSingle();
-    if (errSup || !suporte) return res.status(404).json({ error: "Registro não encontrado" });
+      .from("suportes")
+      .select("id, id_usuario")
+      .eq("id", id)
+      .maybeSingle();
+    if (errSup || !suporte)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     if (role !== "admin" && (suporte as any).id_usuario !== userId) {
       return res.status(403).json({ error: "Acesso negado" });
@@ -378,7 +384,9 @@ export const listRespostasSuporte: RequestHandler = async (req, res) => {
       .order("data_cadastro", { ascending: true });
     if (error) throw error;
 
-    const userIds = Array.from(new Set((respostas || []).map((r: any) => r.id_usuario)));
+    const userIds = Array.from(
+      new Set((respostas || []).map((r: any) => r.id_usuario)),
+    );
     let users: any[] = [];
     if (userIds.length > 0) {
       const { data: usersData } = await supabase
@@ -414,7 +422,9 @@ export const addRespostaSuporte: RequestHandler = async (req, res) => {
     const body = z
       .object({
         resposta: z.string().min(1),
-        status: z.enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"]).optional(),
+        status: z
+          .enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"])
+          .optional(),
       })
       .parse(req.body);
 
@@ -422,8 +432,12 @@ export const addRespostaSuporte: RequestHandler = async (req, res) => {
     const { role } = await getUserRoleAndEmail(userId);
 
     const { data: suporte, error: errSup } = await supabase
-      .from("suportes").select("*").eq("id", id).single();
-    if (errSup || !suporte) return res.status(404).json({ error: "Registro não encontrado" });
+      .from("suportes")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (errSup || !suporte)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     if (role !== "admin" && (suporte as any).id_usuario !== userId) {
       return res.status(403).json({ error: "Acesso negado" });
@@ -439,15 +453,20 @@ export const addRespostaSuporte: RequestHandler = async (req, res) => {
     // Optionally update status when admin provided
     if (role === "admin" && body.status) {
       const update: any = { status: body.status };
-      if (body.status === "Resolvido") update.data_hora_resolvido = new Date().toISOString();
-      if (body.status === "Fechado") update.data_hora_fechado = new Date().toISOString();
+      if (body.status === "Resolvido")
+        update.data_hora_resolvido = new Date().toISOString();
+      if (body.status === "Fechado")
+        update.data_hora_fechado = new Date().toISOString();
       await supabase.from("suportes").update(update).eq("id", id);
     }
 
     await supabase.from("suportes_eventos").insert({
       suporte_id: id,
       tipo_evento: role === "admin" ? "resposta_admin" : "resposta_usuario",
-      detalhes: role === "admin" ? "Resposta enviada ao usuário" : "Resposta enviada ao admin",
+      detalhes:
+        role === "admin"
+          ? "Resposta enviada ao usuário"
+          : "Resposta enviada ao admin",
     });
 
     const { data: updated } = await supabase
@@ -471,24 +490,30 @@ export const addRespostaSuporte: RequestHandler = async (req, res) => {
 export const resolverSuporte: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
 
     const supabase = getSupabaseServiceClient();
     const { role } = await getUserRoleAndEmail(userId);
-    if (role !== "admin") return res.status(403).json({ error: "Apenas admin" });
+    if (role !== "admin")
+      return res.status(403).json({ error: "Apenas admin" });
 
     const { data: existing } = await supabase
       .from("suportes")
       .select("*")
       .eq("id", id)
       .maybeSingle();
-    if (!existing) return res.status(404).json({ error: "Registro não encontrado" });
+    if (!existing)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     const { data, error } = await supabase
       .from("suportes")
-      .update({ status: "Resolvido", data_hora_resolvido: new Date().toISOString() })
+      .update({
+        status: "Resolvido",
+        data_hora_resolvido: new Date().toISOString(),
+      })
       .eq("id", id)
       .select()
       .single();
@@ -510,24 +535,30 @@ export const resolverSuporte: RequestHandler = async (req, res) => {
 export const fecharSuporte: RequestHandler = async (req, res) => {
   try {
     const userId = getUserId(req);
-    if (!userId) return res.status(401).json({ error: "Usuário não autenticado" });
+    if (!userId)
+      return res.status(401).json({ error: "Usuário não autenticado" });
     const id = parseInt(req.params.id);
     if (!id) return res.status(400).json({ error: "ID inválido" });
 
     const supabase = getSupabaseServiceClient();
     const { role } = await getUserRoleAndEmail(userId);
-    if (role !== "admin") return res.status(403).json({ error: "Apenas admin" });
+    if (role !== "admin")
+      return res.status(403).json({ error: "Apenas admin" });
 
     const { data: existing } = await supabase
       .from("suportes")
       .select("*")
       .eq("id", id)
       .maybeSingle();
-    if (!existing) return res.status(404).json({ error: "Registro não encontrado" });
+    if (!existing)
+      return res.status(404).json({ error: "Registro não encontrado" });
 
     const { data, error } = await supabase
       .from("suportes")
-      .update({ status: "Fechado", data_hora_fechado: new Date().toISOString() })
+      .update({
+        status: "Fechado",
+        data_hora_fechado: new Date().toISOString(),
+      })
       .eq("id", id)
       .select()
       .single();
