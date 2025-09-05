@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Smartphone, X, Edit, FileText, Info, Truck } from "lucide-react";
+import { MapPin, Phone, X, Edit, FileText, Info, Truck } from "lucide-react";
 import {
   Fornecedor,
   formatTelefone,
@@ -122,7 +122,7 @@ export function FornecedorView({
 
           <div className="bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-4">
-              <Smartphone className="w-5 h-5 text-green-600" />
+              <Phone className="w-5 h-5 text-green-600" />
               <h3 className="font-semibold text-green-600">Contato</h3>
             </div>
             <div className="grid grid-cols-2 gap-4">
