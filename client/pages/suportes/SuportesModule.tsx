@@ -452,7 +452,9 @@ function SuportesModule() {
                           const params = new URLSearchParams({
                             page: String(page),
                             limit: String(limit),
-                            ...(statusTab !== "Todos" ? { status: statusTab } : {}),
+                            ...(statusTab !== "Todos"
+                              ? { status: statusTab }
+                              : {}),
                           });
                           const resp: SuportesListResponse = await makeRequest(
                             `/api/suportes?${params}`,
@@ -474,16 +476,15 @@ function SuportesModule() {
                               const respostas: any[] = r?.data || [];
                               const respostasStr = respostas
                                 .map((it) => {
-                                  const dt = new Date(it.data_cadastro).toLocaleString(
-                                    "pt-BR",
-                                    {
-                                      year: "numeric",
-                                      month: "2-digit",
-                                      day: "2-digit",
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    },
-                                  );
+                                  const dt = new Date(
+                                    it.data_cadastro,
+                                  ).toLocaleString("pt-BR", {
+                                    year: "numeric",
+                                    month: "2-digit",
+                                    day: "2-digit",
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  });
                                   return `${it.nome_usuario} - ${dt}`;
                                 })
                                 .join("; ");
@@ -508,16 +509,15 @@ function SuportesModule() {
                                 const respostas: any[] = r?.data || [];
                                 const respostasStr = respostas
                                   .map((it) => {
-                                    const dt = new Date(it.data_cadastro).toLocaleString(
-                                      "pt-BR",
-                                      {
-                                        year: "numeric",
-                                        month: "2-digit",
-                                        day: "2-digit",
-                                        hour: "2-digit",
-                                        minute: "2-digit",
-                                      },
-                                    );
+                                    const dt = new Date(
+                                      it.data_cadastro,
+                                    ).toLocaleString("pt-BR", {
+                                      year: "numeric",
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    });
                                     return `${it.nome_usuario} - ${dt}`;
                                   })
                                   .join("; ");

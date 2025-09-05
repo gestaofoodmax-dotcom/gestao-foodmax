@@ -159,7 +159,6 @@ export const createSuporte: RequestHandler = async (req, res) => {
       .single();
     if (error) throw error;
 
-
     res.status(201).json({ success: true, data });
   } catch (error: any) {
     if (error?.name === "ZodError") {
@@ -424,7 +423,6 @@ export const addRespostaSuporte: RequestHandler = async (req, res) => {
       await supabase.from("suportes").update(update).eq("id", id);
     }
 
-
     const { data: updated } = await supabase
       .from("suportes")
       .select("*")
@@ -475,7 +473,6 @@ export const resolverSuporte: RequestHandler = async (req, res) => {
       .single();
     if (error) throw error;
 
-
     res.json({ success: true, data });
   } catch (error) {
     console.error("Error resolving suporte:", error);
@@ -514,7 +511,6 @@ export const fecharSuporte: RequestHandler = async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-
 
     res.json({ success: true, data });
   } catch (error) {
