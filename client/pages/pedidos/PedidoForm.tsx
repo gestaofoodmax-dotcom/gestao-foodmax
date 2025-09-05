@@ -82,7 +82,7 @@ const schema = z.object({
   tipo_pedido: z.enum(["Atendente", "QR Code", "APP", "Outro"], {
     required_error: "Tipo de Pedido é obrigatório",
   }),
-  codigo: z.string().min(1, "Código é obrigatório"),
+  codigo: z.string().length(10, "Código deve ter 10 caracteres"),
   cliente_id: z.number().nullable().optional(),
   valor_total: z.number().min(0, "Valor obrigatório"),
   observacao: z.string().optional(),
@@ -162,8 +162,11 @@ export default function PedidoForm({
   }, [isOpen]);
 
   const generateCodigo = () => {
-    const part = () => Math.random().toString(36).substring(2, 6).toUpperCase();
-    return `${part()}${part()}`;
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let out = "";
+    for (let i = 0; i < 10; i++)
+      out += chars.charAt(Math.floor(Math.random() * chars.length));
+    return out;
   };
 
   useEffect(() => {
@@ -496,7 +499,8 @@ export default function PedidoForm({
                 <Input
                   id="codigo"
                   {...register("codigo")}
-                  className="foodmax-input"
+                  className="foodmax-input text-black"
+                  readOnly
                 />
                 {errors.codigo && (
                   <span className="text-sm text-red-600">

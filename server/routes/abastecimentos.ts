@@ -54,7 +54,7 @@ const AbastecimentoSchema = z.object({
     uf: z.string().length(2),
     pais: z.string().min(1),
   }),
-  codigo: z.string().length(8),
+  codigo: z.string().length(10),
 });
 
 const UpdateAbastecimentoSchema = AbastecimentoSchema.partial();
@@ -796,7 +796,7 @@ export const importAbastecimentos: RequestHandler = async (req, res) => {
 function generateCodigo8(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let code = "";
-  for (let i = 0; i < 8; i++)
+  for (let i = 0; i < 10; i++)
     code += chars[Math.floor(Math.random() * chars.length)];
   return code;
 }
@@ -926,7 +926,7 @@ export const importAbastecimentosFull: RequestHandler = async (req, res) => {
           codigo:
             record.codigo &&
             typeof record.codigo === "string" &&
-            record.codigo.trim().length === 8
+            record.codigo.trim().length === 10
               ? record.codigo.trim().toUpperCase()
               : generateCodigo8(),
           data_hora_recebido: record.data_hora_recebido

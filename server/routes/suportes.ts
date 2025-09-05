@@ -77,8 +77,18 @@ export const listSuportes: RequestHandler = async (req, res) => {
     }
 
     if (search) {
+      const s = search.replace(/,/g, " ");
       query = query.or(
-        `titulo.ilike.%${search}%,descricao.ilike.%${search}%,email_usuario.ilike.%${search}%,nome_usuario.ilike.%${search}%`,
+        [
+          `codigo.ilike.%${s}%`,
+          `titulo.ilike.%${s}%`,
+          `descricao.ilike.%${s}%`,
+          `email_usuario.ilike.%${s}%`,
+          `nome_usuario.ilike.%${s}%`,
+          `tipo.ilike.%${s}%`,
+          `prioridade.ilike.%${s}%`,
+          `status.ilike.%${s}%`,
+        ].join(","),
       );
     }
 

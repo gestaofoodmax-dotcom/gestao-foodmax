@@ -100,13 +100,17 @@ const schema = z.object({
   cidade: z.string().min(1, "Cidade é obrigatória"),
   uf: z.string().length(2, "UF deve ter 2 caracteres"),
   pais: z.string().min(1, "País é obrigatório"),
-  codigo: z.string().length(8, "Código deve ter 8 caracteres"),
+  codigo: z.string().length(10, "Código deve ter 10 caracteres"),
 });
 
 type FormData = z.infer<typeof schema>;
 
 function generateCodigo() {
-  return Math.random().toString(36).slice(2, 10).toUpperCase();
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let out = "";
+  for (let i = 0; i < 10; i++)
+    out += chars.charAt(Math.floor(Math.random() * chars.length));
+  return out;
 }
 
 export default function AbastecimentoForm({
@@ -749,18 +753,12 @@ export default function AbastecimentoForm({
                   id="codigo"
                   {...register("codigo" as any)}
                   className={cn(
-                    "foodmax-input",
+                    "foodmax-input text-black",
                     (errors as any).codigo && "border-red-500",
                   )}
-                  placeholder="Ex.: ABST0001"
-                  maxLength={8}
-                  onInput={(e) => {
-                    const t = e.target as HTMLInputElement;
-                    t.value = t.value
-                      .replace(/[^a-z0-9]/gi, "")
-                      .toUpperCase()
-                      .slice(0, 8);
-                  }}
+                  placeholder="Código gerado automaticamente"
+                  maxLength={10}
+                  readOnly
                 />
                 {(errors as any).codigo && (
                   <span className="text-sm text-red-600">

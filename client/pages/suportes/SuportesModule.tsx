@@ -70,6 +70,7 @@ function SuportesModule() {
 
   const gridColumns = useMemo(
     () => [
+      { key: "codigo", label: "Código", sortable: true },
       { key: "titulo", label: "Título", sortable: true },
       { key: "tipo", label: "Tipo", sortable: true },
       {
