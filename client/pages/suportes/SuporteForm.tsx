@@ -44,7 +44,6 @@ const suporteSchema = z.object({
   titulo: z.string().min(1, "Título é obrigatório"),
   descricao: z.string().min(1, "Descrição é obrigatória"),
   status: z.enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"]).optional(),
-  resposta_admin: z.string().optional().nullable(),
 });
 
 type SuporteFormSchema = z.infer<typeof suporteSchema>;
@@ -85,7 +84,6 @@ export function SuporteForm({
       titulo: "",
       descricao: "",
       status: "Aberto",
-      resposta_admin: "",
     },
   });
 
@@ -114,7 +112,6 @@ export function SuporteForm({
         titulo: suporte.titulo,
         descricao: suporte.descricao,
         status: suporte.status,
-        resposta_admin: suporte.resposta_admin || "",
       });
     } else {
       reset({
@@ -125,7 +122,6 @@ export function SuporteForm({
         titulo: "",
         descricao: "",
         status: "Aberto",
-        resposta_admin: "",
       });
     }
   }, [isOpen, suporte, reset, user?.email]);

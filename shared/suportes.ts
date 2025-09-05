@@ -21,8 +21,6 @@ export interface Suporte {
   titulo: string;
   descricao: string;
   status: SuporteStatus;
-  resposta_admin?: string | null;
-  data_resposta_admin?: string | null;
   data_hora_resolvido?: string | null;
   data_hora_fechado?: string | null;
   data_cadastro: string;
@@ -47,7 +45,6 @@ export interface CreateSuporteRequest {
   titulo: string;
   descricao: string;
   status?: SuporteStatus; // admin may set
-  resposta_admin?: string | null; // admin may set
 }
 
 export interface UpdateSuporteRequest extends Partial<CreateSuporteRequest> {}
@@ -80,7 +77,7 @@ export const SUPORTE_EXPORT_COLUMNS: { key: string; label: string }[] = [
   { key: "nome_usuario", label: "Nome" },
   { key: "email_usuario", label: "Email" },
   { key: "descricao", label: "Descrição" },
-  { key: "resposta_admin", label: "Resposta Admin" },
+  { key: "respostas", label: "Respostas" },
   { key: "data_cadastro", label: "Data de Cadastro" },
   { key: "data_atualizacao", label: "Data de Atualização" },
 ];

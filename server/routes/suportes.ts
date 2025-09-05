@@ -21,7 +21,6 @@ const SuporteCreateSchema = z.object({
   titulo: z.string().min(1),
   descricao: z.string().min(1),
   status: z.enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"]).optional(),
-  resposta_admin: z.string().optional().nullable(),
 });
 
 const SuporteUpdateSchema = SuporteCreateSchema.partial();
@@ -141,7 +140,6 @@ export const createSuporte: RequestHandler = async (req, res) => {
     const input = SuporteCreateSchema.parse(req.body);
 
     const supabase = getSupabaseServiceClient();
-    const { role } = await getUserRoleAndEmail(userId);
 
     const insertData: any = {
       id_usuario: userId,
@@ -152,7 +150,6 @@ export const createSuporte: RequestHandler = async (req, res) => {
       titulo: input.titulo,
       descricao: input.descricao,
       status: input.status || "Aberto",
-      resposta_admin: input.resposta_admin || null,
     };
 
     const { data, error } = await supabase
@@ -161,23 +158,6 @@ export const createSuporte: RequestHandler = async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-
-    if (role === "user") {
-      const { data: admin } = await supabase
-        .from("usuarios")
-        .select("email")
-        .eq("role", "admin")
-        .order("id", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      const adminEmail = (admin as any)?.email || null;
-
-      await supabase.from("suportes_eventos").insert({
-        suporte_id: data.id,
-        tipo_evento: "criacao",
-        detalhes: `Novo ticket criado e enviado para ${adminEmail || "admin"}`,
-      });
-    }
 
     res.status(201).json({ success: true, data });
   } catch (error: any) {
@@ -224,20 +204,6 @@ export const updateSuporte: RequestHandler = async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-
-    if (
-      role === "admin" &&
-      typeof input.resposta_admin !== "undefined" &&
-      (input.resposta_admin || "").trim() &&
-      input.resposta_admin !== (existing as any).resposta_admin
-    ) {
-      await supabase.from("suportes_eventos").insert({
-        suporte_id: id,
-        tipo_evento: "resposta_admin",
-        detalhes:
-          "Resposta enviada ao usuário criador do ticket (via formulário)",
-      });
-    }
 
     res.json({ success: true, data });
   } catch (error: any) {
@@ -315,10 +281,13 @@ export const responderSuporte: RequestHandler = async (req, res) => {
     if (exErr || !existing)
       return res.status(404).json({ error: "Registro não encontrado" });
 
-    const update: any = {
-      resposta_admin: resposta,
-      data_resposta_admin: new Date().toISOString(),
-    };
+    // Registrar resposta como histórico
+    await supabase.from("suportes_respostas").insert({
+      suporte_id: id,
+      id_usuario: userId,
+      resposta,
+    });
+    const update: any = {};
     if (status) {
       update.status = status;
       if (status === "Resolvido")
@@ -334,12 +303,6 @@ export const responderSuporte: RequestHandler = async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-
-    await supabase.from("suportes_eventos").insert({
-      suporte_id: id,
-      tipo_evento: "resposta_admin",
-      detalhes: "Resposta enviada ao usuário criador do ticket",
-    });
 
     res.json({ success: true, data });
   } catch (error: any) {
@@ -460,15 +423,6 @@ export const addRespostaSuporte: RequestHandler = async (req, res) => {
       await supabase.from("suportes").update(update).eq("id", id);
     }
 
-    await supabase.from("suportes_eventos").insert({
-      suporte_id: id,
-      tipo_evento: role === "admin" ? "resposta_admin" : "resposta_usuario",
-      detalhes:
-        role === "admin"
-          ? "Resposta enviada ao usuário"
-          : "Resposta enviada ao admin",
-    });
-
     const { data: updated } = await supabase
       .from("suportes")
       .select("*")
@@ -519,12 +473,6 @@ export const resolverSuporte: RequestHandler = async (req, res) => {
       .single();
     if (error) throw error;
 
-    await supabase.from("suportes_eventos").insert({
-      suporte_id: id,
-      tipo_evento: "status_resolvido",
-      detalhes: "Ticket marcado como Resolvido",
-    });
-
     res.json({ success: true, data });
   } catch (error) {
     console.error("Error resolving suporte:", error);
@@ -563,12 +511,6 @@ export const fecharSuporte: RequestHandler = async (req, res) => {
       .select()
       .single();
     if (error) throw error;
-
-    await supabase.from("suportes_eventos").insert({
-      suporte_id: id,
-      tipo_evento: "status_fechado",
-      detalhes: "Ticket marcado como Fechado",
-    });
 
     res.json({ success: true, data });
   } catch (error) {
