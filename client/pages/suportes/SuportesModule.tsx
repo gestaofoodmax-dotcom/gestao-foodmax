@@ -443,17 +443,58 @@ function SuportesModule() {
                     size="sm"
                     onClick={async () => {
                       try {
-                        const params = new URLSearchParams({
-                          page: "1",
-                          limit: "1000",
-                          ...(statusTab !== "Todos"
-                            ? { status: statusTab }
-                            : {}),
-                        });
-                        const resp: SuportesListResponse = await makeRequest(
-                          `/api/suportes?${params}`,
+                        // Fetch ALL registros (respecting current status filter)
+                        const limit = 500;
+                        let page = 1;
+                        let total = Infinity;
+                        const all: any[] = [];
+                        while (all.length < total) {
+                          const params = new URLSearchParams({
+                            page: String(page),
+                            limit: String(limit),
+                            ...(statusTab !== "Todos" ? { status: statusTab } : {}),
+                          });
+                          const resp: SuportesListResponse = await makeRequest(
+                            `/api/suportes?${params}`,
+                          );
+                          const items = resp?.data || [];
+                          total = resp?.pagination?.total ?? items.length;
+                          all.push(...items);
+                          if (items.length < limit) break;
+                          page += 1;
+                        }
+
+                        // Load respostas for each suporte and aggregate
+                        const enriched = await Promise.all(
+                          all.map(async (s) => {
+                            try {
+                              const r = await makeRequest(
+                                `/api/suportes/${s.id}/respostas`,
+                              );
+                              const respostas: any[] = r?.data || [];
+                              const respostasStr = respostas
+                                .map((it) => {
+                                  const dt = new Date(it.data_cadastro).toLocaleString(
+                                    "pt-BR",
+                                    {
+                                      year: "numeric",
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    },
+                                  );
+                                  return `${it.nome_usuario} - ${dt}`;
+                                })
+                                .join("; ");
+                              return { ...s, respostas: respostasStr };
+                            } catch {
+                              return { ...s, respostas: "" };
+                            }
+                          }),
                         );
-                        setExportData(resp?.data || []);
+
+                        setExportData(enriched);
                         setShowExport(true);
                       } catch {
                         setExportData(suportes);
