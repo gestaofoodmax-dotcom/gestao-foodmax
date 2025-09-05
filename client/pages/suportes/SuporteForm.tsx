@@ -155,7 +155,7 @@ export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = fals
           <div className="space-y-4 bg-white p-4 rounded-lg border">
             <div className="flex items-center gap-2 mb-3">
               <FileText className="w-5 h-5 text-blue-600" />
-              <h3 className="font-semibold text-blue-600">Dados do Ticket</h3>
+              <h3 className="font-semibold text-blue-600">Dados Básicos</h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -189,19 +189,27 @@ export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = fals
 
               <div>
                 <Label>Nome</Label>
-                <Input {...register("nome_usuario")} className={getInputClassName("nome_usuario")} readOnly />
+                <Input {...register("nome_usuario")} className={`${getInputClassName("nome_usuario")} text-gray-500`} readOnly />
               </div>
 
               <div>
                 <Label>Email</Label>
-                <Input type="email" {...register("email_usuario")} className={getInputClassName("email_usuario")} readOnly />
+                <Input type="email" {...register("email_usuario")} className={`${getInputClassName("email_usuario")} text-gray-500`} readOnly />
               </div>
+            </div>
+          </div>
 
+          {/* Dados do Ticket (green) */}
+          <div className="space-y-4 bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <Info className="w-5 h-5 text-green-600" />
+              <h3 className="font-semibold text-green-600">Dados do Ticket</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <Label>Título *</Label>
                 <Input {...register("titulo")} className={getInputClassName("titulo")} placeholder="Título do ticket" />
               </div>
-
               <div className="md:col-span-2">
                 <Label>Descrição *</Label>
                 <Textarea {...register("descricao")} className={getInputClassName("descricao")} rows={5} placeholder="Descreva o problema ou dúvida" />
@@ -226,15 +234,6 @@ export function SuporteForm({ isOpen, onClose, onSave, suporte, isLoading = fals
                         ))}
                       </SelectContent>
                     </Select>
-                  </div>
-                )}
-              </div>
-
-              <div className="md:col-span-2">
-                {isAdmin && (
-                  <div>
-                    <Label>Resposta Admin</Label>
-                    <Textarea {...register("resposta_admin")} className={getInputClassName("resposta_admin")} rows={4} placeholder="Escreva a resposta ao usuário" />
                   </div>
                 )}
               </div>
