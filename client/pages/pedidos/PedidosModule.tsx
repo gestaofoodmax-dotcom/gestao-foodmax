@@ -1218,6 +1218,7 @@ export default function PedidosModule() {
                     variant="outline"
                     size="sm"
                     onClick={() => {
+                      setExportData(filteredPedidos as any);
                       setShowExport(true);
                       setTimeout(async () => {
                         const data = await getPedidosWithRelationsForExport();
