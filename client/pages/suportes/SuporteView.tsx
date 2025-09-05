@@ -161,16 +161,8 @@ export function SuporteView({
                 <div className="text-sm text-gray-900">{suporte.tipo}</div>
               </div>
               <div>
-                <div className="text-sm font-medium text-gray-600">
-                  Prioridade
-                </div>
-                <div>
-                  <Badge
-                    className={`${PRIORIDADE_BADGE_STYLES[suporte.prioridade]}`}
-                  >
-                    {suporte.prioridade}
-                  </Badge>
-                </div>
+                <div className="text-sm font-medium text-gray-600">Prioridade</div>
+                <div className="text-sm text-gray-900">{suporte.prioridade}</div>
               </div>
               <div>
                 <div className="text-sm font-medium text-gray-600">Nome</div>
