@@ -18,6 +18,7 @@ export interface Suporte {
   email_usuario: string;
   tipo: SuporteTipo;
   prioridade: SuportePrioridade;
+  codigo: string;
   titulo: string;
   descricao: string;
   status: SuporteStatus;
@@ -43,6 +44,7 @@ export interface CreateSuporteRequest {
   prioridade: SuportePrioridade;
   nome_usuario: string; // filled from logged user, locked in UI
   email_usuario: string; // filled from logged user, locked in UI
+  codigo: string;
   titulo: string;
   descricao: string;
   status?: SuporteStatus; // admin may set
@@ -71,6 +73,7 @@ export interface StatusResponse<T = any> {
 }
 
 export const SUPORTE_EXPORT_COLUMNS: { key: string; label: string }[] = [
+  { key: "codigo", label: "Código" },
   { key: "titulo", label: "Título" },
   { key: "tipo", label: "Tipo" },
   { key: "prioridade", label: "Prioridade" },
