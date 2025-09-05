@@ -73,15 +73,15 @@ export interface StatusResponse<T = any> {
 }
 
 export const SUPORTE_EXPORT_COLUMNS: { key: string; label: string }[] = [
-  { key: "codigo", label: "Código" },
-  { key: "titulo", label: "Título" },
-  { key: "tipo", label: "Tipo" },
+  { key: "tipo", label: "Tipo de Suporte" },
   { key: "prioridade", label: "Prioridade" },
-  { key: "status", label: "Status" },
   { key: "nome_usuario", label: "Nome" },
   { key: "email_usuario", label: "Email" },
+  { key: "codigo", label: "Código do Ticket" },
+  { key: "titulo", label: "Título" },
   { key: "descricao", label: "Descrição" },
   { key: "respostas", label: "Respostas" },
+  { key: "status", label: "Status" },
   { key: "data_cadastro", label: "Data de Cadastro" },
   { key: "data_atualizacao", label: "Data de Atualização" },
 ];
