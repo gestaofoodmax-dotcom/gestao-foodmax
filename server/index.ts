@@ -126,6 +126,10 @@ import {
   updateSuporte,
   deleteSuporte,
   responderSuporte,
+  listRespostasSuporte,
+  addRespostaSuporte,
+  resolverSuporte,
+  fecharSuporte,
 } from "./routes/suportes";
 
 export function createServer() {
