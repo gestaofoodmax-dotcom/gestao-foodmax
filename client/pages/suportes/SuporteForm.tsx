@@ -42,6 +42,9 @@ const suporteSchema = z.object({
   }),
   nome_usuario: z.string().min(1),
   email_usuario: z.string().email(),
+  codigo: z
+    .string()
+    .length(10, "Código deve ter 10 caracteres"),
   titulo: z.string().min(1, "Título é obrigatório"),
   descricao: z.string().min(1, "Descrição é obrigatória"),
   status: z.enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"]).optional(),
@@ -82,6 +85,7 @@ export function SuporteForm({
       prioridade: "Média",
       nome_usuario: "",
       email_usuario: "",
+      codigo: "",
       titulo: "",
       descricao: "",
       status: "Aberto",
@@ -110,12 +114,22 @@ export function SuporteForm({
       return toTitleCase(base);
     })();
 
+    const generateTicketCode = () => {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let out = "";
+      for (let i = 0; i < 10; i++) {
+        out += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return out;
+    };
+
     if (suporte) {
       reset({
         tipo: suporte.tipo,
         prioridade: suporte.prioridade,
         nome_usuario: suporte.nome_usuario,
         email_usuario: suporte.email_usuario,
+        codigo: (suporte as any).codigo || "",
         titulo: suporte.titulo,
         descricao: suporte.descricao,
         status: suporte.status,
@@ -126,6 +140,7 @@ export function SuporteForm({
         prioridade: "Média",
         nome_usuario: defaultName,
         email_usuario: user?.email || "",
+        codigo: generateTicketCode(),
         titulo: "",
         descricao: "",
         status: "Aberto",
@@ -252,6 +267,14 @@ export function SuporteForm({
               <h3 className="font-semibold text-green-600">Ticket</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <Label>Código do Ticket</Label>
+                <Input
+                  {...register("codigo")}
+                  className={getInputClassName("codigo")}
+                  readOnly
+                />
+              </div>
               <div className="md:col-span-2">
                 <Label>Título *</Label>
                 <Input
