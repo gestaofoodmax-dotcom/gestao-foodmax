@@ -168,17 +168,6 @@ export function EstabelecimentoView({
 
             <div className="grid grid-cols-2 gap-4">
               <DataField
-                label="Email"
-                value={
-                  <a
-                    href={`mailto:${estabelecimento.email}`}
-                    className="text-blue-600 hover:underline"
-                  >
-                    {estabelecimento.email}
-                  </a>
-                }
-              />
-              <DataField
                 label="Telefone"
                 value={
                   <a
@@ -189,6 +178,17 @@ export function EstabelecimentoView({
                       estabelecimento.ddi,
                       estabelecimento.telefone,
                     )}
+                  </a>
+                }
+              />
+              <DataField
+                label="Email"
+                value={
+                  <a
+                    href={`mailto:${estabelecimento.email}`}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {estabelecimento.email}
                   </a>
                 }
               />
