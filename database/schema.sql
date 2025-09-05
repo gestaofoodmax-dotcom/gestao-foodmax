@@ -715,8 +715,6 @@ CREATE TABLE IF NOT EXISTS suportes (
   titulo VARCHAR(255) NOT NULL,
   descricao TEXT NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'Aberto' CHECK (status IN ('Aberto','Em Andamento','Resolvido','Fechado')),
-  resposta_admin TEXT,
-  data_resposta_admin TIMESTAMP WITH TIME ZONE,
   data_hora_resolvido TIMESTAMP WITH TIME ZONE,
   data_hora_fechado TIMESTAMP WITH TIME ZONE,
   data_cadastro TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -728,15 +726,6 @@ CREATE INDEX IF NOT EXISTS idx_suportes_status ON suportes(status);
 CREATE INDEX IF NOT EXISTS idx_suportes_prioridade ON suportes(prioridade);
 CREATE INDEX IF NOT EXISTS idx_suportes_tipo ON suportes(tipo);
 
--- Events table to simulate notifications/email logs
-CREATE TABLE IF NOT EXISTS suportes_eventos (
-  id SERIAL PRIMARY KEY,
-  suporte_id INTEGER NOT NULL REFERENCES suportes(id) ON DELETE CASCADE,
-  tipo_evento VARCHAR(50) NOT NULL,
-  detalhes TEXT,
-  data_cadastro TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
-);
-CREATE INDEX IF NOT EXISTS idx_suportes_eventos_suporte ON suportes_eventos(suporte_id);
 
 -- Respostas do suporte (histórico)
 CREATE TABLE IF NOT EXISTS suportes_respostas (
