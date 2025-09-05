@@ -1198,13 +1198,10 @@ export default function PedidosModule() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      setExportData(filteredPedidos as any);
+                    onClick={async () => {
+                      const data = await getPedidosWithRelationsForExport();
+                      setExportData(data);
                       setShowExport(true);
-                      setTimeout(async () => {
-                        const data = await getPedidosWithRelationsForExport();
-                        setExportData(data);
-                      }, 0);
                     }}
                   >
                     <Download className="w-4 h-4 mr-2" />
