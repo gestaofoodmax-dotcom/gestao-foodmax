@@ -43,9 +43,7 @@ const suporteSchema = z.object({
   }),
   nome_usuario: z.string().min(1),
   email_usuario: z.string().email(),
-  codigo: z
-    .string()
-    .length(10, "Código deve ter 10 caracteres"),
+  codigo: z.string().length(10, "Código deve ter 10 caracteres"),
   titulo: z.string().min(1, "Título é obrigatório"),
   descricao: z.string().min(1, "Descrição é obrigatória"),
   status: z.enum(["Aberto", "Em Andamento", "Resolvido", "Fechado"]).optional(),
@@ -130,7 +128,11 @@ export function SuporteForm({
         prioridade: suporte.prioridade,
         nome_usuario: suporte.nome_usuario,
         email_usuario: suporte.email_usuario,
-        codigo: (suporte as any).codigo && String((suporte as any).codigo).length === 10 ? (suporte as any).codigo : generateTicketCode(),
+        codigo:
+          (suporte as any).codigo &&
+          String((suporte as any).codigo).length === 10
+            ? (suporte as any).codigo
+            : generateTicketCode(),
         titulo: suporte.titulo,
         descricao: suporte.descricao,
         status: suporte.status,

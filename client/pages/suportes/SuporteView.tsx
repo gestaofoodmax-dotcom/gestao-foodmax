@@ -195,15 +195,21 @@ export function SuporteView({
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <div className="text-sm font-medium text-gray-600">Código do Ticket</div>
-                <div className="text-sm text-gray-900">{(suporte as any).codigo || '-'}</div>
+                <div className="text-sm font-medium text-gray-600">
+                  Código do Ticket
+                </div>
+                <div className="text-sm text-gray-900">
+                  {(suporte as any).codigo || "-"}
+                </div>
               </div>
               <div>
                 <div className="text-sm font-medium text-gray-600">Título</div>
                 <div className="text-sm text-gray-900">{suporte.titulo}</div>
               </div>
               <div className="md:col-span-2">
-                <div className="text-sm font-medium text-gray-600">Descrição</div>
+                <div className="text-sm font-medium text-gray-600">
+                  Descrição
+                </div>
                 <div className="text-sm text-gray-900 whitespace-pre-wrap">
                   {suporte.descricao}
                 </div>
