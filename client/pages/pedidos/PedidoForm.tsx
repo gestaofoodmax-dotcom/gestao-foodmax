@@ -350,7 +350,7 @@ export default function PedidoForm({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="max-w-4xl max-h[90vh] max-h-[90vh] overflow-y-auto"
+        className="w-[85vw] h-[90vh] max-w-none overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
