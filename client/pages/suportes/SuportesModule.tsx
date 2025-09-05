@@ -195,7 +195,9 @@ function SuportesModule() {
                   {selectedIds.length > 0 && (
                     <Button variant="destructive" size="sm" onClick={async () => {
                       try {
-                        await makeRequest(`/api/suportes/${selectedIds[0]}`, { method: "DELETE" });
+                        for (const id of selectedIds) {
+                          await makeRequest(`/api/suportes/${id}`, { method: "DELETE" });
+                        }
                         toast({ title: "Registros excluídos" });
                         setSelectedIds([]);
                         loadData();
