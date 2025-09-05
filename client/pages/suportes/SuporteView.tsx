@@ -25,8 +25,9 @@ import {
   STATUS_BADGE_STYLES,
   PRIORIDADE_BADGE_STYLES,
   SuporteStatus,
+  SuporteResposta,
 } from "@shared/suportes";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -58,6 +59,25 @@ export function SuporteView({
   const [selectedStatus, setSelectedStatus] = useState<SuporteStatus>(
     (suporte?.status as SuporteStatus) || "Aberto",
   );
+  const [respostas, setRespostas] = useState<SuporteResposta[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      if (!isOpen || !suporte) return;
+      try {
+        const resp = await makeRequest(`/api/suportes/${suporte.id}/respostas`);
+        if (!active) return;
+        setRespostas(resp.data || []);
+      } catch {
+        setRespostas([]);
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
+  }, [isOpen, suporte?.id]);
 
   if (!suporte) return null;
 
@@ -76,11 +96,13 @@ export function SuporteView({
     if (!resposta.trim()) return;
     setSending(true);
     try {
+      const payload: any = { resposta };
+      if (isAdmin) payload.status = selectedStatus;
       const updated = await makeRequest(
-        `/api/suportes/${suporte.id}/responder`,
+        `/api/suportes/${suporte.id}/respostas`,
         {
           method: "POST",
-          body: JSON.stringify({ resposta, status: selectedStatus }),
+          body: JSON.stringify(payload),
         },
       );
       onReplied && onReplied(updated.data);
@@ -209,35 +231,55 @@ export function SuporteView({
                 <div className="text-sm font-medium text-gray-600">Status</div>
                 <div className="text-sm text-gray-900">{suporte.status}</div>
               </div>
-              {suporte.resposta_admin && (
-                <div className="col-span-2">
-                  <div className="text-sm font-medium text-gray-600">
-                    Resposta Admin
-                  </div>
-                  <div className="text-sm text-gray-900 whitespace-pre-wrap">
-                    {suporte.resposta_admin}
-                  </div>
+              {suporte.data_hora_resolvido && (
+                <div>
+                  <div className="text-sm font-medium text-gray-600">Resolvido em</div>
+                  <div className="text-sm text-gray-900">{formatDate(suporte.data_hora_resolvido)}</div>
+                </div>
+              )}
+              {suporte.data_hora_fechado && (
+                <div>
+                  <div className="text-sm font-medium text-gray-600">Fechado em</div>
+                  <div className="text-sm text-gray-900">{formatDate(suporte.data_hora_fechado)}</div>
                 </div>
               )}
             </div>
           </div>
 
-          {isAdmin && (
+          {/* Histórico de Resposta */}
+          {respostas.length > 0 && (
             <div className="bg-white p-4 rounded-lg border">
-              <div className="text-sm font-medium text-gray-700 mb-1">
-                Resposta Admin
+              <div className="flex items-center gap-2 mb-3">
+                <LifeBuoy className="w-5 h-5 text-purple-600" />
+                <h3 className="font-semibold text-purple-600">Histórico de Resposta</h3>
               </div>
-              <Textarea
-                rows={4}
-                value={resposta}
-                onChange={(e) => setResposta(e.target.value)}
-                placeholder="Escreva sua resposta ao usuário"
-              />
-              <div className="flex items-center justify-between gap-3 mt-3">
-                <div className="w-64">
-                  <div className="text-sm font-medium text-gray-700 mb-1">
-                    Status
+              <div className="space-y-3">
+                {respostas.map((r) => (
+                  <div key={r.id} className="border rounded p-3">
+                    <div className="text-sm text-gray-900 whitespace-pre-wrap">{r.resposta}</div>
+                    <div className="text-xs text-gray-600 mt-2">{r.nome_usuario} - {formatDate(r.data_cadastro)}</div>
                   </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Responder Ticket */}
+          <div className="bg-white p-4 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <LifeBuoy className="w-5 h-5 text-orange-600" />
+              <h3 className="font-semibold text-orange-600">Responder Ticket</h3>
+            </div>
+            <Textarea
+              rows={4}
+              value={resposta}
+              onChange={(e) => setResposta(e.target.value)}
+              placeholder={isAdmin ? "Escreva sua resposta ao usuário" : "Escreva sua resposta ao administrador"}
+            />
+            <div className="flex items-center justify-between gap-3 mt-3">
+              {isAdmin && (
+                <div className="w-64">
+                  <div className="text-sm font-medium text-gray-700 mb-1">Status</div>
                   <Select
                     value={selectedStatus}
                     onValueChange={(v) => setSelectedStatus(v as SuporteStatus)}
@@ -261,28 +303,28 @@ export function SuporteView({
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="flex items-center gap-2 ml-auto">
-                  <Button
-                    onClick={handleEnviar}
-                    disabled={sending || !resposta.trim()}
-                    variant="orange"
-                  >
-                    {sending ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Enviando...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 mr-2" />
-                        Enviar
-                      </>
-                    )}
-                  </Button>
-                </div>
+              )}
+              <div className="flex items-center gap-2 ml-auto">
+                <Button
+                  onClick={handleEnviar}
+                  disabled={sending || !resposta.trim()}
+                  variant="orange"
+                >
+                  {sending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Enviar
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         <DialogFooter className="flex-row gap-2 sm:gap-0">
@@ -290,16 +332,14 @@ export function SuporteView({
             <X className="w-4 h-4 mr-2" />
             Fechar
           </Button>
-          {onEdit && suporte && (
-            <Button
-              type="button"
-              onClick={() => onEdit(suporte)}
-              className="flex-1 sm:flex-none bg-foodmax-orange hover:bg-orange-600"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Editar
-            </Button>
-          )}
+          <Button
+            onClick={handleEnviar}
+            disabled={sending || !resposta.trim()}
+            className="flex-1 sm:flex-none bg-foodmax-orange hover:bg-orange-600"
+          >
+            <Send className="w-4 h-4 mr-2" />
+            Enviar
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
