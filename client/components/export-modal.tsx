@@ -330,8 +330,8 @@ export function ExportModal({
         className="w-[90vw] sm:w-[640px] max-w-2xl max-h-[80vh] overflow-y-auto"
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl font-normal py-2">
+        <DialogHeader className="space-y-0">
+          <DialogTitle className="text-xl sm:text-2xl font-normal py-1 mb-1">
             Exportar {moduleName}
           </DialogTitle>
         </DialogHeader>
