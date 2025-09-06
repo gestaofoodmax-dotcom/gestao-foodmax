@@ -505,8 +505,8 @@ export default function RelatoriosModule() {
                 ref={pedCardRef}
                 className="foodmax-card border border-gray-200 p-4"
               >
-                <div className="flex items-center gap-2 mb-4">
-                  <PieIcon className="w-5 h-5 text-orange-700 mt-2" />
+                <div className="flex items-center gap-2 mb-4 pb-3">
+                  <PieIcon className="w-5 h-5 text-orange-700 mt-0.5" />
                   <h3 className="text-lg font-semibold text-orange-700">
                     Relatório de Pedidos
                   </h3>
