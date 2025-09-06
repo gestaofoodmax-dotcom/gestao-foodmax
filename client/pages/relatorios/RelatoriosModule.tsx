@@ -225,7 +225,9 @@ export default function RelatoriosModule() {
     return opts;
   }, [estabelecimentos]);
 
-  const ensureChartsRendered = async (elements: HTMLElement[]): Promise<boolean> => {
+  const ensureChartsRendered = async (
+    elements: HTMLElement[],
+  ): Promise<boolean> => {
     const timeout = 6000; // wait 6s as requested
     const interval = 200;
     let elapsed = 0;
@@ -287,7 +289,8 @@ export default function RelatoriosModule() {
         setExporting(false);
         toast({
           title: "Gráficos incompletos",
-          description: "Os gráficos não terminaram de carregar. Aguarde e tente novamente.",
+          description:
+            "Os gráficos não terminaram de carregar. Aguarde e tente novamente.",
         });
         return;
       }
@@ -307,14 +310,23 @@ export default function RelatoriosModule() {
       const nomeEstabDisplay =
         selectedEstabelecimento === "all"
           ? "Todos Estabelecimentos"
-          : estabelecimentos.find((e) => e.id === Number(selectedEstabelecimento))?.nome || "Estabelecimento";
-      const periodoLabel = (periodoOptions.find((p) => p.value === period)?.label) || "Todos Períodos";
+          : estabelecimentos.find(
+              (e) => e.id === Number(selectedEstabelecimento),
+            )?.nome || "Estabelecimento";
+      const periodoLabel =
+        periodoOptions.find((p) => p.value === period)?.label ||
+        "Todos Períodos";
 
       pdf.setFont("helvetica", "normal");
       pdf.setFontSize(12);
       pdf.setTextColor(75, 85, 99); // gray-600
       const subtitleY = 64;
-      pdf.text(`${nomeEstabDisplay} - ${periodoLabel}`, pageWidth / 2, subtitleY, { align: "center" }); // subtitle centered
+      pdf.text(
+        `${nomeEstabDisplay} - ${periodoLabel}`,
+        pageWidth / 2,
+        subtitleY,
+        { align: "center" },
+      ); // subtitle centered
 
       // duas quebras de linha após subtítulo
       let currentY = subtitleY + 28 * 2;
@@ -330,7 +342,10 @@ export default function RelatoriosModule() {
         let savedStyles: { pb?: string; align?: string } | null = null;
         if (h3 && h3.parentElement) {
           const wrap = h3.parentElement as HTMLElement;
-          savedStyles = { pb: wrap.style.paddingBottom, align: wrap.style.alignItems };
+          savedStyles = {
+            pb: wrap.style.paddingBottom,
+            align: wrap.style.alignItems,
+          };
           wrap.style.paddingBottom = "18px";
           wrap.style.alignItems = "center";
           const svg = wrap.querySelector("svg") as HTMLElement | null;
@@ -369,7 +384,11 @@ export default function RelatoriosModule() {
 
         if (!canvas) {
           setExporting(false);
-          toast({ title: "Erro ao capturar gráficos", description: "Não foi possível capturar os gráficos. Tente novamente." });
+          toast({
+            title: "Erro ao capturar gráficos",
+            description:
+              "Não foi possível capturar os gráficos. Tente novamente.",
+          });
           return;
         }
 
@@ -461,13 +480,13 @@ export default function RelatoriosModule() {
                     </div>
                     <div className="mt-3 md:mt-0">
                       <Button
-                      onClick={exportToPDF}
-                      disabled={exporting || loading}
-                      className="bg-green-600 hover:bg-green-700 text-white h-11 px-5"
-                      title="Exportar gráficos para PDF"
-                    >
-                      Exportar Relatório
-                    </Button>
+                        onClick={exportToPDF}
+                        disabled={exporting || loading}
+                        className="bg-green-600 hover:bg-green-700 text-white h-11 px-5"
+                        title="Exportar gráficos para PDF"
+                      >
+                        Exportar Relatório
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -574,14 +593,16 @@ export default function RelatoriosModule() {
             </div>
           </div>
         </main>
-          {exporting && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-              <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-3">
-                <div className="w-12 h-12 border-4 border-t-transparent border-gray-300 rounded-full animate-spin" />
-                <div className="text-gray-700 font-medium">Gerando PDF — aguarde...</div>
+        {exporting && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-3">
+              <div className="w-12 h-12 border-4 border-t-transparent border-gray-300 rounded-full animate-spin" />
+              <div className="text-gray-700 font-medium">
+                Gerando PDF — aguarde...
               </div>
             </div>
-          )}
+          </div>
+        )}
       </div>
     </div>
   );
