@@ -492,7 +492,7 @@ export default function ComunicacoesModule() {
     if (ids.length > 50) {
       toast({
         title: "Limite excedido",
-        description: "S�� é possível enviar para até 50 registros por vez.",
+        description: "Só é possível enviar para até 50 registros por vez.",
         variant: "destructive",
       });
       return;
@@ -1047,6 +1047,26 @@ export default function ComunicacoesModule() {
             // Fallback to loose emails list
             const emails = parseEmails(raw).map((e) => e.toLowerCase());
             return { tipo: "Outros" as const, emails };
+          };
+
+          // Converte "dd/mm/yyyy hh:mm:ss" ou "dd/mm/yyyy" para ISO com timezone -03:00 (Brasília)
+          const toIsoBr = (s?: string) => {
+            const v = String(s || "").trim();
+            if (!v) return undefined;
+            const m = v.match(/^([0-3]?\d)\/([01]?\d)\/(\d{4})(?:\s+([0-2]?\d):([0-5]?\d)(?::([0-5]?\d))?)?$/);
+            if (m) {
+              const dd = parseInt(m[1], 10);
+              const mm = parseInt(m[2], 10);
+              const yyyy = parseInt(m[3], 10);
+              const hh = m[4] ? parseInt(m[4], 10) : 0;
+              const mi = m[5] ? parseInt(m[5], 10) : 0;
+              const ss = m[6] ? parseInt(m[6], 10) : 0;
+              const pad = (n: number) => String(n).padStart(2, "0");
+              return `${yyyy}-${pad(mm)}-${pad(dd)}T${pad(hh)}:${pad(mi)}:${pad(ss)}-03:00`;
+            }
+            // Tenta parse nativo como fallback
+            const d = new Date(v);
+            return isNaN(d.getTime()) ? undefined : d.toISOString();
           };
 
           const normalizeDestType = (v?: string) => {
