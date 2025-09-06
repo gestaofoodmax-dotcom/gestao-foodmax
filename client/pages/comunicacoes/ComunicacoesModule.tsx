@@ -932,18 +932,28 @@ export default function ComunicacoesModule() {
           const clientes: Cliente[] = (cliRes?.data || []) as any;
           const fornecedores: Fornecedor[] = (fornRes?.data || []) as any;
 
-          const parsePairs = (s?: string) => {
-            const items = String(s || "")
+          const parseEmails = (s?: string) =>
+            String(s || "")
               .split(/;+/)
               .map((x) => x.trim())
               .filter(Boolean);
-            return items.map((it) => {
-              const [nome, emailPart] = it.split(" - ").map((x) => x.trim());
-              return {
-                nome: nome || "",
-                email: (emailPart || "").toLowerCase(),
-              };
-            });
+          const parseDestinatarios = (s?: string) => {
+            const raw = String(s || "").trim();
+            const m = raw.match(/^\s*(clientes|fornecedores)(?:\s+espec[íi]ficos)?\s*\[(.*)\]\s*$/i);
+            if (m) {
+              const grupo = m[1].toLowerCase();
+              const hasEspecificos = /espec[íi]ficos/i.test(raw);
+              const emails = parseEmails(m[2]).map((e) => e.toLowerCase());
+              if (grupo === "clientes" && hasEspecificos)
+                return { tipo: "ClientesEspecificos" as const, emails };
+              if (grupo === "clientes" && !hasEspecificos)
+                return { tipo: "TodosClientes" as const, emails };
+              if (grupo === "fornecedores" && hasEspecificos)
+                return { tipo: "FornecedoresEspecificos" as const, emails };
+              return { tipo: "TodosFornecedores" as const, emails };
+            }
+            const emails = parseEmails(raw).map((e) => e.toLowerCase());
+            return { tipo: "Outros" as const, emails };
           };
 
           const normalizeDestType = (v?: string) => {
