@@ -279,11 +279,16 @@ export default function ComunicacoesModule() {
     setIsEditing(false);
     setShowForm(true);
   };
-  const handleEdit = (r: Comunicacao) => {
-    setCurrent(r);
-    setIsEditing(true);
-    setShowForm(true);
-  };
+  const handleEdit = async (r: Comunicacao) => {
+  setCurrent(r);
+  setIsEditing(true);
+  try {
+    const uid = typeof window !== "undefined" ? localStorage.getItem("fm_user_id") : null;
+    await clearAllAppCaches();
+    if (uid) localStorage.setItem("fm_user_id", uid);
+  } catch {}
+  setShowForm(true);
+};
 
   const filteredRows = useMemo(() => {
     if (!searchTerm) return rows;
@@ -474,7 +479,7 @@ export default function ComunicacoesModule() {
     if (!hasPayment()) {
       toast({
         title: "Plano necessário",
-        description: "Essa ação só funciona no plano pago.",
+        description: "Essa ação s�� funciona no plano pago.",
         variant: "destructive",
       });
       return;
