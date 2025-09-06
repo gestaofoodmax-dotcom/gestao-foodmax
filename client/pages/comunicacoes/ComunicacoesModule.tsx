@@ -872,6 +872,7 @@ export default function ComunicacoesModule() {
           { key: "fornecedores", label: "Fornecedores (Nome - Email; ...)" },
           { key: "destinatarios_text", label: "Destinatários Texto" },
           { key: "status", label: "Status" },
+          { key: "data_hora_enviado", label: "Data/Hora Enviado" },
         ]}
         mapHeader={(h) => {
           const n = h.trim().toLowerCase();
