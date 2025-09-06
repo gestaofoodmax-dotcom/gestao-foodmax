@@ -977,6 +977,7 @@ export default function ComunicacoesModule() {
           { key: "destinatarios", label: "Destinatários", required: true },
           { key: "status", label: "Status" },
           { key: "data_hora_enviado", label: "Data/Hora Enviado" },
+          { key: "data_cadastro", label: "Data Cadastro (opcional)" },
         ]}
         mapHeader={(h) => {
           const n = h.trim().toLowerCase();
