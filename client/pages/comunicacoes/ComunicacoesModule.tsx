@@ -652,14 +652,19 @@ export default function ComunicacoesModule() {
                     onClick={async () => {
                       // Load ALL comunicacoes, clientes and fornecedores to format export
                       const loadAll = async () => {
-                        const params = new URLSearchParams({
-                          page: "1",
-                          limit: "1000",
-                        });
-                        const res: any = await makeRequest(
-                          `/api/comunicacoes?${params}`,
-                        );
-                        return (res?.data || []) as Comunicacao[];
+                        const all: Comunicacao[] = [];
+                        let page = 1;
+                        const limit = 1000;
+                        for (let i = 0; i < 50; i++) {
+                          const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+                          const res: any = await makeRequest(`/api/comunicacoes?${params}`).catch(() => null);
+                          const chunk: Comunicacao[] = (res?.data || []) as Comunicacao[];
+                          if (chunk.length === 0) break;
+                          all.push(...chunk);
+                          if (chunk.length < limit) break;
+                          page += 1;
+                        }
+                        return all;
                       };
                       const [allRows, cliRes, fornRes] = await Promise.all([
                         loadAll(),
