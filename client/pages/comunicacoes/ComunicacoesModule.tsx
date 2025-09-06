@@ -980,20 +980,21 @@ export default function ComunicacoesModule() {
           { key: "data_cadastro", label: "Data Cadastro (opcional)" },
         ]}
         mapHeader={(h) => {
-          const n = h.trim().toLowerCase();
+          // Normalize header by removing diacritics and trimming
+          const nRaw = h.trim().toLowerCase();
+          const n = nRaw.normalize("NFD").replace(/\p{Diacritic}/gu, "");
           const map: Record<string, string> = {
             estabelecimento: "estabelecimento",
-            "tipo de comunicação": "tipo_comunicacao",
+            "tipo de comunicacao": "tipo_comunicacao",
             assunto: "assunto",
             mensagem: "mensagem",
-            destinatários: "destinatarios",
             destinatarios: "destinatarios",
             status: "status",
             "data/hora enviado": "data_hora_enviado",
             "data hora enviado": "data_hora_enviado",
             "data cadastro": "data_cadastro",
           };
-          return map[n] || n.replace(/\s+/g, "_");
+          return map[n] || n.replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
         }}
         validateRecord={(r) => {
           const errors: string[] = [];
