@@ -279,9 +279,17 @@ export default function ComunicacoesModule() {
     setIsEditing(false);
     setShowForm(true);
   };
-  const handleEdit = (r: Comunicacao) => {
+  const handleEdit = async (r: Comunicacao) => {
     setCurrent(r);
     setIsEditing(true);
+    try {
+      const uid =
+        typeof window !== "undefined"
+          ? localStorage.getItem("fm_user_id")
+          : null;
+      await clearAllAppCaches();
+      if (uid) localStorage.setItem("fm_user_id", uid);
+    } catch {}
     setShowForm(true);
   };
 
@@ -474,7 +482,7 @@ export default function ComunicacoesModule() {
     if (!hasPayment()) {
       toast({
         title: "Plano necessário",
-        description: "Essa ação só funciona no plano pago.",
+        description: "Essa ação s�� funciona no plano pago.",
         variant: "destructive",
       });
       return;
@@ -709,29 +717,90 @@ export default function ComunicacoesModule() {
                         return list.join("; ");
                       };
 
-                      const data = allRows.map((r) => ({
-                        estabelecimento:
-                          estabelecimentosMap.get(r.estabelecimento_id) ||
-                          r.estabelecimento_id,
-                        tipo_comunicacao: r.tipo_comunicacao,
-                        assunto: r.assunto,
-                        mensagem: r.mensagem,
-                        destinatarios_tipo: r.destinatarios_tipo,
-                        clientes: fmtClientes(r),
-                        fornecedores: fmtFornecedores(r),
-                        destinatarios_text: r.destinatarios_text || "",
-                        status: r.status,
-                        data_hora_enviado: r.data_hora_enviado
-                          ? new Date(r.data_hora_enviado).toLocaleString(
-                              "pt-BR",
-                              { hour12: false },
+                      const pad = (n: number) => String(n).padStart(2, "0");
+                      const fmtDateTime = (d?: string) => {
+                        if (!d) return "";
+                        const x = new Date(d);
+                        if (Number.isNaN(x.getTime())) return "";
+                        return `${pad(x.getDate())}/${pad(x.getMonth() + 1)}/${x.getFullYear()} ${pad(x.getHours())}:${pad(x.getMinutes())}:${pad(x.getSeconds())}`;
+                      };
+
+                      const getEmails = (r: Comunicacao) => {
+                        if (r.destinatarios_tipo === "TodosClientes") {
+                          return clientes
+                            .filter(
+                              (c) =>
+                                c.estabelecimento_id === r.estabelecimento_id &&
+                                c.ativo &&
+                                c.email,
                             )
-                          : "",
-                        data_cadastro: new Date(r.data_cadastro).toLocaleString(
-                          "pt-BR",
-                          { hour12: false },
-                        ),
-                      }));
+                            .map((c) => String(c.email).trim());
+                        }
+                        if (r.destinatarios_tipo === "ClientesEspecificos") {
+                          const ids = Array.isArray(r.clientes_ids)
+                            ? r.clientes_ids
+                            : [];
+                          return ids
+                            .map((id) => cMap.get(id)?.email)
+                            .filter((e): e is string => !!e)
+                            .map((e) => e.trim());
+                        }
+                        if (r.destinatarios_tipo === "TodosFornecedores") {
+                          return fornecedores
+                            .filter((f) => f.ativo && f.email)
+                            .map((f) => String(f.email).trim());
+                        }
+                        if (
+                          r.destinatarios_tipo === "FornecedoresEspecificos"
+                        ) {
+                          const ids = Array.isArray(r.fornecedores_ids)
+                            ? r.fornecedores_ids
+                            : [];
+                          return ids
+                            .map((id) => fMap.get(id)?.email)
+                            .filter((e): e is string => !!e)
+                            .map((e) => e.trim());
+                        }
+                        const txt = String(r.destinatarios_text || "");
+                        return txt
+                          .split(/[;,.\s]+/g)
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                      };
+
+                      const data = allRows.map((r) => {
+                        const emails = getEmails(r);
+                        let destinatarios = "";
+                        if (r.destinatarios_tipo === "ClientesEspecificos") {
+                          destinatarios = `Clientes específicos [${emails.join("; ")}]`;
+                        } else if (r.destinatarios_tipo === "TodosClientes") {
+                          destinatarios = "Todos os clientes";
+                        } else if (
+                          r.destinatarios_tipo === "FornecedoresEspecificos"
+                        ) {
+                          destinatarios = `Fornecedores específicos [${emails.join("; ")}]`;
+                        } else if (
+                          r.destinatarios_tipo === "TodosFornecedores"
+                        ) {
+                          destinatarios = "Todos os fornecedores";
+                        } else {
+                          destinatarios = emails.join("; ");
+                        }
+                        return {
+                          estabelecimento:
+                            estabelecimentosMap.get(r.estabelecimento_id) ||
+                            r.estabelecimento_id,
+                          tipo_comunicacao: r.tipo_comunicacao,
+                          assunto: r.assunto,
+                          mensagem: r.mensagem,
+                          destinatarios,
+                          status: r.status,
+                          data_hora_enviado: fmtDateTime(
+                            r.data_hora_enviado || undefined,
+                          ),
+                          data_cadastro: fmtDateTime(r.data_cadastro),
+                        };
+                      });
                       setExportData(data);
                       setShowExport(true);
                     }}
@@ -854,10 +923,7 @@ export default function ComunicacoesModule() {
           { key: "tipo_comunicacao", label: "Tipo de Comunicação" },
           { key: "assunto", label: "Assunto" },
           { key: "mensagem", label: "Mensagem" },
-          { key: "destinatarios_tipo", label: "Destinatários" },
-          { key: "clientes", label: "Clientes" },
-          { key: "fornecedores", label: "Fornecedores" },
-          { key: "destinatarios_text", label: "Destinatários Texto" },
+          { key: "destinatarios", label: "Destinatários" },
           { key: "status", label: "Status" },
           { key: "data_hora_enviado", label: "Data/Hora Enviado" },
           { key: "data_cadastro", label: "Data Cadastro" },
@@ -871,9 +937,12 @@ export default function ComunicacoesModule() {
         userRole={getUserRole()}
         hasPayment={hasPayment()}
         extraNotes={[
-          "Clientes: Nome do Cliente - Email do Cliente; ...",
-          "Fornecedores: Nome do Fornecedor - Email do Fornecedor; ...",
-          "Destinatários: use um dos valores: TodosClientes, ClientesEspecificos, TodosFornecedores, FornecedoresEspecificos, Outros.",
+          "Destinatários deve ser um destes formatos:",
+          "Todos os clientes",
+          "Clientes específicos [email1@dominio.com; email2@dominio.com]",
+          "Todos os fornecedores",
+          "Fornecedores específicos [email1@dominio.com; email2@dominio.com]",
+          "Ou apenas: email1@dominio.com; email2@dominio.com",
         ]}
         columns={[
           {
@@ -888,10 +957,7 @@ export default function ComunicacoesModule() {
           },
           { key: "assunto", label: "Assunto", required: true },
           { key: "mensagem", label: "Mensagem", required: true },
-          { key: "destinatarios_tipo", label: "Destinatários", required: true },
-          { key: "clientes", label: "Clientes (Nome - Email; ...)" },
-          { key: "fornecedores", label: "Fornecedores (Nome - Email; ...)" },
-          { key: "destinatarios_text", label: "Destinatários Texto" },
+          { key: "destinatarios", label: "Destinatários", required: true },
           { key: "status", label: "Status" },
           { key: "data_hora_enviado", label: "Data/Hora Enviado" },
         ]}
@@ -902,13 +968,11 @@ export default function ComunicacoesModule() {
             "tipo de comunicação": "tipo_comunicacao",
             assunto: "assunto",
             mensagem: "mensagem",
-            destinatários: "destinatarios_tipo",
-            destinatarios: "destinatarios_tipo",
-            clientes: "clientes",
-            fornecedores: "fornecedores",
-            "destinatários texto": "destinatarios_text",
-            "destinatarios texto": "destinatarios_text",
+            destinatários: "destinatarios",
+            destinatarios: "destinatarios",
             status: "status",
+            "data/hora enviado": "data_hora_enviado",
+            "data hora enviado": "data_hora_enviado",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
@@ -919,7 +983,7 @@ export default function ComunicacoesModule() {
             errors.push("Tipo de Comunicação é obrigatório");
           if (!r.assunto) errors.push("Assunto é obrigatório");
           if (!r.mensagem) errors.push("Mensagem é obrigatória");
-          if (!r.destinatarios_tipo) errors.push("Destinatários é obrigatório");
+          if (!r.destinatarios) errors.push("Destinatários é obrigatório");
           return errors;
         }}
         onImport={async (records) => {
@@ -934,18 +998,40 @@ export default function ComunicacoesModule() {
           const clientes: Cliente[] = (cliRes?.data || []) as any;
           const fornecedores: Fornecedor[] = (fornRes?.data || []) as any;
 
-          const parsePairs = (s?: string) => {
-            const items = String(s || "")
+          const parseEmails = (s?: string) =>
+            String(s || "")
               .split(/;+/)
               .map((x) => x.trim())
               .filter(Boolean);
-            return items.map((it) => {
-              const [nome, emailPart] = it.split(" - ").map((x) => x.trim());
-              return {
-                nome: nome || "",
-                email: (emailPart || "").toLowerCase(),
-              };
-            });
+          const parseDestinatarios = (s?: string) => {
+            const raw = String(s || "").trim();
+            // Bracketed group formats
+            const m = raw.match(
+              /^\s*(clientes|fornecedores)(?:\s+espec[íi]ficos)?\s*\[(.*)\]\s*$/i,
+            );
+            if (m) {
+              const grupo = m[1].toLowerCase();
+              const hasEspecificos = /espec[íi]ficos/i.test(raw);
+              const emails = parseEmails(m[2]).map((e) => e.toLowerCase());
+              if (grupo === "clientes" && hasEspecificos)
+                return { tipo: "ClientesEspecificos" as const, emails };
+              if (grupo === "clientes" && !hasEspecificos)
+                return { tipo: "TodosClientes" as const, emails };
+              if (grupo === "fornecedores" && hasEspecificos)
+                return { tipo: "FornecedoresEspecificos" as const, emails };
+              return { tipo: "TodosFornecedores" as const, emails };
+            }
+            // Phrases for ALL
+            const sLower = raw.toLowerCase();
+            if (["todos os clientes", "todos clientes"].includes(sLower))
+              return { tipo: "TodosClientes" as const, emails: [] };
+            if (
+              ["todos os fornecedores", "todos fornecedores"].includes(sLower)
+            )
+              return { tipo: "TodosFornecedores" as const, emails: [] };
+            // Fallback to loose emails list
+            const emails = parseEmails(raw).map((e) => e.toLowerCase());
+            return { tipo: "Outros" as const, emails };
           };
 
           const normalizeDestType = (v?: string) => {
@@ -993,32 +1079,24 @@ export default function ComunicacoesModule() {
               }
               if (!estabelecimento_id) continue;
 
-              // destinatários tipo
-              const destTipo = normalizeDestType(r.destinatarios_tipo);
+              // destinatários (novo formato)
+              const parsed = parseDestinatarios(r.destinatarios);
+              const destTipo = parsed.tipo;
 
-              // map clientes
-              const clientesPairs = parsePairs(r.clientes);
               const clientes_ids: number[] = [];
-              if (clientesPairs.length > 0) {
-                for (const p of clientesPairs) {
+              const fornecedores_ids: number[] = [];
+
+              if (destTipo === "ClientesEspecificos") {
+                for (const email of parsed.emails) {
                   const found = clientes.find(
-                    (c) =>
-                      c.email?.toLowerCase() === p.email ||
-                      c.nome.toLowerCase() === p.nome.toLowerCase(),
+                    (c) => c.email?.toLowerCase() === email,
                   );
                   if (found) clientes_ids.push(found.id);
                 }
-              }
-
-              // map fornecedores
-              const fornecPairs = parsePairs(r.fornecedores);
-              const fornecedores_ids: number[] = [];
-              if (fornecPairs.length > 0) {
-                for (const p of fornecPairs) {
+              } else if (destTipo === "FornecedoresEspecificos") {
+                for (const email of parsed.emails) {
                   const found = fornecedores.find(
-                    (f) =>
-                      f.email?.toLowerCase() === p.email ||
-                      f.nome.toLowerCase() === p.nome.toLowerCase(),
+                    (f) => f.email?.toLowerCase() === email,
                   );
                   if (found) fornecedores_ids.push(found.id);
                 }
@@ -1034,7 +1112,8 @@ export default function ComunicacoesModule() {
                   destinatarios_tipo: destTipo,
                   clientes_ids,
                   fornecedores_ids,
-                  destinatarios_text: r.destinatarios_text || "",
+                  destinatarios_text:
+                    destTipo === "Outros" ? parsed.emails.join("; ") : "",
                   status: r.status || "Pendente",
                   data_hora_enviado: r.data_hora_enviado || undefined,
                 }),
