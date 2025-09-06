@@ -492,7 +492,7 @@ export default function ComunicacoesModule() {
     if (ids.length > 50) {
       toast({
         title: "Limite excedido",
-        description: "Só é possível enviar para até 50 registros por vez.",
+        description: "S�� é possível enviar para até 50 registros por vez.",
         variant: "destructive",
       });
       return;
@@ -666,18 +666,28 @@ export default function ComunicacoesModule() {
                         }
                         return all;
                       };
-                      const [allRows, cliRes, fornRes] = await Promise.all([
+                      // Busca completa também para clientes e fornecedores
+                      const fetchAllSimple = async <T,>(urlBase: string): Promise<T[]> => {
+                        let page = 1;
+                        const limit = 1000;
+                        const res: T[] = [];
+                        for (let i = 0; i < 50; i++) {
+                          const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+                          const r: any = await makeRequest(`${urlBase}?${params}`).catch(() => null);
+                          const chunk: T[] = (r?.data || []) as T[];
+                          if (chunk.length === 0) break;
+                          res.push(...chunk);
+                          if (chunk.length < limit) break;
+                          page += 1;
+                        }
+                        return res;
+                      };
+
+                      const [allRows, clientes, fornecedores] = await Promise.all([
                         loadAll(),
-                        makeRequest(`/api/clientes?page=1&limit=1000`).catch(
-                          () => null,
-                        ),
-                        makeRequest(
-                          `/api/fornecedores?page=1&limit=1000`,
-                        ).catch(() => null),
+                        fetchAllSimple<Cliente>(`/api/clientes`),
+                        fetchAllSimple<Fornecedor>(`/api/fornecedores`),
                       ]);
-                      const clientes: Cliente[] = (cliRes?.data || []) as any;
-                      const fornecedores: Fornecedor[] = (fornRes?.data ||
-                        []) as any;
                       const cMap = new Map<number, Cliente>();
                       clientes.forEach((c) => cMap.set(c.id, c));
                       const fMap = new Map<number, Fornecedor>();
