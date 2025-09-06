@@ -917,7 +917,7 @@ export default function ComunicacoesModule() {
             errors.push("Tipo de Comunicação é obrigatório");
           if (!r.assunto) errors.push("Assunto é obrigatório");
           if (!r.mensagem) errors.push("Mensagem é obrigatória");
-          if (!r.destinatarios_tipo) errors.push("Destinatários é obrigatório");
+          if (!r.destinatarios) errors.push("Destinatários é obrigatório");
           return errors;
         }}
         onImport={async (records) => {
