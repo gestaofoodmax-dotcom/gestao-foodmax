@@ -328,7 +328,7 @@ export function useAuthenticatedRequest() {
         }
       }
 
-      if (!response!) throw new Error("Falha de rede");
+      if (!response) throw new Error("Falha de rede");
 
       if (!response.ok) {
         // Try to decode JSON error; if it fails, fall back to text/status
