@@ -22,7 +22,7 @@ export interface Comunicacao {
   destinatarios_text?: string | null; // usado quando tipo = "Outros"
   email_enviado: boolean;
   status: StatusComunicacao;
-  data_envio?: string | null;
+  data_hora_enviado?: string | null;
   data_cadastro: string;
   data_atualizacao: string;
 }
