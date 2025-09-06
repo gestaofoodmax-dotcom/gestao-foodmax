@@ -902,13 +902,11 @@ export default function ComunicacoesModule() {
             "tipo de comunicação": "tipo_comunicacao",
             assunto: "assunto",
             mensagem: "mensagem",
-            destinatários: "destinatarios_tipo",
-            destinatarios: "destinatarios_tipo",
-            clientes: "clientes",
-            fornecedores: "fornecedores",
-            "destinatários texto": "destinatarios_text",
-            "destinatarios texto": "destinatarios_text",
+            destinatários: "destinatarios",
+            destinatarios: "destinatarios",
             status: "status",
+            "data/hora enviado": "data_hora_enviado",
+            "data hora enviado": "data_hora_enviado",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
