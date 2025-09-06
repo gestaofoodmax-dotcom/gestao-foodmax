@@ -226,8 +226,8 @@ export default function RelatoriosModule() {
   }, [estabelecimentos]);
 
   const ensureChartsRendered = async (elements: HTMLElement[]): Promise<boolean> => {
-    const timeout = 15000; // wait longer for slow renders
-    const interval = 300;
+    const timeout = 8000; // shorter wait for faster UX
+    const interval = 200;
     let elapsed = 0;
 
     // If the page is still loading data, wait until loading finishes (but cap by timeout)
@@ -251,7 +251,7 @@ export default function RelatoriosModule() {
           try {
             const bbox = svg.getBBox();
             // require a slightly larger bbox to be sure it's fully rendered
-            if (bbox && bbox.width > 8 && bbox.height > 8) {
+            if (bbox && bbox.width > 6 && bbox.height > 6) {
               ready = true;
               break;
             }
@@ -324,27 +324,55 @@ export default function RelatoriosModule() {
 
       for (let i = 0; i < elements.length; i++) {
         const el = elements[i];
-        // dispatch resize to force chart libraries to recalc sizes before capture
+
+        // temporarily adjust title wrapper to ensure full icon visibility
+        const h3 = el.querySelector("h3");
+        let savedStyles: { pb?: string; align?: string } | null = null;
+        if (h3 && h3.parentElement) {
+          const wrap = h3.parentElement as HTMLElement;
+          savedStyles = { pb: wrap.style.paddingBottom, align: wrap.style.alignItems };
+          wrap.style.paddingBottom = "18px";
+          wrap.style.alignItems = "center";
+          const svg = wrap.querySelector("svg") as HTMLElement | null;
+          if (svg) svg.style.marginTop = "0px";
+        }
+
         try {
           window.dispatchEvent(new Event("resize"));
         } catch (e) {
           /* ignore */
         }
-        // try capturing the element multiple times if capture looks incomplete
+
+        // try capturing the element a couple times for reliability, with smaller scale for speed
         let canvas: HTMLCanvasElement | null = null;
-        for (let attempt = 0; attempt < 4; attempt++) {
+        for (let attempt = 0; attempt < 2; attempt++) {
           // eslint-disable-next-line no-await-in-loop
           canvas = await html2canvas(el, {
-            scale: 2,
+            scale: 1.5,
             useCORS: true,
             backgroundColor: "#ffffff",
-            imageTimeout: 30000,
+            imageTimeout: 20000,
           });
           if (canvas && canvas.width > 50 && canvas.height > 50) break;
           // eslint-disable-next-line no-await-in-loop
-          await new Promise((r) => setTimeout(r, 250));
+          await new Promise((r) => setTimeout(r, 200));
         }
-        if (!canvas) continue;
+
+        // restore styles
+        if (savedStyles && h3 && h3.parentElement) {
+          const wrap = h3.parentElement as HTMLElement;
+          wrap.style.paddingBottom = savedStyles.pb || "";
+          wrap.style.alignItems = savedStyles.align || "";
+          const svg = wrap.querySelector("svg") as HTMLElement | null;
+          if (svg) svg.style.marginTop = "";
+        }
+
+        if (!canvas) {
+          setExporting(false);
+          toast({ title: "Erro ao capturar gráficos", description: "Não foi possível capturar os gráficos. Tente novamente." });
+          return;
+        }
+
         const imgData = canvas.toDataURL("image/png");
 
         // manter aspecto e limitar altura para "tamanho médio"
