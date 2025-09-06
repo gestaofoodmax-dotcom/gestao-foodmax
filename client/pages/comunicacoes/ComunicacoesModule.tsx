@@ -1104,7 +1104,9 @@ export default function ComunicacoesModule() {
             return "Outros";
           };
 
-          for (const r of records) {
+          const importErrors: string[] = [];
+          for (let i = 0; i < records.length; i++) {
+            const r = records[i];
             try {
               // estabelecimento
               let estabelecimento_id: number | null = null;
@@ -1112,12 +1114,22 @@ export default function ComunicacoesModule() {
               if (/^\d+$/.test(v)) {
                 estabelecimento_id = parseInt(v, 10);
               } else {
-                const found = estabelecimentos.find(
+                let found = estabelecimentos.find(
                   (e) => e.nome.toLowerCase() === v.toLowerCase(),
                 );
+                if (!found) {
+                  // try partial match
+                  found = estabelecimentos.find((e) =>
+                    e.nome.toLowerCase().includes(v.toLowerCase()),
+                  );
+                }
                 estabelecimento_id = found ? found.id : null;
               }
-              if (!estabelecimento_id) continue;
+
+              if (!estabelecimento_id) {
+                importErrors.push(`Linha ${i + 2}: Estabelecimento '${v}' não encontrado`);
+                continue;
+              }
 
               // destinatários (novo formato)
               const parsed = parseDestinatarios(r.destinatarios);
@@ -1132,6 +1144,7 @@ export default function ComunicacoesModule() {
                     (c) => c.email?.toLowerCase() === email,
                   );
                   if (found) clientes_ids.push(found.id);
+                  else importErrors.push(`Linha ${i + 2}: Cliente com email '${email}' não encontrado`);
                 }
               } else if (destTipo === "FornecedoresEspecificos") {
                 for (const email of parsed.emails) {
@@ -1139,7 +1152,19 @@ export default function ComunicacoesModule() {
                     (f) => f.email?.toLowerCase() === email,
                   );
                   if (found) fornecedores_ids.push(found.id);
+                  else importErrors.push(`Linha ${i + 2}: Fornecedor com email '${email}' não encontrado`);
                 }
+              }
+
+              // Ensure status is valid enum
+              const statusValues = ["Pendente", "Enviado", "Cancelado"] as const;
+              let statusVal = (r.status || "Pendente") as string;
+              if (!statusValues.includes(statusVal as any)) {
+                const sNorm = String(statusVal || "").toLowerCase().trim();
+                if (sNorm.startsWith("pend")) statusVal = "Pendente";
+                else if (sNorm.startsWith("envi")) statusVal = "Enviado";
+                else if (sNorm.startsWith("canc")) statusVal = "Cancelado";
+                else statusVal = "Pendente";
               }
 
               await makeRequest(`/api/comunicacoes`, {
@@ -1152,14 +1177,16 @@ export default function ComunicacoesModule() {
                   destinatarios_tipo: destTipo,
                   clientes_ids,
                   fornecedores_ids,
-                  destinatarios_text:
-                    destTipo === "Outros" ? parsed.emails.join("; ") : "",
-                  status: r.status || "Pendente",
+                  destinatarios_text: destTipo === "Outros" ? parsed.emails.join("; ") : "",
+                  status: statusVal,
                   data_hora_enviado: toIsoBr(r.data_hora_enviado),
+                  data_cadastro: toIsoBr(r.data_cadastro),
                 }),
               });
               imported += 1;
-            } catch {}
+            } catch (e: any) {
+              importErrors.push(`Linha ${i + 2}: Erro ao importar - ${e?.message || e}`);
+            }
           }
           await loadRows();
           return {
