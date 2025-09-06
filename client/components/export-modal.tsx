@@ -395,7 +395,7 @@ export function ExportModal({
           )}
         </div>
 
-        <DialogFooter className="flex-row gap-2 sm:gap-0 py-0 mt-2">
+        <DialogFooter className="flex-row gap-2 sm:gap-0 py-0 mt-1">
           <Button
             variant="outline"
             onClick={onClose}
