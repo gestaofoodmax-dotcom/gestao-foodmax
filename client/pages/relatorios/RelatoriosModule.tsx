@@ -85,6 +85,7 @@ export default function RelatoriosModule() {
   const chartsContainerRef = useRef<HTMLDivElement>(null);
   const finCardRef = useRef<HTMLDivElement>(null);
   const pedCardRef = useRef<HTMLDivElement>(null);
+  const [exporting, setExporting] = useState<boolean>(false);
 
   useEffect(() => {
     setSidebarOpen(!isMobile);
@@ -223,71 +224,118 @@ export default function RelatoriosModule() {
     return opts;
   }, [estabelecimentos]);
 
+  const ensureChartsRendered = async (elements: HTMLElement[]): Promise<boolean> => {
+    const timeout = 7000;
+    const interval = 200;
+    let elapsed = 0;
+    while (elapsed < timeout) {
+      let allReady = true;
+      for (const el of elements) {
+        const svgs = el.getElementsByTagName("svg");
+        if (svgs.length === 0) {
+          allReady = false;
+          break;
+        }
+        let ready = false;
+        for (const svg of Array.from(svgs)) {
+          try {
+            const bbox = svg.getBBox();
+            if (bbox && bbox.width > 2 && bbox.height > 2) {
+              ready = true;
+              break;
+            }
+          } catch (e) {
+            // ignore
+          }
+        }
+        if (!ready) {
+          allReady = false;
+          break;
+        }
+      }
+      if (allReady) return true;
+      // wait and retry
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((r) => setTimeout(r, interval));
+      elapsed += interval;
+    }
+    return false;
+  };
+
   const exportToPDF = useCallback(async () => {
     const elements: HTMLElement[] = [];
     if (finCardRef.current) elements.push(finCardRef.current);
     if (pedCardRef.current) elements.push(pedCardRef.current);
     if (elements.length === 0) return;
 
-    const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    setExporting(true);
+    try {
+      // wait charts render
+      await ensureChartsRendered(elements);
 
-    // Cabeçalho
-    const marginX = 40;
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(20);
-    pdf.setTextColor(17, 24, 39); // gray-900
-    pdf.text("Gestão Gastronômica", pageWidth / 2, 40, { align: "center" });
+      const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // quebra de linha após o título -> subtítulo alinhado à esquerda
-    const nomeEstabDisplay =
-      selectedEstabelecimento === "all"
-        ? "Todos Estabelecimentos"
-        : estabelecimentos.find((e) => e.id === Number(selectedEstabelecimento))?.nome || "Estabelecimento";
-    const periodoLabel = (periodoOptions.find((p) => p.value === period)?.label) || "Todos Períodos";
+      // Cabeçalho
+      const marginX = 40;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(20);
+      pdf.setTextColor(17, 24, 39); // gray-900
+      pdf.text("Gestão Gastronômica", pageWidth / 2, 40, { align: "center" });
 
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(12);
-    pdf.setTextColor(75, 85, 99); // gray-600
-    const subtitleY = 64;
-    pdf.text(`${nomeEstabDisplay} - ${periodoLabel}`, pageWidth / 2, subtitleY, { align: "center" }); // subtitle centered
+      // quebra de linha após o título -> subtítulo alinhado à esquerda
+      const nomeEstabDisplay =
+        selectedEstabelecimento === "all"
+          ? "Todos Estabelecimentos"
+          : estabelecimentos.find((e) => e.id === Number(selectedEstabelecimento))?.nome || "Estabelecimento";
+      const periodoLabel = (periodoOptions.find((p) => p.value === period)?.label) || "Todos Períodos";
 
-    // duas quebras de linha após subtítulo
-    let currentY = subtitleY + 28 * 2;
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(12);
+      pdf.setTextColor(75, 85, 99); // gray-600
+      const subtitleY = 64;
+      pdf.text(`${nomeEstabDisplay} - ${periodoLabel}`, pageWidth / 2, subtitleY, { align: "center" }); // subtitle centered
 
-    const maxHeight = 260; // tamanho médio
-    const imgMaxWidth = Math.min(pageWidth - marginX * 2, pageWidth * 0.65); // reduzir largura para manter proporção, mais compacta
+      // duas quebras de linha após subtítulo
+      let currentY = subtitleY + 28 * 2;
 
-    for (let i = 0; i < elements.length; i++) {
-      const el = elements[i];
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-      });
-      const imgData = canvas.toDataURL("image/png");
+      const maxHeight = 260; // tamanho médio
+      const imgMaxWidth = Math.min(pageWidth - marginX * 2, pageWidth * 0.65); // reduzir largura para manter proporção, mais compacta
 
-      // manter aspecto e limitar altura para "tamanho médio"
-      const naturalW = canvas.width;
-      const naturalH = canvas.height;
-      const imgWidth = imgMaxWidth;
-      const imgHeight = Math.min((naturalH * imgWidth) / naturalW, maxHeight);
-      const centerX = (pageWidth - imgWidth) / 2;
+      for (let i = 0; i < elements.length; i++) {
+        const el = elements[i];
+        const canvas = await html2canvas(el, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+          useCORS: true,
+        });
+        const imgData = canvas.toDataURL("image/png");
 
-      // quebra de página se necessário
-      if (currentY + imgHeight > pageHeight - 40) {
-        pdf.addPage();
-        currentY = 40;
+        // manter aspecto e limitar altura para "tamanho médio"
+        const naturalW = canvas.width;
+        const naturalH = canvas.height;
+        const imgWidth = imgMaxWidth;
+        const imgHeight = Math.min((naturalH * imgWidth) / naturalW, maxHeight);
+        const centerX = (pageWidth - imgWidth) / 2;
+
+        // quebra de página se necessário
+        if (currentY + imgHeight > pageHeight - 40) {
+          pdf.addPage();
+          currentY = 40;
+        }
+
+        pdf.addImage(imgData, "PNG", centerX, currentY, imgWidth, imgHeight);
+        currentY += imgHeight + 24; // espaço entre gráficos
       }
 
-      pdf.addImage(imgData, "PNG", centerX, currentY, imgWidth, imgHeight);
-      currentY += imgHeight + 24; // espaço entre gráficos
+      const fileSlug = nomeEstabDisplay.replace(/\s+/g, "-").toLowerCase();
+      const file = `relatorio-${fileSlug}-${period}.pdf`;
+      pdf.save(file);
+    } finally {
+      setExporting(false);
     }
-
-    const fileSlug = nomeEstabDisplay.replace(/\s+/g, "-").toLowerCase();
-    const file = `relatorio-${fileSlug}-${period}.pdf`;
-    pdf.save(file);
   }, [estabelecimentos, period, selectedEstabelecimento]);
 
   return (
@@ -366,7 +414,7 @@ export default function RelatoriosModule() {
 
           {estabelecimentos.length === 0 && (
             <div className="mt-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-4 flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 mt-1" />
               <div>
                 <p>
                   Antes de cadastrar, é necessário ter pelo menos um
@@ -391,7 +439,7 @@ export default function RelatoriosModule() {
                 className="foodmax-card border border-gray-200 p-4"
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <BarChart3 className="w-5 h-5 text-blue-700 mt-1" />
+                  <BarChart3 className="w-5 h-5 text-blue-700 mt-2" />
                   <h3 className="text-lg font-semibold text-blue-700">
                     Relatório de Transações
                   </h3>
@@ -423,7 +471,7 @@ export default function RelatoriosModule() {
                 className="foodmax-card border border-gray-200 p-4"
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <PieIcon className="w-5 h-5 text-orange-700 mt-1" />
+                  <PieIcon className="w-5 h-5 text-orange-700 mt-2" />
                   <h3 className="text-lg font-semibold text-orange-700">
                     Relatório de Pedidos
                   </h3>
@@ -463,6 +511,14 @@ export default function RelatoriosModule() {
             </div>
           </div>
         </main>
+          {exporting && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+              <div className="bg-white rounded-lg p-6 flex flex-col items-center gap-3">
+                <div className="w-12 h-12 border-4 border-t-transparent border-gray-300 rounded-full animate-spin" />
+                <div className="text-gray-700 font-medium">Gerando PDF — aguarde...</div>
+              </div>
+            </div>
+          )}
       </div>
     </div>
   );
