@@ -871,9 +871,12 @@ export default function ComunicacoesModule() {
         userRole={getUserRole()}
         hasPayment={hasPayment()}
         extraNotes={[
-          "Clientes: Nome do Cliente - Email do Cliente; ...",
-          "Fornecedores: Nome do Fornecedor - Email do Fornecedor; ...",
-          "Destinatários: use um dos valores: TodosClientes, ClientesEspecificos, TodosFornecedores, FornecedoresEspecificos, Outros.",
+          "Destinatários deve ser um destes formatos:",
+          "Clientes específicos [email1@dominio.com; email2@dominio.com]",
+          "Clientes [email1@dominio.com; email2@dominio.com]",
+          "Fornecedores específicos [email1@dominio.com; email2@dominio.com]",
+          "Fornecedores [email1@dominio.com; email2@dominio.com]",
+          "Ou apenas: email1@dominio.com; email2@dominio.com",
         ]}
         columns={[
           {
