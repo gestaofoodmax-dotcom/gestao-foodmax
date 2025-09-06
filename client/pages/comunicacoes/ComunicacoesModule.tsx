@@ -991,6 +991,7 @@ export default function ComunicacoesModule() {
             status: "status",
             "data/hora enviado": "data_hora_enviado",
             "data hora enviado": "data_hora_enviado",
+            "data cadastro": "data_cadastro",
           };
           return map[n] || n.replace(/\s+/g, "_");
         }}
