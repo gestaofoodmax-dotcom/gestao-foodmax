@@ -280,15 +280,18 @@ export default function ComunicacoesModule() {
     setShowForm(true);
   };
   const handleEdit = async (r: Comunicacao) => {
-  setCurrent(r);
-  setIsEditing(true);
-  try {
-    const uid = typeof window !== "undefined" ? localStorage.getItem("fm_user_id") : null;
-    await clearAllAppCaches();
-    if (uid) localStorage.setItem("fm_user_id", uid);
-  } catch {}
-  setShowForm(true);
-};
+    setCurrent(r);
+    setIsEditing(true);
+    try {
+      const uid =
+        typeof window !== "undefined"
+          ? localStorage.getItem("fm_user_id")
+          : null;
+      await clearAllAppCaches();
+      if (uid) localStorage.setItem("fm_user_id", uid);
+    } catch {}
+    setShowForm(true);
+  };
 
   const filteredRows = useMemo(() => {
     if (!searchTerm) return rows;
@@ -747,7 +750,9 @@ export default function ComunicacoesModule() {
                             .filter((f) => f.ativo && f.email)
                             .map((f) => String(f.email).trim());
                         }
-                        if (r.destinatarios_tipo === "FornecedoresEspecificos") {
+                        if (
+                          r.destinatarios_tipo === "FornecedoresEspecificos"
+                        ) {
                           const ids = Array.isArray(r.fornecedores_ids)
                             ? r.fornecedores_ids
                             : [];
@@ -770,9 +775,13 @@ export default function ComunicacoesModule() {
                           destinatarios = `Clientes específicos [${emails.join("; ")}]`;
                         } else if (r.destinatarios_tipo === "TodosClientes") {
                           destinatarios = "Todos os clientes";
-                        } else if (r.destinatarios_tipo === "FornecedoresEspecificos") {
+                        } else if (
+                          r.destinatarios_tipo === "FornecedoresEspecificos"
+                        ) {
                           destinatarios = `Fornecedores específicos [${emails.join("; ")}]`;
-                        } else if (r.destinatarios_tipo === "TodosFornecedores") {
+                        } else if (
+                          r.destinatarios_tipo === "TodosFornecedores"
+                        ) {
                           destinatarios = "Todos os fornecedores";
                         } else {
                           destinatarios = emails.join("; ");
@@ -786,7 +795,9 @@ export default function ComunicacoesModule() {
                           mensagem: r.mensagem,
                           destinatarios,
                           status: r.status,
-                          data_hora_enviado: fmtDateTime(r.data_hora_enviado || undefined),
+                          data_hora_enviado: fmtDateTime(
+                            r.data_hora_enviado || undefined,
+                          ),
                           data_cadastro: fmtDateTime(r.data_cadastro),
                         };
                       });
@@ -995,7 +1006,9 @@ export default function ComunicacoesModule() {
           const parseDestinatarios = (s?: string) => {
             const raw = String(s || "").trim();
             // Bracketed group formats
-            const m = raw.match(/^\s*(clientes|fornecedores)(?:\s+espec[íi]ficos)?\s*\[(.*)\]\s*$/i);
+            const m = raw.match(
+              /^\s*(clientes|fornecedores)(?:\s+espec[íi]ficos)?\s*\[(.*)\]\s*$/i,
+            );
             if (m) {
               const grupo = m[1].toLowerCase();
               const hasEspecificos = /espec[íi]ficos/i.test(raw);
@@ -1012,7 +1025,9 @@ export default function ComunicacoesModule() {
             const sLower = raw.toLowerCase();
             if (["todos os clientes", "todos clientes"].includes(sLower))
               return { tipo: "TodosClientes" as const, emails: [] };
-            if (["todos os fornecedores", "todos fornecedores"].includes(sLower))
+            if (
+              ["todos os fornecedores", "todos fornecedores"].includes(sLower)
+            )
               return { tipo: "TodosFornecedores" as const, emails: [] };
             // Fallback to loose emails list
             const emails = parseEmails(raw).map((e) => e.toLowerCase());
@@ -1065,40 +1080,44 @@ export default function ComunicacoesModule() {
               if (!estabelecimento_id) continue;
 
               // destinatários (novo formato)
-          const parsed = parseDestinatarios(r.destinatarios);
-          const destTipo = parsed.tipo;
+              const parsed = parseDestinatarios(r.destinatarios);
+              const destTipo = parsed.tipo;
 
-          const clientes_ids: number[] = [];
-          const fornecedores_ids: number[] = [];
+              const clientes_ids: number[] = [];
+              const fornecedores_ids: number[] = [];
 
-          if (destTipo === "ClientesEspecificos") {
-            for (const email of parsed.emails) {
-              const found = clientes.find((c) => c.email?.toLowerCase() === email);
-              if (found) clientes_ids.push(found.id);
-            }
-          } else if (destTipo === "FornecedoresEspecificos") {
-            for (const email of parsed.emails) {
-              const found = fornecedores.find((f) => f.email?.toLowerCase() === email);
-              if (found) fornecedores_ids.push(found.id);
-            }
-          }
+              if (destTipo === "ClientesEspecificos") {
+                for (const email of parsed.emails) {
+                  const found = clientes.find(
+                    (c) => c.email?.toLowerCase() === email,
+                  );
+                  if (found) clientes_ids.push(found.id);
+                }
+              } else if (destTipo === "FornecedoresEspecificos") {
+                for (const email of parsed.emails) {
+                  const found = fornecedores.find(
+                    (f) => f.email?.toLowerCase() === email,
+                  );
+                  if (found) fornecedores_ids.push(found.id);
+                }
+              }
 
-          await makeRequest(`/api/comunicacoes`, {
-            method: "POST",
-            body: JSON.stringify({
-              estabelecimento_id,
-              tipo_comunicacao: r.tipo_comunicacao,
-              assunto: r.assunto,
-              mensagem: r.mensagem,
-              destinatarios_tipo: destTipo,
-              clientes_ids,
-              fornecedores_ids,
-              destinatarios_text:
-                destTipo === "Outros" ? parsed.emails.join("; ") : "",
-              status: r.status || "Pendente",
-              data_hora_enviado: r.data_hora_enviado || undefined,
-            }),
-          });
+              await makeRequest(`/api/comunicacoes`, {
+                method: "POST",
+                body: JSON.stringify({
+                  estabelecimento_id,
+                  tipo_comunicacao: r.tipo_comunicacao,
+                  assunto: r.assunto,
+                  mensagem: r.mensagem,
+                  destinatarios_tipo: destTipo,
+                  clientes_ids,
+                  fornecedores_ids,
+                  destinatarios_text:
+                    destTipo === "Outros" ? parsed.emails.join("; ") : "",
+                  status: r.status || "Pendente",
+                  data_hora_enviado: r.data_hora_enviado || undefined,
+                }),
+              });
               imported += 1;
             } catch {}
           }
