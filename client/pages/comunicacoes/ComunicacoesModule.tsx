@@ -640,8 +640,58 @@ export default function ComunicacoesModule() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      const data = (filteredRows || rows).map((r) => ({
+                    onClick={async () => {
+                      // Load ALL comunicacoes, clientes and fornecedores to format export
+                      const loadAll = async () => {
+                        const params = new URLSearchParams({ page: "1", limit: "1000" });
+                        const res: any = await makeRequest(`/api/comunicacoes?${params}`);
+                        return (res?.data || []) as Comunicacao[];
+                      };
+                      const [allRows, cliRes, fornRes] = await Promise.all([
+                        loadAll(),
+                        makeRequest(`/api/clientes?page=1&limit=1000`).catch(() => null),
+                        makeRequest(`/api/fornecedores?page=1&limit=1000`).catch(() => null),
+                      ]);
+                      const clientes: Cliente[] = (cliRes?.data || []) as any;
+                      const fornecedores: Fornecedor[] = (fornRes?.data || []) as any;
+                      const cMap = new Map<number, Cliente>();
+                      clientes.forEach((c) => cMap.set(c.id, c));
+                      const fMap = new Map<number, Fornecedor>();
+                      fornecedores.forEach((f) => fMap.set(f.id, f));
+
+                      const fmtClientes = (r: Comunicacao) => {
+                        if (r.destinatarios_tipo === "TodosClientes") {
+                          const list = clientes
+                            .filter(
+                              (c) => c.estabelecimento_id === r.estabelecimento_id && c.ativo && c.email,
+                            )
+                            .map((c) => `${c.nome} - ${c.email}`);
+                          return list.join("; ");
+                        }
+                        const ids = Array.isArray(r.clientes_ids) ? r.clientes_ids : [];
+                        const list = ids
+                          .map((id) => cMap.get(id))
+                          .filter((c): c is Cliente => !!c && !!c.email)
+                          .map((c) => `${c.nome} - ${c.email}`);
+                        return list.join("; ");
+                      };
+
+                      const fmtFornecedores = (r: Comunicacao) => {
+                        if (r.destinatarios_tipo === "TodosFornecedores") {
+                          const list = fornecedores
+                            .filter((f) => f.ativo && f.email)
+                            .map((f) => `${f.nome} - ${f.email}`);
+                          return list.join("; ");
+                        }
+                        const ids = Array.isArray(r.fornecedores_ids) ? r.fornecedores_ids : [];
+                        const list = ids
+                          .map((id) => fMap.get(id))
+                          .filter((f): f is Fornecedor => !!f && !!f.email)
+                          .map((f) => `${f.nome} - ${f.email}`);
+                        return list.join("; ");
+                      };
+
+                      const data = allRows.map((r) => ({
                         estabelecimento:
                           estabelecimentosMap.get(r.estabelecimento_id) ||
                           r.estabelecimento_id,
@@ -649,15 +699,16 @@ export default function ComunicacoesModule() {
                         assunto: r.assunto,
                         mensagem: r.mensagem,
                         destinatarios_tipo: r.destinatarios_tipo,
-                        clientes_ids: (r.clientes_ids || []).join(","),
-                        fornecedores_ids: (r.fornecedores_ids || []).join(","),
+                        clientes: fmtClientes(r),
+                        fornecedores: fmtFornecedores(r),
                         destinatarios_text: r.destinatarios_text || "",
                         status: r.status,
                         data_envio: r.data_envio
-                          ? new Date(r.data_envio).toLocaleString("pt-BR")
+                          ? new Date(r.data_envio).toLocaleString("pt-BR", { hour12: false })
                           : "",
                         data_cadastro: new Date(r.data_cadastro).toLocaleString(
                           "pt-BR",
+                          { hour12: false },
                         ),
                       }));
                       setExportData(data);
