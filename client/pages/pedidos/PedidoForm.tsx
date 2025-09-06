@@ -895,11 +895,15 @@ export default function PedidoForm({
                 <hr className="border-t border-gray-200 my-2" />
                 <div className="flex items-center justify-between text-sm text-gray-700">
                   <span>
-                    Total de Itens: {
-                      selectedExtras.reduce((sum, ex) => sum + (Number(ex.quantidade) || 0), 0)
-                    }
+                    Total de Itens:{" "}
+                    {selectedExtras.reduce(
+                      (sum, ex) => sum + (Number(ex.quantidade) || 0),
+                      0,
+                    )}
                   </span>
-                  <span>Valor Total dos Itens: {formatCurrencyBRL(valorExtras)}</span>
+                  <span>
+                    Valor Total dos Itens: {formatCurrencyBRL(valorExtras)}
+                  </span>
                 </div>
               </div>
             )}

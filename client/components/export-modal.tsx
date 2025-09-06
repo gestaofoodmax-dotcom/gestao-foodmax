@@ -344,7 +344,10 @@ export function ExportModal({
             <ul className="list-disc list-inside text-sm text-blue-800 space-y-1">
               <li>O arquivo será gerado no formato CSV (UTF-8).</li>
               <li>A primeira linha contém os cabeçalhos das colunas.</li>
-              <li>Datas são exportadas no formato dd/mm/yyyy (e dd/mm/yyyy hh:mm:ss quando houver hora).</li>
+              <li>
+                Datas são exportadas no formato dd/mm/yyyy (e dd/mm/yyyy
+                hh:mm:ss quando houver hora).
+              </li>
             </ul>
           </div>
           <div>

@@ -259,11 +259,22 @@ export default function PedidoView({
                 </div>
                 <hr className="border-t border-gray-200 my-3" />
                 <div className="flex items-center justify-between text-sm text-gray-700">
-                  <span>Total de Itens: {detalhe.itens_extras.reduce((acc: number, it: any) => acc + (Number(it.quantidade) || 0), 0)}</span>
                   <span>
-                    Valor Total dos Itens: {formatCurrencyBRL(
+                    Total de Itens:{" "}
+                    {detalhe.itens_extras.reduce(
+                      (acc: number, it: any) =>
+                        acc + (Number(it.quantidade) || 0),
+                      0,
+                    )}
+                  </span>
+                  <span>
+                    Valor Total dos Itens:{" "}
+                    {formatCurrencyBRL(
                       detalhe.itens_extras.reduce(
-                        (acc: number, it: any) => acc + (Number(it.quantidade) || 0) * (Number(it.valor_unitario) || 0),
+                        (acc: number, it: any) =>
+                          acc +
+                          (Number(it.quantidade) || 0) *
+                            (Number(it.valor_unitario) || 0),
                         0,
                       ),
                     )}
