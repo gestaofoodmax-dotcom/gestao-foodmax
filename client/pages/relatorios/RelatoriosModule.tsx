@@ -226,7 +226,7 @@ export default function RelatoriosModule() {
   }, [estabelecimentos]);
 
   const ensureChartsRendered = async (elements: HTMLElement[]): Promise<boolean> => {
-    const timeout = 8000; // shorter wait for faster UX
+    const timeout = 6000; // wait 6s as requested
     const interval = 200;
     let elapsed = 0;
 
