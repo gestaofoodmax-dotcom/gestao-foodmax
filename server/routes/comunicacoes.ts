@@ -23,6 +23,7 @@ const CreateComSchema = z.object({
   fornecedores_ids: z.array(z.number().int().positive()).optional(),
   destinatarios_text: z.string().optional(),
   status: z.enum(["Pendente", "Enviado", "Cancelado"]).optional(),
+  data_hora_enviado: z.string().optional(),
 });
 const UpdateComSchema = CreateComSchema.partial();
 
@@ -128,6 +129,9 @@ export const createComunicacao: RequestHandler = async (req, res) => {
       fornecedores_ids: parsed.fornecedores_ids || [],
       destinatarios_text: parsed.destinatarios_text || null,
       status: parsed.status || "Pendente",
+      data_hora_enviado: parsed.data_hora_enviado
+        ? new Date(parsed.data_hora_enviado).toISOString()
+        : null,
     };
 
     const { data, error } = await supabase
@@ -364,7 +368,7 @@ export const sendComunicacao: RequestHandler = async (req, res) => {
       .update({
         email_enviado: true,
         status: "Enviado",
-        data_envio: new Date().toISOString(),
+        data_hora_enviado: new Date().toISOString(),
       })
       .eq("id", id)
       .eq("id_usuario", userId)
@@ -489,7 +493,7 @@ export const sendComunicacoesBulk: RequestHandler = async (req, res) => {
         .update({
           email_enviado: true,
           status: "Enviado",
-          data_envio: new Date().toISOString(),
+          data_hora_enviado: new Date().toISOString(),
         })
         .eq("id", com.id)
         .eq("id_usuario", userId);

@@ -205,10 +205,11 @@ export default function ComunicacoesModule() {
         },
       },
       {
-        key: "data_envio",
-        label: "Data de Envio",
+        key: "data_hora_enviado",
+        label: "Data/Hora Enviado",
         sortable: true,
-        render: (v: string) => (v ? new Date(v).toLocaleString("pt-BR") : "-"),
+        render: (v: string) =>
+          v ? new Date(v).toLocaleString("pt-BR", { hour12: false }) : "-",
       },
       {
         key: "status",
@@ -640,8 +641,75 @@ export default function ComunicacoesModule() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => {
-                      const data = (filteredRows || rows).map((r) => ({
+                    onClick={async () => {
+                      // Load ALL comunicacoes, clientes and fornecedores to format export
+                      const loadAll = async () => {
+                        const params = new URLSearchParams({
+                          page: "1",
+                          limit: "1000",
+                        });
+                        const res: any = await makeRequest(
+                          `/api/comunicacoes?${params}`,
+                        );
+                        return (res?.data || []) as Comunicacao[];
+                      };
+                      const [allRows, cliRes, fornRes] = await Promise.all([
+                        loadAll(),
+                        makeRequest(`/api/clientes?page=1&limit=1000`).catch(
+                          () => null,
+                        ),
+                        makeRequest(
+                          `/api/fornecedores?page=1&limit=1000`,
+                        ).catch(() => null),
+                      ]);
+                      const clientes: Cliente[] = (cliRes?.data || []) as any;
+                      const fornecedores: Fornecedor[] = (fornRes?.data ||
+                        []) as any;
+                      const cMap = new Map<number, Cliente>();
+                      clientes.forEach((c) => cMap.set(c.id, c));
+                      const fMap = new Map<number, Fornecedor>();
+                      fornecedores.forEach((f) => fMap.set(f.id, f));
+
+                      const fmtClientes = (r: Comunicacao) => {
+                        if (r.destinatarios_tipo === "TodosClientes") {
+                          const list = clientes
+                            .filter(
+                              (c) =>
+                                c.estabelecimento_id === r.estabelecimento_id &&
+                                c.ativo &&
+                                c.email,
+                            )
+                            .map((c) => `${c.nome} - ${c.email}`);
+                          return list.join("; ");
+                        }
+                        const ids = Array.isArray(r.clientes_ids)
+                          ? r.clientes_ids
+                          : [];
+                        const list = ids
+                          .map((id) => cMap.get(id))
+                          .filter((c): c is Cliente => !!c && !!c.email)
+                          .map((c) => `${c.nome} - ${c.email}`);
+                        return list.join("; ");
+                      };
+
+                      const fmtFornecedores = (r: Comunicacao) => {
+                        if (r.destinatarios_tipo === "TodosFornecedores") {
+                          const list = fornecedores
+                            .filter((f) => f.ativo && f.email)
+                            .map((f) => `${f.nome} - ${f.email}`);
+                          return list.join("; ");
+                        }
+                        const ids = Array.isArray(r.fornecedores_ids)
+                          ? r.fornecedores_ids
+                          : [];
+                        const list = ids
+                          .map((id) => fMap.get(id))
+                          .filter((f): f is Fornecedor => !!f && !!f.email)
+                          .map((f) => `${f.nome} - ${f.email}`);
+                        return list.join("; ");
+                      };
+
+                      const data = allRows.map((r) => ({
                         estabelecimento:
                           estabelecimentosMap.get(r.estabelecimento_id) ||
                           r.estabelecimento_id,
@@ -649,15 +717,19 @@ export default function ComunicacoesModule() {
                         assunto: r.assunto,
                         mensagem: r.mensagem,
                         destinatarios_tipo: r.destinatarios_tipo,
-                        clientes_ids: (r.clientes_ids || []).join(","),
-                        fornecedores_ids: (r.fornecedores_ids || []).join(","),
+                        clientes: fmtClientes(r),
+                        fornecedores: fmtFornecedores(r),
                         destinatarios_text: r.destinatarios_text || "",
                         status: r.status,
-                        data_envio: r.data_envio
-                          ? new Date(r.data_envio).toLocaleString("pt-BR")
+                        data_hora_enviado: r.data_hora_enviado
+                          ? new Date(r.data_hora_enviado).toLocaleString(
+                              "pt-BR",
+                              { hour12: false },
+                            )
                           : "",
                         data_cadastro: new Date(r.data_cadastro).toLocaleString(
                           "pt-BR",
+                          { hour12: false },
                         ),
                       }));
                       setExportData(data);
@@ -776,17 +848,18 @@ export default function ComunicacoesModule() {
         data={exportData}
         selectedIds={selectedIds}
         moduleName="Comunicações"
+        defaultExportType="all"
         columns={[
           { key: "estabelecimento", label: "Estabelecimento" },
           { key: "tipo_comunicacao", label: "Tipo de Comunicação" },
           { key: "assunto", label: "Assunto" },
           { key: "mensagem", label: "Mensagem" },
           { key: "destinatarios_tipo", label: "Destinatários" },
-          { key: "clientes_ids", label: "Clientes IDs" },
-          { key: "fornecedores_ids", label: "Fornecedores IDs" },
+          { key: "clientes", label: "Clientes" },
+          { key: "fornecedores", label: "Fornecedores" },
           { key: "destinatarios_text", label: "Destinatários Texto" },
           { key: "status", label: "Status" },
-          { key: "data_envio", label: "Data de Envio" },
+          { key: "data_hora_enviado", label: "Data/Hora Enviado" },
           { key: "data_cadastro", label: "Data Cadastro" },
         ]}
       />
@@ -797,6 +870,11 @@ export default function ComunicacoesModule() {
         moduleName="Comunicações"
         userRole={getUserRole()}
         hasPayment={hasPayment()}
+        extraNotes={[
+          "Clientes: Nome do Cliente - Email do Cliente; ...",
+          "Fornecedores: Nome do Fornecedor - Email do Fornecedor; ...",
+          "Destinatários: use um dos valores: TodosClientes, ClientesEspecificos, TodosFornecedores, FornecedoresEspecificos, Outros.",
+        ]}
         columns={[
           {
             key: "estabelecimento",
@@ -811,10 +889,11 @@ export default function ComunicacoesModule() {
           { key: "assunto", label: "Assunto", required: true },
           { key: "mensagem", label: "Mensagem", required: true },
           { key: "destinatarios_tipo", label: "Destinatários", required: true },
-          { key: "clientes_ids", label: "Clientes IDs (1,2,3)" },
-          { key: "fornecedores_ids", label: "Fornecedores IDs (1,2,3)" },
+          { key: "clientes", label: "Clientes (Nome - Email; ...)" },
+          { key: "fornecedores", label: "Fornecedores (Nome - Email; ...)" },
           { key: "destinatarios_text", label: "Destinatários Texto" },
           { key: "status", label: "Status" },
+          { key: "data_hora_enviado", label: "Data/Hora Enviado" },
         ]}
         mapHeader={(h) => {
           const n = h.trim().toLowerCase();
@@ -825,8 +904,8 @@ export default function ComunicacoesModule() {
             mensagem: "mensagem",
             destinatários: "destinatarios_tipo",
             destinatarios: "destinatarios_tipo",
-            "clientes ids": "clientes_ids",
-            "fornecedores ids": "fornecedores_ids",
+            clientes: "clientes",
+            fornecedores: "fornecedores",
             "destinatários texto": "destinatarios_text",
             "destinatarios texto": "destinatarios_text",
             status: "status",
@@ -845,8 +924,63 @@ export default function ComunicacoesModule() {
         }}
         onImport={async (records) => {
           let imported = 0;
+
+          const [cliRes, fornRes] = await Promise.all([
+            makeRequest(`/api/clientes?page=1&limit=1000`).catch(() => null),
+            makeRequest(`/api/fornecedores?page=1&limit=1000`).catch(
+              () => null,
+            ),
+          ]);
+          const clientes: Cliente[] = (cliRes?.data || []) as any;
+          const fornecedores: Fornecedor[] = (fornRes?.data || []) as any;
+
+          const parsePairs = (s?: string) => {
+            const items = String(s || "")
+              .split(/;+/)
+              .map((x) => x.trim())
+              .filter(Boolean);
+            return items.map((it) => {
+              const [nome, emailPart] = it.split(" - ").map((x) => x.trim());
+              return {
+                nome: nome || "",
+                email: (emailPart || "").toLowerCase(),
+              };
+            });
+          };
+
+          const normalizeDestType = (v?: string) => {
+            const s = String(v || "").toLowerCase();
+            if (
+              ["todosclientes", "todos clientes", "todos os clientes"].includes(
+                s,
+              )
+            )
+              return "TodosClientes";
+            if (
+              [
+                "clientesespecificos",
+                "clientes específicos",
+                "clientes especificos",
+              ].includes(s)
+            )
+              return "ClientesEspecificos";
+            if (["todosfornecedores", "todos fornecedores"].includes(s))
+              return "TodosFornecedores";
+            if (
+              [
+                "fornecedoresespecificos",
+                "fornecedores específicos",
+                "fornecedores especificos",
+              ].includes(s)
+            )
+              return "FornecedoresEspecificos";
+            if (["outros", "outro"].includes(s)) return "Outros";
+            return "Outros";
+          };
+
           for (const r of records) {
             try {
+              // estabelecimento
               let estabelecimento_id: number | null = null;
               const v = String(r.estabelecimento || "").trim();
               if (/^\d+$/.test(v)) {
@@ -859,11 +993,36 @@ export default function ComunicacoesModule() {
               }
               if (!estabelecimento_id) continue;
 
-              const parseIds = (s?: string) =>
-                String(s || "")
-                  .split(/[,;\s]+/g)
-                  .map((x) => parseInt(x.trim(), 10))
-                  .filter((n) => !isNaN(n)) as number[];
+              // destinatários tipo
+              const destTipo = normalizeDestType(r.destinatarios_tipo);
+
+              // map clientes
+              const clientesPairs = parsePairs(r.clientes);
+              const clientes_ids: number[] = [];
+              if (clientesPairs.length > 0) {
+                for (const p of clientesPairs) {
+                  const found = clientes.find(
+                    (c) =>
+                      c.email?.toLowerCase() === p.email ||
+                      c.nome.toLowerCase() === p.nome.toLowerCase(),
+                  );
+                  if (found) clientes_ids.push(found.id);
+                }
+              }
+
+              // map fornecedores
+              const fornecPairs = parsePairs(r.fornecedores);
+              const fornecedores_ids: number[] = [];
+              if (fornecPairs.length > 0) {
+                for (const p of fornecPairs) {
+                  const found = fornecedores.find(
+                    (f) =>
+                      f.email?.toLowerCase() === p.email ||
+                      f.nome.toLowerCase() === p.nome.toLowerCase(),
+                  );
+                  if (found) fornecedores_ids.push(found.id);
+                }
+              }
 
               await makeRequest(`/api/comunicacoes`, {
                 method: "POST",
@@ -872,11 +1031,12 @@ export default function ComunicacoesModule() {
                   tipo_comunicacao: r.tipo_comunicacao,
                   assunto: r.assunto,
                   mensagem: r.mensagem,
-                  destinatarios_tipo: r.destinatarios_tipo,
-                  clientes_ids: parseIds(r.clientes_ids),
-                  fornecedores_ids: parseIds(r.fornecedores_ids),
+                  destinatarios_tipo: destTipo,
+                  clientes_ids,
+                  fornecedores_ids,
                   destinatarios_text: r.destinatarios_text || "",
                   status: r.status || "Pendente",
+                  data_hora_enviado: r.data_hora_enviado || undefined,
                 }),
               });
               imported += 1;
