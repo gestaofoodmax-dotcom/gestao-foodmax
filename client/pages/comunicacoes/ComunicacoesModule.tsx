@@ -657,9 +657,15 @@ export default function ComunicacoesModule() {
                         let page = 1;
                         const limit = 1000;
                         for (let i = 0; i < 50; i++) {
-                          const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-                          const res: any = await makeRequest(`/api/comunicacoes?${params}`).catch(() => null);
-                          const chunk: Comunicacao[] = (res?.data || []) as Comunicacao[];
+                          const params = new URLSearchParams({
+                            page: String(page),
+                            limit: String(limit),
+                          });
+                          const res: any = await makeRequest(
+                            `/api/comunicacoes?${params}`,
+                          ).catch(() => null);
+                          const chunk: Comunicacao[] = (res?.data ||
+                            []) as Comunicacao[];
                           if (chunk.length === 0) break;
                           all.push(...chunk);
                           if (chunk.length < limit) break;
@@ -668,13 +674,20 @@ export default function ComunicacoesModule() {
                         return all;
                       };
                       // Busca completa também para clientes e fornecedores
-                      const fetchAllSimple = async <T,>(urlBase: string): Promise<T[]> => {
+                      const fetchAllSimple = async <T,>(
+                        urlBase: string,
+                      ): Promise<T[]> => {
                         let page = 1;
                         const limit = 1000;
                         const res: T[] = [];
                         for (let i = 0; i < 50; i++) {
-                          const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-                          const r: any = await makeRequest(`${urlBase}?${params}`).catch(() => null);
+                          const params = new URLSearchParams({
+                            page: String(page),
+                            limit: String(limit),
+                          });
+                          const r: any = await makeRequest(
+                            `${urlBase}?${params}`,
+                          ).catch(() => null);
                           const chunk: T[] = (r?.data || []) as T[];
                           if (chunk.length === 0) break;
                           res.push(...chunk);
@@ -684,11 +697,12 @@ export default function ComunicacoesModule() {
                         return res;
                       };
 
-                      const [allRows, clientes, fornecedores] = await Promise.all([
-                        loadAll(),
-                        fetchAllSimple<Cliente>(`/api/clientes`),
-                        fetchAllSimple<Fornecedor>(`/api/fornecedores`),
-                      ]);
+                      const [allRows, clientes, fornecedores] =
+                        await Promise.all([
+                          loadAll(),
+                          fetchAllSimple<Cliente>(`/api/clientes`),
+                          fetchAllSimple<Fornecedor>(`/api/fornecedores`),
+                        ]);
                       const cMap = new Map<number, Cliente>();
                       clientes.forEach((c) => cMap.set(c.id, c));
                       const fMap = new Map<number, Fornecedor>();
@@ -1058,7 +1072,9 @@ export default function ComunicacoesModule() {
           const toIsoBr = (s?: string) => {
             const v = String(s || "").trim();
             if (!v) return undefined;
-            const m = v.match(/^([0-3]?\d)\/([01]?\d)\/(\d{4})(?:\s+([0-2]?\d):([0-5]?\d)(?::([0-5]?\d))?)?$/);
+            const m = v.match(
+              /^([0-3]?\d)\/([01]?\d)\/(\d{4})(?:\s+([0-2]?\d):([0-5]?\d)(?::([0-5]?\d))?)?$/,
+            );
             if (m) {
               const dd = parseInt(m[1], 10);
               const mm = parseInt(m[2], 10);
@@ -1127,7 +1143,9 @@ export default function ComunicacoesModule() {
               }
 
               if (!estabelecimento_id) {
-                importErrors.push(`Linha ${i + 2}: Estabelecimento '${v}' não encontrado`);
+                importErrors.push(
+                  `Linha ${i + 2}: Estabelecimento '${v}' não encontrado`,
+                );
                 continue;
               }
 
@@ -1144,7 +1162,10 @@ export default function ComunicacoesModule() {
                     (c) => c.email?.toLowerCase() === email,
                   );
                   if (found) clientes_ids.push(found.id);
-                  else importErrors.push(`Linha ${i + 2}: Cliente com email '${email}' não encontrado`);
+                  else
+                    importErrors.push(
+                      `Linha ${i + 2}: Cliente com email '${email}' não encontrado`,
+                    );
                 }
               } else if (destTipo === "FornecedoresEspecificos") {
                 for (const email of parsed.emails) {
@@ -1152,15 +1173,24 @@ export default function ComunicacoesModule() {
                     (f) => f.email?.toLowerCase() === email,
                   );
                   if (found) fornecedores_ids.push(found.id);
-                  else importErrors.push(`Linha ${i + 2}: Fornecedor com email '${email}' não encontrado`);
+                  else
+                    importErrors.push(
+                      `Linha ${i + 2}: Fornecedor com email '${email}' não encontrado`,
+                    );
                 }
               }
 
               // Ensure status is valid enum
-              const statusValues = ["Pendente", "Enviado", "Cancelado"] as const;
+              const statusValues = [
+                "Pendente",
+                "Enviado",
+                "Cancelado",
+              ] as const;
               let statusVal = (r.status || "Pendente") as string;
               if (!statusValues.includes(statusVal as any)) {
-                const sNorm = String(statusVal || "").toLowerCase().trim();
+                const sNorm = String(statusVal || "")
+                  .toLowerCase()
+                  .trim();
                 if (sNorm.startsWith("pend")) statusVal = "Pendente";
                 else if (sNorm.startsWith("envi")) statusVal = "Enviado";
                 else if (sNorm.startsWith("canc")) statusVal = "Cancelado";
@@ -1177,7 +1207,8 @@ export default function ComunicacoesModule() {
                   destinatarios_tipo: destTipo,
                   clientes_ids,
                   fornecedores_ids,
-                  destinatarios_text: destTipo === "Outros" ? parsed.emails.join("; ") : "",
+                  destinatarios_text:
+                    destTipo === "Outros" ? parsed.emails.join("; ") : "",
                   status: statusVal,
                   data_hora_enviado: toIsoBr(r.data_hora_enviado),
                   data_cadastro: toIsoBr(r.data_cadastro),
@@ -1185,7 +1216,9 @@ export default function ComunicacoesModule() {
               });
               imported += 1;
             } catch (e: any) {
-              importErrors.push(`Linha ${i + 2}: Erro ao importar - ${e?.message || e}`);
+              importErrors.push(
+                `Linha ${i + 2}: Erro ao importar - ${e?.message || e}`,
+              );
             }
           }
           await loadRows();
