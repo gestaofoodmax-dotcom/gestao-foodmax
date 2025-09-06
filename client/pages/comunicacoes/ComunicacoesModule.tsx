@@ -208,7 +208,8 @@ export default function ComunicacoesModule() {
         key: "data_hora_enviado",
         label: "Data/Hora Enviado",
         sortable: true,
-        render: (v: string) => (v ? new Date(v).toLocaleString("pt-BR", { hour12: false }) : "-"),
+        render: (v: string) =>
+          v ? new Date(v).toLocaleString("pt-BR", { hour12: false }) : "-",
       },
       {
         key: "status",
@@ -643,17 +644,27 @@ export default function ComunicacoesModule() {
                     onClick={async () => {
                       // Load ALL comunicacoes, clientes and fornecedores to format export
                       const loadAll = async () => {
-                        const params = new URLSearchParams({ page: "1", limit: "1000" });
-                        const res: any = await makeRequest(`/api/comunicacoes?${params}`);
+                        const params = new URLSearchParams({
+                          page: "1",
+                          limit: "1000",
+                        });
+                        const res: any = await makeRequest(
+                          `/api/comunicacoes?${params}`,
+                        );
                         return (res?.data || []) as Comunicacao[];
                       };
                       const [allRows, cliRes, fornRes] = await Promise.all([
                         loadAll(),
-                        makeRequest(`/api/clientes?page=1&limit=1000`).catch(() => null),
-                        makeRequest(`/api/fornecedores?page=1&limit=1000`).catch(() => null),
+                        makeRequest(`/api/clientes?page=1&limit=1000`).catch(
+                          () => null,
+                        ),
+                        makeRequest(
+                          `/api/fornecedores?page=1&limit=1000`,
+                        ).catch(() => null),
                       ]);
                       const clientes: Cliente[] = (cliRes?.data || []) as any;
-                      const fornecedores: Fornecedor[] = (fornRes?.data || []) as any;
+                      const fornecedores: Fornecedor[] = (fornRes?.data ||
+                        []) as any;
                       const cMap = new Map<number, Cliente>();
                       clientes.forEach((c) => cMap.set(c.id, c));
                       const fMap = new Map<number, Fornecedor>();
@@ -663,12 +674,17 @@ export default function ComunicacoesModule() {
                         if (r.destinatarios_tipo === "TodosClientes") {
                           const list = clientes
                             .filter(
-                              (c) => c.estabelecimento_id === r.estabelecimento_id && c.ativo && c.email,
+                              (c) =>
+                                c.estabelecimento_id === r.estabelecimento_id &&
+                                c.ativo &&
+                                c.email,
                             )
                             .map((c) => `${c.nome} - ${c.email}`);
                           return list.join("; ");
                         }
-                        const ids = Array.isArray(r.clientes_ids) ? r.clientes_ids : [];
+                        const ids = Array.isArray(r.clientes_ids)
+                          ? r.clientes_ids
+                          : [];
                         const list = ids
                           .map((id) => cMap.get(id))
                           .filter((c): c is Cliente => !!c && !!c.email)
@@ -683,7 +699,9 @@ export default function ComunicacoesModule() {
                             .map((f) => `${f.nome} - ${f.email}`);
                           return list.join("; ");
                         }
-                        const ids = Array.isArray(r.fornecedores_ids) ? r.fornecedores_ids : [];
+                        const ids = Array.isArray(r.fornecedores_ids)
+                          ? r.fornecedores_ids
+                          : [];
                         const list = ids
                           .map((id) => fMap.get(id))
                           .filter((f): f is Fornecedor => !!f && !!f.email)
@@ -704,7 +722,10 @@ export default function ComunicacoesModule() {
                         destinatarios_text: r.destinatarios_text || "",
                         status: r.status,
                         data_hora_enviado: r.data_hora_enviado
-                          ? new Date(r.data_hora_enviado).toLocaleString("pt-BR", { hour12: false })
+                          ? new Date(r.data_hora_enviado).toLocaleString(
+                              "pt-BR",
+                              { hour12: false },
+                            )
                           : "",
                         data_cadastro: new Date(r.data_cadastro).toLocaleString(
                           "pt-BR",
@@ -906,25 +927,53 @@ export default function ComunicacoesModule() {
 
           const [cliRes, fornRes] = await Promise.all([
             makeRequest(`/api/clientes?page=1&limit=1000`).catch(() => null),
-            makeRequest(`/api/fornecedores?page=1&limit=1000`).catch(() => null),
+            makeRequest(`/api/fornecedores?page=1&limit=1000`).catch(
+              () => null,
+            ),
           ]);
           const clientes: Cliente[] = (cliRes?.data || []) as any;
           const fornecedores: Fornecedor[] = (fornRes?.data || []) as any;
 
           const parsePairs = (s?: string) => {
-            const items = String(s || "").split(/;+/).map((x) => x.trim()).filter(Boolean);
+            const items = String(s || "")
+              .split(/;+/)
+              .map((x) => x.trim())
+              .filter(Boolean);
             return items.map((it) => {
               const [nome, emailPart] = it.split(" - ").map((x) => x.trim());
-              return { nome: nome || "", email: (emailPart || "").toLowerCase() };
+              return {
+                nome: nome || "",
+                email: (emailPart || "").toLowerCase(),
+              };
             });
           };
 
           const normalizeDestType = (v?: string) => {
             const s = String(v || "").toLowerCase();
-            if (["todosclientes", "todos clientes", "todos os clientes"].includes(s)) return "TodosClientes";
-            if (["clientesespecificos", "clientes específicos", "clientes especificos"].includes(s)) return "ClientesEspecificos";
-            if (["todosfornecedores", "todos fornecedores"].includes(s)) return "TodosFornecedores";
-            if (["fornecedoresespecificos", "fornecedores específicos", "fornecedores especificos"].includes(s)) return "FornecedoresEspecificos";
+            if (
+              ["todosclientes", "todos clientes", "todos os clientes"].includes(
+                s,
+              )
+            )
+              return "TodosClientes";
+            if (
+              [
+                "clientesespecificos",
+                "clientes específicos",
+                "clientes especificos",
+              ].includes(s)
+            )
+              return "ClientesEspecificos";
+            if (["todosfornecedores", "todos fornecedores"].includes(s))
+              return "TodosFornecedores";
+            if (
+              [
+                "fornecedoresespecificos",
+                "fornecedores específicos",
+                "fornecedores especificos",
+              ].includes(s)
+            )
+              return "FornecedoresEspecificos";
             if (["outros", "outro"].includes(s)) return "Outros";
             return "Outros";
           };
@@ -953,7 +1002,9 @@ export default function ComunicacoesModule() {
               if (clientesPairs.length > 0) {
                 for (const p of clientesPairs) {
                   const found = clientes.find(
-                    (c) => c.email?.toLowerCase() === p.email || c.nome.toLowerCase() === p.nome.toLowerCase(),
+                    (c) =>
+                      c.email?.toLowerCase() === p.email ||
+                      c.nome.toLowerCase() === p.nome.toLowerCase(),
                   );
                   if (found) clientes_ids.push(found.id);
                 }
@@ -965,7 +1016,9 @@ export default function ComunicacoesModule() {
               if (fornecPairs.length > 0) {
                 for (const p of fornecPairs) {
                   const found = fornecedores.find(
-                    (f) => f.email?.toLowerCase() === p.email || f.nome.toLowerCase() === p.nome.toLowerCase(),
+                    (f) =>
+                      f.email?.toLowerCase() === p.email ||
+                      f.nome.toLowerCase() === p.nome.toLowerCase(),
                   );
                   if (found) fornecedores_ids.push(found.id);
                 }
