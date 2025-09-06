@@ -327,16 +327,16 @@ export function ExportModal({
       }}
     >
       <DialogContent
-        className="w-[90vw] sm:w-[640px] max-w-2xl max-h-[80vh] overflow-y-auto"
+        className="w-[90vw] sm:w-[640px] max-w-2xl max-h-[80vh] overflow-y-auto p-4"
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader className="space-y-0">
-          <DialogTitle className="text-xl sm:text-2xl font-normal py-1 mb-1">
+        <DialogHeader className="space-y-0 pb-0 mb-0">
+          <DialogTitle className="text-xl sm:text-2xl font-normal py-0 mb-0">
             Exportar {moduleName}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h4 className="font-medium text-blue-900 mb-2">
               Instruções para exportar CSV
