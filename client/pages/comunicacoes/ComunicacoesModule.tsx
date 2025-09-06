@@ -769,11 +769,11 @@ export default function ComunicacoesModule() {
                         if (r.destinatarios_tipo === "ClientesEspecificos") {
                           destinatarios = `Clientes específicos [${emails.join("; ")}]`;
                         } else if (r.destinatarios_tipo === "TodosClientes") {
-                          destinatarios = `Clientes [${emails.join("; ")}]`;
+                          destinatarios = "Todos os clientes";
                         } else if (r.destinatarios_tipo === "FornecedoresEspecificos") {
                           destinatarios = `Fornecedores específicos [${emails.join("; ")}]`;
                         } else if (r.destinatarios_tipo === "TodosFornecedores") {
-                          destinatarios = `Fornecedores [${emails.join("; ")}]`;
+                          destinatarios = "Todos os fornecedores";
                         } else {
                           destinatarios = emails.join("; ");
                         }
