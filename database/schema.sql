@@ -688,7 +688,7 @@ CREATE TABLE IF NOT EXISTS comunicacoes (
   destinatarios_text TEXT NULL,
   email_enviado BOOLEAN NOT NULL DEFAULT FALSE,
   status TEXT NOT NULL DEFAULT 'Pendente' CHECK (status IN ('Pendente','Enviado','Cancelado')),
-  data_envio TIMESTAMPTZ NULL,
+  data_hora_enviado TIMESTAMPTZ NULL,
   data_cadastro TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   data_atualizacao TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
