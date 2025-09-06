@@ -891,10 +891,7 @@ export default function ComunicacoesModule() {
           },
           { key: "assunto", label: "Assunto", required: true },
           { key: "mensagem", label: "Mensagem", required: true },
-          { key: "destinatarios_tipo", label: "Destinatários", required: true },
-          { key: "clientes", label: "Clientes (Nome - Email; ...)" },
-          { key: "fornecedores", label: "Fornecedores (Nome - Email; ...)" },
-          { key: "destinatarios_text", label: "Destinatários Texto" },
+          { key: "destinatarios", label: "Destinatários", required: true },
           { key: "status", label: "Status" },
           { key: "data_hora_enviado", label: "Data/Hora Enviado" },
         ]}
