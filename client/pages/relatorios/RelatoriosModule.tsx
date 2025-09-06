@@ -232,13 +232,33 @@ export default function RelatoriosModule() {
     const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
-    let pageIndex = 0;
 
-    // Header title on first page
+    // Cabeçalho
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(18);
-    pdf.setTextColor(0, 0, 0);
-    pdf.text("Gestão Gastronômica", pageWidth / 2, 32, { align: "center" });
+    pdf.setFontSize(20);
+    pdf.setTextColor(17, 24, 39); // gray-900
+    pdf.text("Gestão Gastronômica", pageWidth / 2, 40, { align: "center" });
+
+    const nomeEstabDisplay =
+      selectedEstabelecimento === "all"
+        ? "Todos Estabelecimentos"
+        : estabelecimentos.find((e) => e.id === Number(selectedEstabelecimento))?.nome || "Estabelecimento";
+    const periodoLabel = (periodoOptions.find((p) => p.value === period)?.label) || "Todos Períodos";
+
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(12);
+    pdf.setTextColor(75, 85, 99); // gray-600
+    pdf.text(`${nomeEstabDisplay} - ${periodoLabel}`, pageWidth / 2, 58, { align: "center" });
+
+    // Linha de destaque e duas quebras de linha (espaço extra)
+    pdf.setDrawColor(234, 88, 12); // orange-600
+    pdf.setLineWidth(1);
+    pdf.line(40, 68, pageWidth - 40, 68);
+    let currentY = 84; // espaço após título+subtítulo (duas quebras)
+
+    const marginX = 40;
+    const targetWidth = pageWidth - marginX * 2; // manter margens laterais
+    const maxHeight = 260; // tamanho médio
 
     for (let i = 0; i < elements.length; i++) {
       const el = elements[i];
@@ -248,28 +268,24 @@ export default function RelatoriosModule() {
         backgroundColor: "#ffffff",
       });
       const imgData = canvas.toDataURL("image/png");
-      const imgWidth = pageWidth - 40; // margins
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-      if (i > 0) {
+      // manter aspecto e limitar altura para "tamanho médio"
+      const naturalW = canvas.width;
+      const naturalH = canvas.height;
+      let imgHeight = Math.min((naturalH * targetWidth) / naturalW, maxHeight);
+
+      // quebra de página se necessário
+      if (currentY + imgHeight > pageHeight - 40) {
         pdf.addPage();
-        pageIndex++;
+        currentY = 40;
       }
-      const y =
-        i === 0
-          ? 60
-          : imgHeight > pageHeight - 80
-            ? 20
-            : (pageHeight - imgHeight) / 2;
-      pdf.addImage(imgData, "PNG", 20, y, imgWidth, imgHeight);
+
+      pdf.addImage(imgData, "PNG", marginX, currentY, targetWidth, imgHeight);
+      currentY += imgHeight + 24; // espaço entre gráficos
     }
 
-    const nomeEstab =
-      selectedEstabelecimento === "all"
-        ? "todos"
-        : estabelecimentos.find((e) => e.id === Number(selectedEstabelecimento))
-            ?.nome || "estabelecimento";
-    const file = `relatorio-${nomeEstab.replace(/\s+/g, "-").toLowerCase()}-${period}.pdf`;
+    const fileSlug = nomeEstabDisplay.replace(/\s+/g, "-").toLowerCase();
+    const file = `relatorio-${fileSlug}-${period}.pdf`;
     pdf.save(file);
   }, [estabelecimentos, period, selectedEstabelecimento]);
 
