@@ -288,32 +288,47 @@ export function useAuthenticatedRequest() {
       } as Record<string, string>;
 
       // Add a timeout so hung requests don't blow up the UI
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
-
-      let response: Response;
-      try {
-        response = await fetch(url, {
-          ...options,
-          headers,
-          signal: controller.signal,
-        });
-      } catch (err: any) {
-        clearTimeout(timeout);
-        // Graceful offline/connection fallback for GET requests
-        if (method === "GET") {
-          return null as any;
+      const attemptFetch = async (): Promise<Response> => {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 25000);
+        try {
+          return await fetch(url, {
+            ...options,
+            headers,
+            signal: controller.signal,
+          });
+        } finally {
+          clearTimeout(timeout);
         }
-        const networkMsg =
-          navigator && navigator.onLine === false
-            ? "Sem conexão com a internet. Verifique sua rede."
-            : "Falha de rede ao comunicar com o servidor.";
-        const e = new Error(networkMsg);
-        (e as any).cause = err;
-        throw e;
-      } finally {
-        clearTimeout(timeout);
+      };
+
+      // Retry small number of times for GET/network issues
+      let response: Response | null = null;
+      const maxAttempts = method === "GET" ? 2 : 1;
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          response = await attemptFetch();
+          break;
+        } catch (err: any) {
+          if (attempt >= maxAttempts) {
+            // Graceful offline/connection fallback for GET requests
+            if (method === "GET") {
+              return null as any;
+            }
+            const networkMsg =
+              navigator && navigator.onLine === false
+                ? "Sem conexão com a internet. Verifique sua rede."
+                : "Falha de rede ao comunicar com o servidor.";
+            const e = new Error(networkMsg);
+            (e as any).cause = err;
+            throw e;
+          }
+          // small backoff
+          await new Promise((r) => setTimeout(r, 300));
+        }
       }
+
+      if (!response!) throw new Error("Falha de rede");
 
       if (!response.ok) {
         // Try to decode JSON error; if it fails, fall back to text/status
