@@ -827,14 +827,15 @@ export default function ComunicacoesModule() {
         data={exportData}
         selectedIds={selectedIds}
         moduleName="Comunicações"
+        defaultExportType="all"
         columns={[
           { key: "estabelecimento", label: "Estabelecimento" },
           { key: "tipo_comunicacao", label: "Tipo de Comunicação" },
           { key: "assunto", label: "Assunto" },
           { key: "mensagem", label: "Mensagem" },
           { key: "destinatarios_tipo", label: "Destinatários" },
-          { key: "clientes_ids", label: "Clientes IDs" },
-          { key: "fornecedores_ids", label: "Fornecedores IDs" },
+          { key: "clientes", label: "Clientes" },
+          { key: "fornecedores", label: "Fornecedores" },
           { key: "destinatarios_text", label: "Destinatários Texto" },
           { key: "status", label: "Status" },
           { key: "data_envio", label: "Data de Envio" },
