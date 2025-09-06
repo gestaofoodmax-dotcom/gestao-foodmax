@@ -994,6 +994,7 @@ export default function ComunicacoesModule() {
               .filter(Boolean);
           const parseDestinatarios = (s?: string) => {
             const raw = String(s || "").trim();
+            // Bracketed group formats
             const m = raw.match(/^\s*(clientes|fornecedores)(?:\s+espec[íi]ficos)?\s*\[(.*)\]\s*$/i);
             if (m) {
               const grupo = m[1].toLowerCase();
@@ -1007,6 +1008,13 @@ export default function ComunicacoesModule() {
                 return { tipo: "FornecedoresEspecificos" as const, emails };
               return { tipo: "TodosFornecedores" as const, emails };
             }
+            // Phrases for ALL
+            const sLower = raw.toLowerCase();
+            if (["todos os clientes", "todos clientes"].includes(sLower))
+              return { tipo: "TodosClientes" as const, emails: [] };
+            if (["todos os fornecedores", "todos fornecedores"].includes(sLower))
+              return { tipo: "TodosFornecedores" as const, emails: [] };
+            // Fallback to loose emails list
             const emails = parseEmails(raw).map((e) => e.toLowerCase());
             return { tipo: "Outros" as const, emails };
           };
