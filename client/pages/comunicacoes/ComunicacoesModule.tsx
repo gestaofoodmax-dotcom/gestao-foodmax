@@ -205,10 +205,10 @@ export default function ComunicacoesModule() {
         },
       },
       {
-        key: "data_envio",
-        label: "Data de Envio",
+        key: "data_hora_enviado",
+        label: "Data/Hora Enviado",
         sortable: true,
-        render: (v: string) => (v ? new Date(v).toLocaleString("pt-BR") : "-"),
+        render: (v: string) => (v ? new Date(v).toLocaleString("pt-BR", { hour12: false }) : "-"),
       },
       {
         key: "status",
@@ -703,8 +703,8 @@ export default function ComunicacoesModule() {
                         fornecedores: fmtFornecedores(r),
                         destinatarios_text: r.destinatarios_text || "",
                         status: r.status,
-                        data_envio: r.data_envio
-                          ? new Date(r.data_envio).toLocaleString("pt-BR", { hour12: false })
+                        data_hora_enviado: r.data_hora_enviado
+                          ? new Date(r.data_hora_enviado).toLocaleString("pt-BR", { hour12: false })
                           : "",
                         data_cadastro: new Date(r.data_cadastro).toLocaleString(
                           "pt-BR",
@@ -838,7 +838,7 @@ export default function ComunicacoesModule() {
           { key: "fornecedores", label: "Fornecedores" },
           { key: "destinatarios_text", label: "Destinatários Texto" },
           { key: "status", label: "Status" },
-          { key: "data_envio", label: "Data de Envio" },
+          { key: "data_hora_enviado", label: "Data/Hora Enviado" },
           { key: "data_cadastro", label: "Data Cadastro" },
         ]}
       />
