@@ -709,29 +709,82 @@ export default function ComunicacoesModule() {
                         return list.join("; ");
                       };
 
-                      const data = allRows.map((r) => ({
-                        estabelecimento:
-                          estabelecimentosMap.get(r.estabelecimento_id) ||
-                          r.estabelecimento_id,
-                        tipo_comunicacao: r.tipo_comunicacao,
-                        assunto: r.assunto,
-                        mensagem: r.mensagem,
-                        destinatarios_tipo: r.destinatarios_tipo,
-                        clientes: fmtClientes(r),
-                        fornecedores: fmtFornecedores(r),
-                        destinatarios_text: r.destinatarios_text || "",
-                        status: r.status,
-                        data_hora_enviado: r.data_hora_enviado
-                          ? new Date(r.data_hora_enviado).toLocaleString(
-                              "pt-BR",
-                              { hour12: false },
+                      const pad = (n: number) => String(n).padStart(2, "0");
+                      const fmtDateTime = (d?: string) => {
+                        if (!d) return "";
+                        const x = new Date(d);
+                        if (Number.isNaN(x.getTime())) return "";
+                        return `${pad(x.getDate())}/${pad(x.getMonth() + 1)}/${x.getFullYear()} ${pad(x.getHours())}:${pad(x.getMinutes())}:${pad(x.getSeconds())}`;
+                      };
+
+                      const getEmails = (r: Comunicacao) => {
+                        if (r.destinatarios_tipo === "TodosClientes") {
+                          return clientes
+                            .filter(
+                              (c) =>
+                                c.estabelecimento_id === r.estabelecimento_id &&
+                                c.ativo &&
+                                c.email,
                             )
-                          : "",
-                        data_cadastro: new Date(r.data_cadastro).toLocaleString(
-                          "pt-BR",
-                          { hour12: false },
-                        ),
-                      }));
+                            .map((c) => String(c.email).trim());
+                        }
+                        if (r.destinatarios_tipo === "ClientesEspecificos") {
+                          const ids = Array.isArray(r.clientes_ids)
+                            ? r.clientes_ids
+                            : [];
+                          return ids
+                            .map((id) => cMap.get(id)?.email)
+                            .filter((e): e is string => !!e)
+                            .map((e) => e.trim());
+                        }
+                        if (r.destinatarios_tipo === "TodosFornecedores") {
+                          return fornecedores
+                            .filter((f) => f.ativo && f.email)
+                            .map((f) => String(f.email).trim());
+                        }
+                        if (r.destinatarios_tipo === "FornecedoresEspecificos") {
+                          const ids = Array.isArray(r.fornecedores_ids)
+                            ? r.fornecedores_ids
+                            : [];
+                          return ids
+                            .map((id) => fMap.get(id)?.email)
+                            .filter((e): e is string => !!e)
+                            .map((e) => e.trim());
+                        }
+                        const txt = String(r.destinatarios_text || "");
+                        return txt
+                          .split(/[;,.\s]+/g)
+                          .map((s) => s.trim())
+                          .filter(Boolean);
+                      };
+
+                      const data = allRows.map((r) => {
+                        const emails = getEmails(r);
+                        let destinatarios = "";
+                        if (r.destinatarios_tipo === "ClientesEspecificos") {
+                          destinatarios = `Clientes específicos [${emails.join("; ")}]`;
+                        } else if (r.destinatarios_tipo === "TodosClientes") {
+                          destinatarios = `Clientes [${emails.join("; ")}]`;
+                        } else if (r.destinatarios_tipo === "FornecedoresEspecificos") {
+                          destinatarios = `Fornecedores específicos [${emails.join("; ")}]`;
+                        } else if (r.destinatarios_tipo === "TodosFornecedores") {
+                          destinatarios = `Fornecedores [${emails.join("; ")}]`;
+                        } else {
+                          destinatarios = emails.join("; ");
+                        }
+                        return {
+                          estabelecimento:
+                            estabelecimentosMap.get(r.estabelecimento_id) ||
+                            r.estabelecimento_id,
+                          tipo_comunicacao: r.tipo_comunicacao,
+                          assunto: r.assunto,
+                          mensagem: r.mensagem,
+                          destinatarios,
+                          status: r.status,
+                          data_hora_enviado: fmtDateTime(r.data_hora_enviado || undefined),
+                          data_cadastro: fmtDateTime(r.data_cadastro),
+                        };
+                      });
                       setExportData(data);
                       setShowExport(true);
                     }}
@@ -1001,52 +1054,41 @@ export default function ComunicacoesModule() {
               }
               if (!estabelecimento_id) continue;
 
-              // destinatários tipo
-              const destTipo = normalizeDestType(r.destinatarios_tipo);
+              // destinatários (novo formato)
+          const parsed = parseDestinatarios(r.destinatarios);
+          const destTipo = parsed.tipo;
 
-              // map clientes
-              const clientesPairs = parsePairs(r.clientes);
-              const clientes_ids: number[] = [];
-              if (clientesPairs.length > 0) {
-                for (const p of clientesPairs) {
-                  const found = clientes.find(
-                    (c) =>
-                      c.email?.toLowerCase() === p.email ||
-                      c.nome.toLowerCase() === p.nome.toLowerCase(),
-                  );
-                  if (found) clientes_ids.push(found.id);
-                }
-              }
+          const clientes_ids: number[] = [];
+          const fornecedores_ids: number[] = [];
 
-              // map fornecedores
-              const fornecPairs = parsePairs(r.fornecedores);
-              const fornecedores_ids: number[] = [];
-              if (fornecPairs.length > 0) {
-                for (const p of fornecPairs) {
-                  const found = fornecedores.find(
-                    (f) =>
-                      f.email?.toLowerCase() === p.email ||
-                      f.nome.toLowerCase() === p.nome.toLowerCase(),
-                  );
-                  if (found) fornecedores_ids.push(found.id);
-                }
-              }
+          if (destTipo === "ClientesEspecificos") {
+            for (const email of parsed.emails) {
+              const found = clientes.find((c) => c.email?.toLowerCase() === email);
+              if (found) clientes_ids.push(found.id);
+            }
+          } else if (destTipo === "FornecedoresEspecificos") {
+            for (const email of parsed.emails) {
+              const found = fornecedores.find((f) => f.email?.toLowerCase() === email);
+              if (found) fornecedores_ids.push(found.id);
+            }
+          }
 
-              await makeRequest(`/api/comunicacoes`, {
-                method: "POST",
-                body: JSON.stringify({
-                  estabelecimento_id,
-                  tipo_comunicacao: r.tipo_comunicacao,
-                  assunto: r.assunto,
-                  mensagem: r.mensagem,
-                  destinatarios_tipo: destTipo,
-                  clientes_ids,
-                  fornecedores_ids,
-                  destinatarios_text: r.destinatarios_text || "",
-                  status: r.status || "Pendente",
-                  data_hora_enviado: r.data_hora_enviado || undefined,
-                }),
-              });
+          await makeRequest(`/api/comunicacoes`, {
+            method: "POST",
+            body: JSON.stringify({
+              estabelecimento_id,
+              tipo_comunicacao: r.tipo_comunicacao,
+              assunto: r.assunto,
+              mensagem: r.mensagem,
+              destinatarios_tipo: destTipo,
+              clientes_ids,
+              fornecedores_ids,
+              destinatarios_text:
+                destTipo === "Outros" ? parsed.emails.join("; ") : "",
+              status: r.status || "Pendente",
+              data_hora_enviado: r.data_hora_enviado || undefined,
+            }),
+          });
               imported += 1;
             } catch {}
           }
