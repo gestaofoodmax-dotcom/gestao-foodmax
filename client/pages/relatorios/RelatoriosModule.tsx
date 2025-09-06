@@ -473,8 +473,8 @@ export default function RelatoriosModule() {
                 ref={finCardRef}
                 className="foodmax-card border border-gray-200 p-4"
               >
-                <div className="flex items-center gap-2 mb-4">
-                  <BarChart3 className="w-5 h-5 text-blue-700 mt-2" />
+                <div className="flex items-center gap-2 mb-4 pb-3">
+                  <BarChart3 className="w-5 h-5 text-blue-700 mt-0.5" />
                   <h3 className="text-lg font-semibold text-blue-700">
                     Relatório de Transações
                   </h3>
