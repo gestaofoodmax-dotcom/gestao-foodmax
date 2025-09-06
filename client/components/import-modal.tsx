@@ -26,6 +26,7 @@ interface ImportModalProps {
   hasPayment?: boolean;
   mapHeader?: (header: string) => string;
   validateRecord?: (record: any, index: number) => string[];
+  extraNotes?: string[];
 }
 
 export function ImportModal({
@@ -40,6 +41,7 @@ export function ImportModal({
   hasPayment,
   mapHeader,
   validateRecord,
+  extraNotes,
 }: ImportModalProps) {
   const [isImporting, setIsImporting] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -456,9 +458,22 @@ export function ImportModal({
               <p>• Limite: 1000 registros por arquivo</p>
               <p>• Registros duplicados serão ignorados</p>
               <p>
-                • Formato de data: dd/mm/yyyy (as datas são interpretadas no
-                fuso horário de Brasília/DF - UTC-03, preservando o dia)
+                • Formato de data: dd/mm/yyyy (ou dd/mm/yyyy hh:mm:ss para
+                campos com hora). As datas são interpretadas no fuso horário de
+                Brasília/DF (UTC-03), preservando o dia e o horário informado.
               </p>
+              {Array.isArray(extraNotes) && extraNotes.length > 0 && (
+                <div className="mt-2">
+                  <h5 className="font-medium text-blue-900">
+                    Observações específicas:
+                  </h5>
+                  <ul className="list-disc list-inside text-blue-700">
+                    {extraNotes.map((note, idx) => (
+                      <li key={idx}>{note}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
 

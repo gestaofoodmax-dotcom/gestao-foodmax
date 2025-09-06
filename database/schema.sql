@@ -428,6 +428,7 @@ CREATE TABLE IF NOT EXISTS abastecimentos_itens (
     abastecimento_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,
     quantidade INTEGER NOT NULL DEFAULT 1 CHECK (quantidade > 0),
+    unidade_medida TEXT NOT NULL DEFAULT 'Unidade',
     data_cadastro TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     data_atualizacao TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
@@ -547,6 +548,7 @@ COMMENT ON TABLE abastecimentos_itens IS 'Items included in each supply order (s
 COMMENT ON COLUMN abastecimentos_itens.abastecimento_id IS 'Reference to the supply order';
 COMMENT ON COLUMN abastecimentos_itens.item_id IS 'Reference to the item being ordered';
 COMMENT ON COLUMN abastecimentos_itens.quantidade IS 'Quantity of this item in the order';
+COMMENT ON COLUMN abastecimentos_itens.unidade_medida IS 'Unit of measure for the item (e.g., Unidade, Pacote, Litro)';
 
 COMMENT ON TABLE abastecimentos_enderecos IS 'Delivery address for each supply order';
 COMMENT ON COLUMN abastecimentos_enderecos.abastecimento_id IS 'Reference to the supply order';
@@ -564,7 +566,7 @@ CREATE TABLE IF NOT EXISTS entregas (
   id SERIAL PRIMARY KEY,
   id_usuario INTEGER NOT NULL,
   estabelecimento_id INTEGER NOT NULL,
-  tipo_entrega TEXT NOT NULL CHECK (tipo_entrega IN ('Própria','iFood','Rappi','UberEats','Outro')) DEFAULT 'Própria',
+  tipo_entrega TEXT NOT NULL CHECK (tipo_entrega IN ('Pr��pria','iFood','Rappi','UberEats','Outro')) DEFAULT 'Própria',
   pedido_id INTEGER NULL,
   codigo_pedido_app TEXT NULL,
   valor_pedido INTEGER NOT NULL DEFAULT 0, -- centavos

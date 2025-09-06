@@ -830,7 +830,7 @@ export default function PedidoForm({
                                 if (next > estoque && estoque >= 0) {
                                   setStockAlert({
                                     open: true,
-                                    message: `Quantidade informada (${next}) é maior que o estoque atual (${estoque}). Para usar quantidade maior, ajuste o estoque no módulo Itens.`,
+                                    message: `Quantidade informada (${next}) �� maior que o estoque atual (${estoque}). Para usar quantidade maior, ajuste o estoque no módulo Itens.`,
                                   });
                                 }
                                 return prev.map((p) =>
@@ -892,6 +892,19 @@ export default function PedidoForm({
                     </div>
                   );
                 })}
+                <hr className="border-t border-gray-200 my-2" />
+                <div className="flex items-center justify-between text-sm text-gray-700">
+                  <span>
+                    Total de Itens:{" "}
+                    {selectedExtras.reduce(
+                      (sum, ex) => sum + (Number(ex.quantidade) || 0),
+                      0,
+                    )}
+                  </span>
+                  <span>
+                    Valor Total dos Itens: {formatCurrencyBRL(valorExtras)}
+                  </span>
+                </div>
               </div>
             )}
           </div>
