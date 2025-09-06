@@ -1290,12 +1290,6 @@ export default function PedidosModule() {
         moduleName="Pedidos"
         userRole={getUserRole()}
         hasPayment={hasPayment()}
-        extraNotes={[
-          "Data/Hora Finalizado: dd/mm/yyyy hh:mm:ss (horário de Brasília/DF - UTC-03)",
-          "Cardápios: Nome do Cardápio - R$ Preço Total; Nome do Cardápio - R$ Preço Total",
-          "Itens Extras: Nome do Item - Categoria - Quantidade - R$ Valor Unitário; ...",
-          "Cada registro deve estar em uma única linha no arquivo CSV",
-        ]}
         columns={[
           {
             key: "estabelecimento_nome",
