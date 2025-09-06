@@ -327,7 +327,7 @@ export function ExportModal({
       }}
     >
       <DialogContent
-        className="w-[90vw] sm:w-[640px] max-w-2xl max-h-[80vh] overflow-y-auto overflow-x-hidden"
+        className="w-[90vw] sm:w-[640px] max-w-2xl overflow-x-hidden"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
