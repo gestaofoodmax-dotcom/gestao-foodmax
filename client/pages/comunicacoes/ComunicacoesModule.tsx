@@ -1150,7 +1150,7 @@ export default function ComunicacoesModule() {
                   destinatarios_text:
                     destTipo === "Outros" ? parsed.emails.join("; ") : "",
                   status: r.status || "Pendente",
-                  data_hora_enviado: r.data_hora_enviado || undefined,
+                  data_hora_enviado: toIsoBr(r.data_hora_enviado),
                 }),
               });
               imported += 1;
