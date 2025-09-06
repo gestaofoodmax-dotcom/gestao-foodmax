@@ -94,7 +94,15 @@ const ToastTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Title
     ref={ref}
-    className={cn("text-sm font-semibold text-black", className)}
+    className={cn(
+      "text-sm font-semibold text-black",
+      // color title per variant using group class present on Toast root
+      "group-[.success]:text-emerald-600",
+      "group-[.warning]:text-amber-600",
+      "group-[.error]:text-red-600",
+      "group-[.destructive]:text-red-600",
+      className,
+    )}
     {...props}
   />
 ));
