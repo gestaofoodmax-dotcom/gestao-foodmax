@@ -486,7 +486,11 @@ function SuportesModule() {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                   });
-                                  return `${it.nome_usuario} - ${dt}`;
+                                  const texto = String(
+                                    it.resposta ?? "",
+                                  ).replace(/\r?\n+/g, " ");
+                                  const usuario = String(it.nome_usuario ?? "");
+                                  return `${texto} - ${usuario} - ${dt}`;
                                 })
                                 .join("; ");
                               const respostasStr = respostasStrRaw.replace(
@@ -523,7 +527,13 @@ function SuportesModule() {
                                       hour: "2-digit",
                                       minute: "2-digit",
                                     });
-                                    return `${it.nome_usuario} - ${dt}`;
+                                    const texto = String(
+                                      it.resposta ?? "",
+                                    ).replace(/\r?\n+/g, " ");
+                                    const usuario = String(
+                                      it.nome_usuario ?? "",
+                                    );
+                                    return `${texto} - ${usuario} - ${dt}`;
                                   })
                                   .join("; ");
                                 const respostasStr = respostasStrRaw.replace(
@@ -607,6 +617,7 @@ function SuportesModule() {
         selectedIds={selectedIds}
         moduleName="Suportes"
         columns={SUPORTE_EXPORT_COLUMNS}
+        defaultExportType="all"
       />
 
       <DeleteAlert

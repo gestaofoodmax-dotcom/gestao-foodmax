@@ -157,12 +157,38 @@ function toast({ ...props }: Toast) {
     });
   const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
 
+  // Infer visual variant when not explicitly provided
+  const computeVariant = (p: any) => {
+    if (p.variant) return p.variant;
+    const title = String(p.title || "").toLowerCase();
+    const desc = String(p.description || "").toLowerCase();
+    const combined = `${title} ${desc}`;
+    if (/erro|falha|erro ao|erro na|erro no|erro:/i.test(combined))
+      return "error" as any;
+    if (
+      /aviso|atenção|limite|atenção:|atenção ao|não encontrado|não foi possível|não foi|não pode/i.test(
+        combined,
+      )
+    )
+      return "warning" as any;
+    if (
+      /sucesso|concluído|concluída|salvo|criado|enviado|atualizado|salvo|excluído|excluída/i.test(
+        combined,
+      )
+    )
+      return "success" as any;
+    return "success" as any; // sensible default
+  };
+
+  const variant = computeVariant(props as any);
+
   dispatch({
     type: "ADD_TOAST",
     toast: {
       ...props,
       id,
       open: true,
+      variant,
       // Auto-close after 3s by default
       duration: (props as any).duration ?? 3000,
       onOpenChange: (open) => {
