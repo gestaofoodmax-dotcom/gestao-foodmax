@@ -428,6 +428,7 @@ CREATE TABLE IF NOT EXISTS abastecimentos_itens (
     abastecimento_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,
     quantidade INTEGER NOT NULL DEFAULT 1 CHECK (quantidade > 0),
+    unidade_medida TEXT NOT NULL DEFAULT 'Unidade',
     data_cadastro TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     data_atualizacao TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
 
