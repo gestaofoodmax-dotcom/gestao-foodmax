@@ -907,7 +907,7 @@ export default function ComunicacoesModule() {
           { key: "tipo_comunicacao", label: "Tipo de Comunicação" },
           { key: "assunto", label: "Assunto" },
           { key: "mensagem", label: "Mensagem" },
-          { key: "destinatarios_tipo", label: "Destinatários" },
+          { key: "destinatarios", label: "Destinatários" },
           { key: "clientes", label: "Clientes" },
           { key: "fornecedores", label: "Fornecedores" },
           { key: "destinatarios_text", label: "Destinatários Texto" },
