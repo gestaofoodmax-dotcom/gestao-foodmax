@@ -60,6 +60,7 @@ import { Cliente } from "@shared/clientes";
 import { Fornecedor } from "@shared/fornecedores";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
+import { clearAllAppCaches } from "@/lib/cache";
 
 export default function ComunicacoesModule() {
   const isMobile = useIsMobile();
