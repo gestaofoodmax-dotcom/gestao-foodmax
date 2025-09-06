@@ -611,6 +611,7 @@ function SuportesModule() {
         selectedIds={selectedIds}
         moduleName="Suportes"
         columns={SUPORTE_EXPORT_COLUMNS}
+        defaultExportType="all"
       />
 
       <DeleteAlert
