@@ -483,7 +483,7 @@ export default function ComunicacoesModule() {
     if (!hasPayment()) {
       toast({
         title: "Plano necessário",
-        description: "Essa ação s�� funciona no plano pago.",
+        description: "Essa ação só funciona no plano pago.",
         variant: "destructive",
       });
       return;
