@@ -251,13 +251,13 @@ export default function RelatoriosModule() {
     pdf.setFontSize(12);
     pdf.setTextColor(75, 85, 99); // gray-600
     const subtitleY = 64;
-    pdf.text(`${nomeEstabDisplay} - ${periodoLabel}`, marginX, subtitleY); // left aligned
+    pdf.text(`${nomeEstabDisplay} - ${periodoLabel}`, pageWidth / 2, subtitleY, { align: "center" }); // subtitle centered
 
     // duas quebras de linha após subtítulo
     let currentY = subtitleY + 28 * 2;
 
     const maxHeight = 260; // tamanho médio
-    const imgMaxWidth = Math.min(pageWidth - marginX * 2, pageWidth * 0.75); // reduzir largura para manter proporção
+    const imgMaxWidth = Math.min(pageWidth - marginX * 2, pageWidth * 0.65); // reduzir largura para manter proporção, mais compacta
 
     for (let i = 0; i < elements.length; i++) {
       const el = elements[i];
@@ -391,7 +391,7 @@ export default function RelatoriosModule() {
                 className="foodmax-card border border-gray-200 p-4"
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <BarChart3 className="w-5 h-5 text-blue-700" />
+                  <BarChart3 className="w-5 h-5 text-blue-700 mt-1" />
                   <h3 className="text-lg font-semibold text-blue-700">
                     Relatório de Transações
                   </h3>
@@ -423,7 +423,7 @@ export default function RelatoriosModule() {
                 className="foodmax-card border border-gray-200 p-4"
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <PieIcon className="w-5 h-5 text-orange-700" />
+                  <PieIcon className="w-5 h-5 text-orange-700 mt-1" />
                   <h3 className="text-lg font-semibold text-orange-700">
                     Relatório de Pedidos
                   </h3>
