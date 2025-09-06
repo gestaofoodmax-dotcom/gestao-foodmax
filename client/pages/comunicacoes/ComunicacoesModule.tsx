@@ -927,10 +927,10 @@ export default function ComunicacoesModule() {
         hasPayment={hasPayment()}
         extraNotes={[
           "Destinatários deve ser um destes formatos:",
+          "Todos os clientes",
           "Clientes específicos [email1@dominio.com; email2@dominio.com]",
-          "Clientes [email1@dominio.com; email2@dominio.com]",
+          "Todos os fornecedores",
           "Fornecedores específicos [email1@dominio.com; email2@dominio.com]",
-          "Fornecedores [email1@dominio.com; email2@dominio.com]",
           "Ou apenas: email1@dominio.com; email2@dominio.com",
         ]}
         columns={[
