@@ -522,7 +522,7 @@ export default function PedidoForm({
                         ? clientes.find(
                             (c) => c.id === watchedValues.cliente_id,
                           )?.nome
-                        : "Não Cliente"}
+                        : "N��o Cliente"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                   </PopoverTrigger>
@@ -892,6 +892,11 @@ export default function PedidoForm({
                     </div>
                   );
                 })}
+                <hr className="border-t border-gray-200 my-2" />
+                <div className="flex items-center justify-between text-sm text-gray-700">
+                  <span>Total de Itens: {selectedExtras.length}</span>
+                  <span>Valor Total dos Itens: {formatCurrencyBRL(valorExtras)}</span>
+                </div>
               </div>
             )}
           </div>
