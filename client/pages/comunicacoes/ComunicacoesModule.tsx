@@ -958,6 +958,7 @@ export default function ComunicacoesModule() {
           "Todos os fornecedores",
           "Fornecedores específicos [email1@dominio.com; email2@dominio.com]",
           "Ou apenas: email1@dominio.com; email2@dominio.com",
+          "Data/Hora Enviado: use dd/mm/yyyy hh:mm:ss (sem vírgula e sem aspas)",
         ]}
         columns={[
           {
