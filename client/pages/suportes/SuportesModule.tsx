@@ -486,7 +486,9 @@ function SuportesModule() {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                   });
-                                  const texto = String(it.resposta ?? "").replace(/\r?\n+/g, " ");
+                                  const texto = String(
+                                    it.resposta ?? "",
+                                  ).replace(/\r?\n+/g, " ");
                                   const usuario = String(it.nome_usuario ?? "");
                                   return `${texto} - ${usuario} - ${dt}`;
                                 })
@@ -515,26 +517,30 @@ function SuportesModule() {
                                 );
                                 const respostas: any[] = r?.data || [];
                                 const respostasStrRaw = respostas
-                                .map((it) => {
-                                  const dt = new Date(
-                                    it.data_cadastro,
-                                  ).toLocaleString("pt-BR", {
-                                    year: "numeric",
-                                    month: "2-digit",
-                                    day: "2-digit",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  });
-                                  const texto = String(it.resposta ?? "").replace(/\r?\n+/g, " ");
-                                  const usuario = String(it.nome_usuario ?? "");
-                                  return `${texto} - ${usuario} - ${dt}`;
-                                })
-                                .join("; ");
-                              const respostasStr = respostasStrRaw.replace(
-                                /[",]/g,
-                                "",
-                              );
-                              return { ...s, respostas: respostasStr };
+                                  .map((it) => {
+                                    const dt = new Date(
+                                      it.data_cadastro,
+                                    ).toLocaleString("pt-BR", {
+                                      year: "numeric",
+                                      month: "2-digit",
+                                      day: "2-digit",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    });
+                                    const texto = String(
+                                      it.resposta ?? "",
+                                    ).replace(/\r?\n+/g, " ");
+                                    const usuario = String(
+                                      it.nome_usuario ?? "",
+                                    );
+                                    return `${texto} - ${usuario} - ${dt}`;
+                                  })
+                                  .join("; ");
+                                const respostasStr = respostasStrRaw.replace(
+                                  /[",]/g,
+                                  "",
+                                );
+                                return { ...s, respostas: respostasStr };
                               } catch {
                                 return { ...s, respostas: "" };
                               }

@@ -163,9 +163,20 @@ function toast({ ...props }: Toast) {
     const title = String(p.title || "").toLowerCase();
     const desc = String(p.description || "").toLowerCase();
     const combined = `${title} ${desc}`;
-    if (/erro|falha|erro ao|erro na|erro no|erro:/i.test(combined)) return "error" as any;
-    if (/aviso|atenção|limite|atenção:|atenção ao|não encontrado|não foi possível|não foi|não pode/i.test(combined)) return "warning" as any;
-    if (/sucesso|concluído|concluída|salvo|criado|enviado|atualizado|salvo|excluído|excluída/i.test(combined)) return "success" as any;
+    if (/erro|falha|erro ao|erro na|erro no|erro:/i.test(combined))
+      return "error" as any;
+    if (
+      /aviso|atenção|limite|atenção:|atenção ao|não encontrado|não foi possível|não foi|não pode/i.test(
+        combined,
+      )
+    )
+      return "warning" as any;
+    if (
+      /sucesso|concluído|concluída|salvo|criado|enviado|atualizado|salvo|excluído|excluída/i.test(
+        combined,
+      )
+    )
+      return "success" as any;
     return "success" as any; // sensible default
   };
 
