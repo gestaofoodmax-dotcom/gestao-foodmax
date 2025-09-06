@@ -71,13 +71,17 @@ export function ImportModal({
     const text = (csvText || "").replace(/\r\n?/g, "\n");
     const lines: string[] = [];
 
-    // Detect delimiter: prefer comma, fallback to semicolon
-    const firstLine = text.split("\n")[0] || "";
-    const commaCount = (firstLine.match(/,/g) || []).length;
-    const semiCount = (firstLine.match(/;/g) || []).length;
+    // Detect delimiter: inspect first several lines to decide between comma and semicolon
+    const linesForDetect = text.split("\n").slice(0, 5);
+    let commaCount = 0;
+    let semiCount = 0;
+    for (const ln of linesForDetect) {
+      commaCount += (ln.match(/,/g) || []).length;
+      semiCount += (ln.match(/;/g) || []).length;
+    }
     const delimiter = semiCount > commaCount ? ";" : ",";
 
-    // CSV parser supporting quotes and delimiters inside quotes
+    // CSV parser supporting quotes and delimiters inside quotes (split by lines first)
     let cur = "";
     let inQuotes = false;
     for (let i = 0; i < text.length; i++) {

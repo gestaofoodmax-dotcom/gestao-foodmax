@@ -60,6 +60,7 @@ import { Cliente } from "@shared/clientes";
 import { Fornecedor } from "@shared/fornecedores";
 import { ExportModal } from "@/components/export-modal";
 import { ImportModal } from "@/components/import-modal";
+import { clearAllAppCaches } from "@/lib/cache";
 
 export default function ComunicacoesModule() {
   const isMobile = useIsMobile();
@@ -335,7 +336,7 @@ export default function ComunicacoesModule() {
         });
         toast({
           title: "Criado",
-          description: "Comunicaç��o criada com sucesso",
+          description: "Comunicação criada com sucesso",
         });
       }
       await loadRows();
@@ -482,7 +483,7 @@ export default function ComunicacoesModule() {
     if (!hasPayment()) {
       toast({
         title: "Plano necessário",
-        description: "Essa ação s�� funciona no plano pago.",
+        description: "Essa ação só funciona no plano pago.",
         variant: "destructive",
       });
       return;
@@ -652,27 +653,56 @@ export default function ComunicacoesModule() {
                     onClick={async () => {
                       // Load ALL comunicacoes, clientes and fornecedores to format export
                       const loadAll = async () => {
-                        const params = new URLSearchParams({
-                          page: "1",
-                          limit: "1000",
-                        });
-                        const res: any = await makeRequest(
-                          `/api/comunicacoes?${params}`,
-                        );
-                        return (res?.data || []) as Comunicacao[];
+                        const all: Comunicacao[] = [];
+                        let page = 1;
+                        const limit = 1000;
+                        for (let i = 0; i < 50; i++) {
+                          const params = new URLSearchParams({
+                            page: String(page),
+                            limit: String(limit),
+                          });
+                          const res: any = await makeRequest(
+                            `/api/comunicacoes?${params}`,
+                          ).catch(() => null);
+                          const chunk: Comunicacao[] = (res?.data ||
+                            []) as Comunicacao[];
+                          if (chunk.length === 0) break;
+                          all.push(...chunk);
+                          if (chunk.length < limit) break;
+                          page += 1;
+                        }
+                        return all;
                       };
-                      const [allRows, cliRes, fornRes] = await Promise.all([
-                        loadAll(),
-                        makeRequest(`/api/clientes?page=1&limit=1000`).catch(
-                          () => null,
-                        ),
-                        makeRequest(
-                          `/api/fornecedores?page=1&limit=1000`,
-                        ).catch(() => null),
-                      ]);
-                      const clientes: Cliente[] = (cliRes?.data || []) as any;
-                      const fornecedores: Fornecedor[] = (fornRes?.data ||
-                        []) as any;
+                      // Busca completa também para clientes e fornecedores
+                      const fetchAllSimple = async <T,>(
+                        urlBase: string,
+                      ): Promise<T[]> => {
+                        let page = 1;
+                        const limit = 1000;
+                        const res: T[] = [];
+                        for (let i = 0; i < 50; i++) {
+                          const params = new URLSearchParams({
+                            page: String(page),
+                            limit: String(limit),
+                          });
+                          const r: any = await makeRequest(
+                            `${urlBase}?${params}`,
+                          ).catch(() => null);
+                          const chunk: T[] = (r?.data || []) as T[];
+                          if (chunk.length === 0) break;
+                          res.push(...chunk);
+                          if (chunk.length < limit) break;
+                          page += 1;
+                        }
+                        return res;
+                      };
+
+                      const [allRows, clientes, fornecedores] =
+                        await Promise.all([
+                          loadAll(),
+                          fetchAllSimple<Cliente>(`/api/clientes`),
+                          fetchAllSimple<Fornecedor>(`/api/fornecedores`),
+                        ]);
                       const cMap = new Map<number, Cliente>();
                       clientes.forEach((c) => cMap.set(c.id, c));
                       const fMap = new Map<number, Fornecedor>();
@@ -943,6 +973,7 @@ export default function ComunicacoesModule() {
           "Todos os fornecedores",
           "Fornecedores específicos [email1@dominio.com; email2@dominio.com]",
           "Ou apenas: email1@dominio.com; email2@dominio.com",
+          "Data/Hora Enviado: use dd/mm/yyyy hh:mm:ss (sem vírgula e sem aspas)",
         ]}
         columns={[
           {
@@ -960,21 +991,24 @@ export default function ComunicacoesModule() {
           { key: "destinatarios", label: "Destinatários", required: true },
           { key: "status", label: "Status" },
           { key: "data_hora_enviado", label: "Data/Hora Enviado" },
+          { key: "data_cadastro", label: "Data Cadastro (opcional)" },
         ]}
         mapHeader={(h) => {
-          const n = h.trim().toLowerCase();
+          // Normalize header by removing diacritics and trimming
+          const nRaw = h.trim().toLowerCase();
+          const n = nRaw.normalize("NFD").replace(/\p{Diacritic}/gu, "");
           const map: Record<string, string> = {
             estabelecimento: "estabelecimento",
-            "tipo de comunicação": "tipo_comunicacao",
+            "tipo de comunicacao": "tipo_comunicacao",
             assunto: "assunto",
             mensagem: "mensagem",
-            destinatários: "destinatarios",
             destinatarios: "destinatarios",
             status: "status",
             "data/hora enviado": "data_hora_enviado",
             "data hora enviado": "data_hora_enviado",
+            "data cadastro": "data_cadastro",
           };
-          return map[n] || n.replace(/\s+/g, "_");
+          return map[n] || n.replace(/\s+/g, "_").replace(/[^a-z0-9_]/g, "");
         }}
         validateRecord={(r) => {
           const errors: string[] = [];
@@ -1034,6 +1068,28 @@ export default function ComunicacoesModule() {
             return { tipo: "Outros" as const, emails };
           };
 
+          // Converte "dd/mm/yyyy hh:mm:ss" ou "dd/mm/yyyy" para ISO com timezone -03:00 (Brasília)
+          const toIsoBr = (s?: string) => {
+            const v = String(s || "").trim();
+            if (!v) return undefined;
+            const m = v.match(
+              /^([0-3]?\d)\/([01]?\d)\/(\d{4})(?:\s+([0-2]?\d):([0-5]?\d)(?::([0-5]?\d))?)?$/,
+            );
+            if (m) {
+              const dd = parseInt(m[1], 10);
+              const mm = parseInt(m[2], 10);
+              const yyyy = parseInt(m[3], 10);
+              const hh = m[4] ? parseInt(m[4], 10) : 0;
+              const mi = m[5] ? parseInt(m[5], 10) : 0;
+              const ss = m[6] ? parseInt(m[6], 10) : 0;
+              const pad = (n: number) => String(n).padStart(2, "0");
+              return `${yyyy}-${pad(mm)}-${pad(dd)}T${pad(hh)}:${pad(mi)}:${pad(ss)}-03:00`;
+            }
+            // Tenta parse nativo como fallback
+            const d = new Date(v);
+            return isNaN(d.getTime()) ? undefined : d.toISOString();
+          };
+
           const normalizeDestType = (v?: string) => {
             const s = String(v || "").toLowerCase();
             if (
@@ -1064,7 +1120,9 @@ export default function ComunicacoesModule() {
             return "Outros";
           };
 
-          for (const r of records) {
+          const importErrors: string[] = [];
+          for (let i = 0; i < records.length; i++) {
+            const r = records[i];
             try {
               // estabelecimento
               let estabelecimento_id: number | null = null;
@@ -1072,12 +1130,24 @@ export default function ComunicacoesModule() {
               if (/^\d+$/.test(v)) {
                 estabelecimento_id = parseInt(v, 10);
               } else {
-                const found = estabelecimentos.find(
+                let found = estabelecimentos.find(
                   (e) => e.nome.toLowerCase() === v.toLowerCase(),
                 );
+                if (!found) {
+                  // try partial match
+                  found = estabelecimentos.find((e) =>
+                    e.nome.toLowerCase().includes(v.toLowerCase()),
+                  );
+                }
                 estabelecimento_id = found ? found.id : null;
               }
-              if (!estabelecimento_id) continue;
+
+              if (!estabelecimento_id) {
+                importErrors.push(
+                  `Linha ${i + 2}: Estabelecimento '${v}' não encontrado`,
+                );
+                continue;
+              }
 
               // destinatários (novo formato)
               const parsed = parseDestinatarios(r.destinatarios);
@@ -1092,6 +1162,10 @@ export default function ComunicacoesModule() {
                     (c) => c.email?.toLowerCase() === email,
                   );
                   if (found) clientes_ids.push(found.id);
+                  else
+                    importErrors.push(
+                      `Linha ${i + 2}: Cliente com email '${email}' não encontrado`,
+                    );
                 }
               } else if (destTipo === "FornecedoresEspecificos") {
                 for (const email of parsed.emails) {
@@ -1099,7 +1173,28 @@ export default function ComunicacoesModule() {
                     (f) => f.email?.toLowerCase() === email,
                   );
                   if (found) fornecedores_ids.push(found.id);
+                  else
+                    importErrors.push(
+                      `Linha ${i + 2}: Fornecedor com email '${email}' não encontrado`,
+                    );
                 }
+              }
+
+              // Ensure status is valid enum
+              const statusValues = [
+                "Pendente",
+                "Enviado",
+                "Cancelado",
+              ] as const;
+              let statusVal = (r.status || "Pendente") as string;
+              if (!statusValues.includes(statusVal as any)) {
+                const sNorm = String(statusVal || "")
+                  .toLowerCase()
+                  .trim();
+                if (sNorm.startsWith("pend")) statusVal = "Pendente";
+                else if (sNorm.startsWith("envi")) statusVal = "Enviado";
+                else if (sNorm.startsWith("canc")) statusVal = "Cancelado";
+                else statusVal = "Pendente";
               }
 
               await makeRequest(`/api/comunicacoes`, {
@@ -1114,17 +1209,23 @@ export default function ComunicacoesModule() {
                   fornecedores_ids,
                   destinatarios_text:
                     destTipo === "Outros" ? parsed.emails.join("; ") : "",
-                  status: r.status || "Pendente",
-                  data_hora_enviado: r.data_hora_enviado || undefined,
+                  status: statusVal,
+                  data_hora_enviado: toIsoBr(r.data_hora_enviado),
+                  data_cadastro: toIsoBr(r.data_cadastro),
                 }),
               });
               imported += 1;
-            } catch {}
+            } catch (e: any) {
+              importErrors.push(
+                `Linha ${i + 2}: Erro ao importar - ${e?.message || e}`,
+              );
+            }
           }
           await loadRows();
           return {
             success: true,
             imported,
+            errors: importErrors,
             message: `${imported} comunicação(ões) importada(s)`,
           } as any;
         }}
