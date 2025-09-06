@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useAuthenticatedRequest } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -281,7 +282,15 @@ export default function RelatoriosModule() {
     setExporting(true);
     try {
       // wait charts render
-      await ensureChartsRendered(elements);
+      const ready = await ensureChartsRendered(elements);
+      if (!ready) {
+        setExporting(false);
+        toast({
+          title: "Gráficos incompletos",
+          description: "Os gráficos não terminaram de carregar. Aguarde e tente novamente.",
+        });
+        return;
+      }
 
       const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -424,12 +433,13 @@ export default function RelatoriosModule() {
                     </div>
                     <div className="mt-3 md:mt-0">
                       <Button
-                        onClick={exportToPDF}
-                        className="bg-green-600 hover:bg-green-700 text-white h-11 px-5"
-                        title="Exportar gráficos para PDF"
-                      >
-                        Exportar Relatório
-                      </Button>
+                      onClick={exportToPDF}
+                      disabled={exporting || loading}
+                      className="bg-green-600 hover:bg-green-700 text-white h-11 px-5"
+                      title="Exportar gráficos para PDF"
+                    >
+                      Exportar Relatório
+                    </Button>
                     </div>
                   </div>
                 </div>
