@@ -234,11 +234,13 @@ export default function RelatoriosModule() {
     const pageHeight = pdf.internal.pageSize.getHeight();
 
     // Cabeçalho
+    const marginX = 40;
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(20);
     pdf.setTextColor(17, 24, 39); // gray-900
     pdf.text("Gestão Gastronômica", pageWidth / 2, 40, { align: "center" });
 
+    // quebra de linha após o título -> subtítulo alinhado à esquerda
     const nomeEstabDisplay =
       selectedEstabelecimento === "all"
         ? "Todos Estabelecimentos"
@@ -248,17 +250,14 @@ export default function RelatoriosModule() {
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(12);
     pdf.setTextColor(75, 85, 99); // gray-600
-    pdf.text(`${nomeEstabDisplay} - ${periodoLabel}`, pageWidth / 2, 58, { align: "center" });
+    const subtitleY = 64;
+    pdf.text(`${nomeEstabDisplay} - ${periodoLabel}`, marginX, subtitleY); // left aligned
 
-    // Linha de destaque e duas quebras de linha (espaço extra)
-    pdf.setDrawColor(234, 88, 12); // orange-600
-    pdf.setLineWidth(1);
-    pdf.line(40, 68, pageWidth - 40, 68);
-    let currentY = 84; // espaço após título+subtítulo (duas quebras)
+    // duas quebras de linha após subtítulo
+    let currentY = subtitleY + 28 * 2;
 
-    const marginX = 40;
-    const targetWidth = pageWidth - marginX * 2; // manter margens laterais
     const maxHeight = 260; // tamanho médio
+    const imgMaxWidth = Math.min(pageWidth - marginX * 2, pageWidth * 0.75); // reduzir largura para manter proporção
 
     for (let i = 0; i < elements.length; i++) {
       const el = elements[i];
@@ -272,7 +271,9 @@ export default function RelatoriosModule() {
       // manter aspecto e limitar altura para "tamanho médio"
       const naturalW = canvas.width;
       const naturalH = canvas.height;
-      let imgHeight = Math.min((naturalH * targetWidth) / naturalW, maxHeight);
+      const imgWidth = imgMaxWidth;
+      const imgHeight = Math.min((naturalH * imgWidth) / naturalW, maxHeight);
+      const centerX = (pageWidth - imgWidth) / 2;
 
       // quebra de página se necessário
       if (currentY + imgHeight > pageHeight - 40) {
@@ -280,7 +281,7 @@ export default function RelatoriosModule() {
         currentY = 40;
       }
 
-      pdf.addImage(imgData, "PNG", marginX, currentY, targetWidth, imgHeight);
+      pdf.addImage(imgData, "PNG", centerX, currentY, imgWidth, imgHeight);
       currentY += imgHeight + 24; // espaço entre gráficos
     }
 
