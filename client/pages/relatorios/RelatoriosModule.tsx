@@ -225,9 +225,18 @@ export default function RelatoriosModule() {
   }, [estabelecimentos]);
 
   const ensureChartsRendered = async (elements: HTMLElement[]): Promise<boolean> => {
-    const timeout = 7000;
-    const interval = 200;
+    const timeout = 15000; // wait longer for slow renders
+    const interval = 300;
     let elapsed = 0;
+
+    // If the page is still loading data, wait until loading finishes (but cap by timeout)
+    while (loading && elapsed < timeout) {
+      // eslint-disable-next-line no-await-in-loop
+      await new Promise((r) => setTimeout(r, interval));
+      elapsed += interval;
+    }
+
+    elapsed = 0;
     while (elapsed < timeout) {
       let allReady = true;
       for (const el of elements) {
@@ -240,7 +249,8 @@ export default function RelatoriosModule() {
         for (const svg of Array.from(svgs)) {
           try {
             const bbox = svg.getBBox();
-            if (bbox && bbox.width > 2 && bbox.height > 2) {
+            // require a slightly larger bbox to be sure it's fully rendered
+            if (bbox && bbox.width > 8 && bbox.height > 8) {
               ready = true;
               break;
             }
@@ -305,12 +315,27 @@ export default function RelatoriosModule() {
 
       for (let i = 0; i < elements.length; i++) {
         const el = elements[i];
-        const canvas = await html2canvas(el, {
-          scale: 2,
-          useCORS: true,
-          backgroundColor: "#ffffff",
-          useCORS: true,
-        });
+        // dispatch resize to force chart libraries to recalc sizes before capture
+        try {
+          window.dispatchEvent(new Event("resize"));
+        } catch (e) {
+          /* ignore */
+        }
+        // try capturing the element multiple times if capture looks incomplete
+        let canvas: HTMLCanvasElement | null = null;
+        for (let attempt = 0; attempt < 4; attempt++) {
+          // eslint-disable-next-line no-await-in-loop
+          canvas = await html2canvas(el, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: "#ffffff",
+            imageTimeout: 30000,
+          });
+          if (canvas && canvas.width > 50 && canvas.height > 50) break;
+          // eslint-disable-next-line no-await-in-loop
+          await new Promise((r) => setTimeout(r, 250));
+        }
+        if (!canvas) continue;
         const imgData = canvas.toDataURL("image/png");
 
         // manter aspecto e limitar altura para "tamanho médio"
