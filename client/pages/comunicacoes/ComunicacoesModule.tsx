@@ -1192,6 +1192,7 @@ export default function ComunicacoesModule() {
           return {
             success: true,
             imported,
+            errors: importErrors,
             message: `${imported} comunicação(ões) importada(s)`,
           } as any;
         }}
