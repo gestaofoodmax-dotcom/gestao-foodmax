@@ -336,7 +336,7 @@ export default function ComunicacoesModule() {
         });
         toast({
           title: "Criado",
-          description: "Comunicaç��o criada com sucesso",
+          description: "Comunicação criada com sucesso",
         });
       }
       await loadRows();
