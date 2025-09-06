@@ -983,6 +983,7 @@ export default function ComunicacoesModule() {
                   fornecedores_ids,
                   destinatarios_text: r.destinatarios_text || "",
                   status: r.status || "Pendente",
+                  data_hora_enviado: r.data_hora_enviado || undefined,
                 }),
               });
               imported += 1;
